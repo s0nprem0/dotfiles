@@ -1,0 +1,24 @@
+@import "base.rasi"
+
+/***** Window for text input dialogs *****/
+window {
+  width: 460px;
+  padding: 10px 14px 16px;
+}
+
+/***** No listview in input dialogs *****/
+mainbox {
+  padding: 0;
+}
+
+inputbar {
+  margin: 0 2px;
+}
+
+entry {
+  placeholder: "Type here...";
+}
+
+prompt {
+  text-color: @selected;
+}

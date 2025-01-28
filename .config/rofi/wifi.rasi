@@ -1,0 +1,82 @@
+@import "base.rasi"
+
+/***** Window wider for network list *****/
+window {
+  width: 620px;
+  padding: 6px 8px 8px;
+}
+
+/***** Show more rows for scanning convenience *****/
+listview {
+  lines: 12;
+}
+
+/***** Tighter rows for denser info *****/
+element {
+  padding: 5px 14px;
+}
+
+/***** Section headers (non-selectable headings) *****/
+element.nonselectable {
+  background-color: transparent;
+  text-color: @foreground-dim;
+  padding: 10px 14px 4px;
+  font: "JetBrains Mono Nerd Font 10";
+}
+
+/***** Highlighted action items (primary CTAs) *****/
+element active.normal {
+  background-color: @selected-bg;
+  text-color: @selected;
+}
+
+element active.selected.normal {
+  background-color: @selected;
+  text-color: @background;
+  border-color: @selected;
+}
+
+element active.alternate {
+  background-color: @selected-bg;
+  text-color: @selected;
+}
+
+element active.selected.alternate {
+  background-color: @selected;
+  text-color: @background;
+  border-color: @selected;
+}
+
+/***** Status items (urgent: connectivity, errors) *****/
+element urgent.normal {
+  background-color: @urgent-bg;
+  text-color: @urgent;
+  border-color: transparent;
+}
+
+element urgent.selected.normal {
+  background-color: @urgent;
+  text-color: @background;
+  border-color: @urgent;
+}
+
+element urgent.alternate {
+  background-color: @urgent-bg;
+  text-color: @urgent;
+}
+
+element urgent.selected.alternate {
+  background-color: @urgent;
+  text-color: @background;
+  border-color: @urgent;
+}
+
+/***** Icon sizing *****/
+element-icon {
+  margin: 0 6px 0 0;
+}
+
+/***** Input placeholder for wifi context *****/
+entry {
+  placeholder: "Filter networks...";
+}

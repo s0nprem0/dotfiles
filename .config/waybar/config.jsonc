@@ -1,0 +1,20 @@
+// jsonc
+{
+  "layer": "top",
+  "position": "top",
+  "output": "eDP-1",
+  "height": 36,
+  // wlr/taskbar
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "bluetooth",
+    "custom/network",
+    "pulseaudio",
+    "battery",
+    "tray",
+  ],
+
+  // Modules Config
+  "include": ["~/.config/waybar/modules.json"],
+}

@@ -1,0 +1,97 @@
+{
+  "hyprland/workspaces": {
+    "all-outputs": false,
+    "output": "",
+    "warp-on-scroll": true,
+    "format": "{name}",
+    "persistent-only": false,
+    "active-only": false,
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
+  },
+  "hyprland/window": {
+    "format": "{}",
+    "rewrite": {
+      "": "Desktop"
+    },
+    "max-length": 60,
+    "ellipsize": true,
+    "separate-outputs": false,
+    "icon-size": 0
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 4,
+    "show-passive-items": false,
+    "expand": false
+  },
+
+  "bluetooth": {
+    "format": "󰂲",
+    "format-connected": "󰂯 {device_alias}",
+    "format-disabled": "󰂲",
+    "tooltip-format": "{num_connections} connected\n{device_address}",
+    "on-click": "~/.config/rofi/scripts/bluetooth-manager",
+    "persist": true
+  },
+
+  "clock": {
+    "format": "{:%I:%M %p}",
+    "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>\n<tt>{calendar}</tt>",
+    "interval": 1
+  },
+
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "󰝟  muted",
+    "format-bluetooth": "󰂯 {volume}%",
+    "format-bluetooth-muted": "󰂯 󰝟",
+    "format-icons": {
+      "headphone": "󰋋",
+      "hands-free": "󰋎",
+      "headset": "󰋎",
+      "phone": "󰏲",
+      "portable": "󰏲",
+      "car": "󰄋",
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-click-right": "pavucontrol",
+    "on-click-middle": "pavucontrol",
+    "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+    "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%",
+    "smooth-scrolling-threshold": 0.5,
+    "tooltip": true,
+    "tooltip-format": "{desc} ({format_source})",
+    "ignored-sinks": ["Easy Effects Sink"]
+  },
+
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon}  {capacity}%",
+    "format-full": "{icon}  {capacity}%",
+    "format-charging": "  {capacity}%",
+    "format-plugged": "  {capacity}%",
+    "format-alt": "{time}  {icon}",
+    "format-icons": ["", "", "", "", ""]
+  },
+
+  "custom/network": {
+    "exec": "~/.config/waybar/scripts/network.py",
+    "interval": 10,
+    "return-type": "json",
+    "format": "{}",
+    "tooltip": true,
+    "on-click": "",
+    "signal": 1
+  }
+}

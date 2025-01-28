@@ -1,0 +1,22 @@
+@import "base.rasi"
+
+/***** Window for bluetooth device list *****/
+window {
+  width: 540px;
+  padding: 6px 6px 8px;
+}
+
+/***** Show more rows *****/
+listview {
+  lines: 10;
+}
+
+/***** Element overrides *****/
+element {
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+
+element-icon {
+  size: 20px;
+}

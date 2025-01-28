@@ -1,0 +1,136 @@
+@import "colors.rasi"
+
+* {
+  font: "JetBrains Mono Nerd Font 11";
+}
+
+configuration {
+  show-icons: true;
+  mouse-support: true;
+}
+
+/***** Window *****/
+window {
+  location: center;
+  anchor: center;
+  background-color: @background;
+  border: 1px;
+  border-color: @background-alt;
+  border-radius: 14px;
+  padding: 6px;
+}
+
+/***** Layout *****/
+mainbox {
+  orientation: vertical;
+  spacing: 4px;
+  padding: 4px 0;
+  background-color: transparent;
+}
+
+/***** Input Area *****/
+inputbar {
+  padding: 10px 14px;
+  margin: 2px 6px 4px;
+  border-radius: 10px;
+  background-color: @background-alt;
+  children: [ prompt, entry ];
+  spacing: 8px;
+}
+
+prompt {
+  text-color: @selected;
+  background-color: transparent;
+  padding: 0;
+}
+
+entry {
+  expand: true;
+  text-color: @foreground;
+  background-color: transparent;
+  cursor: text;
+  placeholder: "Search...";
+  placeholder-color: @foreground-dim;
+}
+
+/***** Listview *****/
+listview {
+  columns: 1;
+  spacing: 2px;
+  dynamic: true;
+  layout: vertical;
+  fixed-height: true;
+  scrollbar: true;
+  background-color: transparent;
+  text-color: @foreground;
+  scrollbar-width: 4px;
+  padding: 0 4px;
+}
+
+/***** Elements — base *****/
+element {
+  padding: 8px 14px;
+  margin: 1px 2px;
+  border-radius: 8px;
+  background-color: transparent;
+  text-color: @foreground;
+  orientation: horizontal;
+  cursor: pointer;
+  border: 1px;
+  border-color: transparent;
+}
+
+element normal.normal {
+  background-color: transparent;
+  text-color: @foreground;
+}
+
+element normal.alternate {
+  background-color: @background-trans;
+  text-color: @foreground;
+}
+
+element selected.normal {
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
+}
+
+element selected.alternate {
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
+}
+
+element-icon {
+  /* Nerd Font glyphs (wifi/signal/etc) need more room to avoid clipping */
+  size: 24px;
+  margin: 0 8px 0 0;
+  background-color: transparent;
+  text-color: inherit;
+}
+
+element-text {
+  text-color: inherit;
+  background-color: transparent;
+  vertical-align: 0.5;
+  horizontal-align: 0.0;
+}
+
+/***** Scrollbar *****/
+scrollbar {
+  handle-width: 4px;
+  handle-color: @selected;
+  border-radius: 2px;
+  background-color: @background-alt;
+  margin: 2px 0;
+}
+
+/***** Fallback/Error *****/
+textbox, textbox-prompt-colon, error-message {
+  text-color: @foreground;
+  background-color: transparent;
+  highlight: none;
+  vertical-align: 0.5;
+  horizontal-align: 0.0;
+}

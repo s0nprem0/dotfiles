@@ -1,0 +1,187 @@
+@import url("colors.css");
+
+@define-color warning #f9e2af;
+@define-color error #f38ba8;
+
+* {
+  font-family: "GohuFont 11 Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 11px;
+  min-height: 0;
+}
+
+window#waybar {
+  background-color: alpha(@background, 0.65);
+  border-bottom: 1px solid alpha(@primary, 0.15);
+  transition: background-color 0.2s;
+}
+
+window#waybar.empty {
+  background-color: alpha(@background, 0.5);
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+  padding: 0 8px;
+}
+
+#workspaces {
+  margin: 4px 0;
+  padding: 0 4px;
+  background: alpha(@surface, 0.3);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 10px;
+}
+
+#workspaces button {
+  padding: 0 6px;
+  margin: 2px 1px;
+  color: alpha(@foreground, 0.5);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  min-width: 20px;
+  transition: all 0.15s ease;
+}
+
+#workspaces button:hover {
+  background: alpha(@primary, 0.15);
+  color: @foreground;
+}
+
+#workspaces button.active {
+  color: @background;
+  background: @primary;
+  font-weight: bold;
+}
+
+#workspaces button.urgent {
+  color: @background;
+  background: @error;
+}
+
+#workspaces button.empty {
+  color: alpha(@foreground, 0.3);
+}
+
+#window {
+  color: @foreground;
+  padding: 0 12px;
+  margin: 4px 0;
+  background: alpha(@surface, 0.3);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 10px;
+}
+
+#window.empty {
+  background: transparent;
+  border-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+#clock,
+#battery,
+#custom-network,#pulseaudio,
+#tray,
+#bluetooth,
+#custom-player,
+#backlight,
+#temperature,
+#memory,
+#cpu,
+#custom-power,
+#language,
+#custom-updater {
+  color: @foreground;
+  background: alpha(@surface, 0.4);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 10px;
+  padding: 0 10px;
+  margin: 4px 3px;
+  transition: all 0.15s ease;
+}
+
+#clock:hover,
+#battery:hover,
+#custom-network:hover,#pulseaudio:hover,
+#tray:hover,
+#bluetooth:hover,
+#custom-player:hover,
+#backlight:hover,
+#temperature:hover,
+#memory:hover,
+#cpu:hover,
+#custom-power:hover,
+#language:hover,
+#custom-updater:hover {
+  background: alpha(@primary, 0.2);
+  border-color: alpha(@primary, 0.3);
+}
+
+#battery.warning {
+  color: @warning;
+  border-color: alpha(@warning, 0.4);
+}
+
+#battery.critical {
+  color: @error;
+  border-color: @error;
+}
+
+#battery.charging {
+  color: #a6e3a1;
+  border-color: alpha(#a6e3a1, 0.4);
+}
+
+#battery.plugged {
+  color: @foreground;
+  border-color: alpha(@primary, 0.15);
+}
+
+#clock {
+  font-weight: bold;
+}
+
+#custom-network.disconnected {
+  color: alpha(@foreground, 0.4);
+}
+
+#custom-network.disabled {
+  color: alpha(@foreground, 0.3);
+}
+
+#custom-network.limited {
+  color: @warning;
+  border-color: alpha(@warning, 0.4);
+}
+
+#pulseaudio.muted {
+  color: alpha(@foreground, 0.5);
+}
+
+#tray {
+  padding: 0 6px;
+  min-width: 0;
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+}
+
+/* Tooltip */
+tooltip {
+  background: alpha(@background, 0.95);
+  border: 1px solid alpha(@primary, 0.25);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+tooltip label {
+  color: @foreground;
+  font-size: 11px;
+}
