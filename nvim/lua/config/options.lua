@@ -32,12 +32,12 @@ vim.opt.inccommand = "split"
 
 vim.opt.ignorecase = true
 
-
 vim.opt.smarttab = true
 vim.opt.smartindent = true
 vim.opt.breakindent = true
 
-
+-- Don't show the mode, since it's already in the status line
+vim.opt.showmode = false
 
 vim.opt.backspace = { "start", "eol", "indent" }
 vim.opt.path:append({ "**" })
