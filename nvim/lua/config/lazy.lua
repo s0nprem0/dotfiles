@@ -24,6 +24,7 @@ require("lazy").setup({
         colorscheme = "catppuccin",
       },
     },
+    -- import your plugins
     { import = "plugins" },
   },
   defaults = {
@@ -38,17 +39,10 @@ require("lazy").setup({
     cache = {
       enabled = true,
     },
+    reset_packpath = true,
     rtp = {
-      -- disable some rtp plugins
       disabled_plugins = {
-        "gzip",
-        -- "matchit",
-        -- "matchparen",
-        -- "netrwPlugin",
-        "tarPlugin",
-        "tohtml",
         "tutor",
-        "zipPlugin",
       },
     },
   },

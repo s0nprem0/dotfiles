@@ -15,4 +15,14 @@ return {
       desc = "Buffer Local Keymaps (which-key)",
     },
   },
+  config = function()
+    require("which-key").setup({
+      preset = "helix",
+      delay = 400,
+      triggers = {
+        { "<auto>", mode = "nixsotc" },
+        { "a", mode = { "n", "v" } },
+      },
+    })
+  end,
 }
