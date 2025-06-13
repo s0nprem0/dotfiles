@@ -1,8 +1,8 @@
 #
-# wm independent hotkeys
+# -- Modifier Keys ---
 #
 
-# -- Modifier Keys ---
+
 super = super
 alt = alt
 ctrl = control
@@ -44,22 +44,34 @@ super + y
 super + g
     bspc node -s biggest.window
 
-# Toggle floating window
-super + f
-    bspc node -t ~floating
-
-#
+##
 # Window State and Flags
 #
 
-# Set Window State (tiled, pseudo_tiled, floating, fullscreen)
-super + {t,shift + t,s,f}
-    bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+# Toggle Floating Window
+# This keeps your current, clear toggle.
+super + f
+    bspc node -t ~floating
+
+# Set Window to Tiled State
+# Useful to explicitly untile/unfloat/unfullscreen a window.
+super + t
+    bspc node -t tiled
+
+# Set Window to Fullscreen State
+# Dedicated binding for fullscreen.
+super + s
+    bspc node -t fullscreen
+
+# Toggle Pseudo-tiled State
+# Use shift+t for pseudo-tiled, as it's less common than pure tiled.
+super + shift + t
+    bspc node -t pseudo_tiled
 
 # Set Node Flags (marked, locked, sticky, private)
+# Keep these as they are, they are clear and distinct.
 super + ctrl + {m,x,y,z}
     bspc node -g {marked,locked,sticky,private}
-
 #
 # Focus and Swap
 #
@@ -136,8 +148,8 @@ super + {Left,Down,Up,Right}
 
 
 # CheatSheet
-super + /
-  ~/.config/bspwm/scripts/KeyBindingsHelp
+super + F1
+  /home/son/.config/bspwm/scripts/KeyBindingsHelp
 
 #
 # Volume Control (Multimedia Keys)
@@ -154,10 +166,9 @@ XF86AudioPlay
 
 # Launch Flameshot GUI for interactive screenshot
 Print
-    flameshot gui
+    flameshot gui -d 2000
 
-# Take full screen screenshot, copy to clipboard, and save to Pictures folder
-# The `date` command creates a unique timestamped filename
+# Take full screen screenshot, copy to clipboard, and save to Pictures folders the `date` command creates a unique timestamped filename
 super + Print
     flameshot full -c -p ~/Pictures/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png
 

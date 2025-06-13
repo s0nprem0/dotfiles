@@ -3,6 +3,7 @@
 # Define the path to your sxhkd configuration file.
 # It's good practice to make this configurable or use a standard path.
 SXHKD_CONFIG="${HOME}/.config/sxhkd/sxhkdrc"
+ROFI_THEME="$HOME/.config/rofi/config-commons.rasi"
 
 # Check if the sxhkdrc file exists.
 if [[ ! -f "${SXHKD_CONFIG}" ]]; then
@@ -10,5 +11,6 @@ if [[ ! -f "${SXHKD_CONFIG}" ]]; then
   exit 1
 fi
 
-awk '/^[a-z]/ && last {print "<small>",$0,"\t",last,"</small>"} {last=""} /^#/{last=$0}' ~/.config/sxhkd/sxhkdrc |
-  column -t -s $'\t' | rofi -dmenu -i -markup-rows -no-show-icons -width 1000 -lines 15 -yoffset 40
+awk '/^[a-z]/ && last {print "<small>",$0,"\t",last,"</small>"} {last=""} /^#/{last=$0}' "${SXHKD_CONFIG}" |
+  column -t -s $'\t' | rofi -dmenu -i -markup-rows -no-show-icons -theme "$ROFI_THEME"
+
