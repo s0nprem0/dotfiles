@@ -18,15 +18,18 @@ super + @space
 
 # Reload sxhkd configuration
 super + Escape
-    pkill -USR1 -x sxhkd
+    pkill -USR1 -x sxhkd; notify-send 'sxhkd' 'Reloaded config' -t 1500
 
 #
 # bspwm hotkeys
 #
 
 # Quit/Restart bspwm
-super + alt + {q,r}
-    bspc {quit,wm -r}
+super + alt + q
+    bspc quit
+
+super + alt + r
+    bspc wm -r
 
 # Close and Kill Node
 super + {_,shift + } + w
@@ -72,39 +75,14 @@ super + shift + t
 # Keep these as they are, they are clear and distinct.
 super + ctrl + {m,x,y,z}
     bspc node -g {marked,locked,sticky,private}
-#
-# Focus and Swap
-#
 
-# Focus Node in Direction (west, south, north, east)
-super + {h,j,k,l}
-    bspc node -f {west,south,north,east}
+# Switch windows in monocle mode (or any layout)
+super + bracketleft
+    bspc node -f prev.local.!hidden.window
 
-# Swap Node in Direction (west, south, north, east)
-super + shift + {h,j,k,l}
-    bspc node -s {west,south,north,east}
-
-# Focus Node by Path Jump (parent, brother, first, second)
-super + {p,b,comma,period}
-    bspc node -f @{parent,brother,first,second}
-
-# Focus Next/Previous Window in Current Desktop
-super + {bracketleft,bracketright}
-    bspc node -f {prev,next}.local.!hidden.window
-
-# Focus Next/Previous Desktop in Current Monitor
-super + {_,shift + }c
-    bspc desktop -f {prev,next}.local # Changed hotkeys for clarity
-
-# Focus Last Node/Desktop
-super + {grave,Tab}
-    bspc {node,desktop} -f last
-
-# Focus Older or Newer Node in Focus History
-super + {o,i}
-    bspc wm -h off; \
-    bspc node {older,newer} -f; \
-    bspc wm -h on
+super + bracketright
+    bspc node -f next.local.!hidden.window
+# 
 
 # Focus or Send to Desktop (1-10)
 super + {_,shift + }{1-9,0}
@@ -149,7 +127,11 @@ super + {Left,Down,Up,Right}
 
 # CheatSheet
 super + F1
-  /home/son/.config/bspwm/scripts/KeyBindingsHelp
+  ~/.config/bspwm/scripts/KeyBindingsHelp
+
+# Hide/Show Polybar
+super + grave
+  polybar-msg cmd {hide,show}
 
 #
 # Volume Control (Multimedia Keys)
