@@ -1,0 +1,117 @@
+/* ~/.config/rofi/themes/common.rasi */
+
+/* Import your color scheme (assuming it's in ~/.config/rofi/colors.rasi) */
+@import "~/.config/rofi/colors.rasi"
+
+* {
+    /* Global font setting for all Rofi elements using this common theme */
+    font: "JetBrains Mono Nerd Font 11";
+}
+
+/* --- Window Properties --- */
+window {
+    location: center;
+    anchor: center;
+    width: 640px; /* Or a percentage like "30%" */
+    border-radius: 10px;
+    padding: 10px;
+    background-color: @background; /* Uses color from imported scheme */
+    override-redirect: false; /* Keep this as false unless you know what you're doing */
+}
+
+/* --- Main Layout Container --- */
+mainbox {
+    orientation: vertical;
+    spacing: 12px;
+    padding: 10px;
+    background-color: transparent;
+}
+
+/* --- Input Bar Area --- */
+inputbar {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background-color: @background-alt; /* Uses color from imported scheme */
+    children: [ prompt, entry ]; /* Define elements within the input bar */
+}
+
+prompt {
+    text-color: @selected; /* Uses color from imported scheme */
+    background-color: transparent;
+    padding: 0px 8px 0px 0px;
+}
+
+entry {
+    expand: true;
+    text-color: @foreground; /* Uses color from imported scheme */
+    background-color: transparent;
+    cursor: text;
+    placeholder-color: inherit;
+    /* Placeholder text itself is specific to the modi (e.g., "Search..." for run, "Search SSID..." for Wi-Fi) */
+}
+
+/* --- List View for Items (e.g., networks, applications, windows) --- */
+listview {
+    lines: 8; /* Default number of lines */
+    columns: 1; /* Default number of columns */
+    spacing: 6px;
+    dynamic: true;
+    layout: vertical;
+    fixed-height: true;
+    scrollbar: true; /* Default to showing scrollbar */
+    background-color: transparent;
+    text-color: @foreground;
+}
+
+/* --- Individual Item Elements --- */
+element {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: @background-alt; /* Uses color from imported scheme */
+    text-color: @foreground;
+    orientation: horizontal;
+    cursor: pointer;
+}
+
+element normal.normal {
+    background-color: @background-alt;
+    text-color: @foreground;
+}
+
+element selected.normal {
+    background-color: @selected; /* Uses color from imported scheme */
+    text-color: @background; /* Uses color from imported scheme */
+}
+
+element-icon {
+    size: 20px;
+    margin: 0px 10px 0px 0px;
+    background-color: transparent;
+    text-color: inherit;
+}
+
+element-text {
+    text-color: inherit;
+    background-color: transparent;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+    wrap: true;
+    elipsize: true;
+}
+
+/* --- Scrollbar Styling --- */
+scrollbar {
+    handle-width: 5px;
+    handle-color: @selected; /* Uses color from imported scheme */
+    border-radius: 4px;
+    background-color: @background-alt;
+}
+
+/* --- Fallback/Error/Prompt Messages --- */
+textbox, textbox-prompt-colon, error-message {
+    text-color: @foreground;
+    background-color: transparent;
+    highlight: none;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+}
