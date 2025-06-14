@@ -5,14 +5,18 @@ ROFI_THEME="$HOME/.config/rofi/wifi.rasi"
 # Returns a Wi-Fi signal icon for a given strength (0–100)
 get_signal_icon() {
   local strength=$1
-  if ((strength >= 80)); then echo "󰤨"
-  elif ((strength >= 60)); then echo "󰤥"
-  elif ((strength >= 40)); then echo "󰤢"
-  elif ((strength >= 20)); then echo "󰤟"
-  else echo "󰤯"
+  if ((strength >= 80)); then
+    echo "󰤨"
+  elif ((strength >= 60)); then
+    echo "󰤥"
+  elif ((strength >= 40)); then
+    echo "󰤢"
+  elif ((strength >= 20)); then
+    echo "󰤟"
+  else
+    echo "󰤯"
   fi
 }
-
 
 # Show Wi-Fi status with dynamic icon
 display_wifi_status() {
@@ -53,7 +57,7 @@ connect_wifi() {
   toggle="󰖪  Disable Wi-Fi"
   [[ "$wifi_state" != "enabled" ]] && toggle="󰖩  Enable Wi-Fi"
 
-  hidden_option="➕  Connect to Hidden Network"
+  hidden_option="󰐗  Connect to Hidden Network"
 
   chosen_network=$(echo -e "$toggle\n$hidden_option\n$wifi_list" | uniq -u |
     rofi -dmenu -i -selected-row 2 -p "Wi-Fi SSID: " -theme "$ROFI_THEME")
@@ -61,49 +65,49 @@ connect_wifi() {
   [[ -z "$chosen_network" ]] && exit
 
   case "$chosen_network" in
-    "󰖩  Enable Wi-Fi")
-      nmcli radio wifi on && notify-send "Wi-Fi Enabled"
-      ;;
-    "󰖪  Disable Wi-Fi")
-      nmcli radio wifi off && notify-send "Wi-Fi Disabled"
-      ;;
-    "$hidden_option")
-      ssid=$(rofi -dmenu -p "Enter Hidden SSID: " -theme "$ROFI_THEME")
-      [[ -z "$ssid" ]] && exit
-      password=$(rofi -dmenu -p "Enter Password (leave empty if open): " -theme "$ROFI_THEME")
-      if [[ -n "$password" ]]; then
-        if nmcli device wifi connect "$ssid" password "$password" hidden yes; then
-          notify-send "Connected" "Connected to \"$ssid\""
-        else
-          notify-send "Connection Failed" "Could not connect to \"$ssid\""
-        fi
+  "󰖩  Enable Wi-Fi")
+    nmcli radio wifi on && notify-send "Wi-Fi Enabled"
+    ;;
+  "󰖪  Disable Wi-Fi")
+    nmcli radio wifi off && notify-send "Wi-Fi Disabled"
+    ;;
+  "$hidden_option")
+    ssid=$(rofi -dmenu -p "Enter Hidden SSID: " -theme "$ROFI_THEME")
+    [[ -z "$ssid" ]] && exit
+    password=$(rofi -dmenu -p "Enter Password (leave empty if open): " -theme "$ROFI_THEME")
+    if [[ -n "$password" ]]; then
+      if nmcli device wifi connect "$ssid" password "$password" hidden yes; then
+        notify-send "Connected" "Connected to \"$ssid\""
       else
-        if nmcli device wifi connect "$ssid" hidden yes; then
-          notify-send "Connected" "Connected to \"$ssid\""
-        else
-          notify-send "Connection Failed" "Could not connect to \"$ssid\""
-        fi
+        notify-send "Connection Failed" "Could not connect to \"$ssid\""
       fi
-      ;;
-    *)
-      if [[ "$chosen_network" =~ "" ]]; then
-        password=$(rofi -dmenu -p "Enter Password: " -theme "$ROFI_THEME")
+    else
+      if nmcli device wifi connect "$ssid" hidden yes; then
+        notify-send "Connected" "Connected to \"$ssid\""
+      else
+        notify-send "Connection Failed" "Could not connect to \"$ssid\""
       fi
+    fi
+    ;;
+  *)
+    if [[ "$chosen_network" =~ "" ]]; then
+      password=$(rofi -dmenu -p "Enter Password: " -theme "$ROFI_THEME")
+    fi
 
-      if echo "$saved_connections" | grep -Fxq "$chosen_id"; then
-        if nmcli connection up id "$chosen_id"; then
-          notify-send "Connected" "Connected to \"$chosen_id\""
-        else
-          notify-send "Connection Failed" "Could not connect to \"$chosen_id\""
-        fi
+    if echo "$saved_connections" | grep -Fxq "$chosen_id"; then
+      if nmcli connection up id "$chosen_id"; then
+        notify-send "Connected" "Connected to \"$chosen_id\""
       else
-        if nmcli device wifi connect "$chosen_id" password "$password"; then
-          notify-send "Connected" "Connected to \"$chosen_id\""
-        else
-          notify-send "Connection Failed" "Could not connect to \"$chosen_id\""
-        fi
+        notify-send "Connection Failed" "Could not connect to \"$chosen_id\""
       fi
-      ;;
+    else
+      if nmcli device wifi connect "$chosen_id" password "$password"; then
+        notify-send "Connected" "Connected to \"$chosen_id\""
+      else
+        notify-send "Connection Failed" "Could not connect to \"$chosen_id\""
+      fi
+    fi
+    ;;
   esac
 }
 
@@ -120,12 +124,12 @@ toggle_wifi() {
 
 # Main script execution
 case "$1" in
-  --connect)
-    connect_wifi
-    ;;
-  --toggle)
-    toggle_wifi
-    ;;
+--connect)
+  connect_wifi
+  ;;
+--toggle)
+  toggle_wifi
+  ;;
 *)
   # Auto-connect logic if disconnected
   current_ssid=$(nmcli -t -f active,ssid dev wifi | awk -F: '$1 == "yes" {print $2}')
@@ -141,7 +145,7 @@ case "$1" in
         fi
         break
       fi
-    done <<< "$available_networks"
+    done <<<"$available_networks"
   fi
 
   display_wifi_status
