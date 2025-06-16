@@ -1,0 +1,15 @@
+// jsonc
+{
+  "layer": "top",
+  "position": "top",
+  "height": 30,
+  // wlr/taskbar
+  "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
+  "modules-center": [""],
+  "modules-right": ["network", "pulseaudio", "battery", "clock"],
+  
+  // Modules Config
+  "include": [
+    "/home/son/.config/waybar/modules.json"
+  ]
+}
