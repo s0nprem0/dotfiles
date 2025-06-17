@@ -1,0 +1,46 @@
+#! /bin/sh
+
+# Wait until the processes are actually killed
+# while pgrep -u $UID -x dunst >/dev/null; do sleep 1; done
+# while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+# while pgrep -u $UID -x sxhkd >/dev/null; do sleep 1; done
+# while pgrep -u $UID -x feh >/dev/null; do sleep 1; done
+
+# Monitor Layout
+bspc monitor -d I II III IV V
+
+bspc config border_width 1
+bspc config window_gap 17
+
+bspc config borderless_monocle true
+bspc coddig gapless_monocle false
+
+bspc config focus_follows_pointer true
+bspc config pointer_follows_focus false
+bspc config pointer_motion_interval 5
+
+# moving float windows and resize with them with mouse , hold alt
+bspc config pointer_modifier mod4
+bspc config pointer_action1 move
+bspc config pointer_action2 resize_side
+bspc config pointer_action3 resize_corner
+
+bspc config focused_border_color "#282828" # focused window
+bspc config normal_border_color "#1d2021"  # unfocused window
+
+bspc rule -a firefox desktop='^2' follow=on
+
+# -- AUTOSTART --
+# Keybindings
+sxhkd &
+picom &
+# Cursor
+xsetroot -cursor_name left_ptr
+
+# Merge X Resources resources
+xrdb merge ~/.Xresources
+
+~/.config/polybar/launch.sh &
+# dunst
+dunst -conf "$HOME/.config/dunst/dunstrc" &
+feh --bg-fill ~/Pictures/01.jpg &

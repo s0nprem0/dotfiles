@@ -1,0 +1,70 @@
+{  
+  "hyprland/workspaces": {
+    "all-outputs": false,
+    "warp-on-scroll": true,
+    "format": "{name}",
+    "active-only": true,
+    "persistent_workspaces": {
+      "1": {}, "2":{}, "3":{}, "4":{}, "5":{}
+    }
+  },
+  
+  "hyprland/window": {
+    "format": "{title}",
+    "format-empty": " Destup",
+    "max-length": 60,
+    "separate-outputs": true,
+    "icon-size": 0
+  },
+  
+  "tray": {
+    "spacing": 4,
+    "icon-size": 16
+  },
+  
+  "clock": {
+    "format": "{:%I:%M %p}",
+    "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>",
+    "interval": 1
+  },
+  
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "  muted",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", "", ""]
+    },
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-click-right": "pavucontrol",
+    "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+    "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+  },
+  
+  "battery": {
+    "states": {
+        "warning": 30,
+        "critical": 15
+    },
+    "format": "{icon}  {capacity}%",
+    "format-full": "{icon}  {capacity}%",
+    "format-charging": "  {capacity}%",
+    "format-plugged": "  {capacity}%",
+    "format-alt": "{time}  {icon}",
+    "format-icons": ["", "", "", "", ""]
+  },
+  
+  "network": {
+    "format-wifi": "{essid} ({signalStrength}%)",
+    "format-ethernet": "{ifname} {ipaddr}",
+    "format-disconnected": "Disconnected",
+    "tooltip-format": "{ifname} via {gwaddr}",
+    "on-click": "~/.config/waybar/scripts/wifi.sh --connect",
+    "on-click-right": "~/.config/waybar/scripts/wifi.sh --toggle"
+  },
+}

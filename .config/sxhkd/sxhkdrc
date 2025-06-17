@@ -1,0 +1,165 @@
+#
+# -- Modifier Keys ---
+#
+
+
+super = super
+alt = alt
+ctrl = control
+shift = shift
+
+# Terminal Emulator
+super + Return
+    kitty
+
+# Program Launcher
+super + @space
+    rofi -show drun
+
+# Reload sxhkd configuration
+super + Escape
+    pkill -USR1 -x sxhkd; notify-send 'sxhkd' 'Reloaded config' -t 1500
+
+#
+# bspwm hotkeys
+#
+
+# Quit/Restart bspwm
+super + alt + q
+    bspc quit
+
+super + alt + r
+    bspc wm -r
+
+# Close and Kill Node
+super + {_,shift + } + w
+    bspc node -{c,k}
+
+# Toggle Monocle Layout
+super + m
+    bspc desktop -l next
+
+# Send newest marked node to newest preselected node
+super + y
+    bspc node newest.marked.local -n newest.!automatic.local
+
+# Swap current node with biggest window
+super + g
+    bspc node -s biggest.window
+
+##
+# Window State and Flags
+#
+
+# Toggle Floating Window
+# This keeps your current, clear toggle.
+super + f
+    bspc node -t ~floating
+
+# Set Window to Tiled State
+# Useful to explicitly untile/unfloat/unfullscreen a window.
+super + t
+    bspc node -t tiled
+
+# Set Window to Fullscreen State
+# Dedicated binding for fullscreen.
+super + s
+    bspc node -t fullscreen
+
+# Toggle Pseudo-tiled State
+# Use shift+t for pseudo-tiled, as it's less common than pure tiled.
+super + shift + t
+    bspc node -t pseudo_tiled
+
+# Set Node Flags (marked, locked, sticky, private)
+# Keep these as they are, they are clear and distinct.
+super + ctrl + {m,x,y,z}
+    bspc node -g {marked,locked,sticky,private}
+
+# Switch windows in monocle mode (or any layout)
+super + bracketleft
+    bspc node -f prev.local.!hidden.window
+
+super + bracketright
+    bspc node -f next.local.!hidden.window
+# 
+
+# Focus or Send to Desktop (1-10)
+super + {_,shift + }{1-9,0}
+    bspc {desktop -f,node -d} '^{1-9,10}'
+
+#
+# Preselect
+#
+
+# Preselect Direction (west, south, north, east)
+super + ctrl + {h,j,k,l}
+    bspc node -p {west,south,north,east}
+
+# Preselect Ratio (0.1 - 0.9)
+super + ctrl + {1-9}
+    bspc node -o 0.{1-9}
+
+# Cancel Preselection for Focused Node
+super + ctrl + space
+    bspc node -p cancel
+
+# Cancel Preselection for Focused Desktop (all nodes)
+super + ctrl + shift + space
+    bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+
+#
+# Move/Resize
+#
+
+# Expand Window (outward)
+super + alt + {h,j,k,l}
+    bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
+
+# Contract Window (inward)
+super + alt + shift + {h,j,k,l}
+    bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
+
+# Move Floating Window
+super + {Left,Down,Up,Right}
+    bspc node -v {-20 0,0 20,0 -20,20 0}
+
+
+# CheatSheet
+super + F1
+  ~/.config/bspwm/scripts/KeyBindingsHelp
+
+# Hide/Show Polybar
+super + grave
+  polybar-msg cmd {hide,show}
+
+#
+# Volume Control (Multimedia Keys)
+#
+XF86AudioRaiseVolume
+    pactl set-sink-volume @DEFAULT_SINK@ +5%
+XF86AudioLowerVolume
+    pactl set-sink-volume @DEFAULT_SINK@ -5%
+XF86AudioMute
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+XF86AudioPlay
+    playerctl play-pause
+
+
+# Launch Flameshot GUI for interactive screenshot
+Print
+    flameshot gui -d 2000
+
+# Take full screen screenshot, copy to clipboard, and save to Pictures folders the `date` command creates a unique timestamped filename
+super + Print
+    flameshot full -c -p ~/Pictures/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png
+
+# Take full screen screenshot and copy to clipboard only (no file saved)
+ctrl + Print
+    flameshot full -c
+
+# Brighness control
+XF86MonBrightnessUp
+    brightnessctl set +5%
+XF86MonBrightnessDown
+    brightnessctl set 5%-
