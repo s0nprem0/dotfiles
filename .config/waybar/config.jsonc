@@ -6,7 +6,7 @@
   // wlr/taskbar
   "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
   "modules-center": [""],
-  "modules-right": ["network", "pulseaudio", "battery", "clock"],
+  "modules-right": ["network", "pulseaudio", "battery", "clock", "custom/notifications"],
   
   // Modules Config
   "include": [
