@@ -1,0 +1,14 @@
+show=drun
+term=kitty
+show_all=true
+gtk_dark=true
+location=center
+insensitive=false
+width=500
+allow_markup=true
+allow_images=true
+line_wrap=word
+lines=8
+no_actions=true
+prompt=run
+hide_scroll=true
