@@ -14,6 +14,7 @@ window#waybar {
   padding: 0 2rem;
 }
 
+
 #clock,
 #battery,
 #cpu,
@@ -24,6 +25,7 @@ window#waybar {
 #network,
 #pulseaudio,
 #wireplumber,
+#custom-applauncher,
 #custom-media,
 #custom-notifications,
 #tray,
@@ -48,6 +50,7 @@ window#waybar {
   background-color: rgba(98,101,120,0.6);
 }
 
+#custom-applauncher:hover,
 #clock:hover,
 #battery:hover,
 #cpu:hover,
@@ -66,5 +69,5 @@ window#waybar {
 #power-profiles-daemon:hover,
 #language:hover,
 #mpd:hover {
-    background: rgba(26, 27, 38, 0.9);
+  background: rgba(26, 27, 38, 0.9);
 }

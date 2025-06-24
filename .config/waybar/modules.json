@@ -9,6 +9,12 @@
     }
   },
 
+  "custom/applauncher": {
+    "format": "〇",
+    "on-click": "pgrep wofi >/dev/null 2>&1 && killall wofi || wofi --show drun --location=top -y 15",
+    "tooltip": false
+  },
+
   "custom/notifications": {
     "tooltip-format": "Notifications Center",
     "format": "{icon}",
@@ -47,29 +53,43 @@
     "interval": 1
   },
   
-  "pulseaudio": {
-    "format": "{icon}  {volume}%",
-    "format-muted": "  muted",
-    "format-icons": {
-      "headphone": "",
-      "hands-free": "",
-      "headset": "",
-      "phone": "",
-      "portable": "",
-      "car": "",
-      "default": ["", "", "", ""]
-    },
-    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-    "on-click-right": "pavucontrol",
-    "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
-    "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+"pulseaudio": {
+  "format": "{icon}  {volume}%",
+  "format-muted": "󰝟  muted",
+  "format-bluetooth": "󰂯 {volume}%",
+  "format-bluetooth-muted": "󰂯 󰝟",
+  "format-icons": {
+    "headphone": "󰋋",
+    "hands-free": "󰋎",
+    "headset": "󰋎",
+    "phone": "󰏲",
+    "portable": "󰏲",
+    "car": "󰄋",
+    "default": ["󰕿", "󰖀", "󰕾"]
   },
-  
+  "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+  "on-click-right": "pavucontrol",
+  "on-click-middle": "pactl set-default-sink $(pactl list short sinks | awk '{print $2}' | fzf)",
+  "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5% && pactl play-sample audio-volume-change",
+  "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5% && pactl play-sample audio-volume-change",
+  "smooth-scrolling-threshold": 0.5,
+  "tooltip": true,
+  "tooltip-format": "{desc} ({format_source})",
+  "ignored-sinks": ["Easy Effects Sink"]
+  },
+
+  "tray": {
+    "icon-size": 10,
+    "spacing": 4,
+    "show-passive-items": false,
+    "expand": false,
+  }, 
   "battery": {
     "states": {
         "warning": 30,
         "critical": 15
     },
+
     "format": "{icon}  {capacity}%",
     "format-full": "{icon}  {capacity}%",
     "format-charging": "  {capacity}%",
@@ -82,9 +102,9 @@
     "interface-wifi": "wlan0", // Your Wi-Fi interface (e.g., wlan0, wlp3s0)
     "interface-ethernet": "eth0", // Your Ethernet interface (e.g., eth0, enp0s31f6)
     "interval": 5,
-    "format-wifi": "{essid} ({signalStrength}%) {icon}",
+    "format-wifi": " {essid} ({signalStrength}%) {icon}",
     "format-ethernet": "󰈀 {ifname}", // Ethernet: Cable icon + Interface name
-    "format-disconnected": "󰤯 Disconnected", // When no Wi-Fi or Ethernet connection
+    "format-disconnected": "󰤯  Disconnected", // When no Wi-Fi or Ethernet connection
     "format-disabled": "󰖩 Wi-Fi Off",    // When Wi-Fi radio is explicitly off
     "format-linked": "󰈀 Wired (No IP)", // For wired, but no IP yet
     "format-vpn": "🔒 VPN ({ifname})", // If NetworkManager's "network" module detects VPN
@@ -107,6 +127,6 @@
         "disabled": "󰖩",
         "vpn": "🔒" // VPN Lock icon (might not be used by "network" module's default format, but good to have)
     },
-    "on-click": "~/.config/waybar/scripts/wifi.sh --wifi-menu",
-  }
+    "on-click": "networkmanager_dmenu",
+  },
 }

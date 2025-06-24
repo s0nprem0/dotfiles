@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Bluetooth Rofi Control Script
-# Author: Nick Clyde (clydedroid) — modified for improved scanning
+# Bluetooth Wofi Control Script
+# Author: Nick Clyde (clydedroid) — modified for Wofi
 
-ROFI_THEME="${ROFI_THEME:-$HOME/.config/rofi/config-commons.rasi}"
+WOFI_THEME="${WOFI_THEME:-$HOME/.config/wofi/style.css}"
 
 readonly divider="---------"
 readonly goback="Back"
 
-rofi_command=(rofi -dmenu -theme "$ROFI_THEME")
+wofi_command=(wofi --dmenu --style "$WOFI_THEME" --height 300 --width 400)
 
 get_controller_info() { bluetoothctl show; }
 power_on() { get_controller_info | grep -q "Powered: yes"; }
@@ -38,7 +38,7 @@ toggle_power() {
 
 toggle_scan() {
   send_notif "Scanning for 10 seconds..."
-  bluetoothctl scan on > /dev/null
+  bluetoothctl scan on >/dev/null
   sleep 10
   bluetoothctl scan off
   send_notif "Scan finished."
@@ -132,13 +132,13 @@ device_menu() {
 
   local options="$connected_status\n$paired_status\n$trusted_status\n$divider\n$goback\nExit"
   local chosen
-  chosen="$(echo -e "$options" | "${rofi_command[@]}" -p "$device_name")"
+  chosen="$(echo -e "$options" | "${wofi_command[@]}" --prompt "$device_name")"
 
   case "$chosen" in
-    "$connected_status") toggle_connection "$mac" ;;
-    "$paired_status") toggle_paired "$mac" ;;
-    "$trusted_status") toggle_trust "$mac" ;;
-    "$goback") show_menu ;;
+  "$connected_status") toggle_connection "$mac" ;;
+  "$paired_status") toggle_paired "$mac" ;;
+  "$trusted_status") toggle_trust "$mac" ;;
+  "$goback") show_menu ;;
   esac
 }
 
@@ -166,23 +166,23 @@ show_menu() {
   fi
 
   local chosen
-  chosen="$(echo -e "$menu_options" | "${rofi_command[@]}" -p "Bluetooth")"
+  chosen="$(echo -e "$menu_options" | "${wofi_command[@]}" --prompt "Bluetooth")"
 
   case "$chosen" in
-    "$power_status") toggle_power ;;
-    "$scan_status") toggle_scan ;;
-    "$pairable_status") toggle_pairable ;;
-    "$discoverable_status") toggle_discoverable ;;
-    *)
-      local selected_device_line
-      selected_device_line=$(bluetoothctl devices | grep "$chosen")
-      [[ -n "$selected_device_line" ]] && device_menu "$selected_device_line"
-      ;;
+  "$power_status") toggle_power ;;
+  "$scan_status") toggle_scan ;;
+  "$pairable_status") toggle_pairable ;;
+  "$discoverable_status") toggle_discoverable ;;
+  *)
+    local selected_device_line
+    selected_device_line=$(bluetoothctl devices | grep "$chosen")
+    [[ -n "$selected_device_line" ]] && device_menu "$selected_device_line"
+    ;;
   esac
 }
 
 # --- Entry Point ---
 case "$1" in
-  --status) print_status ;;
-  *) show_menu ;;
+--status) print_status ;;
+*) show_menu ;;
 esac
