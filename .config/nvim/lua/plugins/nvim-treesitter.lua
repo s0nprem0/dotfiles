@@ -6,14 +6,14 @@ return {
 
     configs.setup({
       ensure_installed = {
+        "bash",
         "c",
         "lua",
         "vim",
         "vimdoc",
         "query",
-        "elixir",
-        "heex",
         "javascript",
+        "typescript",
         "html",
         "markdown",
         "markdown_inline",
