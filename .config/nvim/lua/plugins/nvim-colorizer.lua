@@ -21,6 +21,7 @@ return {
         "javascript",
         "typescript",
         "lua",
+        "rasi",
 
         html = {
           rgb_fn = false,

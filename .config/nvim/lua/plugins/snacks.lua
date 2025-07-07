@@ -13,8 +13,9 @@ return {
     words = { enabled = true },
 
     image = {
-      enabled = false,
+      enabled = true,
       doc = {
+        enabled = true,
         inline = vim.g.neovim_mode == "skitty" and true or false,
         float = true,
         max_width = vim.g.neovim_mode == "skitty" and 20 or 60,
