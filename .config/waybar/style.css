@@ -1,18 +1,30 @@
 /* ~/.config/waybar/style.css */
 
 /* Import the colors from pywal */
-@import url("/home/son/.cache/wal/colors-waybar.css");
+/*@import url("/home/son/.cache/wal/colors-waybar.css");
+*/
 
 * {
   font-family: "GohuFont 11 Nerd Font";
   font-size: 11px;
+  transition: all 0.5s ease-in-out;
 }
 
 window#waybar {
   /* Use the background color from wal with some transparency */
-  background: alpha(@background, 0.25);
+  background: rgba(22,22,22, 0.50);
   /* Or a specific color from the palette */
   /* background: alpha(@color0, 0.25); */
+}
+
+
+#window {
+  padding: 0 10px;
+}
+
+#workspaces {
+  min-width: 3rem;
+  transition: all 0.5s ease;
 }
 
 .modules-left,
@@ -58,7 +70,6 @@ window#waybar {
   background-color: alpha(@color2, 0.6);
 }
 
-#custom-applauncher:hover,
 #clock:hover,
 #battery:hover,
 #cpu:hover,
@@ -77,6 +88,5 @@ window#waybar {
 #power-profiles-daemon:hover,
 #language:hover,
 #mpd:hover {
-  /* A consistent hover background for all modules */
-  background: alpha(@color0, 0.9);
+  background: rgba(66,66,66, 0.9);
 }

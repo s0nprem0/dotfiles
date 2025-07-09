@@ -3,45 +3,63 @@
     "all-outputs": false,
     "warp-on-scroll": true,
     "format": "{name}",
-    "active-only": true,
-    "persistent_workspaces": {
-      "1": {}, "2":{}, "3":{}, "4":{}, "5":{}
+    "persistent-only": false,
+    "active-only": false,
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
     }
   },
 
-  "custom/applauncher": {
-    "format": "〇",
-    "on-click": "pgrep wofi >/dev/null 2>&1 && killall wofi || wofi --show drun --location=top -y 15",
-    "tooltip": false
-  },
-
-  "custom/notifications": {
-    "tooltip-format": "Notifications Center",
-    "format": "{icon}",
+  "custom/swaync": {
+    "tooltip": true,
+    "format": " {} {icon} ",
     "format-icons": {
-      "none": "",
-      "inhibited-none": "",
-      "dnd-none": "",
-      "dnd-inhibited-none": "",
-      "notification": "",
-      "inhibited-notification": "",
-      "dnd-notification": "",
-      "dnd-inhibited-notification": ""
+      "notification": "[N]<span foreground='red'><sup>+</sup></span>",
+      "none": "[N]",
+      "dnd-notification": "[DND]<span foreground='red'><sup>+</sup></span>",
+      "dnd-none": "[DND]",
+      "inhibited-notification": "[I]<span foreground='red'><sup>+</sup></span>",
+      "inhibited-none": "[I]",
+      "dnd-inhibited-notification":
+        "[DND-I]<span foreground='red'><sup>+</sup></span>",
+      "dnd-inhibited-none": "[DND-I]"
     },
     "return-type": "json",
+    "exec-if": "which swaync-client",
     "exec": "swaync-client -swb",
-    "on-click": "swaync-client -t -sw",
+    "on-click": "sleep 0.1 && swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
     "escape": true
   },
   
   "hyprland/window": {
-    "format": "{title}",
-    "format-empty": " Destup",
+    "format": "{}",
+    "rewrite": {
+      "": "Desktop",
+    },
     "max-length": 60,
-    "separate-outputs": true,
+    "ellipsize": true,
+    "separate-outputs": false,
     "icon-size": 0
   },
-  
+
+  "wlr/taskbar": {
+    "format": " {icon} ",
+    "on-click": "activate",
+    "on-click-middle": "close",
+
+    "ignore-list": [
+      "~",
+      "Discord Updater"
+    ],
+
+    "tooltip-format": "{title}"
+  },
+
   "tray": {
     "spacing": 4,
     "icon-size": 16
@@ -50,7 +68,7 @@
   "clock": {
     "format": "{:%I:%M %p}",
     "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>",
-    "interval": 1
+    "interval": 1,
   },
   
 "pulseaudio": {
@@ -80,7 +98,7 @@
 
   "tray": {
     "icon-size": 10,
-    "spacing": 4,
+    "spacing": 10,
     "show-passive-items": false,
     "expand": false,
   }, 
@@ -102,7 +120,7 @@
     "interface-wifi": "wlan0", // Your Wi-Fi interface (e.g., wlan0, wlp3s0)
     "interface-ethernet": "eth0", // Your Ethernet interface (e.g., eth0, enp0s31f6)
     "interval": 5,
-    "format-wifi": " {essid} ({signalStrength}%) {icon}",
+    "format-wifi":"{icon}  {essid} ({signalStrength}%)",
     "format-ethernet": "󰈀 {ifname}", // Ethernet: Cable icon + Interface name
     "format-disconnected": "󰤯  Disconnected", // When no Wi-Fi or Ethernet connection
     "format-disabled": "󰖩 Wi-Fi Off",    // When Wi-Fi radio is explicitly off

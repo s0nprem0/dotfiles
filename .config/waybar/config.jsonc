@@ -2,11 +2,11 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 30,
+  "height": 36,
   // wlr/taskbar
-  "modules-left": ["custom/applauncher", "hyprland/workspaces", "hyprland/window"],
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["network", "pulseaudio", "battery", "tray", "custom/notifications"],
+  "modules-right": ["network", "pulseaudio", "battery", "tray", "custom/swaync"],
   
   // Modules Config
   "include": [
