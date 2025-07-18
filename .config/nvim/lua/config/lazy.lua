@@ -28,7 +28,7 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = {
-    lazy = false,
+    lazy = true,
     version = false,
   },
   checker = {
@@ -38,11 +38,19 @@ require("lazy").setup({
   performance = {
     cache = {
       enabled = true,
+      path = vim.fn.stdpath("cache") .. "/lazy/cache",
     },
     reset_packpath = true,
     rtp = {
       disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
         "tutor",
+        "zipPlugin",
       },
     },
   },
