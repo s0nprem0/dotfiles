@@ -1,8 +1,8 @@
 return {
-  "williamboman/mason.nvim",
+  "mason-org/mason.nvim",
   dependencies = {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
-    "williamboman/mason-lspconfig.nvim", -- Recommended for LSP integration
+    "mason-org/mason-lspconfig.nvim", -- This dependency is still needed for mason to know about it, but its *setup* is in the lspconfig file.
   },
   opts = {
     ui = {
@@ -16,10 +16,10 @@ return {
   config = function(_, opts)
     require("mason").setup(opts)
 
-    -- Tool installer setup
+    -- Tool installer setup (for formatters, linters, etc.)
     require("mason-tool-installer").setup({
       ensure_installed = {
-        -- LSPs
+        -- LSPs (Mason will install these, but lspconfig will configure them via the other file)
         "bash-language-server",
         "jdtls",
         "lua_ls",
@@ -35,11 +35,6 @@ return {
       },
       auto_update = true,
       run_on_start = true, -- Set to false if startup is too slow
-    })
-
-    -- Recommended: LSP config setup
-    require("mason-lspconfig").setup({
-      automatic_installation = true, -- Auto-install LSPs listed in lspconfig
     })
   end,
 }
