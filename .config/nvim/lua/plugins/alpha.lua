@@ -22,26 +22,51 @@ return {
     -- Custom buttons
     dashboard.section.buttons.val = {
       dashboard.button("e", "  New file", ":ene <BAR> startinsert <CR>"),
-      dashboard.button("f", "  Find file", ":lua require('fzf-lua').files({ cwd = '~' })<CR>"),
+      dashboard.button("f", "  Find file", ":lua require('fzf-lua').files({ cwd = '~' })<CR>"),
       dashboard.button("r", "  Recent files", ":lua require('fzf-lua').oldfiles({ cwd_only = true })<CR>"),
-      dashboard.button("g", "  Live grep", ":lua require('fzf-lua').grep({ search = '' })<CR>"),
       dashboard.button("p", "  Plugins", ":Lazy<CR>"),
       dashboard.button("q", "  Quit", ":qa<CR>"),
     }
 
-    -- Footer with dynamic content
     local function footer()
-      local datetime = os.date(" %Y-%m-%d   %H:%M:%S")
       local stats = require("lazy").stats()
-      local plugins_count = " " .. stats.count .. " plugins"
-      local version = vim.version()
-      local nvim_version = " v" .. version.major .. "." .. version.minor .. "." .. version.patch
+      local v = vim.version()
 
-      return plugins_count .. "  " .. nvim_version .. "  " .. datetime
+      -- Date and time formatting
+      local time_str = os.date("%I:%M:%S %p"):gsub("^0", " ")
+      local date_str = os.date("%a %d %b %Y")
+
+      -- Base footer string
+      local footer_str = string.format(
+        "󰂖 %d plugins   v%d.%d.%d   %s   %s",
+        stats.count,
+        v.major,
+        v.minor,
+        v.patch,
+        date_str,
+        time_str
+      )
+
+      return footer_str
     end
 
-    dashboard.section.footer.val = footer
-    dashboard.section.footer.opts.hl = "Comment"
+    -- Set initial footer
+    dashboard.section.footer.val = footer()
+
+    -- Update with startup time after plugins load
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "LazyVimStarted",
+      callback = function()
+        local stats = require("lazy").stats()
+        local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
+        dashboard.section.footer.val = string.format(
+          "%s  󱐋 %dms",
+          footer(), -- Original footer content
+          ms -- Startup time in milliseconds
+        )
+        pcall(vim.cmd.AlphaRedraw)
+      end,
+    })
 
     -- Layout configuration
     dashboard.config.layout = {
