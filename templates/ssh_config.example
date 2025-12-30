@@ -1,0 +1,7 @@
+# Example SSH config
+# Copy to ~/.ssh/config and reference an SSH key stored locally (do NOT commit the private key)
+
+Host github.com
+  User git
+  HostName github.com
+  IdentityFile ~/.ssh/id_rsa

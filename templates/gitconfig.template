@@ -1,0 +1,7 @@
+[user]
+    name = Your Name
+    email = you@example.com
+
+# Local personal settings (create ~/.gitconfig.local and keep it out of the repo)
+[include]
+    path = ~/.gitconfig.local

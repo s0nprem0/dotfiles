@@ -1,0 +1,5 @@
+# Local Starship overrides — copy to starship.toml.local (ignored)
+
+add_newline = true
+
+# Put machine-specific/secret settings here (do not commit)

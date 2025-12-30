@@ -1,3 +1,24 @@
+# Local secrets and keys
+.env
+.env.*
+*.secret
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+*.ppk
+
+# Local editor/runtime files
+.DS_Store
+node_modules/
+.cache/
+
+# Local dotfiles overrides
+starship.toml.local
+*.local
+
+# Keep templates tracked
+# (templates/ contains examples that should be committed)
 *.o
 \#*#
 *#
