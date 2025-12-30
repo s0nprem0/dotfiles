@@ -1,0 +1,26 @@
+[core]
+	# Global excludes file for patterns to ignore in all repositories
+	excludesfile = ~/.gitignore_global
+	editor = nvim
+	ignorecase = false
+	autocrlf = true
+	safecrlf = true
+	color.ui = auto
+
+[credential]
+	# Use Git Credential Manager on Windows for secure auth
+	helper = manager-core
+
+[push]
+	default = simple
+
+[pull]
+	# Configure pull behavior (adjust to taste)
+	rebase = false
+
+[init]
+	defaultBranch = main
+
+[include]
+	# Local machine-specific settings (create ~/.gitconfig.local and keep it out of the repo)
+	path = ~/.gitconfig.local
