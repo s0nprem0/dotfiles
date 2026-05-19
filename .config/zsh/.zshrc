@@ -1,6 +1,8 @@
 
 # Boilerplate
 source "${ZDOTDIR}/alias.zsh" # alias
+source "${ZDOTDIR}/binding.zsh" # bindings
+source "${ZDOTDIR}/fzf.zsh" # fzf
 source "${ZDOTDIR}/options.zsh" # options
 source "${ZDOTDIR}/plugin.zsh" # plugins
 source "${ZDOTDIR}/prompt.zsh" # prompt

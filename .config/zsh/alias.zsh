@@ -5,4 +5,7 @@ alias la='eza -lah --icons --git'     # Detailed Listing including hidden files
 alias tree='eza --tree --icons'       # Tree view
 
 # Reuse ls completions for eza (avoids defining a separate completion function)
-compdef eza=ls
+if (( $+functions[compdef] )); then
+    compdef eza=ls
+    # Add more compdef here (git, docker, etc.)
+fi

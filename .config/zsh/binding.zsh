@@ -12,5 +12,7 @@ bindkey '^[[H' beginning-of-line                  # home
 bindkey '^[[F' end-of-line                        # end
 bindkey '^[[Z' undo                               # shift + tab undo last action
 
+bindkey '^f' _fzf_file_no_hidden                  # fzf file picker
+
 # Set KEYTIMEOUT for faster ESC key responsiveness in Emacs mode
 export KEYTIMEOUT=1 # 0.1 seconds, adjust to your preference (e.g., 2 for 0.2s)

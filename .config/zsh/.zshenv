@@ -9,6 +9,13 @@ export XDG_STATE_HOME="$HOME/.local/state"
 
 export ZDOTDIR="$HOME/.config/zsh"
 
+# ---------- Pager ----------
+if command -v bat >/dev/null 2>&1; then
+  export MANPAGER="bat -l man -p"
+elif command -v batcat >/dev/null 2>&1; then
+  export MANPAGER="batcat -l man -p"
+fi
+
 
 # ---------- Editor ----------
 # Default editor used by git, crontab, etc.
