@@ -14,7 +14,7 @@ paru -S zsh neovim eza bat fd fzf zoxide starship ripgrep
 **1. Clone the repo**
 
 ```sh
-git clone https://github.com/s0nprem0/zsh ~/.config/zsh
+git clone https://github.com/s0nprem0/dotfiles
 ```
 
 **2. Point zsh at the config directory**
