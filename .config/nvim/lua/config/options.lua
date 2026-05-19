@@ -69,3 +69,19 @@ vim.opt.mouse = "a"
 vim.wo.number = true
 -- Add asterisks in block comments
 vim.opt.formatoptions:append({ "r" })
+
+-- cliboard support --
+vim.g.clipboard = {
+  name = "WslClipboard",
+  copy = {
+    ["+"] = "clip.exe",
+    ["*"] = "clip.exe",
+  },
+  paste = {
+    ["+"] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))',
+    ["*"] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))',
+  },
+  cache_enabled = 0,
+}
+
+vim.opt.clipboard = "unnamedplus"
