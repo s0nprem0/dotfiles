@@ -1,48 +1,32 @@
-force_color_prompt=yes
+autoload -Uz colors && colors
+setopt prompt_subst
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
-fi
+PROMPT_ALTERNATIVE=twoline
 
 configure_prompt() {
-    prompt_symbol=@
+    local venv='${VIRTUAL_ENV:+($(basename "$VIRTUAL_ENV"))}'
+    local chroot='${debian_chroot:+($debian_chroot)}'
 
     case "$PROMPT_ALTERNATIVE" in
         twoline)
-            PROMPT=$'%F{%(#.blue.green)}┌──${debian_chroot:+($debian_chroot)──}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))──}(%B%F{%(#.red.blue)}%n'$prompt_symbol$'%m%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]\n└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
+            PROMPT=$'%F{green}┌──'"$chroot$venv"$'──(%B%F{blue}%n@%m%b%f)-[%B%4~%b]\n└─%(#.%F{red}#.%F{blue}$)%f '
             ;;
         oneline)
-            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(#.#.$) '
-            RPROMPT=
-            ;;
-        backtrack)
-            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{red}%n@%m%b%F{reset}:%B%F{blue}%~%b%F{reset}%(#.#.$) '
-            RPROMPT=
+            PROMPT="$chroot$venv"$'%B%F{blue}%n@%m%b%f:%B%F{green}%~%b%f %(#.#.$) '
             ;;
     esac
-
-    unset prompt_symbol
 }
 
-PROMPT_ALTERNATIVE=twoline
-NEWLINE_BEFORE_PROMPT=yes
-
-configure_prompt
-
 toggle_oneline_prompt() {
-    if [ "$PROMPT_ALTERNATIVE" = oneline ]; then
-        PROMPT_ALTERNATIVE=twoline
-    else
+    [[ "$PROMPT_ALTERNATIVE" == oneline ]] &&
+        PROMPT_ALTERNATIVE=twoline ||
         PROMPT_ALTERNATIVE=oneline
-    fi
 
     configure_prompt
     zle reset-prompt
 }
 
 zle -N toggle_oneline_prompt
-bindkey '^P' toggle_oneline_prompt
+bindkey '^[p' toggle_oneline_prompt
+
+configure_prompt
