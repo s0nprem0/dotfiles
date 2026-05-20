@@ -1,38 +1,37 @@
 return {
   {
     "catppuccin/nvim",
-    lazy = false,
     name = "catppuccin",
+    lazy = false,
     priority = 1000,
-    config = function()
-      require("catppuccin").setup({
-        flavour = "macchiato", -- latte, frappe, macchiato, mocha
-        background = { -- h background
-          light = "latte",
-          dark = "macchiato",
+    opts = {
+      flavour = "macchiato",
+      transparent_background = true,
+      term_colors = true,
+      integrations = {
+        cmp = true,
+        gitsigns = true,
+        illuminate = true,
+        indent_blankline = {
+          enabled = true,
+          scope_color = "sapphire",
+          colored_indent_levels = false,
         },
-        dim_inactive = {
-          enabled = false, -- dims the background color of inactive window
-          shade = "dark",
-          percentage = 0.15,
-        },
-        transparent_background = true,
-        term_colors = true,
-        styles = {
-          comments = { "italic" },
-          conditionals = { "italic" },
-        },
-        default_integrations = true,
-        integrations = {
-          cmp = true,
-          gitsigns = true,
-          nvimtree = true,
-          treesitter = true,
-        },
-        -- For more plugins integrations please scroll down (https://github.com/catppuccin/nvim#integrations)
-      })
-      -- Set the theme
-      vim.cmd.colorscheme("catppuccin")
-    end,
+        mason = true,
+        native_lsp = { enabled = true },
+        notify = true,
+        semantic_tokens = true,
+        telescope = true,
+        treesitter = true,
+        which_key = true,
+      },
+    },
+  },
+  -- Configure LazyVim to use the newly defined colorscheme
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "catppuccin",
+    },
   },
 }

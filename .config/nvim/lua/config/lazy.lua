@@ -1,57 +1,42 @@
 -- LazyVim Bootstrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
-    vim.fn.getchar()
-    os.exit(1)
-  end
+if not vim.loop.fs_stat(lazypath) then
+  -- bootstrap lazy.nvim
+  -- stylua: ignore
+  vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath })
 end
-vim.opt.rtp:prepend(lazypath)
+vim.opt.rtp:prepend(vim.env.LAZY or lazypath)
 
 require("lazy").setup({
   spec = {
-    {
-      "LazyVim/LazyVim",
-      import = "lazyvim.plugins",
-      opts = {
-        colorscheme = "catppuccin",
-      },
-    },
-    -- import your plugins
+    -- 1. Base LazyVim distribution
+    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+
+    -- 2. Core Full-Stack & Mobile Ecosystem
+    -- Provides robust LSP and snippets for React, React Native, Expo, and Node.js
+    { import = "lazyvim.plugins.extras.lang.typescript" },
+
+    -- Provides intelephense for robust Laravel and backend PHP support
+    { import = "lazyvim.plugins.extras.lang.php" },
+
+    -- Essential for managing package.json, mobile config files, and API responses
+    { import = "lazyvim.plugins.extras.lang.json" },
+
+    -- 3. UI/UX & Formatting
+    -- Adds auto-sorting and inline color highlighting for component design
+    { import = "lazyvim.plugins.extras.lang.tailwind" },
+
+    -- Industry-standard formatting for JavaScript, TypeScript, and CSS
+    { import = "lazyvim.plugins.extras.formatting.prettier" },
+
+    -- 4. Import your custom plugins (including themes and UI tweaks)
     { import = "plugins" },
   },
   defaults = {
-    lazy = true,
-    version = false,
+    -- By default, only LazyVim plugins will be lazy-loaded.
+    lazy = false,
+    version = false, -- always use the latest git commit
   },
-  checker = {
-    enabled = true,
-    notify = false,
-  },
-  performance = {
-    cache = {
-      enabled = true,
-      path = vim.fn.stdpath("cache") .. "/lazy/cache",
-    },
-    reset_packpath = true,
-    rtp = {
-      disabled_plugins = {
-        "gzip",
-        "matchit",
-        "matchparen",
-        "netrwPlugin",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
-      },
-    },
-  },
+  install = { colorscheme = { "catppuccin" } },
+  checker = { enabled = true }, -- automatically check for plugin updates
 })
