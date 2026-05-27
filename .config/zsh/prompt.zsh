@@ -1,5 +1,4 @@
 autoload -Uz colors && colors
-setopt prompt_subst
 
 PROMPT_ALTERNATIVE=twoline
 

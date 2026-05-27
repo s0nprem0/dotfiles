@@ -48,3 +48,5 @@ export MANPAGER="less -R"
 
 # Import Composer
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+
+eval "$(zoxide init zsh)"
