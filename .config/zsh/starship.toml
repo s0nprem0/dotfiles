@@ -1,78 +1,56 @@
-# Get editor completions based on the config schema
-"$schema" = 'https://starship.rs/config-schema.json'
+#"$schema" = 'https://starship.rs/config-schema.json'
 
-# Don't print a new line at the start of the prompt
 add_newline = false
-command_timeout = 300
-scan_timeout = 15
 
-format = """
-$username\
-$directory\
-$git_branch\
-$git_status\
-$fill\
-$chracter"""
+format = "$directory$os$git_branch$git_status$nodejs$rust$golang$php $character"
 
-[fill]
-symbol = ' '
-
-[username]
-style_user = 'white bold'
-style_root = 'red bold'
-format = '[$user]($style) | '
+[os]
 disabled = false
-show_always = true
+format = "[$symbol](#blue) "
 
-[line_break]
-disabled = true
+[os.symbols]
+Ubuntu = "??"
+Arch = "??"
+CachyOS = "??"
+Macos = ""
 
-[python]
-disabled = true
+[directory]
+format = "[$path](cyan) "
+truncation_length = 4
+truncate_to_repo = true
 
-[rust]
-disabled = true
-
-[ruby]
-disabled = true
-
-[package]
-disabled = true
-
-[nodejs]
-disabled = true
-
-[cmake]
-disabled = true
-
-[docker_context]
-disabled = true
-
-[elixir]
-disabled = true
-
-[golang]
-disabled = true
+[git_branch]
+symbol = "?"
+format = "[$symbol $branch](bold purple) "
 
 [git_status]
-stashed = ""
+format = "($ahead_behind$staged$modified$untracked$deleted$conflicted)"
+ahead = "[?$count ](bold cyan)"
+behind = "[?$count ](bold cyan)"
+diverged = "[?$ahead_count?$behind_count ](bold cyan)"
+staged = "[+$count ](bold green)"
+modified = "[?$count ](bold yellow)"
+untracked = "[?$count ](bold white)"
+deleted = "[?$count ](bold red)"
+conflicted = "[?$count ](bold red)"
 
-[git_commit]
-tag_symbol = " "
+[nodejs]
+symbol = ""
+format = "[$symbol $version](green) "
 
-[cmd_duration]
-format = ""
+[rust]
+symbol = ""
+format = "[$symbol $version](red) "
 
-[lua]
-format = ""
-disabled = true
+[golang]
+symbol = ""
+format = "[$symbol $version](cyan) "
 
-[aws]
-disabled = true
+[php]
+symbol = ""
+format = "[$symbol $version](purple) "
 
-[terraform]
-disabled = true
-
-# Workaround for WSL + systemd: https://github.com/starship/starship/issues/4556
-[container]
-disabled = true
+[character]
+success_symbol = "[?](green)"
+error_symbol = "[?](red)"
+vimcmd_symbol = "[?](blue)"

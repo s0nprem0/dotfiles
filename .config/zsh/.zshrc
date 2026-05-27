@@ -48,5 +48,9 @@ export MANPAGER="less -R"
 
 # Import Composer
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+export PATH="$HOME/.cache/.bun/bin:$PATH"
 
+# --- NEW ADDITIONS ---
+# Initialize zoxide (smart cd) and fzf (fuzzy finder)
 eval "$(zoxide init zsh)"
+eval "$(fzf --zsh)"
