@@ -1,0 +1,302 @@
+@define-color background #0f1416;
+@define-color foreground #dee3e6;
+@define-color surface #1a2024;
+@define-color surface2 #262e33;
+@define-color surface3 #323c42;
+@define-color primary #85d2e8;
+@define-color warning #f9e2af;
+@define-color error #f38ba8;
+
+* {
+  font-family: "GohuFont 11 Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 11px;
+}
+
+.notification-row {
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-group {
+  margin: 4px 8px;
+}
+
+.notification-group-header {
+  color: @foreground;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin: 0;
+}
+
+.notification-group-header > label {
+  color: @primary;
+}
+
+.notification {
+  background: alpha(@surface, 0.95);
+  border: 1px solid alpha(@primary, 0.2);
+  border-radius: 10px;
+  margin: 4px 8px;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+}
+
+.notification.critical {
+  border-color: @error;
+  box-shadow: 0 2px 8px alpha(@error, 0.25);
+}
+
+.notification-content {
+  background: transparent;
+  padding: 10px;
+}
+
+.close-button {
+  background: alpha(@surface3, 0.7);
+  border-radius: 20px;
+  color: @foreground;
+  margin: 4px;
+  padding: 2px 6px;
+  min-width: 20px;
+  min-height: 20px;
+  transition: background 0.15s ease;
+}
+
+.close-button:hover {
+  background: @error;
+  color: white;
+}
+
+.notification-default-action:hover,
+.notification-action:hover {
+  background: alpha(@primary, 0.12);
+}
+
+.notification-action {
+  background: alpha(@surface2, 0.5);
+  border: 1px solid alpha(@primary, 0.15);
+  border-radius: 6px;
+  margin: 2px;
+  padding: 6px 12px;
+  transition: background 0.15s ease;
+}
+
+.notification-action:first-child {
+  margin-left: 0;
+}
+
+.notification-action:last-child {
+  margin-right: 0;
+}
+
+.image {
+  border-radius: 6px;
+}
+
+.summary {
+  color: @primary;
+  font-weight: bold;
+  font-size: 1.05em;
+}
+
+.body {
+  color: @foreground;
+}
+
+.time {
+  color: alpha(@foreground, 0.5);
+  font-size: 0.95em;
+}
+
+.control-center {
+  background: alpha(@background, 0.96);
+  border: 1px solid alpha(@primary, 0.25);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.control-center-list {
+  background: transparent;
+  padding: 4px 0;
+}
+
+.control-center-list-placeholder {
+  color: alpha(@foreground, 0.35);
+  opacity: 1;
+}
+
+.floating-notifications {
+  background: transparent;
+}
+
+.blank-window {
+  background: alpha(black, 0.35);
+}
+
+/* Scrollbar */
+.control-center-list > * > scrollbar {
+  background: transparent;
+}
+
+.control-center-list > * > scrollbar > slider {
+  background: alpha(@surface3, 0.6);
+  border-radius: 6px;
+  min-width: 4px;
+}
+
+.control-center-list > * > scrollbar > slider:hover {
+  background: alpha(@primary, 0.4);
+}
+
+/* Widget: Title */
+.widget-title {
+  color: @foreground;
+  margin: 4px 8px 8px 8px;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.widget-title > button {
+  background: alpha(@surface2, 0.6);
+  border: none;
+  border-radius: 6px;
+  color: @foreground;
+  padding: 4px 12px;
+  transition: background 0.15s ease;
+}
+
+.widget-title > button:hover {
+  background: alpha(@primary, 0.3);
+}
+
+.widget-title > button > label {
+  font-weight: normal;
+}
+
+/* Widget: DND */
+.widget-dnd {
+  color: @foreground;
+  margin: 4px 8px 8px 8px;
+  font-size: 1em;
+}
+
+.widget-dnd > switch {
+  background: alpha(@surface2, 0.6);
+  border-radius: 14px;
+  min-width: 44px;
+  min-height: 22px;
+  transition: background 0.2s ease;
+}
+
+.widget-dnd > switch:checked {
+  background: alpha(@primary, 0.6);
+}
+
+.widget-dnd > slider {
+  background: @foreground;
+  border-radius: 14px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 2px;
+}
+
+/* Widget: Label */
+.widget-label {
+  color: @foreground;
+  margin: 4px 8px;
+}
+
+.widget-label > label {
+  color: alpha(@foreground, 0.7);
+}
+
+/* Widget: MPRIS */
+.widget-mpris {
+  background: alpha(@surface, 0.8);
+  border-radius: 10px;
+  margin: 6px 8px;
+  padding: 10px;
+  color: @foreground;
+}
+
+.widget-mpris > box > button {
+  border-radius: 20px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 4px;
+  transition: background 0.15s ease;
+}
+
+.widget-mpris > box > button:hover {
+  background: alpha(@primary, 0.2);
+}
+
+.widget-mpris-player {
+  padding: 4px;
+}
+
+.widget-mpris-title {
+  color: @primary;
+  font-weight: bold;
+  font-size: 1.05em;
+}
+
+.widget-mpris-subtitle {
+  color: alpha(@foreground, 0.65);
+  font-size: 0.95em;
+}
+
+/* Widget: Buttons Grid */
+.widget-buttons-grid {
+  margin: 6px 8px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background: alpha(@surface2, 0.5);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 10px;
+  color: @foreground;
+  font-size: 1.2em;
+  min-width: 44px;
+  min-height: 40px;
+  padding: 6px;
+  transition: all 0.15s ease;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background: alpha(@primary, 0.2);
+  border-color: alpha(@primary, 0.4);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active {
+  background: alpha(@primary, 0.35);
+}
+
+/* Widget: Inhibitors */
+.widget-inhibitors {
+  margin: 4px 8px;
+}
+
+.widget-inhibitors > button {
+  background: alpha(@surface2, 0.5);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 6px;
+  color: @foreground;
+  padding: 4px 12px;
+  transition: background 0.15s ease;
+}
+
+.widget-inhibitors > button:hover {
+  background: alpha(@primary, 0.2);
+  border-color: alpha(@primary, 0.4);
+}
+
+/* Separator between widgets */
+.control-center > *:not(:last-child):not(.blank-window) {
+  border-bottom: 1px solid alpha(@surface3, 0.3);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
