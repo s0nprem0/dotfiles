@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # Directory for brightness icons (ensure these exist and are accessible)
-# Adjust this path if your icons are in a different location.
-iDIR="$HOME/.config/dunst/icons/brightness" # Common path for Dunst icons
+iDIR="$HOME/.config/hypr/icons/brightness"
 
 # Get the actual backlight device
 # This should match what 'brightnessctl -l' shows for your backlight.
@@ -42,8 +41,7 @@ notify_user() {
   local current_percent=$(get_current_brightness)
   local icon_path=$(get_icon)
 
-  # -h string:x-canonical-private-synchronous:brightness_notif : This is the replacement ID for Dunst.
-  # It ensures the notification updates instead of creating new ones.
+  # -h string:x-canonical-private-synchronous:brightness_notif : Replacement ID so notifications update in-place.
   # -h int:value:$current_percent : This passes the value for the progress bar.
   # -u low : Sets the urgency to low (less intrusive).
   # -t 1000 : Sets the timeout to 1 second (1000 milliseconds).

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 DEVICE=$(brightnessctl -l | grep 'kbd_backlight' | awk -F"'|'" '{print $2}')
 STEP=1
-ICON="~/.config/hypr/icons/keyboard.png"
+ICON="$HOME/.config/hypr/icons/keyboard.png"
 
 case $1 in
 up) brightnessctl -d $DEVICE set ${STEP}+ ;;
