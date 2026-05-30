@@ -1,4 +1,4 @@
-{  
+{
   "hyprland/workspaces": {
     "all-outputs": false,
     "warp-on-scroll": true,
@@ -24,8 +24,7 @@
       "dnd-none": "[DND]",
       "inhibited-notification": "[I]<span foreground='red'><sup>+</sup></span>",
       "inhibited-none": "[I]",
-      "dnd-inhibited-notification":
-        "[DND-I]<span foreground='red'><sup>+</sup></span>",
+      "dnd-inhibited-notification": "[DND-I]<span foreground='red'><sup>+</sup></span>",
       "dnd-inhibited-none": "[DND-I]"
     },
     "return-type": "json",
@@ -35,11 +34,11 @@
     "on-click-right": "swaync-client -d -sw",
     "escape": true
   },
-  
+
   "hyprland/window": {
     "format": "{}",
     "rewrite": {
-      "": "Desktop",
+      "": "Desktop"
     },
     "max-length": 60,
     "ellipsize": true,
@@ -47,85 +46,65 @@
     "icon-size": 0
   },
 
-  "wlr/taskbar": {
-    "format": " {icon} ",
-    "on-click": "activate",
-    "on-click-middle": "close",
-
-    "ignore-list": [
-      "~",
-      "Discord Updater"
-    ],
-
-    "tooltip-format": "{title}"
-  },
-
   "tray": {
+    "icon-size": 16,
     "spacing": 4,
-    "icon-size": 16
+    "show-passive-items": false,
+    "expand": false
   },
-  
+
   "clock": {
     "format": "{:%I:%M %p}",
     "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>",
-    "interval": 1,
-  },
-  
-"pulseaudio": {
-  "format": "{icon}  {volume}%",
-  "format-muted": "󰝟  muted",
-  "format-bluetooth": "󰂯 {volume}%",
-  "format-bluetooth-muted": "󰂯 󰝟",
-  "format-icons": {
-    "headphone": "󰋋",
-    "hands-free": "󰋎",
-    "headset": "󰋎",
-    "phone": "󰏲",
-    "portable": "󰏲",
-    "car": "󰄋",
-    "default": ["󰕿", "󰖀", "󰕾"]
-  },
-  "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-  "on-click-right": "pavucontrol",
-  "on-click-middle": "pactl set-default-sink $(pactl list short sinks | awk '{print $2}' | fzf)",
-  "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5% && pactl play-sample audio-volume-change",
-  "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5% && pactl play-sample audio-volume-change",
-  "smooth-scrolling-threshold": 0.5,
-  "tooltip": true,
-  "tooltip-format": "{desc} ({format_source})",
-  "ignored-sinks": ["Easy Effects Sink"]
+    "interval": 1
   },
 
-  "tray": {
-    "icon-size": 10,
-    "spacing": 10,
-    "show-passive-items": false,
-    "expand": false,
-  }, 
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "󰝟  muted",
+    "format-bluetooth": "󰂯 {volume}%",
+    "format-bluetooth-muted": "󰂯 󰝟",
+    "format-icons": {
+      "headphone": "󰋋",
+      "hands-free": "󰋎",
+      "headset": "󰋎",
+      "phone": "󰏲",
+      "portable": "󰏲",
+      "car": "󰄋",
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-click-right": "pavucontrol",
+    "on-click-middle": "pavucontrol",
+    "scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+    "scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%",
+    "smooth-scrolling-threshold": 0.5,
+    "tooltip": true,
+    "tooltip-format": "{desc} ({format_source})",
+    "ignored-sinks": ["Easy Effects Sink"]
+  },
+
   "battery": {
     "states": {
-        "warning": 30,
-        "critical": 15
+      "warning": 30,
+      "critical": 15
     },
-
     "format": "{icon}  {capacity}%",
     "format-full": "{icon}  {capacity}%",
-    "format-charging": "  {capacity}%",
+    "format-charging": "  {capacity}%",
     "format-plugged": "  {capacity}%",
     "format-alt": "{time}  {icon}",
     "format-icons": ["", "", "", "", ""]
   },
-  
+
   "network": {
-    "interface-wifi": "wlan0", // Your Wi-Fi interface (e.g., wlan0, wlp3s0)
-    "interface-ethernet": "eth0", // Your Ethernet interface (e.g., eth0, enp0s31f6)
     "interval": 5,
-    "format-wifi":"{icon}  {essid} ({signalStrength}%)",
-    "format-ethernet": "󰈀 {ifname}", // Ethernet: Cable icon + Interface name
-    "format-disconnected": "󰤯  Disconnected", // When no Wi-Fi or Ethernet connection
-    "format-disabled": "󰖩 Wi-Fi Off",    // When Wi-Fi radio is explicitly off
-    "format-linked": "󰈀 Wired (No IP)", // For wired, but no IP yet
-    "format-vpn": "🔒 VPN ({ifname})", // If NetworkManager's "network" module detects VPN
+    "format-wifi": "{icon}  {essid} ({signalStrength}%)",
+    "format-ethernet": "󰈀 {ifname}",
+    "format-disconnected": "󰤯  Disconnected",
+    "format-disabled": "󰖩 Wi-Fi Off",
+    "format-linked": "󰈀 Wired (No IP)",
+    "format-vpn": " VPN ({ifname})",
     "tooltip": true,
     "tooltip-format-wifi": "WiFi: {essid} ({signalStrength}%)\nIP: {ipaddr}/{cidr}\nUp: {bandwidthUpBytes} | Down: {bandwidthDownBytes}",
     "tooltip-format-ethernet": "Ethernet: {ifname}\nIP: {ipaddr}/{cidr}\nUp: {bandwidthUpBytes} | Down: {bandwidthDownBytes}",
@@ -133,18 +112,12 @@
     "tooltip-format-disconnected": "No Network Connection",
     "tooltip-format-disabled": "Wi-Fi Disabled",
     "format-icons": {
-        "wifi": [
-            "󰤯", // 0-20%
-            "󰤟", // 20-40%
-            "󰤢", // 40-60%
-            "󰤥", // 60-80%
-            "󰤨"  // 80-100%
-        ],
-        "ethernet": "󰈀",
-        "disconnected": "󰤯",
-        "disabled": "󰖩",
-        "vpn": "🔒" // VPN Lock icon (might not be used by "network" module's default format, but good to have)
+      "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+      "ethernet": "󰈀",
+      "disconnected": "󰤯",
+      "disabled": "󰖩",
+      "vpn": ""
     },
-    "on-click": "networkmanager_dmenu",
-  },
+    "on-click": "~/.config/waybar/scripts/wifi.sh --menu"
+  }
 }
