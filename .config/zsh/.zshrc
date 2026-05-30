@@ -9,7 +9,7 @@ source "${ZDOTDIR}/prompt.zsh" # prompt
 
 # enable completion features
 autoload -Uz compinit
-compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
+compinit -C -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*' auto-description 'specify: %d'
