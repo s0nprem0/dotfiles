@@ -12,4 +12,3 @@ bindkey '^[[H' beginning-of-line                  # home
 bindkey '^[[F' end-of-line                        # end
 bindkey '^[[Z' undo                               # shift + tab undo last action
 
-bindkey '^f' _fzf_file_no_hidden                  # fzf file picker

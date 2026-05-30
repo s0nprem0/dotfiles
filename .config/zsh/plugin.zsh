@@ -104,5 +104,4 @@ zplugin-remove() {
 zplugin-load zsh-users zsh-autosuggestions
 zplugin-load zsh-users zsh-history-substring-search
 
-# disabled on WSL
-# zplugin-load zdharma-continuum fast-syntax-highlighting
+zplugin-load zdharma-continuum fast-syntax-highlighting

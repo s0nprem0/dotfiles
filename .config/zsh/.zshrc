@@ -42,9 +42,6 @@ alias history="history 0"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 
-# better pager support
-export MANPAGER="less -R"
-
 
 # Import Composer
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
@@ -53,4 +50,4 @@ export PATH="$HOME/.cache/.bun/bin:$PATH"
 # --- NEW ADDITIONS ---
 # Initialize zoxide (smart cd) and fzf (fuzzy finder)
 eval "$(zoxide init zsh)"
-eval "$(fzf --zsh)"
+# fzf init is handled by fzf.zsh
