@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 
-killall -q waybar
-waybar &
+pkill waybar 2>/dev/null
+waybar &>/dev/null &

@@ -6,10 +6,14 @@
   // wlr/taskbar
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["network", "pulseaudio", "battery", "tray", "custom/swaync"],
-  
+  "modules-right": [
+    "network",
+    "pulseaudio",
+    "battery",
+    "tray",
+    "custom/swaync",
+  ],
+
   // Modules Config
-  "include": [
-    "/home/son/.config/waybar/modules.json"
-  ]
+  "include": ["~/.config/waybar/modules.json"],
 }

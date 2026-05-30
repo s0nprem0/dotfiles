@@ -1,5 +1,8 @@
 @import url("colors.css");
 
+@define-color warning #f9e2af;
+@define-color error #f38ba8;
+
 * {
   font-family: "GohuFont 11 Nerd Font", "Symbols Nerd Font", sans-serif;
   font-size: 11px;
@@ -30,7 +33,7 @@ window#waybar {
 }
 
 #workspaces button.urgent {
-  color: #f38ba8;
+  color: @error;
 }
 
 #clock,
@@ -46,16 +49,12 @@ window#waybar {
   border-radius: 8px;
 }
 
-#clock {
-  background-color: alpha(@primary, 0.4);
-}
-
 #battery.warning {
-  color: #f9e2af;
+  color: @warning;
 }
 
 #battery.critical {
-  color: #f38ba8;
+  color: @error;
 }
 
 #clock:hover,
