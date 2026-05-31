@@ -7,6 +7,7 @@
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
   "modules-right": [
+    "custom/bluetooth",
     "network",
     "pulseaudio",
     "battery",
@@ -15,5 +16,5 @@
   ],
 
   // Modules Config
-  "include": ["~/.config/waybar/modules.json"],
+  "include": ["/home/jllyn/.config/waybar/modules.json"],
 }

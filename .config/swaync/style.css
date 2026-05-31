@@ -1,11 +1,4 @@
-@define-color background #0f1416;
-@define-color foreground #dee3e6;
-@define-color surface #1a2024;
-@define-color surface2 #262e33;
-@define-color surface3 #323c42;
-@define-color primary #85d2e8;
-@define-color warning #f9e2af;
-@define-color error #f38ba8;
+@import url("colors.css");
 
 * {
   font-family: "GohuFont 11 Nerd Font", "Symbols Nerd Font", sans-serif;
@@ -20,22 +13,42 @@
 
 .notification-group {
   margin: 4px 8px;
+  background: alpha(@surface, 0.5);
+  border: 1px solid alpha(@primary, 0.15);
+  border-radius: 12px;
+  padding: 0;
+}
+
+.notification-group .notification {
+  margin: 4px 6px;
+  border: 1px solid alpha(@primary, 0.1);
+  box-shadow: none;
+}
+
+.notification-group .notification:last-child {
+  margin-bottom: 6px;
 }
 
 .notification-group-header {
   color: @foreground;
   font-weight: bold;
-  padding: 4px 8px;
+  padding: 8px 12px;
   margin: 0;
+  border-bottom: 1px solid alpha(@surface3, 0.4);
 }
 
 .notification-group-header > label {
   color: @primary;
 }
 
+.notification-group-header:hover {
+  background: alpha(@primary, 0.08);
+  border-radius: 12px 12px 0 0;
+}
+
 .notification {
   background: alpha(@surface, 0.95);
-  border: 1px solid alpha(@primary, 0.2);
+  border: 1px solid alpha(@primary, 0.4);
   border-radius: 10px;
   margin: 4px 8px;
   padding: 0;
@@ -43,9 +56,20 @@
   transition: all 0.15s ease;
 }
 
+.notification.low {
+  border-color: alpha(@surface3, 0.6);
+  opacity: 0.85;
+}
+
+.notification.low .summary {
+  color: alpha(@foreground, 0.7);
+}
+
 .notification.critical {
+  background: alpha(@surface, 0.97);
   border-color: @error;
-  box-shadow: 0 2px 8px alpha(@error, 0.25);
+  border-width: 1.5px;
+  box-shadow: 0 2px 10px alpha(@error, 0.3);
 }
 
 .notification-content {
@@ -299,4 +323,99 @@
   border-bottom: 1px solid alpha(@surface3, 0.3);
   padding-bottom: 4px;
   margin-bottom: 4px;
+}
+
+/* Volume widget */
+.widget-volume {
+  background: transparent;
+  margin: 4px 8px;
+  padding: 4px 0;
+}
+
+.widget-volume > box > button {
+  color: @foreground;
+  background: alpha(@surface2, 0.5);
+  border: 1px solid alpha(@primary, 0.1);
+  border-radius: 8px;
+  min-width: 32px;
+  min-height: 24px;
+  padding: 2px 8px;
+  transition: background 0.15s ease;
+}
+
+.widget-volume > box > button:hover {
+  background: alpha(@primary, 0.2);
+  border-color: alpha(@primary, 0.4);
+}
+
+.widget-volume > box > label {
+  color: @foreground;
+  font-weight: bold;
+}
+
+.widget-volume slider {
+  background: alpha(@surface2, 0.6);
+  border-radius: 14px;
+  min-width: 44px;
+  min-height: 22px;
+}
+
+.widget-volume slider:checked {
+  background: alpha(@primary, 0.5);
+}
+
+.widget-volume trough {
+  background: alpha(@surface3, 0.4);
+  border-radius: 8px;
+  min-height: 6px;
+}
+
+.widget-volume highlight {
+  background: @primary;
+  border-radius: 8px;
+}
+
+.widget-volume row {
+  background: alpha(@surface, 0.6);
+  border-radius: 8px;
+  margin: 2px 0;
+  padding: 4px 8px;
+}
+
+.widget-volume row image {
+  -gtk-icon-size: var(--widget-volume-row-icon-size);
+}
+
+.per-app-volume {
+  margin: 2px 0;
+}
+
+.per-app-volume label {
+  color: @foreground;
+}
+
+.per-app-volume button {
+  background: alpha(@surface2, 0.5);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 2px;
+  transition: background 0.15s ease;
+}
+
+.per-app-volume button:hover {
+  background: alpha(@primary, 0.2);
+}
+
+/* Slider widget (shared by volume + backlight) */
+.widget-slider {
+  background: transparent;
+  margin: 4px 8px;
+  padding: 4px 0;
+}
+
+.widget-slider > box > label {
+  color: @foreground;
+  font-weight: bold;
 }

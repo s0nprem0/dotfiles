@@ -49,6 +49,13 @@
     "expand": false
   },
 
+  "custom/bluetooth": {
+    "format": "{}",
+    "interval": 5,
+    "exec": "/home/jllyn/.config/rofi/scripts/bluetooth-manager --status",
+    "on-click": "/home/jllyn/.config/rofi/scripts/bluetooth-manager"
+  },
+
   "clock": {
     "format": "{:%I:%M %p}",
     "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>",
@@ -114,6 +121,6 @@
       "disabled": "󰖩",
       "vpn": ""
     },
-    "on-click": "~/.config/waybar/scripts/wifi.sh --menu"
+    "on-click": "/home/jllyn/.config/rofi/scripts/wifi-manager"
   }
 }

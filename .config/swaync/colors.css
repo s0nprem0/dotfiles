@@ -1,4 +1,8 @@
 @define-color background #19120d;
 @define-color foreground #f0dfd6;
 @define-color surface #261e19;
+@define-color surface2 #312823;
+@define-color surface3 #3c332d;
 @define-color primary #ffb785;
+@define-color warning #c9ca94;
+@define-color error #ffb4ab;

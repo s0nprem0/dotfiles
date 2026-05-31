@@ -4,12 +4,6 @@
   font: "JetBrains Mono Nerd Font 11";
 }
 
-configuration {
-  show-icons: true;
-  mouse-support: true;
-}
-
-/***** Window *****/
 window {
   location: center;
   anchor: center;
@@ -20,7 +14,6 @@ window {
   override-redirect: false;
 }
 
-/***** Layout *****/
 mainbox {
   orientation: vertical;
   spacing: 8px;
@@ -28,7 +21,6 @@ mainbox {
   background-color: transparent;
 }
 
-/***** Input Area *****/
 inputbar {
   padding: 10px 14px;
   border-radius: 8px;
@@ -51,9 +43,8 @@ entry {
   placeholder-color: @foreground;
 }
 
-/***** Network List *****/
 listview {
-  lines: 8;
+  lines: 10;
   columns: 1;
   spacing: 4px;
   dynamic: true;
@@ -65,7 +56,6 @@ listview {
   scrollbar-width: 6px;
 }
 
-/***** Network Items *****/
 element {
   padding: 10px 14px;
   border-radius: 6px;
@@ -106,7 +96,6 @@ element-text {
   horizontal-align: 0.0;
 }
 
-/***** Scrollbar *****/
 scrollbar {
   handle-width: 6px;
   handle-color: @selected;
@@ -114,7 +103,6 @@ scrollbar {
   background-color: @background-alt;
 }
 
-/***** Fallback/Error/Prompt *****/
 textbox, textbox-prompt-colon, error-message {
   text-color: @foreground;
   background-color: transparent;

@@ -15,8 +15,22 @@
   "notification-body-image-height": 160,
   "notification-body-image-width": 200,
   "notification-visibility": {
-    "app-name": [],
-    "app-urgency-overrides": []
+    "mute-steam": {
+      "state": "muted",
+      "app-name": "^(steam|Steam|steamwebhelper)$"
+    },
+    "transient-discord": {
+      "state": "transient",
+      "app-name": "^(discord|Discord|webcord)$"
+    },
+    "transient-firefox": {
+      "state": "transient",
+      "app-name": "^(firefox|Firefox)$"
+    },
+    "transient-slack": {
+      "state": "transient",
+      "app-name": "^(slack|Slack)$"
+    }
   },
 
   "timeout": 8,
@@ -33,17 +47,19 @@
   "control-center-width": 400,
   "image-capture": true,
   "notification-group": true,
+  "image-capture": true,
   "script": {
     "notification-visibility": "",
     "notification-action": "",
     "notification-timeout": "",
-    "notification-replaced": ""
+    "notification-replaced": "echo \"$(date): $NOTIFICATION_SUMMARY\" >> /tmp/swaync-replaced.log"
   },
 
   "widgets": [
     "inhibitors",
     "title",
     "dnd",
+    "volume",
     "notifications",
     "mpris",
     "buttons-grid"
@@ -63,10 +79,11 @@
     "dnd": {
       "text": "Do Not Disturb"
     },
-    "mpris": {
-      "image-position": "left",
-      "image-radius": 8,
-      "blur": false
+    "volume": {
+      "label": "  Volume",
+      "show-per-app": true,
+      "show-per-app-icon": true,
+      "expand-per-app": false
     },
     "buttons-grid": {
       "actions": [
@@ -85,6 +102,14 @@
         {
           "label": "",
           "command": "~/.config/hypr/scripts/screenshot.sh region"
+        },
+        {
+          "label": "",
+          "command": "~/.config/rofi/scripts/wifi-manager"
+        },
+        {
+          "label": "",
+          "command": "cliphist list | fuzzel -d -p Clipboard | cliphist decode | wl-copy"
         },
         {
           "label": "",
