@@ -1,36 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Inhibits system idle when any window is fullscreen (video/game/etc.)
-
-PID_FILE="/tmp/hypr-fullscreen-inhibit.pid"
+INHIBIT_PID=""
 
 cleanup() {
-    [[ -f "$PID_FILE" ]] || return
-    kill "$(cat "$PID_FILE")" 2>/dev/null || true
-    rm -f "$PID_FILE"
+    [[ -n "$INHIBIT_PID" ]] && kill "$INHIBIT_PID" 2>/dev/null || true
     exit 0
 }
 
 trap cleanup EXIT INT TERM
 
 start_inhibit() {
-    [[ -f "$PID_FILE" ]] && return
+    [[ -n "$INHIBIT_PID" ]] && kill -0 "$INHIBIT_PID" 2>/dev/null && return
     systemd-inhibit --what=idle:sleep --who=hypr-fullscreen --why="Fullscreen window active" sleep infinity &
-    echo $! > "$PID_FILE"
+    INHIBIT_PID=$!
 }
 
 stop_inhibit() {
-    [[ -f "$PID_FILE" ]] || return
-    kill "$(cat "$PID_FILE")" 2>/dev/null || true
-    rm -f "$PID_FILE"
+    [[ -z "$INHIBIT_PID" ]] && return
+    kill "$INHIBIT_PID" 2>/dev/null || true
+    INHIBIT_PID=""
 }
 
-while true; do
-    if hyprctl -j clients 2>/dev/null | jq -e 'map(select(.fullscreen == true)) | length > 0' >/dev/null 2>&1; then
+# Check initial state before listening
+if hyprctl -j clients 2>/dev/null | jq -e 'map(select(.fullscreen == true)) | length > 0' >/dev/null 2>&1; then
+    start_inhibit
+fi
+
+SOCKET="$XDG_RUNTIME_DIR/hypr/$(hyprctl instances -j | jq -r '.[0].instance')/.socket2.sock"
+
+while read -r line; do
+    if [[ "$line" == "fullscreen>>1" ]]; then
         start_inhibit
-    else
-        stop_inhibit
+    elif [[ "$line" == "fullscreen>>0"* ]] || [[ "$line" == "activewindow>>"* ]]; then
+        if ! hyprctl -j clients 2>/dev/null | jq -e 'map(select(.fullscreen == true)) | length > 0' >/dev/null 2>&1; then
+            stop_inhibit
+        fi
     fi
-    sleep 2
-done
+done < <(socat -U - UNIX-CONNECT:"$SOCKET")
