@@ -1,3 +1,5 @@
+@import "~/.cache/matugen/colors-rofi.rasi"
+
 * {
     background:     #160f05FF;
     background-alt: #282A36FF;
