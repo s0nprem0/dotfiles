@@ -1,11 +1,4 @@
-/* Dark theme. */
-@import "~/.cache/wal/colors-rofi-dark"
-
-/* Light theme. */
-@import "~/.cache/wal/colors-rofi-light"
-
 * {
-
     background:     #160f05FF;
     background-alt: #282A36FF;
     bg:             #160f0590;
@@ -13,6 +6,5 @@
     selected:       #B3B4AAFF;
     active:         #3E6E82FF;
     urgent:         #FF5555FF;
-    salt:           #B3B4AA70; 
+    salt:           #B3B4AA70;
 }
-

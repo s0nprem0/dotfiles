@@ -1,4 +1,6 @@
-@import "~/.config/rofi/colors.rasi"* {
+@import "~/.config/rofi/colors.rasi"
+
+* {
   font: "JetBrains Mono Nerd Font 10";
 }
 
