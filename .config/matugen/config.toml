@@ -1,25 +1,25 @@
 [config]
 
 [templates.hyprland]
-input_path = "~/.config/matugen/templates/hyprland-colors.conf"
+input_path = "~/.config/matugen/templates/hypr/hyprland-colors.conf"
 output_path = "~/.config/hypr/colors.conf"
 
 [templates.rofi]
-input_path = "~/.config/matugen/templates/rofi.rasi"
+input_path = "~/.config/matugen/templates/rofi/colors.rasi"
 output_path = "~/.config/rofi/colors.rasi"
 
 [templates.waybar]
-input_path = '~/.config/matugen/templates/waybar.css'
+input_path = '~/.config/matugen/templates/waybar/colors.css'
 output_path = '~/.config/waybar/colors.css'
 
 [templates.swaync]
-input_path = "~/.config/matugen/templates/swaync-colors.css"
+input_path = "~/.config/matugen/templates/swaync/colors.css"
 output_path = "~/.config/swaync/colors.css"
 
 [templates.wofi]
-input_path = "~/.config/matugen/templates/wofi-colors.css"
+input_path = "~/.config/matugen/templates/wofi/style.css"
 output_path = "~/.config/wofi/style.css"
 
 [templates.hyprlock]
-input_path = "~/.config/matugen/templates/hyprlock-colors.conf"
+input_path = "~/.config/matugen/templates/hypr/hyprlock-colors.conf"
 output_path = "~/.config/hypr/colors-hyprlock.conf"
