@@ -2,6 +2,11 @@
 -- Opacity Rules
 -- ======================
 
+local function rule_name(prefix, s)
+	-- Names are identifiers; avoid spaces/regex chars that can make rules fail to register.
+	return (prefix .. "_" .. s):gsub("[^%w]+", "_")
+end
+
 -- Grouping classes by their desired opacity keeps the config incredibly clean (DRY)
 local opacity_map = {
 	["0.90 0.90"] = {
@@ -61,7 +66,7 @@ local opacity_map = {
 for opacity, classes in pairs(opacity_map) do
 	for _, class in ipairs(classes) do
 		hl.window_rule({
-			name = "opacity-" .. opacity .. "-" .. class,
+			name = rule_name("opacity", opacity .. "_" .. class),
 			match = { class = class },
 			opacity = opacity,
 		})
@@ -70,7 +75,7 @@ end
 
 -- Specific Initial Title match for Spotify Free
 hl.window_rule({
-	name = "opacity-spotify-free",
+	name = "opacity_spotify_free",
 	match = { initial_title = "^(Spotify Free)$" },
 	opacity = "0.70 0.70",
 })
@@ -79,6 +84,51 @@ hl.window_rule({
 -- Floating Rules
 -- ======================
 
+-- Common dialogs (match by *initial* title; rules are evaluated top-to-bottom)
+local floating_dialog_titles = {
+	"^(Open File)(.*)$",
+	"^(Select a File)(.*)$",
+	"^(Choose wallpaper)(.*)$",
+	"^(Open Folder)(.*)$",
+	"^(Save As)(.*)$",
+	"^(Library)(.*)$",
+	"^(File Upload)(.*)$",
+	"^(.*)(wants to save)$",
+	"^(.*)(wants to open)$",
+}
+
+for _, title in ipairs(floating_dialog_titles) do
+	local spec = {
+		name = rule_name("float_dialog", title),
+		match = { title = title },
+		float = true,
+		center = true,
+	}
+	if title == "^(Choose wallpaper)(.*)$" then
+		spec.size = { "monitor_w*0.60", "monitor_h*0.65" }
+	end
+	hl.window_rule(spec)
+end
+
+-- App-specific floating rules with sizing
+local floating_sized_classes = {
+	["^(pavucontrol)$"] = { "monitor_w*0.45", "monitor_h*0.45" },
+	["^(org.pulseaudio.pavucontrol)$"] = { "monitor_w*0.45", "monitor_h*0.45" },
+	["^(nm-connection-editor)$"] = { "monitor_w*0.45", "monitor_h*0.45" },
+	["org.freedesktop.impl.portal.desktop.kde"] = { "monitor_w*0.60", "monitor_h*0.65" },
+	["^(Zotero)$"] = { "monitor_w*0.45", "monitor_h*0.45" },
+}
+
+for class, size in pairs(floating_sized_classes) do
+	hl.window_rule({
+		name = rule_name("float_sized", class),
+		match = { class = class },
+		float = true,
+		center = true,
+		size = size,
+	})
+end
+
 local floating_classes = {
 	"^(vlc)$",
 	"^(kvantummanager)$",
@@ -86,10 +136,8 @@ local floating_classes = {
 	"^(qt6ct)$",
 	"^(nwg-look)$",
 	"^(org.kde.ark)$",
-	"^(org.pulseaudio.pavucontrol)$",
 	"^(blueman-manager)$",
 	"^(nm-applet)$",
-	"^(nm-connection-editor)$",
 	"^(org.kde.polkit-kde-authentication-agent-1)$",
 	"^(Signal)$",
 	"^(com.github.rafostar.Clapper)$",
@@ -106,7 +154,7 @@ local floating_classes = {
 
 for _, class in ipairs(floating_classes) do
 	hl.window_rule({
-		name = "float-" .. class,
+		name = rule_name("float", class),
 		match = { class = class },
 		float = true,
 	})
@@ -125,7 +173,7 @@ local specific_floats = {
 
 for _, match in ipairs(specific_floats) do
 	hl.window_rule({
-		name = "float-" .. match.class .. "-" .. match.title,
+		name = rule_name("float", match.class .. "_" .. match.title),
 		match = { class = match.class, title = match.title },
 		float = true,
 	})
@@ -148,7 +196,7 @@ local pip_rules = {
 
 for _, rule in ipairs(pip_rules) do
 	local spec = {
-		name = "pip-" .. rule,
+		name = rule_name("pip", rule),
 		match = { title = pip_regex },
 	}
 	if rule == "float" then
@@ -160,6 +208,7 @@ for _, rule in ipairs(pip_rules) do
 	elseif rule:match("^opacity ") then
 		spec.opacity = rule:gsub("^opacity ", "")
 	end
+	hl.window_rule(spec)
 end
 
 -- ======================
@@ -167,17 +216,17 @@ end
 -- ======================
 
 hl.window_rule({
-	name = "immediate-steam-app",
+	name = "immediate_steam_app",
 	match = { class = "^(steam_app.*)$" },
 	immediate = true,
 })
 hl.window_rule({
-	name = "immediate-minecraft",
+	name = "immediate_minecraft",
 	match = { title = "^(.*minecraft.*)$" },
 	immediate = true,
 })
 hl.window_rule({
-	name = "immediate-exe",
+	name = "immediate_exe",
 	match = { title = [[^(.*\.exe.*)$]] },
 	immediate = true,
 })

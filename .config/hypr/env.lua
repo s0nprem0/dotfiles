@@ -2,26 +2,25 @@
 -- ██▄ █ ▀█ ▀▄▀
 -- Environment Variables for Hyprland (Lua Syntax)
 
-hl.config({
-	env = {
-		-- Cursor
-		"HYPRCURSOR_THEME,macOS",
-		"XCURSOR_THEME,macOS",
-		"XCURSOR_SIZE,24",
-		"HYPRCURSOR_SIZE,24",
+-- Use the dedicated Lua API instead of `config.env`.
+-- This sets compositor environment vars (and is the format used by the stock example).
 
-		-- Qt / KDE
-		"QT_QPA_PLATFORMTHEME,qt6ct",
-		"QT_QPA_PLATFORM,wayland",
-		"QT_AUTO_SCREEN_SCALE_FACTOR,1",
-		"QT_WAYLAND_DISABLE_WINDOWDECORATION,1",
+-- Cursor
+hl.env("HYPRCURSOR_THEME", "macOS")
+hl.env("XCURSOR_THEME", "macOS")
+hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "24")
 
-		-- GTK / Clutter
-		"GDK_BACKEND,wayland,x11",
-		"CLUTTER_BACKEND,wayland",
+-- Qt / KDE
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+hl.env("QT_QPA_PLATFORM", "wayland")
+hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
+hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 
-		-- System
-		"SSH_AUTH_SOCK,$XDG_RUNTIME_DIR/keyring/ssh",
-		"BROWSER,firefox",
-	},
-})
+-- GTK / Clutter
+hl.env("GDK_BACKEND", "wayland,x11")
+hl.env("CLUTTER_BACKEND", "wayland")
+
+-- System
+hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/keyring/ssh")
+hl.env("BROWSER", "firefox")

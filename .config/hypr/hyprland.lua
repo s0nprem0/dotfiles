@@ -1,61 +1,50 @@
--- █▀▄▀█ █▀█ █▄ █ █ ▀█▀ █▀█ █▀█
--- █ ▀ █ █▄█ █ ▀█ █  █  █▄█ █▀▄
--- Main Hyprland Configuration (Lua Syntax)
-
 -- ==========================================
 -- 1. Load Pre-requisite Modules
 -- ==========================================
 require("monitors")
 require("defaultPrograms")
 
--- Assuming colors.lua defines global variables like `accent` and `surface`
 require("colors")
+
+-- Environment should be set before we start any long-running processes.
+require("env")
+
+-- Workspace placement
+hl.workspace_rule({ workspace = "1", monitor = "eDP-1", default = true })
 
 -- ==========================================
 -- 2. Core Configuration & Autostart
 -- ==========================================
 
 -- Autostart
-hl.on("hyprland.start", function()
-	hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
-	hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent")
-	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets,ssh")
-	hl.exec_cmd("~/.config/hypr/scripts/usb-monitor.sh")
-	hl.exec_cmd("~/.config/hypr/scripts/idle-inhibit.sh")
-	hl.exec_cmd("waybar")
-	hl.exec_cmd("hyprpaper")
-	hl.exec_cmd("hypridle")
-	hl.exec_cmd("swaync")
-end)
+require("autostart")
 
-	hl.config({
+hl.config({
 
-		-- General Layout & Borders
-		general = {
+	-- General Layout & Borders
+	general = {
 		gaps_in = 3,
 		gaps_out = 12,
 		border_size = 2,
 		-- Concatenating color variables pulled from colors.lua
 		["col.active_border"] = "rgb(" .. accent .. ")",
 		["col.inactive_border"] = "rgb(" .. surface .. ")",
-		layout = "dwindle",
+		layout = "master",
 		allow_tearing = true,
-	},
-
-	-- Group Settings
-	group = {
-		-- Gradients are represented as { colors = { ... }, angle = deg }
-		["col.border_active"] = { colors = { "rgba(90ceaaff)", "rgba(ecd3a0ff)" }, angle = 45 },
-		["col.border_inactive"] = { colors = { "rgba(1e8b50d9)", "rgba(50b050d9)" }, angle = 45 },
-		["col.border_locked_active"] = { colors = { "rgba(90ceaaff)", "rgba(ecd3a0ff)" }, angle = 45 },
-		["col.border_locked_inactive"] = { colors = { "rgba(1e8b50d9)", "rgba(50b050d9)" }, angle = 45 },
+		resize_on_border = true,
+		snap = {
+			enabled = true,
+			window_gap = 4,
+			monitor_gap = 5,
+			respect_gaps = true,
+		},
 	},
 
 	-- Decoration & Blur
 	decoration = {
 		active_opacity = 1,
 		inactive_opacity = 0.85,
-		rounding = 5,
+		rounding = 2,
 
 		-- Nested shadow settings
 		shadow = {
@@ -66,43 +55,25 @@ end)
 
 		blur = {
 			enabled = false,
-			size = 2,
+			size = 3,
 			passes = 2,
 			vibrancy_darkness = 1.3,
 			new_optimizations = true,
 			ignore_opacity = true,
-			xray = false,
+			xray = true,
+			noise = 0.05,
+			brightness = 1,
 		},
+
+		-- dim
+		dim_inactive = true,
+		dim_strength = 0.05,
+		dim_special = 0.2,
 	},
 
-	-- Animations
+	-- Animations (Master Toggle)
 	animations = {
 		enabled = true,
-		bezier = {
-			"easeOutQuint,0.23,1,0.32,1",
-			"easeInOutCubic,0.65,0.05,0.36,1",
-			"linear,0,0,1,1",
-			"almostLinear,0.5,0.5,0.75,1.0",
-			"quick,0.15,0,0.1,1",
-		},
-		animation = {
-			"global, 1, 10, default",
-			"border, 1, 5.39, easeOutQuint",
-			"windows, 1, 4.79, easeOutQuint",
-			"windowsIn, 1, 4.1, easeOutQuint, popin 87%",
-			"windowsOut, 1, 1.49, linear, popin 87%",
-			"fadeIn, 1, 1.73, almostLinear",
-			"fadeOut, 1, 1.46, almostLinear",
-			"fade, 1, 3.03, quick",
-			"layers, 1, 3.81, easeOutQuint",
-			"layersIn, 1, 4, easeOutQuint, fade",
-			"layersOut, 1, 1.5, linear, fade",
-			"fadeLayersIn, 1, 1.79, almostLinear",
-			"fadeLayersOut, 1, 1.39, almostLinear",
-			"workspaces, 1, 1.94, almostLinear, fade",
-			"workspacesIn, 1, 1.21, almostLinear, fade",
-			"workspacesOut, 1, 1.94, almostLinear, fade",
-		},
 	},
 
 	-- Master Layout specifics
@@ -110,8 +81,18 @@ end)
 		new_status = "master",
 	},
 
+	dwindle = {
+		preserve_split = true,
+		smart_split = false,
+		smart_resizing = false,
+	},
+
 	-- Cursor behavior
 	cursor = {
+		zoom_factor = 1,
+		zoom_rigid = false,
+		zoom_disable_aa = true,
+		hotspot_padding = 1,
 		no_hardware_cursors = false,
 		enable_hyprcursor = true,
 		hide_on_key_press = true,
@@ -122,23 +103,31 @@ end)
 	misc = {
 		force_default_wallpaper = 1,
 		disable_hyprland_logo = true,
-		enable_swallow = true,
-		swallow_regex = "^(btop|htop|top|nvim|less|man|magic)$",
+		disable_splash_rendering = true,
+		vrr = 0,
+		enable_swallow = false,
+		swallow_regex = "^(btop|htop|top|nvim|less|man|magic|kitty)$",
+		on_focus_under_fullscreen = 2,
+		allow_session_lock_restore = true,
+		initial_workspace_tracking = false,
+		focus_on_activate = true,
 	},
 
 	-- Input Devices
 	input = {
 		kb_layout = "us",
-		kb_variant = "",
-		kb_model = "",
-		kb_options = "",
-		kb_rules = "",
-		follow_mouse = 2,
+		numlock_by_default = true,
+		repeat_delay = 250,
+		repeat_rate = 35,
+
+		follow_mouse = 1,
 		sensitivity = 0.2,
 
 		touchpad = {
 			natural_scroll = true,
 			scroll_factor = 0.5,
+			disable_while_typing = true,
+			clickfinger_behavior = true,
 		},
 	},
 
@@ -148,9 +137,59 @@ end)
 	},
 })
 
+-- gestures
+
+hl.gesture({
+	fingers = 3,
+	direction = "swipe",
+	action = "move",
+})
+
+hl.gesture({
+	fingers = 3,
+	direction = "pinch",
+	action = "fullscreen",
+})
+hl.gesture({
+	fingers = 4,
+	direction = "horizontal",
+	action = "workspace",
+})
+
 -- ==========================================
--- 3. Load Post-requisite Modules
+-- 3. Animations Setup (Hyprland 0.55+ Lua API)
 -- ==========================================
-require("env")
+
+-- Define Curves (Beziers)
+hl.curve("easeOutQuint", { type = "bezier", points = { { 0.23, 1 }, { 0.32, 1 } } })
+hl.curve("easeInOutCubic", { type = "bezier", points = { { 0.65, 0.05 }, { 0.36, 1 } } })
+hl.curve("linear", { type = "bezier", points = { { 0, 0 }, { 1, 1 } } })
+hl.curve("almostLinear", { type = "bezier", points = { { 0.5, 0.5 }, { 0.75, 1.0 } } })
+hl.curve("quick", { type = "bezier", points = { { 0.15, 0 }, { 0.1, 1 } } })
+
+-- (Optional) Example of defining a Spring curve if you prefer Apple-like bouncy movement
+-- hl.curve("mySpring", { type = "spring", mass = 1, stiffness = 50, dampening = 10 })
+
+-- Map Animations (Using the strict `bezier = "name"` key instead of `curve = "name"`)
+hl.animation({ leaf = "global", enabled = true, speed = 10, bezier = "easeOutQuint" })
+hl.animation({ leaf = "border", enabled = true, speed = 5.39, bezier = "easeOutQuint" })
+hl.animation({ leaf = "windows", enabled = true, speed = 4.79, bezier = "easeOutQuint" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.1, bezier = "easeOutQuint", style = "popin 87%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.49, bezier = "linear", style = "popin 87%" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.73, bezier = "almostLinear" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.46, bezier = "almostLinear" })
+hl.animation({ leaf = "fade", enabled = true, speed = 3.03, bezier = "quick" })
+hl.animation({ leaf = "layers", enabled = true, speed = 3.81, bezier = "easeOutQuint" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "easeOutQuint", style = "fade" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 1.5, bezier = "linear", style = "fade" })
+hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.79, bezier = "almostLinear" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.39, bezier = "almostLinear" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+
+-- ==========================================
+-- 4. Load Post-requisite Modules
+-- ==========================================
 require("windowrules")
 require("binds")
