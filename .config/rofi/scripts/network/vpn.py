@@ -8,8 +8,6 @@ from network.common import (
 
 
 def vpn_menu() -> None:
-    notify(title=NOTIFY_TITLE, message="Loading VPN connections...", expire_time=2_000)
-
     vpns = get_vpn_list()
     active_vpn = get_active_vpn()
     options: dict[str, str] = {}
@@ -22,9 +20,7 @@ def vpn_menu() -> None:
             options[f"{vpn_icon}  Connect {vpn}"] = f"CONNECT:{vpn}"
 
     if not options:
-        notify(title=NOTIFY_TITLE, message="No VPN connections configured", urgency="low")
-        return
-
+        options["  No VPNs configured"] = ""
     options[f"{back_icon}  Back"] = BACK
 
     chosen = rofi_menu(list(options.keys()), f" {vpn_icon}")

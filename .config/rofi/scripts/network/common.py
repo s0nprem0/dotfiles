@@ -15,6 +15,7 @@ import utils
 notify = utils.notify
 back_icon = utils.back_icon
 BACK = utils.BACK
+CONFIG_DIR = utils.CONFIG_DIR
 
 # ─── Icons ──────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ DISCONNECT = "Disconnect"
 HIDDEN = "HIDDEN"
 RESCAN = "Rescan"
 HOTSPOT = "HOTSPOT"
+STOP_HOTSPOT = "STOP_HOTSPOT"
 SAVED = "SAVED"
 POWERSAVE = "POWERSAVE"
 
@@ -89,6 +91,10 @@ def error_menu(message: str, details: str = "") -> None:
 
 def confirm_menu(message: str) -> bool:
     return utils.confirm_menu(message, ROFI_THEME)
+
+
+def rofi_input(prompt: str, default: str = "") -> str:
+    return utils.rofi_input(prompt, default)
 
 
 def rofi_password(prompt: str) -> str:
@@ -259,7 +265,7 @@ def check_connectivity() -> str:
 def get_public_ip() -> Optional[str]:
     import urllib.request
     try:
-        return urllib.request.urlopen("https://ifconfig.me", timeout=5).read().decode().strip()
+        return urllib.request.urlopen("https://ifconfig.me", timeout=3).read().decode().strip()
     except Exception:
         return None
 
@@ -268,7 +274,7 @@ def get_vpn_list() -> list[str]:
     out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show"])
     if out is None:
         return []
-    return [line.split(":")[0] for line in out.splitlines() if line.endswith(":vpn")]
+    return [line.split(":", 1)[0] for line in out.splitlines() if line.endswith(":vpn")]
 
 
 def get_active_vpn() -> Optional[str]:

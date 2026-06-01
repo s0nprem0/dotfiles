@@ -4,11 +4,11 @@ import subprocess
 import os
 from typing import List, Tuple
 
+from utils import CONFIG_DIR
+
 mic_icon = "󰍬"
 yes_icon = ""
 no_icon = ""
-
-CONFIG_DIR = os.environ.get("XDG_CONFIG_HOME", "~/.config")
 
 
 def _get_sources() -> List[str]:

@@ -1,25 +1,52 @@
 from network.common import (
-    notify,
+    notify, back_icon, BACK,
     wifi_enable, shut_lock,
     NOTIFY_TITLE, NOTIFY_OK, NOTIFY_BUSY,
-    nmcli_run, error_menu, rofi_password,
+    nmcli_run, error_menu, rofi_input, rofi_password,
 )
 
 
 def create_hotspot() -> None:
-    ssid = rofi_password(f"{wifi_enable} Hotspot SSID:")
+    ssid = rofi_input(f"{wifi_enable} Hotspot SSID:")
     if not ssid:
         return
-    pwd = rofi_password(f"{shut_lock} Password (min 8 chars):")
-    if not pwd:
-        return
-    if len(pwd) < 8:
-        notify(title=NOTIFY_TITLE, message="Hotspot password must be at least 8 characters",
+    while True:
+        pwd = rofi_password(f"{shut_lock} Password (min 8 chars):")
+        if not pwd:
+            return
+        if len(pwd) >= 8:
+            break
+        notify(title=NOTIFY_TITLE, message="Password too short — must be at least 8 characters",
                urgency="critical")
-        return
     notify(title=NOTIFY_TITLE, message=f"Creating hotspot '{ssid}'...", **NOTIFY_BUSY)
     r = nmcli_run(["device", "wifi", "hotspot", "ifname", "*", "ssid", ssid, "password", pwd])
     if r is None:
         error_menu("Failed to create hotspot")
         return
     notify(title=NOTIFY_TITLE, message=f"Hotspot '{ssid}' active", **NOTIFY_OK)
+
+
+def is_hotspot_active() -> str | None:
+    """Returns the hotspot SSID if active, None otherwise."""
+    out = nmcli_run(["-t", "-f", "NAME,TYPE,DEVICE", "connection", "show", "--active"])
+    if out is None:
+        return None
+    for line in out.splitlines():
+        parts = line.split(":", 2)
+        if len(parts) == 3:
+            name, typ, dev = parts
+            if typ == "hotspot":
+                return name
+    return None
+
+
+def stop_hotspot() -> None:
+    name = is_hotspot_active()
+    if not name:
+        notify(title=NOTIFY_TITLE, message="No active hotspot", urgency="normal")
+        return
+    r = nmcli_run(["connection", "down", name])
+    if r is None:
+        error_menu(f"Failed to stop hotspot '{name}'")
+        return
+    notify(title=NOTIFY_TITLE, message=f"Hotspot '{name}' stopped", **NOTIFY_OK)

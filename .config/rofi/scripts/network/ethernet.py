@@ -38,8 +38,12 @@ def ethernet_menu() -> None:
 
     if state in ("connected", "connecting"):
         options.append(f"{disconnect_icon}  Disconnect Ethernet")
-    options.append(f"{ethernet_icon}  Enable Ethernet")
-    options.append(f"{ethernet_icon}  Disable Ethernet")
+    elif state == "disconnected":
+        options.append(f"{ethernet_icon}  Enable Ethernet")
+    elif state == "unavailable":
+        options.append(f"{ethernet_icon}  Enable Ethernet")
+    if iface != "N/A":
+        options.append(f"{ethernet_icon}  Disable Ethernet")
     options.append(f"{back_icon}  Back")
 
     chosen = rofi_menu(options, f" {ethernet_icon}")

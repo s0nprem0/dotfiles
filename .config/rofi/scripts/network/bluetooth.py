@@ -260,11 +260,6 @@ def get_paired_devices() -> list[tuple[str, str]]:
     return devices
 
 
-def get_available_devices() -> list[tuple[str, str]]:
-    """returns list of (mac, name) from device list (paired + remembered)"""
-    return get_paired_devices()
-
-
 def toggle_power() -> None:
     if power_on():
         r = bluetoothctl(["power", "off"])
@@ -484,7 +479,7 @@ def main_menu() -> None:
     options: list[str] = []
 
     if pwr:
-        devices = get_available_devices()
+        devices = get_paired_devices()
         type_icon = {"audio": audio_icon, "input": input_icon, "phone": phone_icon, "generic": bt_icon}
         for mac, _ in devices:
             if device_connected(mac):
@@ -535,7 +530,7 @@ def main_menu() -> None:
     else:
         if chosen.startswith("Error:"):
             return
-        for mac, _ in get_available_devices():
+        for mac, _ in get_paired_devices():
             if get_device_name(mac) in chosen:
                 device_menu(mac)
                 return

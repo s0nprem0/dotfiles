@@ -1,4 +1,4 @@
-@import "~/.config/rofi/colors.rasi"
+@import "/home/jllyn/.config/rofi/colors.rasi"
 
 * {
   font: "JetBrains Mono Nerd Font 11";
@@ -81,7 +81,7 @@ element normal.normal {
 }
 
 element normal.alternate {
-  background-color: rgba(38, 30, 25, 0.6);
+  background-color: @background-trans;
   text-color: @foreground;
 }
 

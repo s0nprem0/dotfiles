@@ -67,17 +67,17 @@ def rofi_menu(options: list[str], prompt: str, theme: str, selected_row: int = 0
     return result
 
 
-def error_menu(message: str, back_action, prompt_icon: str, theme: str) -> None:
-    opts = [f"Error: {message}", f"{back_icon}  Back"]
-    choice = rofi_menu(opts, prompt=f"{prompt_icon}  Error", theme=theme, selected_row=1)
-    if choice and BACK in choice:
-        back_action()
-
-
 def confirm_menu(message: str, theme: str) -> bool:
     opts = ["  Yes", "  No"]
     chosen = rofi_menu(opts, prompt=message, theme=theme, selected_row=1)
     return bool(chosen and "Yes" in chosen)
+
+
+def rofi_input(prompt: str, default: str = "") -> str:
+    return subprocess.run(
+        ["rofi", "-dmenu", "-p", prompt, "-theme", str(CONFIG_DIR / "rofi" / "password.rasi")],
+        input=default, text=True, capture_output=True,
+    ).stdout.strip()
 
 
 def rofi_password(prompt: str) -> str:

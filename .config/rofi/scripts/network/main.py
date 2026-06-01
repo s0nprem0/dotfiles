@@ -36,5 +36,4 @@ def main_menu() -> None:
         vpn_menu()
 
 
-def run() -> None:
-    main_menu()
+

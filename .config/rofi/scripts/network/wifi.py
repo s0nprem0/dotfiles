@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from network.common import (
@@ -7,12 +8,12 @@ from network.common import (
     NOTIFY_TITLE, NOTIFY_OK, NOTIFY_BUSY,
     ROFI_THEME, WifiNetwork,
     TOGGLE_WIFI, CONNECT, FORGET, DISCONNECT, HIDDEN, RESCAN,
-    HOTSPOT, SAVED, POWERSAVE,
+    HOTSPOT, STOP_HOTSPOT, SAVED, POWERSAVE,
     signal_bars, nmcli_run,
-    rofi_menu, error_menu, confirm_menu, rofi_password,
+    rofi_menu, error_menu, confirm_menu, rofi_input, rofi_password,
     is_wifi_enabled, get_saved_networks, get_active_wifi,
     list_wifi_networks, get_connection_prop,
-    get_power_save, check_connectivity, get_public_ip,
+    get_power_save, check_connectivity,
 )
 from network.cache import cached, invalidate
 
@@ -186,17 +187,65 @@ def get_mac_mode(ssid: str) -> str:
     return val if val else "permanent"
 
 
+_MAC_RE = r'^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$'
+
+
+def _is_custom_mac(val: str) -> bool:
+    return bool(re.match(_MAC_RE, val))
+
+
 def cycle_mac(network: WifiNetwork) -> None:
     ssid = network.ssid
     current = get_mac_mode(ssid)
-    order = {"permanent": "random", "random": "stable", "stable": "permanent"}
-    new_mode = order.get(current, "permanent")
+    if _is_custom_mac(current):
+        new_mode = "permanent"
+    else:
+        order = {"permanent": "random", "random": "stable", "stable": "permanent"}
+        new_mode = order.get(current, "permanent")
     r = nmcli_run(["connection", "modify", "id", ssid, "802-11-wireless.cloned-mac-address", new_mode])
     if r is None:
         error_menu("Failed to set MAC mode")
         show_network_actions(network)
         return
     notify(title=NOTIFY_TITLE, message=f"MAC: {new_mode} for {ssid}", **NOTIFY_OK)
+    show_network_actions(network)
+
+
+def set_custom_mac(network: WifiNetwork) -> None:
+    ssid = network.ssid
+    current = get_mac_mode(ssid)
+    default = current if _is_custom_mac(current) else ""
+    raw = rofi_input(f"  MAC for {ssid}", default)
+    if not raw:
+        show_network_actions(network)
+        return
+    mac = raw.strip().lower()
+    if not re.match(_MAC_RE, mac):
+        error_menu("Invalid MAC — use format 00:11:22:33:44:55")
+        show_network_actions(network)
+        return
+    r = nmcli_run(["connection", "modify", "id", ssid,
+                    "802-11-wireless.cloned-mac-address", mac])
+    if r is None:
+        error_menu(f"Failed to set MAC for {ssid}")
+        show_network_actions(network)
+        return
+    notify(title=NOTIFY_TITLE, message=f"MAC set to {mac} for {ssid}", **NOTIFY_OK)
+    show_network_actions(network)
+
+
+def reset_mac(network: WifiNetwork) -> None:
+    ssid = network.ssid
+    if not confirm_menu(f"Reset MAC to permanent for {ssid}?"):
+        show_network_actions(network)
+        return
+    r = nmcli_run(["connection", "modify", "id", ssid,
+                    "802-11-wireless.cloned-mac-address", ""])
+    if r is None:
+        error_menu(f"Failed to reset MAC for {ssid}")
+        show_network_actions(network)
+        return
+    notify(title=NOTIFY_TITLE, message=f"MAC reset to permanent for {ssid}", **NOTIFY_OK)
     show_network_actions(network)
 
 
@@ -334,7 +383,11 @@ def show_network_actions(network: WifiNetwork, active_ssid: Optional[str] = None
         bl = {"auto": "Auto", "a": "5 GHz", "bg": "2.4 GHz"}
         actions[f"  Band: {bl.get(band, band)}"] = "band"
         mac = get_mac_mode(network.ssid)
-        actions[f"  MAC: {mac}"] = "mac"
+        label = "custom" if _is_custom_mac(mac) else mac
+        actions[f"  MAC: {label}"] = "mac"
+        actions["  Set custom MAC"] = "setmac"
+        if _is_custom_mac(mac):
+            actions["  Reset MAC to permanent"] = "resetmac"
         prio = get_autoconnect_priority(network.ssid)
         actions[f"  Priority: {prio}"] = "priority"
     actions[f"{back_icon}  {BACK}"] = "back"
@@ -377,6 +430,10 @@ def show_network_actions(network: WifiNetwork, active_ssid: Optional[str] = None
         cycle_band(network)
     elif action == "mac":
         cycle_mac(network)
+    elif action == "setmac":
+        set_custom_mac(network)
+    elif action == "resetmac":
+        reset_mac(network)
     elif action == "priority":
         cycle_priority(network)
 
@@ -424,7 +481,8 @@ def wifi_menu() -> None:
         notify(title=NOTIFY_TITLE, message="Scanning for networks...", expire_time=6_000)
         networks = list_wifi_networks(no_rescan=False)
         active_ssid = get_active_wifi()
-        invalidate("networks", "active_ssid")
+        invalidate("networks")
+        invalidate("active_ssid")
 
     options: dict[str, str] = {}
 
@@ -434,6 +492,9 @@ def wifi_menu() -> None:
             options[f"{disconnect_icon}  Disconnect from {active_ssid}"] = DISCONNECT
         options[f"{hidden_icon}  Connect to Hidden Network"] = HIDDEN
         options[f"󰋁  Create Hotspot"] = HOTSPOT
+        from network.hotspot import is_hotspot_active
+        if is_hotspot_active():
+            options["󰤂  Stop Hotspot"] = STOP_HOTSPOT
         options[f"{wifi_known}  Saved Networks"] = SAVED
         options[f"  Rescan"] = RESCAN
 
@@ -497,6 +558,10 @@ def wifi_menu() -> None:
     elif selection == HOTSPOT:
         from network.hotspot import create_hotspot
         create_hotspot()
+        wifi_menu()
+    elif selection == STOP_HOTSPOT:
+        from network.hotspot import stop_hotspot
+        stop_hotspot()
         wifi_menu()
     elif selection == SAVED:
         saved_networks_menu()

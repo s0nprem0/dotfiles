@@ -1,10 +1,10 @@
 * {
-    background:     #19120d;
-    background-alt: #261e19;
-    bg:             #19120d;
-    foreground:     #f0dfd6;
-    selected:       #ffb785;
-    active:         #e4bfa8;
-    urgent:         #ffb4ab;
-    salt:           #f0dfd6;
+    background:       #19120d;
+    background-alt:   #261e19;
+    background-trans: rgba(38, 30, 25, 0.6);
+    bg:               #19120d;
+    foreground:       #f0dfd6;
+    selected:         #ffb785;
+    active:           #e4bfa8;
+    urgent:           #ffb4ab;
 }
