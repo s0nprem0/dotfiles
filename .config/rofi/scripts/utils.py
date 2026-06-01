@@ -29,22 +29,31 @@ def notify(
     )
 
 
-def run_cmd_safe(cmd: list[str], *, error_title: str | None = None, error_notify: bool = True, timeout: int = 15) -> str | None:
+def run_cmd_safe(cmd: list[str], *, error_title: str | None = None, error_notify: bool = True, timeout: int = 15, want_result: bool = False) -> str | dict | None:
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=timeout)
         if res.returncode != 0:
             emsg = res.stderr or res.stdout or f"exit code {res.returncode}"
             if error_notify and error_title:
                 notify(title=error_title, message=emsg, urgency="critical")
+            if want_result:
+                return {"ok": False, "stdout": res.stdout or None, "stderr": res.stderr or None, "returncode": res.returncode, "message": emsg}
             return None
+        if want_result:
+            return {"ok": True, "stdout": res.stdout.strip(), "returncode": 0}
         return res.stdout.strip()
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as e:
+        msg = f"Command timed out after {timeout}s"
         if error_notify and error_title:
-            notify(title=error_title, message=f"Command timed out after {timeout}s", urgency="critical")
+            notify(title=error_title, message=msg, urgency="critical")
+        if want_result:
+            return {"ok": False, "stdout": None, "stderr": str(e), "message": msg, "timeout": True}
         return None
     except Exception as e:
         if error_notify and error_title:
             notify(title=error_title, message=str(e), urgency="critical")
+        if want_result:
+            return {"ok": False, "stdout": None, "stderr": str(e), "message": str(e), "exception": True}
         return None
 
 

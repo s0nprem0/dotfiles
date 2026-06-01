@@ -38,16 +38,15 @@ def toggle_wifi() -> None:
 
 def connect_existing_network(ssid: str) -> bool:
     notify(title=NOTIFY_TITLE, message=f"Connecting to {ssid}...", **NOTIFY_BUSY)
-    result = nmcli_run(["connection", "up", "id", ssid], timeout=20)
-    if result is None:
-        error_menu(f"Failed to connect to {ssid}")
+    result = nmcli_run(["connection", "up", "id", ssid], timeout=20, want_result=True)
+    if isinstance(result, dict) and not result.get("ok"):
+        emsg = result.get("message") or "Failed to connect."
+        errd = result.get("stderr") or result.get("stdout") or str(result)
+        error_menu(f"Failed to connect to {ssid}", errd)
         return False
-    if "successfully" in result:
-        notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
-        invalidate("active_ssid")
-        return True
-    error_menu(f"NM did not report success for {ssid}")
-    return False
+    notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
+    invalidate("active_ssid")
+    return True
 
 
 def connect_new_network(ssid: str, security: Optional[str]) -> bool:
@@ -58,16 +57,15 @@ def connect_new_network(ssid: str, security: Optional[str]) -> bool:
             return False
         cmd += ["password", pwd]
     notify(title=NOTIFY_TITLE, message=f"Connecting to {ssid}...", **NOTIFY_BUSY)
-    result = nmcli_run(cmd, timeout=20)
-    if result is None:
-        error_menu(f"Failed to connect to {ssid}")
+    result = nmcli_run(cmd, timeout=20, want_result=True)
+    if isinstance(result, dict) and not result.get("ok"):
+        emsg = result.get("message") or "Failed to connect."
+        errd = result.get("stderr") or result.get("stdout") or str(result)
+        error_menu(f"Failed to connect to {ssid}", errd)
         return False
-    if "successfully" in result.lower():
-        notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
-        invalidate("active_ssid")
-        return True
-    error_menu(f"NM did not report success for {ssid}")
-    return False
+    notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
+    invalidate("active_ssid")
+    return True
 
 
 def disconnect_wifi() -> None:
@@ -90,15 +88,14 @@ def connect_hidden_network() -> None:
     if pwd:
         cmd += ["password", pwd]
     notify(title=NOTIFY_TITLE, message="Connecting to hidden SSID...", **NOTIFY_BUSY)
-    result = nmcli_run(cmd, timeout=20)
-    if result is None:
-        error_menu(f"Failed to connect to hidden SSID {ssid}")
+    result = nmcli_run(cmd, timeout=20, want_result=True)
+    if isinstance(result, dict) and not result.get("ok"):
+        emsg = result.get("message") or "Failed to connect."
+        errd = result.get("stderr") or result.get("stdout") or str(result)
+        error_menu(f"Failed to connect to hidden SSID {ssid}", errd)
         return
-    if "successfully" in result.lower():
-        notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
-        invalidate("active_ssid")
-    else:
-        error_menu(f"NM did not report success for {ssid}")
+    notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
+    invalidate("active_ssid")
 
 
 def forget_network(ssid: str) -> bool:
@@ -106,11 +103,8 @@ def forget_network(ssid: str) -> bool:
     if result is None:
         error_menu(f"Failed to forget network {ssid}")
         return False
-    if "successfully" in result.lower():
-        notify(title=NOTIFY_TITLE, message=f"Forgot network: {ssid}", **NOTIFY_OK)
-        return True
-    error_menu(f"NM did not report success for {ssid}")
-    return False
+    notify(title=NOTIFY_TITLE, message=f"Forgot network: {ssid}", **NOTIFY_OK)
+    return True
 
 
 # ─── Connection Management ──────────────────────────────────────────────────
@@ -426,7 +420,7 @@ def wifi_menu() -> None:
     networks = cached("networks", lambda: list_wifi_networks() if wifi_on else {}, ttl=2)
     active_ssid = cached("active_ssid", get_active_wifi, ttl=2)
 
-    if wifi_on and not networks:
+    if wifi_on and (not networks or "~scanning~" in networks):
         notify(title=NOTIFY_TITLE, message="Scanning for networks...", expire_time=6_000)
         networks = list_wifi_networks(no_rescan=False)
         active_ssid = get_active_wifi()
@@ -452,18 +446,26 @@ def wifi_menu() -> None:
         if conn in ("full", "limited", "portal", "none"):
             ci = {"full": "󰤨", "limited": "󰤢", "portal": "󰤦", "none": "󰤭"}
             options[f"{ci.get(conn, '󰤯')}  Status: {conn}"] = "CONNINFO"
+            if conn == "portal":
+                options["󰖐  Open Captive Portal Login"] = "OPEN_PORTAL"
 
-        sorted_networks = sorted(
-            networks.values(),
-            key=lambda n: (not n.saved, -n.signal),
-        )
-        for n in sorted_networks:
-            icon = wifi_known if n.saved else (
-                shut_lock if n.security and n.security.startswith("WPA") else open_lock
+        options["──────────"] = None
+
+        # If scanning, show only a dummy network row
+        if "~scanning~" in networks:
+            options["󰓨  Scanning..."] = None
+        else:
+            sorted_networks = sorted(
+                networks.values(),
+                key=lambda n: (not n.saved, -n.signal),
             )
-            active_tag = f" " if n.ssid == active_ssid else ""
-            label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}"
-            options[label] = n.ssid
+            for n in sorted_networks:
+                icon = wifi_known if n.saved else (
+                    shut_lock if n.security and n.security.startswith("WPA") else open_lock
+                )
+                active_tag = f" " if n.ssid == active_ssid else ""
+                label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}"
+                options[label] = n.ssid
     else:
         options[f"{wifi_enable}  Enable Wi-Fi"] = TOGGLE_WIFI
 
@@ -504,6 +506,16 @@ def wifi_menu() -> None:
     elif selection == RESCAN:
         invalidate("networks")
         invalidate("active_ssid")
+        notify(title=NOTIFY_TITLE, message="Started scanning in background...", expire_time=4000)
         wifi_menu()
-    elif selection in networks:
+    elif selection == "CONNINFO":
+        wifi_menu()
+    elif selection == "OPEN_PORTAL":
+        import subprocess
+        for url in ("http://detectportal.firefox.com/canonical.html",
+                    "http://captive.apple.com",
+                    "http://www.msftconnecttest.com"):
+            subprocess.Popen(["xdg-open", url])
+        wifi_menu()
+    elif selection in networks and selection != "~scanning~":
         show_network_actions(networks[selection])

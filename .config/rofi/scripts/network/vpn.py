@@ -1,5 +1,5 @@
 from network.common import (
-    notify, back_icon,
+    notify, back_icon, BACK,
     disconnect_icon, vpn_icon,
     NOTIFY_TITLE, NOTIFY_OK,
     nmcli_run, rofi_menu, error_menu,
@@ -12,27 +12,31 @@ def vpn_menu() -> None:
 
     vpns = get_vpn_list()
     active_vpn = get_active_vpn()
-    options: list[str] = []
+    options: dict[str, str] = {}
 
     if active_vpn:
-        options.append(f"{disconnect_icon}  Disconnect VPN ({active_vpn})")
+        options[f"{disconnect_icon}  Disconnect VPN ({active_vpn})"] = f"DISCONNECT:{active_vpn}"
 
     for vpn in vpns:
         if vpn != active_vpn:
-            options.append(f"{vpn_icon}  Connect {vpn}")
+            options[f"{vpn_icon}  Connect {vpn}"] = f"CONNECT:{vpn}"
 
     if not options:
         notify(title=NOTIFY_TITLE, message="No VPN connections configured", urgency="low")
         return
 
-    options.append(f"{back_icon}  Back")
+    options[f"{back_icon}  Back"] = BACK
 
-    chosen = rofi_menu(options, f" {vpn_icon}")
+    chosen = rofi_menu(list(options.keys()), f" {vpn_icon}")
     if not chosen:
         return
 
-    if "Disconnect VPN" in chosen:
-        vpn_name = chosen.split("(")[1].rstrip(")")
+    selection = options.get(chosen)
+    if not selection:
+        return
+
+    if selection.startswith("DISCONNECT:"):
+        vpn_name = selection.split(":", 1)[1]
         r = nmcli_run(["connection", "down", "id", vpn_name])
         if r is None:
             error_menu(f"Failed to disconnect VPN ({vpn_name})")
@@ -40,8 +44,8 @@ def vpn_menu() -> None:
             return
         notify(title=NOTIFY_TITLE, message=f"VPN disconnected ({vpn_name})", **NOTIFY_OK)
         vpn_menu()
-    elif "Connect" in chosen:
-        vpn_name = chosen.split("Connect ")[1]
+    elif selection.startswith("CONNECT:"):
+        vpn_name = selection.split(":", 1)[1]
         r = nmcli_run(["connection", "up", "id", vpn_name])
         if r is None:
             error_menu(f"Failed to connect VPN ({vpn_name})")
@@ -49,6 +53,6 @@ def vpn_menu() -> None:
             return
         notify(title=NOTIFY_TITLE, message=f"VPN connected ({vpn_name})", **NOTIFY_OK)
         vpn_menu()
-    elif "Back" in chosen:
+    elif selection == BACK:
         from network.main import main_menu
         main_menu()

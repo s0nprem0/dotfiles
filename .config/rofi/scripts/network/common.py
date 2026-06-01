@@ -1,6 +1,13 @@
 import subprocess
 from typing import Optional
 from dataclasses import dataclass
+import os
+import getpass
+import json
+
+# Temp files for async wifi scan
+WIFI_SCAN_CACHE = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.json"
+WIFI_SCAN_PID = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.pid"
 
 from utils import notify, run_cmd_safe, back_icon, BACK, CONFIG_DIR
 from utils import rofi_menu as _rofi_menu, confirm_menu as _confirm_menu, rofi_password as _rofi_password
@@ -68,8 +75,11 @@ def rofi_menu(options: list[str], prompt: str, selected_row: int = 0) -> str:
     return _rofi_menu(options, prompt, ROFI_THEME, selected_row)
 
 
-def error_menu(message: str) -> None:
-    opts = [f"Error: {message}", f"{back_icon}  Back"]
+def error_menu(message: str, details: str = "") -> None:
+    opts = [f"Error: {message}"]
+    if details:
+        opts.append(details[:100])  # Limit details to 100 chars
+    opts.append(f"{back_icon}  Back")
     rofi_menu(opts, prompt=f"{wifi_enable}  Error", selected_row=1)
 
 
@@ -83,13 +93,15 @@ def rofi_password(prompt: str) -> str:
 # ─── nmcli ──────────────────────────────────────────────────────────────────
 
 def nmcli_run(args: list[str], *, error_title=None, error_notify=True,
-              timeout=15) -> str | None:
+               timeout=15, want_result=False) -> str | dict | None:
     return run_cmd_safe(
         ["nmcli"] + args,
         error_title=(error_title or NOTIFY_TITLE),
         error_notify=error_notify,
         timeout=timeout,
+        want_result=want_result,
     )
+
 
 # ─── Network State Queries ─────────────────────────────────────────────────
 
@@ -118,11 +130,72 @@ def get_active_wifi() -> Optional[str]:
     return None
 
 
+def start_wifi_bg_scan():
+    """Start nmcli wifi list scan in background, caching results on completion."""
+    # Already running?
+    if os.path.exists(WIFI_SCAN_PID):
+        try:
+            with open(WIFI_SCAN_PID, "r") as pidf:
+                pid = int(pidf.read())
+            os.kill(pid, 0)
+            return
+        except Exception:
+            os.remove(WIFI_SCAN_PID)
+    pid = os.fork()
+    if pid == 0:
+        # Child process: perform scan
+        with open(WIFI_SCAN_PID, "w") as pidf:
+            pidf.write(str(os.getpid()))
+        try:
+            raw = subprocess.check_output([
+                "nmcli", "-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list", "--rescan", "yes"
+            ], text=True, timeout=30)
+            networks = []
+            for line in raw.splitlines():
+                parts = line.split(":")
+                if len(parts) < 3: continue
+                sec = parts[0]
+                signal = int(parts[-1]) if parts[-1].isdigit() else 0
+                ssid = ":".join(parts[1:-1])
+                if ssid:
+                    networks.append({"ssid": ssid, "security": sec, "signal": signal})
+            with open(WIFI_SCAN_CACHE, "w") as outf:
+                json.dump(networks, outf)
+        except Exception:
+            pass
+        finally:
+            if os.path.exists(WIFI_SCAN_PID):
+                os.remove(WIFI_SCAN_PID)
+        os._exit(0)
+
 def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
     saved_networks = get_saved_networks()
-    cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list"]
-    if no_rescan:
-        cmd += ["--rescan", "no"]
+    # Asynchronous scan/caching logic
+    if not no_rescan:
+        start_wifi_bg_scan()
+    # Try cache first (fast path, avoids race with just-finished scan)
+    if os.path.exists(WIFI_SCAN_CACHE):
+        try:
+            with open(WIFI_SCAN_CACHE) as inf:
+                js = json.load(inf)
+            networks: dict[str, WifiNetwork] = {}
+            for row in js:
+                ssid = row.get("ssid")
+                if not ssid: continue
+                networks[ssid] = WifiNetwork(
+                    ssid=ssid, security=row.get("security"), signal=row.get("signal", 0),
+                    saved=ssid in saved_networks, visible=True
+                )
+            return networks
+        except Exception:
+            pass
+    # No cache yet — see if scan is still in progress
+    if os.path.exists(WIFI_SCAN_PID):
+        return {"~scanning~": WifiNetwork(
+            ssid="Scanning...", security=None, signal=0, saved=False, visible=True
+        )}
+    # Fallback: blocking call as last resort
+    cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list", "--rescan", "no"]
     res = nmcli_run(cmd)
     if res is None:
         return {}
