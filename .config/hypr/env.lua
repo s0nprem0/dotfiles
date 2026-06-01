@@ -8,8 +8,8 @@
 -- Cursor
 hl.env("HYPRCURSOR_THEME", "macOS")
 hl.env("XCURSOR_THEME", "macOS")
-hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("XCURSOR_SIZE", "20")
+hl.env("HYPRCURSOR_SIZE", "20")
 
 -- Qt / KDE
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
