@@ -103,5 +103,7 @@ zplugin-remove() {
 # plugins
 zplugin-load zsh-users zsh-autosuggestions
 zplugin-load zsh-users zsh-history-substring-search
-
+zplugin-load zsh-users zsh-completions
+# zsh-completions' own .plugin.zsh assumes oh-my-zsh paths; add src/ manually
+fpath+=("${ZPLUGINDIR}/zsh-completions/src")
 zplugin-load zdharma-continuum fast-syntax-highlighting
