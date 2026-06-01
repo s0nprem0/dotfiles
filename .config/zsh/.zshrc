@@ -1,7 +1,4 @@
 
-# GPG TTY — only meaningful in interactive shells
-export GPG_TTY=$(tty)
-
 # Boilerplate
 source "${ZDOTDIR}/alias.zsh" # alias
 source "${ZDOTDIR}/binding.zsh" # bindings
@@ -48,6 +45,8 @@ TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 # Import Composer
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent"
 export PATH="$HOME/.cache/.bun/bin:$PATH"
 
 # --- NEW ADDITIONS ---
