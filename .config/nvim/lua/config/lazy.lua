@@ -22,12 +22,18 @@ require("lazy").setup({
     -- Essential for managing package.json, mobile config files, and API responses
     { import = "lazyvim.plugins.extras.lang.json" },
 
+    -- YAML: GitHub Actions, docker-compose, etc.
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+
     -- 3. UI/UX & Formatting
     -- Adds auto-sorting and inline color highlighting for component design
     { import = "lazyvim.plugins.extras.lang.tailwind" },
 
     -- Industry-standard formatting for JavaScript, TypeScript, and CSS
     { import = "lazyvim.plugins.extras.formatting.prettier" },
+
+    -- Disable spectre (redundant with grug-far.nvim)
+    { "nvim-pack/nvim-spectre", enabled = false },
 
     -- 4. Import your custom plugins (including themes and UI tweaks)
     { import = "plugins" },
