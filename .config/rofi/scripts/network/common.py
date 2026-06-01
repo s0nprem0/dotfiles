@@ -9,8 +9,12 @@ import json
 WIFI_SCAN_CACHE = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.json"
 WIFI_SCAN_PID = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.pid"
 
-from utils import notify, run_cmd_safe, back_icon, BACK, CONFIG_DIR
-from utils import rofi_menu as _rofi_menu, confirm_menu as _confirm_menu, rofi_password as _rofi_password
+import utils
+
+# Re-export utils names that other modules import from common
+notify = utils.notify
+back_icon = utils.back_icon
+BACK = utils.BACK
 
 # ─── Icons ──────────────────────────────────────────────────────────────────
 
@@ -30,7 +34,7 @@ vpn_icon = ""
 # ─── Constants ──────────────────────────────────────────────────────────────
 
 NOTIFY_TITLE = "Network Manager"
-ROFI_THEME = str(CONFIG_DIR / "rofi" / "wifi.rasi")
+ROFI_THEME = str(utils.CONFIG_DIR / "rofi" / "wifi.rasi")
 
 TOGGLE_WIFI = "TOGGLE_WIFI"
 CONNECT = "Connect"
@@ -72,29 +76,29 @@ def signal_bars(signal: int) -> str:
 # ─── Rofi Wrappers ──────────────────────────────────────────────────────────
 
 def rofi_menu(options: list[str], prompt: str, selected_row: int = 0) -> str:
-    return _rofi_menu(options, prompt, ROFI_THEME, selected_row)
+    return utils.rofi_menu(options, prompt, ROFI_THEME, selected_row)
 
 
 def error_menu(message: str, details: str = "") -> None:
     opts = [f"Error: {message}"]
     if details:
-        opts.append(details[:100])  # Limit details to 100 chars
-    opts.append(f"{back_icon}  Back")
+        opts.append(details[:100])
+    opts.append(f"{utils.back_icon}  Back")
     rofi_menu(opts, prompt=f"{wifi_enable}  Error", selected_row=1)
 
 
 def confirm_menu(message: str) -> bool:
-    return _confirm_menu(message, ROFI_THEME)
+    return utils.confirm_menu(message, ROFI_THEME)
 
 
 def rofi_password(prompt: str) -> str:
-    return _rofi_password(prompt)
+    return utils.rofi_password(prompt)
 
 # ─── nmcli ──────────────────────────────────────────────────────────────────
 
 def nmcli_run(args: list[str], *, error_title=None, error_notify=True,
                timeout=15, want_result=False) -> str | dict | None:
-    return run_cmd_safe(
+    return utils.run_cmd_safe(
         ["nmcli"] + args,
         error_title=(error_title or NOTIFY_TITLE),
         error_notify=error_notify,
