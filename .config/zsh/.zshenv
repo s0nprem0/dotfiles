@@ -22,9 +22,6 @@ fi
 export EDITOR="nvim"
 export VISUAL="nvim"
 
-# ---------- GPG ----------
-export GPG_TTY="${TTY:-$(tty)}"
-
 # ---------- PATH ----------
 # Personal binaries/scripts
 export PATH="$HOME/.local/bin:$PATH"

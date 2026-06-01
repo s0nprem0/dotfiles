@@ -1,4 +1,7 @@
 
+# GPG TTY — only meaningful in interactive shells
+export GPG_TTY=$(tty)
+
 # Boilerplate
 source "${ZDOTDIR}/alias.zsh" # alias
 source "${ZDOTDIR}/binding.zsh" # bindings

@@ -72,6 +72,15 @@ history.txt
 .env.*
 *.local
 
+# GPG runtime files
+.gnupg/crls.d/
+.gnupg/private-keys-v1.d/
+.gnupg/public-keys.d/
+.gnupg/*.kbx
+.gnupg/*.kbx~
+.gnupg/trustdb.gpg
+.gnupg/*.lock
+
 # Python
 .python-version
 .pytest_cache/
