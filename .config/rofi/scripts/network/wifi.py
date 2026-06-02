@@ -29,12 +29,18 @@ def toggle_wifi() -> None:
             error_menu("Failed to disable Wi-Fi", r.get("stderr") or r.get("message", ""))
             return
         notify(title=NOTIFY_TITLE, message="Wi-Fi disabled", **NOTIFY_OK)
+        invalidate("wifi_on")
+        invalidate("networks")
+        invalidate("active_ssid")
     else:
         r = nmcli_run(["radio", "wifi", "on"], want_result=True)
         if isinstance(r, dict) and not r.get("ok"):
             error_menu("Failed to enable Wi-Fi", r.get("stderr") or r.get("message", ""))
             return
         notify(title=NOTIFY_TITLE, message="Wi-Fi enabled", **NOTIFY_OK)
+        invalidate("wifi_on")
+        invalidate("networks")
+        invalidate("active_ssid")
 
 
 # ─── Connection Actions ─────────────────────────────────────────────────────
@@ -107,6 +113,8 @@ def forget_network(ssid: str) -> bool:
         error_menu(f"Failed to forget network {ssid}", result.get("stderr") or result.get("message", ""))
         return False
     notify(title=NOTIFY_TITLE, message=f"Forgot network: {ssid}", **NOTIFY_OK)
+    invalidate("networks")
+    invalidate("active_ssid")
     return True
 
 
@@ -143,6 +151,7 @@ def toggle_power_save() -> None:
         return
     notify(title=NOTIFY_TITLE, message=f"Power saving: {'ON' if new_val == 'on' else 'OFF'}",
            **NOTIFY_OK)
+    invalidate("power_save")
 
 
 def _get_wifi_iface() -> Optional[str]:

@@ -12,7 +12,7 @@ from network.common import (
 from network.wifi import wifi_menu
 from network.ethernet import ethernet_menu
 from network.vpn import vpn_menu
-from network.cache import cached
+from network.cache import cached, invalidate
 
 
 def _is_bt_blocked() -> bool:
@@ -37,6 +37,9 @@ def toggle_airplane_mode() -> None:
             return
         subprocess.run(["rfkill", "block", "bluetooth"], capture_output=True, timeout=5)
         notify(title=NOTIFY_TITLE, message="✈ Airplane mode ON", **NOTIFY_OK)
+        invalidate("wifi_on")
+        invalidate("networks")
+        invalidate("active_ssid")
     else:
         r = nmcli_run(["radio", "wifi", "on"], want_result=True)
         if isinstance(r, dict) and not r.get("ok"):
@@ -45,6 +48,9 @@ def toggle_airplane_mode() -> None:
             return
         subprocess.run(["rfkill", "unblock", "bluetooth"], capture_output=True, timeout=5)
         notify(title=NOTIFY_TITLE, message="✈ Airplane mode OFF", **NOTIFY_OK)
+        invalidate("wifi_on")
+        invalidate("networks")
+        invalidate("active_ssid")
 
 
 def main_menu() -> None:
