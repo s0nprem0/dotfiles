@@ -1,4 +1,3 @@
-import subprocess
 import os
 import time
 
@@ -12,47 +11,6 @@ from network.common import (
 from network.wifi import wifi_menu
 from network.ethernet import ethernet_menu
 from network.vpn import vpn_menu
-from network.cache import cached, invalidate
-
-
-def _is_bt_blocked() -> bool:
-    try:
-        out = subprocess.run(["rfkill", "list", "bluetooth"], capture_output=True,
-                             text=True, timeout=5).stdout
-        return "blocked" in out
-    except Exception:
-        return True
-
-
-def toggle_airplane_mode() -> None:
-    wifi_on = is_wifi_enabled()
-    bt_blocked = cached("bt_blocked", _is_bt_blocked, ttl=1)
-    any_on = wifi_on or not bt_blocked
-
-    if any_on:
-        r = nmcli_run(["radio", "wifi", "off"], want_result=True)
-        if isinstance(r, dict) and not r.get("ok"):
-            error_menu("Failed to disable Wi-Fi for airplane mode",
-                       r.get("stderr") or r.get("message", ""))
-            return
-        subprocess.run(["rfkill", "block", "bluetooth"], capture_output=True, timeout=5)
-        notify(title=NOTIFY_TITLE, message="✈ Airplane mode ON", **NOTIFY_OK)
-        invalidate("wifi_on")
-        invalidate("networks")
-        invalidate("active_ssid")
-        invalidate("bt_blocked")
-    else:
-        r = nmcli_run(["radio", "wifi", "on"], want_result=True)
-        if isinstance(r, dict) and not r.get("ok"):
-            error_menu("Failed to enable Wi-Fi for airplane mode",
-                       r.get("stderr") or r.get("message", ""))
-            return
-        subprocess.run(["rfkill", "unblock", "bluetooth"], capture_output=True, timeout=5)
-        notify(title=NOTIFY_TITLE, message="✈ Airplane mode OFF", **NOTIFY_OK)
-        invalidate("wifi_on")
-        invalidate("networks")
-        invalidate("active_ssid")
-        invalidate("bt_blocked")
 
 
 def main_menu() -> None:
@@ -90,13 +48,6 @@ def main_menu() -> None:
     options.append(vpn_label)
     option_values[vpn_label] = "vpn"
 
-    wifi_on = is_wifi_enabled()
-    bt_blocked = cached("bt_blocked", _is_bt_blocked, ttl=2)
-    any_on = wifi_on or not bt_blocked
-    ap_label = f"{'' if any_on else ''}  Airplane Mode: {'ON' if any_on else 'OFF'}"
-    options.append(ap_label)
-    option_values[ap_label] = "airplane"
-
     if pub_ip:
         ip_label = f"󰩟  Public IP:  {pub_ip}"
         options.append(ip_label)
@@ -119,9 +70,3 @@ def main_menu() -> None:
         ethernet_menu()
     elif selection == "vpn":
         vpn_menu()
-    elif selection == "airplane":
-        toggle_airplane_mode()
-        main_menu()
-
-
-
