@@ -64,6 +64,7 @@ class WifiNetwork:
     signal: int
     saved: bool
     visible: bool
+    device: str = ""
 
 # ─── Signal ─────────────────────────────────────────────────────────────────
 
@@ -134,6 +135,10 @@ def get_active_wifi() -> Optional[str]:
     return nm_dbus.get_active_wifi()
 
 
+def get_wifi_ifaces() -> list[dict]:
+    return nm_dbus.get_wifi_ifaces()
+
+
 def start_wifi_bg_scan():
     """Start nmcli wifi list scan in background, caching results on completion."""
     # Already running?
@@ -190,6 +195,7 @@ def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
                 signal=info.get("signal", 0),
                 saved=info.get("saved", False),
                 visible=info.get("visible", True),
+                device=info.get("device", ""),
             )
         return networks
     # Fallback: try the file cache
@@ -220,8 +226,12 @@ def get_connection_prop(ssid: str, prop: str) -> str:
     return nm_dbus.get_connection_prop(ssid, prop)
 
 
-def get_power_save() -> Optional[bool]:
-    iface = nm_dbus.get_wifi_iface()
+def get_power_save(iface: str | None = None) -> Optional[bool]:
+    if iface is None:
+        ifaces = nm_dbus.get_wifi_ifaces()
+        if not ifaces:
+            return None
+        iface = ifaces[0]["iface"]
     if not iface:
         return None
     try:
