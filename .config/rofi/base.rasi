@@ -103,7 +103,8 @@ element selected.alternate {
 }
 
 element-icon {
-  size: 18px;
+  /* Nerd Font glyphs (wifi/signal/etc) need more room to avoid clipping */
+  size: 24px;
   margin: 0 8px 0 0;
   background-color: transparent;
   text-color: inherit;
