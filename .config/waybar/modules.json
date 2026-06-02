@@ -50,11 +50,13 @@
     "expand": false
   },
 
-  "custom/bluetooth": {
-    "format": "{}",
-    "interval": 5,
-    "exec": "/home/jllyn/.config/rofi/scripts/bluetooth-manager --status",
-    "on-click": "/home/jllyn/.config/rofi/scripts/bluetooth-manager"
+  "bluetooth": {
+    "format": "󰂲",
+    "format-connected": "󰂯 {device_alias}",
+    "format-disabled": "󰂲",
+    "tooltip-format": "{num_connections} connected\n{device_address}",
+    "on-click": "/home/jllyn/.config/rofi/scripts/bluetooth-manager",
+    "persist": true
   },
 
   "clock": {
