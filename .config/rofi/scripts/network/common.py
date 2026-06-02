@@ -5,6 +5,7 @@ import os
 import getpass
 import json
 import signal
+import time
 
 # Temp files for async wifi scan
 WIFI_SCAN_CACHE = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.json"
@@ -186,10 +187,10 @@ def start_wifi_bg_scan():
 
 def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
     saved_networks = get_saved_networks()
-    # Asynchronous scan/caching logic
-    if not no_rescan:
+    # Only fork for async scan if we have cached data to show immediately
+    if not no_rescan and os.path.exists(WIFI_SCAN_CACHE):
         start_wifi_bg_scan()
-    # Try cache first (fast path, avoids race with just-finished scan)
+    # Try cache first (fast path)
     if os.path.exists(WIFI_SCAN_CACHE):
         try:
             with open(WIFI_SCAN_CACHE) as inf:
@@ -232,13 +233,28 @@ def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
 
 
 def get_connection_prop(ssid: str, prop: str) -> str:
+    props = _get_conn_props(ssid)
+    return props.get(prop, "")
+
+
+_CONN_PROPS_CACHE: dict[str, tuple[dict[str, str], float]] = {}
+
+def _get_conn_props(ssid: str, ttl: float = 3.0) -> dict[str, str]:
+    """Fetch and cache ALL connection properties in a single nmcli call."""
+    now = time.monotonic()
+    cached = _CONN_PROPS_CACHE.get(ssid)
+    if cached and now - cached[1] < ttl:
+        return cached[0]
     res = nmcli_run(["connection", "show", "id", ssid])
     if res is None:
-        return ""
+        return {}
+    props: dict[str, str] = {}
     for line in res.splitlines():
-        if line.startswith(f"{prop}:"):
-            return line.split(":", 1)[1].strip()
-    return ""
+        if ":" in line:
+            k, _, v = line.partition(":")
+            props[k.strip()] = v.strip()
+    _CONN_PROPS_CACHE[ssid] = (props, now)
+    return props
 
 
 def get_power_save() -> Optional[bool]:

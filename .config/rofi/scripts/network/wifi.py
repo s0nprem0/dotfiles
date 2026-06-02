@@ -111,13 +111,8 @@ def forget_network(ssid: str) -> bool:
 # ─── Connection Management ──────────────────────────────────────────────────
 
 def is_auto_connect(ssid: str) -> bool:
-    res = nmcli_run(["connection", "show", "id", ssid])
-    if res is None:
-        return True
-    for line in res.splitlines():
-        if line.startswith("connection.autoconnect:"):
-            return line.split(":", 1)[1].strip() == "yes"
-    return True
+    val = get_connection_prop(ssid, "connection.autoconnect")
+    return val == "yes" if val else True
 
 
 def toggle_autoconnect(ssid: str) -> None:
@@ -272,14 +267,8 @@ def cycle_priority(network: WifiNetwork) -> None:
 # ─── DNS ─────────────────────────────────────────────────────────────────────
 
 def get_dns_servers(ssid: str) -> list[str]:
-    res = nmcli_run(["connection", "show", "id", ssid])
-    if res is None:
-        return []
-    for line in res.splitlines():
-        if line.startswith("ipv4.dns:"):
-            val = line.split(":", 1)[1].strip()
-            return [s.strip() for s in val.split(",") if s.strip()]
-    return []
+    dns = get_connection_prop(ssid, "ipv4.dns")
+    return [s.strip() for s in dns.split(",") if s.strip()]
 
 
 def set_dns_servers(network: WifiNetwork) -> None:
