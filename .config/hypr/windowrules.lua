@@ -277,15 +277,4 @@ hl.window_rule({
 	no_shadow = true,
 })
 
--- ======================
--- Size Rules
--- ======================
-
--- Terminal windows get reasonable default size
-hl.window_rule({
-	name = "size_terminal",
-	match = { class = "^(kitty)$" },
-	size = { "monitor_w*0.45", "monitor_h*0.65" },
-})
-
 
