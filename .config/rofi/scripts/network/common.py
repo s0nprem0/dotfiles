@@ -64,6 +64,7 @@ class WifiNetwork:
     signal: int
     saved: bool
     visible: bool
+    band: str = ""
 
 # ─── Signal ─────────────────────────────────────────────────────────────────
 
@@ -83,17 +84,23 @@ def signal_bars(signal: int) -> str:
 
 def rofi_menu(options: list[str], prompt: str, selected_row: int = 0,
               active_rows: list[int] | None = None,
-              urgent_rows: list[int] | None = None) -> str:
+              urgent_rows: list[int] | None = None,
+              return_raw: bool = False) -> str | tuple[str, str]:
     return utils.rofi_menu(options, prompt, ROFI_THEME, selected_row,
-                           active_rows=active_rows, urgent_rows=urgent_rows)
+                           active_rows=active_rows, urgent_rows=urgent_rows,
+                           return_raw=return_raw)
+
+
+def rofi_custom_kb(raw: str) -> int:
+    return utils.rofi_custom_kb(raw)
 
 
 def error_menu(message: str, details: str = "") -> None:
-    opts = [f"{message}\0nonselectable\x1ftrue"]
+    opts = [f"󰀨  {message}\0nonselectable\x1ftrue"]
     if details:
-        opts.append(f"{details[:120]}\0nonselectable\x1ftrue")
+        opts.append(f"  {details[:160]}\0nonselectable\x1ftrue")
     opts.append(f"{utils.back_icon}  Back")
-    rofi_menu(opts, prompt=f"󰀨  Error", selected_row=len(opts) - 1)
+    rofi_menu(opts, prompt="󰀨  Error", selected_row=len(opts) - 1)
 
 
 def confirm_menu(message: str) -> bool:
@@ -174,6 +181,14 @@ def start_wifi_bg_scan():
                 os.remove(WIFI_SCAN_PID)
         os._exit(0)
 
+def _freq_to_band(freq: int) -> str:
+    if 2412 <= freq <= 2484:
+        return "2.4"
+    if 5170 <= freq <= 5825:
+        return "5"
+    return ""
+
+
 def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
     # Trigger async scan via D-Bus if requested
     if not no_rescan:
@@ -190,6 +205,7 @@ def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
                 signal=info.get("signal", 0),
                 saved=info.get("saved", False),
                 visible=info.get("visible", True),
+                band=_freq_to_band(info.get("frequency", 0)),
             )
         return networks
     # Fallback: try the file cache
@@ -204,14 +220,14 @@ def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
                 if not ssid: continue
                 networks[ssid] = WifiNetwork(
                     ssid=ssid, security=row.get("security"), signal=row.get("signal", 0),
-                    saved=ssid in saved, visible=True
+                    saved=ssid in saved, visible=True, band="",
                 )
             return networks
         except Exception:
             pass
     if os.path.exists(WIFI_SCAN_PID):
         return {"~scanning~": WifiNetwork(
-            ssid="Scanning...", security=None, signal=0, saved=False, visible=True
+            ssid="Scanning...", security=None, signal=0, saved=False, visible=True, band="",
         )}
     return {}
 

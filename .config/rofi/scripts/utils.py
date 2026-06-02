@@ -59,7 +59,8 @@ def run_cmd_safe(cmd: list[str], *, error_title: str | None = None, error_notify
 
 def rofi_menu(options: list[str], prompt: str, theme: str, selected_row: int = 0,
               active_rows: list[int] | None = None,
-              urgent_rows: list[int] | None = None) -> str:
+              urgent_rows: list[int] | None = None,
+              return_raw: bool = False) -> str | tuple[str, str]:
     cmd = ["rofi", "-dmenu", "-i", "-p", prompt, "-theme", theme,
            "-selected-row", str(selected_row)]
     if active_rows:
@@ -68,12 +69,22 @@ def rofi_menu(options: list[str], prompt: str, theme: str, selected_row: int = 0
     if urgent_rows:
         for r in urgent_rows:
             cmd.extend(["-u", str(r)])
-    result = subprocess.run(
+    raw = subprocess.run(
         cmd,
         input="\n".join(options),
         text=True, capture_output=True,
-    ).stdout.strip()
-    return result
+    ).stdout
+    text = raw.split("\0", 1)[0].strip()
+    if return_raw:
+        return text, raw
+    return text
+
+
+def rofi_custom_kb(raw: str) -> int:
+    """Return custom keybinding number from raw rofi output, or -1 if none."""
+    import re
+    m = re.search(r'\0custom\x1f(\d+)', raw)
+    return int(m.group(1)) if m else -1
 
 
 def confirm_menu(message: str, theme: str) -> bool:

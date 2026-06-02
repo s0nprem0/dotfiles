@@ -211,16 +211,18 @@ def list_wifi(no_rescan: bool = True) -> dict:
                 wpa = int(_p(ap_obj).Get(_AP_IFACE, 'WpaFlags'))
                 rsn = int(_p(ap_obj).Get(_AP_IFACE, 'RsnFlags'))
                 signal = int(_p(ap_obj).Get(_AP_IFACE, 'Strength'))
+                freq = int(_p(ap_obj).Get(_AP_IFACE, 'Frequency'))
                 networks[ssid] = {
                     "ssid": ssid,
                     "security": _ap_security(flags, wpa, rsn),
                     "signal": signal,
+                    "frequency": freq,
                     "saved": ssid in saved,
                     "visible": True,
                 }
         return networks
     saved = saved_wifi_list()
-    cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list"]
+    cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL,FREQ", "device", "wifi", "list"]
     if no_rescan:
         cmd += ["--rescan", "no"]
     res = nmcli_run(cmd)
@@ -229,14 +231,18 @@ def list_wifi(no_rescan: bool = True) -> dict:
     networks = {}
     for line in res.splitlines():
         parts = line.split(":")
-        if len(parts) < 3:
+        if len(parts) < 4:
             continue
         security = parts[0]
-        signal = int(parts[-1]) if parts[-1].isdigit() else 0
-        ssid = ":".join(parts[1:-1])
+        signal_str = parts[-2]
+        freq_str = parts[-1]
+        signal = int(signal_str) if signal_str.isdigit() else 0
+        freq = int(freq_str) if freq_str.isdigit() else 0
+        ssid = ":".join(parts[1:-2])
         if ssid:
             networks[ssid] = {
                 "ssid": ssid, "security": security, "signal": signal,
+                "frequency": freq,
                 "saved": ssid in saved, "visible": True,
             }
     return networks

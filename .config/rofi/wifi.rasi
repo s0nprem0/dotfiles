@@ -11,6 +11,15 @@ listview {
   lines: 12;
 }
 
+/***** Network-specific keybindings *****/
+configuration {
+  kb-custom-1: "Ctrl+r";
+  kb-custom-2: "Ctrl+t";
+  kb-custom-3: "Ctrl+h";
+  kb-custom-4: "Ctrl+s";
+  kb-custom-5: "Ctrl+m";
+}
+
 /***** Tighter rows for denser info *****/
 element {
   padding: 5px 14px;
@@ -74,4 +83,9 @@ element urgent.selected.alternate {
 /***** Icon sizing *****/
 element-icon {
   margin: 0 6px 0 0;
+}
+
+/***** Input placeholder for wifi context *****/
+entry {
+  placeholder: "Filter networks...";
 }
