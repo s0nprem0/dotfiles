@@ -237,9 +237,16 @@ def show_mac_spoof_menu(iface: str) -> None:
             notify(title=NOTIFY_TITLE, message=f"Random MAC set on {iface_name}", **NOTIFY_OK)
         elif mode == "vendor":
             r = sudo_run(["ip", "link", "set", iface_name, "down"])
+            if not r.get("ok"):
+                error_menu("Failed to bring interface down", r.get("stderr", ""))
+                show_mac_spoof_menu(iface)
+                return
             r = sudo_run(["macchanger", "-a", iface_name])
             if not r.get("ok"):
                 error_menu("MAC spoof failed", r.get("stderr", ""))
+                sudo_run(["ip", "link", "set", iface_name, "up"])
+                show_mac_spoof_menu(iface)
+                return
             sudo_run(["ip", "link", "set", iface_name, "up"])
             notify(title=NOTIFY_TITLE, message=f"Vendor MAC set on {iface_name}", **NOTIFY_OK)
         elif mode == "custom":
@@ -267,10 +274,17 @@ def show_mac_spoof_menu(iface: str) -> None:
             sudo_run(["ip", "link", "set", iface_name, "up"])
             notify(title=NOTIFY_TITLE, message=f"Custom MAC {mac} set on {iface_name}", **NOTIFY_OK)
         elif mode == "permanent":
-            sudo_run(["ip", "link", "set", iface_name, "down"])
+            r = sudo_run(["ip", "link", "set", iface_name, "down"])
+            if not r.get("ok"):
+                error_menu("Failed to bring interface down", r.get("stderr", ""))
+                show_mac_spoof_menu(iface)
+                return
             r = sudo_run(["macchanger", "-p", iface_name])
             if not r.get("ok"):
                 error_menu("MAC reset failed", r.get("stderr", ""))
+                sudo_run(["ip", "link", "set", iface_name, "up"])
+                show_mac_spoof_menu(iface)
+                return
             sudo_run(["ip", "link", "set", iface_name, "up"])
             notify(title=NOTIFY_TITLE, message=f"MAC reset to permanent on {iface_name}", **NOTIFY_OK)
         invalidate("networks")
