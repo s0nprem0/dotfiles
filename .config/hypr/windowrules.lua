@@ -278,47 +278,6 @@ hl.window_rule({
 })
 
 -- ======================
--- Workspace Rules
--- ======================
-
--- Default workspace assignments
-hl.window_rule({
-	name = "ws1_terminal",
-	match = { class = "^(kitty)$" },
-	windowrulev2 = { workspace = "1" },
-})
-
-hl.window_rule({
-	name = "ws2_browser",
-	match = { class = "^(firefox)$" },
-	windowrulev2 = { workspace = "2" },
-})
-
-hl.window_rule({
-	name = "ws3_code",
-	match = { class = "^(Code)$" },
-	windowrulev2 = { workspace = "3" },
-})
-
--- ======================
--- Layer Rules (Waybar, Notifications)
--- ======================
-
--- Waybar
-hl.window_rule({
-	name = "layer_waybar",
-	match = { class = "^$|^$", title = "^$", layer = true },
-	layer = "top",
-})
-
--- Notification popups
-hl.window_rule({
-	name = "layer_notifications",
-	match = { class = "^(swaync)$" },
-	layer = "overlay",
-})
-
--- ======================
 -- Size Rules
 -- ======================
 
@@ -329,13 +288,4 @@ hl.window_rule({
 	size = { "monitor_w*0.45", "monitor_h*0.65" },
 })
 
--- ======================
--- Focus Rules
--- ======================
 
--- File dialogs should steal focus
-hl.window_rule({
-	name = "focus_dialog",
-	match = { class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" },
-	focus = true,
-})
