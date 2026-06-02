@@ -22,15 +22,15 @@ from network.cache import cached, invalidate
 
 def toggle_wifi() -> None:
     if is_wifi_enabled():
-        r = nmcli_run(["radio", "wifi", "off"])
-        if r is None:
-            error_menu("Failed to disable Wi-Fi")
+        r = nmcli_run(["radio", "wifi", "off"], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu("Failed to disable Wi-Fi", r.get("stderr") or r.get("message", ""))
             return
         notify(title=NOTIFY_TITLE, message="Wi-Fi disabled", **NOTIFY_OK)
     else:
-        r = nmcli_run(["radio", "wifi", "on"])
-        if r is None:
-            error_menu("Failed to enable Wi-Fi")
+        r = nmcli_run(["radio", "wifi", "on"], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu("Failed to enable Wi-Fi", r.get("stderr") or r.get("message", ""))
             return
         notify(title=NOTIFY_TITLE, message="Wi-Fi enabled", **NOTIFY_OK)
 
@@ -72,9 +72,9 @@ def connect_new_network(ssid: str, security: Optional[str]) -> bool:
 def disconnect_wifi() -> None:
     active = get_active_wifi()
     if active:
-        r = nmcli_run(["connection", "down", "id", active])
-        if r is None:
-            error_menu(f"Failed to disconnect from {active}")
+        r = nmcli_run(["connection", "down", "id", active], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu(f"Failed to disconnect from {active}", r.get("stderr") or r.get("message", ""))
             return
         notify(title=NOTIFY_TITLE, message=f"Disconnected from {active}", **NOTIFY_OK)
         invalidate("active_ssid")
@@ -100,9 +100,9 @@ def connect_hidden_network() -> None:
 
 
 def forget_network(ssid: str) -> bool:
-    result = nmcli_run(["connection", "delete", "id", ssid])
-    if result is None:
-        error_menu(f"Failed to forget network {ssid}")
+    result = nmcli_run(["connection", "delete", "id", ssid], want_result=True)
+    if isinstance(result, dict) and not result.get("ok"):
+        error_menu(f"Failed to forget network {ssid}", result.get("stderr") or result.get("message", ""))
         return False
     notify(title=NOTIFY_TITLE, message=f"Forgot network: {ssid}", **NOTIFY_OK)
     return True
@@ -123,9 +123,9 @@ def is_auto_connect(ssid: str) -> bool:
 def toggle_autoconnect(ssid: str) -> None:
     current = is_auto_connect(ssid)
     new_val = "no" if current else "yes"
-    r = nmcli_run(["connection", "modify", "id", ssid, "connection.autoconnect", new_val])
-    if r is None:
-        error_menu(f"Failed to toggle auto-connect for {ssid}")
+    r = nmcli_run(["connection", "modify", "id", ssid, "connection.autoconnect", new_val], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu(f"Failed to toggle auto-connect for {ssid}", r.get("stderr") or r.get("message", ""))
         return
     notify(title=NOTIFY_TITLE, message=f"Auto-connect: {'ON' if new_val == 'yes' else 'OFF'} for {ssid}",
            **NOTIFY_OK)
@@ -140,9 +140,9 @@ def toggle_power_save() -> None:
         error_menu("Could not read power save state")
         return
     new_val = "off" if current else "on"
-    r = nmcli_run(["radio", "wifi", "power", "save", new_val])
-    if r is None:
-        error_menu("Failed to toggle power saving")
+    r = nmcli_run(["radio", "wifi", "power", "save", new_val], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu("Failed to toggle power saving", r.get("stderr") or r.get("message", ""))
         return
     notify(title=NOTIFY_TITLE, message=f"Power saving: {'ON' if new_val == 'on' else 'OFF'}",
            **NOTIFY_OK)
@@ -171,9 +171,9 @@ def cycle_band(network: WifiNetwork) -> None:
     current = get_band_preference(ssid)
     order = {"auto": "a", "a": "bg", "bg": "auto"}
     new_band = order.get(current, "auto")
-    r = nmcli_run(["connection", "modify", "id", ssid, "802-11-wireless.band", new_band])
-    if r is None:
-        error_menu("Failed to set band preference")
+    r = nmcli_run(["connection", "modify", "id", ssid, "802-11-wireless.band", new_band], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu("Failed to set band preference", r.get("stderr") or r.get("message", ""))
         show_network_actions(network)
         return
     label = {"auto": "Auto", "a": "5 GHz", "bg": "2.4 GHz"}
@@ -202,9 +202,9 @@ def cycle_mac(network: WifiNetwork) -> None:
     else:
         order = {"permanent": "random", "random": "stable", "stable": "permanent"}
         new_mode = order.get(current, "permanent")
-    r = nmcli_run(["connection", "modify", "id", ssid, "802-11-wireless.cloned-mac-address", new_mode])
-    if r is None:
-        error_menu("Failed to set MAC mode")
+    r = nmcli_run(["connection", "modify", "id", ssid, "802-11-wireless.cloned-mac-address", new_mode], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu("Failed to set MAC mode", r.get("stderr") or r.get("message", ""))
         show_network_actions(network)
         return
     notify(title=NOTIFY_TITLE, message=f"MAC: {new_mode} for {ssid}", **NOTIFY_OK)
@@ -225,9 +225,9 @@ def set_custom_mac(network: WifiNetwork) -> None:
         show_network_actions(network)
         return
     r = nmcli_run(["connection", "modify", "id", ssid,
-                    "802-11-wireless.cloned-mac-address", mac])
-    if r is None:
-        error_menu(f"Failed to set MAC for {ssid}")
+                    "802-11-wireless.cloned-mac-address", mac], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu(f"Failed to set MAC for {ssid}", r.get("stderr") or r.get("message", ""))
         show_network_actions(network)
         return
     notify(title=NOTIFY_TITLE, message=f"MAC set to {mac} for {ssid}", **NOTIFY_OK)
@@ -240,9 +240,9 @@ def reset_mac(network: WifiNetwork) -> None:
         show_network_actions(network)
         return
     r = nmcli_run(["connection", "modify", "id", ssid,
-                    "802-11-wireless.cloned-mac-address", ""])
-    if r is None:
-        error_menu(f"Failed to reset MAC for {ssid}")
+                    "802-11-wireless.cloned-mac-address", ""], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu(f"Failed to reset MAC for {ssid}", r.get("stderr") or r.get("message", ""))
         show_network_actions(network)
         return
     notify(title=NOTIFY_TITLE, message=f"MAC reset to permanent for {ssid}", **NOTIFY_OK)
@@ -260,12 +260,50 @@ def cycle_priority(network: WifiNetwork) -> None:
     values = [0, 5, 10, 20, 50, 100]
     idx = (values.index(current) + 1) % len(values) if current in values else 0
     new_prio = values[idx]
-    r = nmcli_run(["connection", "modify", "id", ssid, "connection.autoconnect-priority", str(new_prio)])
-    if r is None:
-        error_menu("Failed to set priority")
+    r = nmcli_run(["connection", "modify", "id", ssid, "connection.autoconnect-priority", str(new_prio)], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu("Failed to set priority", r.get("stderr") or r.get("message", ""))
         show_network_actions(network)
         return
     notify(title=NOTIFY_TITLE, message=f"Priority: {new_prio} for {ssid}", **NOTIFY_OK)
+    show_network_actions(network)
+
+
+# ─── DNS ─────────────────────────────────────────────────────────────────────
+
+def get_dns_servers(ssid: str) -> list[str]:
+    res = nmcli_run(["connection", "show", "id", ssid])
+    if res is None:
+        return []
+    for line in res.splitlines():
+        if line.startswith("ipv4.dns:"):
+            val = line.split(":", 1)[1].strip()
+            return [s.strip() for s in val.split(",") if s.strip()]
+    return []
+
+
+def set_dns_servers(network: WifiNetwork) -> None:
+    ssid = network.ssid
+    current = get_dns_servers(ssid)
+    default = ", ".join(current) if current else ""
+    raw = rofi_input(f"  DNS for {ssid} (comma-sep, empty=auto):", default)
+    if raw == default:
+        show_network_actions(network)
+        return
+    servers = [s.strip() for s in raw.split(",") if s.strip()]
+    if servers:
+        dns_str = " ".join(servers)
+        r = nmcli_run(["connection", "modify", "id", ssid, "ipv4.dns", dns_str,
+                        "ipv4.ignore-auto-dns", "yes"], want_result=True)
+    else:
+        r = nmcli_run(["connection", "modify", "id", ssid, "ipv4.dns", "",
+                        "ipv4.ignore-auto-dns", "no"], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu(f"Failed to set DNS for {ssid}", r.get("stderr") or r.get("message", ""))
+        show_network_actions(network)
+        return
+    label = " ".join(servers) if servers else "auto"
+    notify(title=NOTIFY_TITLE, message=f"DNS: {label} for {ssid}", **NOTIFY_OK)
     show_network_actions(network)
 
 
@@ -390,6 +428,9 @@ def show_network_actions(network: WifiNetwork, active_ssid: Optional[str] = None
             actions["  Reset MAC to permanent"] = "resetmac"
         prio = get_autoconnect_priority(network.ssid)
         actions[f"  Priority: {prio}"] = "priority"
+        dns = get_dns_servers(network.ssid)
+        dns_label = " ".join(dns) if dns else "auto"
+        actions[f"  DNS: {dns_label}"] = "dns"
     actions[f"{back_icon}  {BACK}"] = "back"
 
     chosen = rofi_menu(list(actions.keys()), title)
@@ -436,6 +477,8 @@ def show_network_actions(network: WifiNetwork, active_ssid: Optional[str] = None
         reset_mac(network)
     elif action == "priority":
         cycle_priority(network)
+    elif action == "dns":
+        set_dns_servers(network)
 
 
 # ─── Saved Networks Menu ───────────────────────────────────────────────────

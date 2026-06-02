@@ -1,11 +1,48 @@
+import subprocess
+
 from network.common import (
-    wifi_enable, ethernet_icon, vpn_icon,
-    rofi_menu, is_wifi_enabled, get_active_wifi, get_public_ip,
-    get_active_vpn,
+    wifi_enable, wifi_disable, ethernet_icon, vpn_icon, back_icon, BACK,
+    rofi_menu, notify, error_menu,
+    is_wifi_enabled, get_active_wifi, get_public_ip,
+    get_active_vpn, nmcli_run, NOTIFY_TITLE, NOTIFY_OK,
 )
 from network.wifi import wifi_menu
 from network.ethernet import ethernet_menu
 from network.vpn import vpn_menu
+
+
+def _is_bt_blocked() -> bool:
+    try:
+        out = subprocess.run(["rfkill", "list", "bluetooth"], capture_output=True,
+                             text=True, timeout=5).stdout
+        return "blocked" in out
+    except Exception:
+        return True
+
+
+def toggle_airplane_mode() -> None:
+    wifi_on = is_wifi_enabled()
+    bt_blocked = _is_bt_blocked()
+    any_on = wifi_on or not bt_blocked
+
+    if any_on:
+        # Turn everything off
+        r = nmcli_run(["radio", "wifi", "off"], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu("Failed to disable Wi-Fi for airplane mode",
+                       r.get("stderr") or r.get("message", ""))
+            return
+        subprocess.run(["rfkill", "block", "bluetooth"], capture_output=True, timeout=5)
+        notify(title=NOTIFY_TITLE, message="✈ Airplane mode ON", **NOTIFY_OK)
+    else:
+        # Turn everything on
+        r = nmcli_run(["radio", "wifi", "on"], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu("Failed to enable Wi-Fi for airplane mode",
+                       r.get("stderr") or r.get("message", ""))
+            return
+        subprocess.run(["rfkill", "unblock", "bluetooth"], capture_output=True, timeout=5)
+        notify(title=NOTIFY_TITLE, message="✈ Airplane mode OFF", **NOTIFY_OK)
 
 
 def main_menu() -> None:
@@ -16,24 +53,54 @@ def main_menu() -> None:
     vpn_detail = f"({active_vpn})" if active_vpn else ""
     pub_ip = get_public_ip()
 
-    options = [
-        f"{wifi_enable}  Wi-Fi  ({wifi_detail})",
-        f"{ethernet_icon}  Ethernet",
-        f"{vpn_icon}  VPN  {vpn_detail}",
-    ]
+    options: list[str] = []
+    option_values: dict[str, str] = {}
+
+    wifi_label = f"{wifi_enable}  Wi-Fi  ({wifi_detail})"
+    options.append(wifi_label)
+    option_values[wifi_label] = "wifi"
+
+    eth_label = f"{ethernet_icon}  Ethernet"
+    options.append(eth_label)
+    option_values[eth_label] = "ethernet"
+
+    vpn_label = f"{vpn_icon}  VPN  {vpn_detail}"
+    options.append(vpn_label)
+    option_values[vpn_label] = "vpn"
+
+    # Airplane mode toggle
+    wifi_on = is_wifi_enabled()
+    bt_blocked = _is_bt_blocked()
+    any_on = wifi_on or not bt_blocked
+    ap_label = f"{'' if any_on else ''}  Airplane Mode: {'ON' if any_on else 'OFF'}"
+    options.append(ap_label)
+    option_values[ap_label] = "airplane"
+
     if pub_ip:
-        options.append(f"󰩟  Public IP:  {pub_ip}")
+        ip_label = f"󰩟  Public IP:  {pub_ip}"
+        options.append(ip_label)
+        option_values[ip_label] = ""
+
+    options.append(f"{back_icon}  Exit")
+    option_values[options[-1]] = BACK
 
     chosen = rofi_menu(options, " 󰤨  Network")
     if not chosen:
         return
 
-    if "Wi-Fi" in chosen:
+    selection = option_values.get(chosen)
+    if not selection:
+        return
+
+    if selection == "wifi":
         wifi_menu()
-    elif "Ethernet" in chosen:
+    elif selection == "ethernet":
         ethernet_menu()
-    elif "VPN" in chosen:
+    elif selection == "vpn":
         vpn_menu()
+    elif selection == "airplane":
+        toggle_airplane_mode()
+        main_menu()
 
 
 

@@ -33,18 +33,18 @@ def vpn_menu() -> None:
 
     if selection.startswith("DISCONNECT:"):
         vpn_name = selection.split(":", 1)[1]
-        r = nmcli_run(["connection", "down", "id", vpn_name])
-        if r is None:
-            error_menu(f"Failed to disconnect VPN ({vpn_name})")
+        r = nmcli_run(["connection", "down", "id", vpn_name], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu(f"Failed to disconnect VPN ({vpn_name})", r.get("stderr") or r.get("message", ""))
             vpn_menu()
             return
         notify(title=NOTIFY_TITLE, message=f"VPN disconnected ({vpn_name})", **NOTIFY_OK)
         vpn_menu()
     elif selection.startswith("CONNECT:"):
         vpn_name = selection.split(":", 1)[1]
-        r = nmcli_run(["connection", "up", "id", vpn_name])
-        if r is None:
-            error_menu(f"Failed to connect VPN ({vpn_name})")
+        r = nmcli_run(["connection", "up", "id", vpn_name], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu(f"Failed to connect VPN ({vpn_name})", r.get("stderr") or r.get("message", ""))
             vpn_menu()
             return
         notify(title=NOTIFY_TITLE, message=f"VPN connected ({vpn_name})", **NOTIFY_OK)

@@ -84,7 +84,7 @@ def confirm_menu(message: str, theme: str) -> bool:
 
 def rofi_input(prompt: str, default: str = "") -> str:
     return subprocess.run(
-        ["rofi", "-dmenu", "-p", prompt, "-theme", str(CONFIG_DIR / "rofi" / "password.rasi")],
+        ["rofi", "-dmenu", "-p", prompt, "-theme", str(CONFIG_DIR / "rofi" / "input.rasi")],
         input=default, text=True, capture_output=True,
     ).stdout.strip()
 

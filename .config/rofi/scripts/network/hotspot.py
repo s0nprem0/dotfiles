@@ -19,9 +19,9 @@ def create_hotspot() -> None:
         notify(title=NOTIFY_TITLE, message="Password too short — must be at least 8 characters",
                urgency="critical")
     notify(title=NOTIFY_TITLE, message=f"Creating hotspot '{ssid}'...", **NOTIFY_BUSY)
-    r = nmcli_run(["device", "wifi", "hotspot", "ifname", "*", "ssid", ssid, "password", pwd])
-    if r is None:
-        error_menu("Failed to create hotspot")
+    r = nmcli_run(["device", "wifi", "hotspot", "ifname", "*", "ssid", ssid, "password", pwd], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu("Failed to create hotspot", r.get("stderr") or r.get("message", ""))
         return
     notify(title=NOTIFY_TITLE, message=f"Hotspot '{ssid}' active", **NOTIFY_OK)
 
@@ -45,8 +45,8 @@ def stop_hotspot() -> None:
     if not name:
         notify(title=NOTIFY_TITLE, message="No active hotspot", urgency="normal")
         return
-    r = nmcli_run(["connection", "down", name])
-    if r is None:
-        error_menu(f"Failed to stop hotspot '{name}'")
+    r = nmcli_run(["connection", "down", name], want_result=True)
+    if isinstance(r, dict) and not r.get("ok"):
+        error_menu(f"Failed to stop hotspot '{name}'", r.get("stderr") or r.get("message", ""))
         return
     notify(title=NOTIFY_TITLE, message=f"Hotspot '{name}' stopped", **NOTIFY_OK)

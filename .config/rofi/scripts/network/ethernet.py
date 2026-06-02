@@ -56,9 +56,9 @@ def ethernet_menu() -> None:
             for line in conn_out.splitlines():
                 name, dev = line.split(":", 1)
                 if dev.strip() == iface:
-                    r = nmcli_run(["connection", "down", "id", name])
-                    if r is None:
-                        error_menu(f"Failed to disconnect Ethernet ({name})")
+                    r = nmcli_run(["connection", "down", "id", name], want_result=True)
+                    if isinstance(r, dict) and not r.get("ok"):
+                        error_menu(f"Failed to disconnect Ethernet ({name})", r.get("stderr") or r.get("message", ""))
                         ethernet_menu()
                         return
                     notify(title=NOTIFY_TITLE, message=f"Disconnected Ethernet ({name})", **NOTIFY_OK)
@@ -66,17 +66,17 @@ def ethernet_menu() -> None:
                     return
         notify(title=NOTIFY_TITLE, message="No active Ethernet connection", urgency="low")
     elif "Enable Ethernet" in chosen:
-        r = nmcli_run(["device", "connect", iface])
-        if r is None:
-            error_menu(f"Failed to enable Ethernet ({iface})")
+        r = nmcli_run(["device", "connect", iface], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu(f"Failed to enable Ethernet ({iface})", r.get("stderr") or r.get("message", ""))
             ethernet_menu()
             return
         notify(title=NOTIFY_TITLE, message=f"Ethernet enabled ({iface})", **NOTIFY_OK)
         ethernet_menu()
     elif "Disable Ethernet" in chosen and iface != "N/A":
-        r = nmcli_run(["device", "disconnect", iface])
-        if r is None:
-            error_menu(f"Failed to disable Ethernet ({iface})")
+        r = nmcli_run(["device", "disconnect", iface], want_result=True)
+        if isinstance(r, dict) and not r.get("ok"):
+            error_menu(f"Failed to disable Ethernet ({iface})", r.get("stderr") or r.get("message", ""))
             ethernet_menu()
             return
         notify(title=NOTIFY_TITLE, message=f"Ethernet disabled ({iface})", **NOTIFY_OK)

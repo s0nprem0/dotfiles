@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import os
 import getpass
 import json
+import signal
 
 # Temp files for async wifi scan
 WIFI_SCAN_CACHE = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.json"
@@ -89,7 +90,7 @@ def error_menu(message: str, details: str = "") -> None:
     if details:
         opts.append(details[:100])
     opts.append(f"{utils.back_icon}  Back")
-    rofi_menu(opts, prompt=f"{wifi_enable}  Error", selected_row=1)
+    rofi_menu(opts, prompt=f"{wifi_enable}  Error", selected_row=1, urgent_rows=[0])
 
 
 def confirm_menu(message: str) -> bool:
@@ -154,6 +155,8 @@ def start_wifi_bg_scan():
             return
         except Exception:
             os.remove(WIFI_SCAN_PID)
+    # Auto-reap child to avoid zombie processes
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
     pid = os.fork()
     if pid == 0:
         # Child process: perform scan
