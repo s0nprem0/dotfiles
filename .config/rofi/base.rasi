@@ -14,20 +14,24 @@ window {
   location: center;
   anchor: center;
   background-color: @background;
-  override-redirect: false;
+  border: 1px;
+  border-color: @background-alt;
+  border-radius: 14px;
+  padding: 6px;
 }
 
 /***** Layout *****/
 mainbox {
   orientation: vertical;
-  spacing: 6px;
-  padding: 8px 0;
+  spacing: 4px;
+  padding: 4px 0;
   background-color: transparent;
 }
 
 /***** Input Area *****/
 inputbar {
   padding: 10px 14px;
+  margin: 2px 6px 4px;
   border-radius: 10px;
   background-color: @background-alt;
   children: [ prompt, entry ];
@@ -46,34 +50,38 @@ entry {
   background-color: transparent;
   cursor: text;
   placeholder: "Search...";
-  placeholder-color: @foreground;
+  placeholder-color: @foreground-dim;
 }
 
 /***** Listview *****/
 listview {
   columns: 1;
-  spacing: 3px;
+  spacing: 2px;
   dynamic: true;
   layout: vertical;
   fixed-height: true;
   scrollbar: true;
   background-color: transparent;
   text-color: @foreground;
-  scrollbar-width: 6px;
+  scrollbar-width: 4px;
+  padding: 0 4px;
 }
 
 /***** Elements — base *****/
 element {
-  padding: 9px 14px;
+  padding: 8px 14px;
+  margin: 1px 2px;
   border-radius: 8px;
-  background-color: @background-alt;
+  background-color: transparent;
   text-color: @foreground;
   orientation: horizontal;
   cursor: pointer;
+  border: 1px;
+  border-color: transparent;
 }
 
 element normal.normal {
-  background-color: @background-alt;
+  background-color: transparent;
   text-color: @foreground;
 }
 
@@ -83,8 +91,15 @@ element normal.alternate {
 }
 
 element selected.normal {
-  background-color: @selected;
-  text-color: @background;
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
+}
+
+element selected.alternate {
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
 }
 
 element-icon {
@@ -103,10 +118,11 @@ element-text {
 
 /***** Scrollbar *****/
 scrollbar {
-  handle-width: 6px;
+  handle-width: 4px;
   handle-color: @selected;
-  border-radius: 4px;
+  border-radius: 2px;
   background-color: @background-alt;
+  margin: 2px 0;
 }
 
 /***** Fallback/Error *****/

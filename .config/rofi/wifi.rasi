@@ -3,35 +3,64 @@
 /***** Window wider for network list *****/
 window {
   width: 580px;
-  border-radius: 14px;
-  padding: 8px 12px;
+  padding: 6px 6px 8px;
 }
-
-/***** Inputbar same as base *****/
 
 /***** Network List — show more rows *****/
 listview {
   lines: 8;
 }
 
-/***** Action items (active) *****/
+/***** Action items (active: toggles, connect, hotspot, rescan) *****/
 element active.normal {
+  background-color: @background-alt;
+  text-color: @selected;
+  border-color: transparent;
+  font-weight: bold;
+}
+
+element active.selected.normal {
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
+}
+
+element active.alternate {
   background-color: @background-alt;
   text-color: @selected;
 }
 
-element active.selected.normal {
-  background-color: @selected;
-  text-color: @background;
+element active.selected.alternate {
+  background-color: @selected-bg;
+  text-color: @selected;
+  border-color: @selected;
 }
 
-/***** Status items (urgent) *****/
+/***** Status items (urgent: connectivity state, errors) *****/
 element urgent.normal {
-  background-color: @urgent;
-  text-color: @background;
+  background-color: @urgent-bg;
+  text-color: @urgent;
+  border-color: transparent;
 }
 
 element urgent.selected.normal {
-  background-color: @selected;
+  background-color: @urgent;
   text-color: @background;
+  border-color: @urgent;
+}
+
+element urgent.alternate {
+  background-color: @urgent-bg;
+  text-color: @urgent;
+}
+
+element urgent.selected.alternate {
+  background-color: @urgent;
+  text-color: @background;
+  border-color: @urgent;
+}
+
+/***** Saved network icons subtle tint *****/
+element-icon {
+  margin: 0 6px 0 0;
 }

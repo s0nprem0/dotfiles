@@ -4,7 +4,10 @@
     background-trans: rgba(38, 30, 25, 0.6);
     bg:               #19120d;
     foreground:       #f0dfd6;
+    foreground-dim:   #a09080;
     selected:         #ffb785;
+    selected-bg:      rgba(255, 183, 133, 0.15);
     active:           #e4bfa8;
     urgent:           #ffb4ab;
+    urgent-bg:        rgba(255, 180, 171, 0.15);
 }
