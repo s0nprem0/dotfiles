@@ -13,7 +13,7 @@ from network.common import (
     TOGGLE_WIFI, CONNECT, FORGET, DISCONNECT, HIDDEN, RESCAN,
     HOTSPOT, STOP_HOTSPOT, SAVED, POWERSAVE,
     signal_bars, nmcli_run,
-    rofi_menu, error_menu, confirm_menu, rofi_input, rofi_password, rofi_custom_kb,
+    rofi_menu, error_menu, confirm_menu, rofi_input, rofi_password,
     is_wifi_enabled, get_saved_networks, get_active_wifi,
     list_wifi_networks, get_connection_prop,
     get_power_save, check_connectivity,
@@ -700,37 +700,14 @@ def wifi_menu() -> None:
 
     add_option(f"{back_icon}  Back", BACK)
 
-    chosen, raw = rofi_menu(option_rows, f" {wifi_enable}",
-                            selected_row=0,
-                            active_rows=active_rows or None,
-                            urgent_rows=urgent_rows or None,
-                            return_raw=True)  # type: ignore
+    chosen = rofi_menu(option_rows, f" {wifi_enable}",
+                       selected_row=0,
+                       active_rows=active_rows or None,
+                       urgent_rows=urgent_rows or None)
     if not chosen:
         return
 
     if chosen.startswith("Error:"):
-        return
-
-    kb = rofi_custom_kb(raw)
-    if kb != -1:
-        if wifi_on and kb == 1:  # Ctrl+r → rescan
-            invalidate("networks")
-            invalidate("active_ssid")
-            notify(title=NOTIFY_TITLE, message="Restarted scanning...", expire_time=4000)
-            wifi_menu()
-        elif kb == 2:  # Ctrl+t → toggle wifi
-            toggle_wifi()
-            wifi_menu()
-        elif kb == 3 and wifi_on:  # Ctrl+h → create hotspot
-            from network.hotspot import create_hotspot
-            create_hotspot()
-            wifi_menu()
-        elif kb == 4:  # Ctrl+s → saved networks
-            saved_networks_menu()
-        elif kb == 5 and wifi_on:  # Ctrl+m → MAC spoof
-            iface = _get_wifi_iface()
-            if iface:
-                show_mac_spoof_menu(iface)
         return
 
     selection = option_values.get(chosen)
