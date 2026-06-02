@@ -1,5 +1,8 @@
 import subprocess
+import os
+import time
 
+from network import common
 from network.common import (
     wifi_enable, wifi_disable, ethernet_icon, vpn_icon, back_icon, BACK,
     rofi_menu, notify, error_menu,
@@ -50,7 +53,19 @@ def main_menu() -> None:
     wifi_detail = active_wifi if active_wifi else wifi_status
     active_vpn = get_active_vpn()
     vpn_detail = f"({active_vpn})" if active_vpn else ""
-    pub_ip = cached("public_ip", get_public_ip, ttl=30)
+
+    # Public IP: non-blocking — read file cache, background refresh
+    pub_ip = None
+    try:
+        mtime = os.path.getmtime(common.PUBLIC_IP_CACHE)
+        if time.time() - mtime < 60:
+            with open(common.PUBLIC_IP_CACHE) as f:
+                pub_ip = f.read().strip() or None
+    except Exception:
+        pass
+    if not pub_ip:
+        import threading
+        threading.Thread(target=get_public_ip, daemon=True).start()
 
     options: list[str] = []
     option_values: dict[str, str] = {}
@@ -67,7 +82,6 @@ def main_menu() -> None:
     options.append(vpn_label)
     option_values[vpn_label] = "vpn"
 
-    # Airplane mode toggle (cached rfkill check, 2s TTL)
     wifi_on = is_wifi_enabled()
     bt_blocked = cached("bt_blocked", _is_bt_blocked, ttl=2)
     any_on = wifi_on or not bt_blocked

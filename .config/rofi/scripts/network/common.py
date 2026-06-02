@@ -1,4 +1,5 @@
 import subprocess
+import time
 from typing import Optional
 from dataclasses import dataclass
 import os
@@ -235,17 +236,36 @@ def check_connectivity() -> str:
     return nm_dbus.get_connectivity()
 
 
+PUBLIC_IP_CACHE = f"/tmp/rofi_public_ip_{getpass.getuser()}.txt"
+
+
 def get_public_ip() -> Optional[str]:
+    # Try file cache first (60s TTL)
+    try:
+        mtime = os.path.getmtime(PUBLIC_IP_CACHE)
+        if time.time() - mtime < 60:
+            with open(PUBLIC_IP_CACHE) as f:
+                val = f.read().strip()
+                if val:
+                    return val
+    except Exception:
+        pass
+    # Fetch in parallel with short timeout
     import urllib.request
+    import concurrent.futures
     v4 = v6 = None
-    try:
-        v4 = urllib.request.urlopen("https://api.ipify.org", timeout=3).read().decode().strip()
-    except Exception:
-        pass
-    try:
-        v6 = urllib.request.urlopen("https://api6.ipify.org", timeout=3).read().decode().strip()
-    except Exception:
-        pass
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
+        f4 = ex.submit(lambda: urllib.request.urlopen("https://api.ipify.org", timeout=3).read().decode().strip())
+        f6 = ex.submit(lambda: urllib.request.urlopen("https://api6.ipify.org", timeout=3).read().decode().strip())
+        for f in (f4, f6):
+            try:
+                r = f.result(timeout=1.5)
+                if f is f4:
+                    v4 = r
+                else:
+                    v6 = r
+            except Exception:
+                pass
     if not v4 and not v6:
         return None
     parts = []
@@ -253,7 +273,13 @@ def get_public_ip() -> Optional[str]:
         parts.append(f"v4: {v4}")
     if v6:
         parts.append(f"v6: {v6}")
-    return "  ".join(parts)
+    val = "  ".join(parts)
+    try:
+        with open(PUBLIC_IP_CACHE, "w") as f:
+            f.write(val)
+    except Exception:
+        pass
+    return val
 
 
 def get_vpn_list() -> list[str]:
