@@ -94,3 +94,14 @@ def rofi_password(prompt: str) -> str:
         ["rofi", "-dmenu", "-password", "-p", prompt, "-theme", str(CONFIG_DIR / "rofi" / "password.rasi")],
         capture_output=True, text=True,
     ).stdout.strip()
+
+
+def nmcli_run(args: list[str], *, error_title: str | None = None, error_notify: bool = True,
+              timeout: int = 15, want_result: bool = False) -> str | dict | None:
+    return run_cmd_safe(
+        ["nmcli"] + args,
+        error_title=error_title,
+        error_notify=error_notify,
+        timeout=timeout,
+        want_result=want_result,
+    )

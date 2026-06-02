@@ -4,6 +4,7 @@ from network.common import (
     NOTIFY_TITLE, NOTIFY_OK, NOTIFY_BUSY,
     nmcli_run, error_menu, rofi_input, rofi_password,
 )
+from network import nm_dbus
 
 
 def create_hotspot() -> None:
@@ -27,17 +28,7 @@ def create_hotspot() -> None:
 
 
 def is_hotspot_active() -> str | None:
-    """Returns the hotspot SSID if active, None otherwise."""
-    out = nmcli_run(["-t", "-f", "NAME,TYPE,DEVICE", "connection", "show", "--active"])
-    if out is None:
-        return None
-    for line in out.splitlines():
-        parts = line.split(":", 2)
-        if len(parts) == 3:
-            name, typ, dev = parts
-            if typ == "hotspot":
-                return name
-    return None
+    return nm_dbus.is_hotspot_active()
 
 
 def stop_hotspot() -> None:

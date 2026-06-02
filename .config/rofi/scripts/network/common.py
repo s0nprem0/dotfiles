@@ -5,7 +5,8 @@ import os
 import getpass
 import json
 import signal
-import time
+
+from network import nm_dbus
 
 # Temp files for async wifi scan
 WIFI_SCAN_CACHE = f"/tmp/rofi_wifi_scan_{getpass.getuser()}.json"
@@ -109,8 +110,8 @@ def rofi_password(prompt: str) -> str:
 
 def nmcli_run(args: list[str], *, error_title=None, error_notify=True,
                timeout=15, want_result=False) -> str | dict | None:
-    return utils.run_cmd_safe(
-        ["nmcli"] + args,
+    return utils.nmcli_run(
+        args,
         error_title=(error_title or NOTIFY_TITLE),
         error_notify=error_notify,
         timeout=timeout,
@@ -121,28 +122,15 @@ def nmcli_run(args: list[str], *, error_title=None, error_notify=True,
 # ─── Network State Queries ─────────────────────────────────────────────────
 
 def is_wifi_enabled() -> bool:
-    res = nmcli_run(["-f", "WIFI", "g"])
-    if res is None:
-        return False
-    return "enabled" in res
+    return nm_dbus.wifi_enabled()
 
 
 def get_saved_networks() -> list[str]:
-    res = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show"])
-    if res is None:
-        return []
-    return [c.split(":", 1)[0] for c in res.splitlines() if c.endswith("wireless")]
+    return nm_dbus.saved_wifi_list()
 
 
 def get_active_wifi() -> Optional[str]:
-    res = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show", "--active"])
-    if res is None:
-        return None
-    for line in res.splitlines():
-        name, typ = line.split(":", 1)
-        if typ == "wireless":
-            return name
-    return None
+    return nm_dbus.get_active_wifi()
 
 
 def start_wifi_bg_scan():
@@ -186,87 +174,53 @@ def start_wifi_bg_scan():
         os._exit(0)
 
 def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
-    saved_networks = get_saved_networks()
-    # Only fork for async scan if we have cached data to show immediately
-    if not no_rescan and os.path.exists(WIFI_SCAN_CACHE):
-        start_wifi_bg_scan()
-    # Try cache first (fast path)
+    # Trigger async scan via D-Bus if requested
+    if not no_rescan:
+        triggered = nm_dbus.trigger_scan()
+        if not triggered and os.path.exists(WIFI_SCAN_CACHE):
+            start_wifi_bg_scan()
+    # Try D-Bus path (fast — reads NM internal AP cache directly)
+    raw = nm_dbus.list_wifi(no_rescan=True)
+    if raw:
+        networks: dict[str, WifiNetwork] = {}
+        for ssid, info in raw.items():
+            networks[ssid] = WifiNetwork(
+                ssid=ssid, security=info.get("security"),
+                signal=info.get("signal", 0),
+                saved=info.get("saved", False),
+                visible=info.get("visible", True),
+            )
+        return networks
+    # Fallback: try the file cache
+    saved = get_saved_networks()
     if os.path.exists(WIFI_SCAN_CACHE):
         try:
             with open(WIFI_SCAN_CACHE) as inf:
                 js = json.load(inf)
-            networks: dict[str, WifiNetwork] = {}
+            networks = {}
             for row in js:
                 ssid = row.get("ssid")
                 if not ssid: continue
                 networks[ssid] = WifiNetwork(
                     ssid=ssid, security=row.get("security"), signal=row.get("signal", 0),
-                    saved=ssid in saved_networks, visible=True
+                    saved=ssid in saved, visible=True
                 )
             return networks
         except Exception:
             pass
-    # No cache yet — see if scan is still in progress
     if os.path.exists(WIFI_SCAN_PID):
         return {"~scanning~": WifiNetwork(
             ssid="Scanning...", security=None, signal=0, saved=False, visible=True
         )}
-    # Fallback: blocking call as last resort
-    cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list", "--rescan", "no"]
-    res = nmcli_run(cmd)
-    if res is None:
-        return {}
-    networks: dict[str, WifiNetwork] = {}
-    for line in res.splitlines():
-        parts = line.split(":")
-        if len(parts) < 3:
-            continue
-        security = parts[0]
-        signal = int(parts[-1]) if parts[-1].isdigit() else 0
-        ssid = ":".join(parts[1:-1])
-        if ssid:
-            networks[ssid] = WifiNetwork(
-                ssid=ssid, security=security, signal=signal,
-                saved=ssid in saved_networks, visible=True,
-            )
-    return networks
+    return {}
 
 
 def get_connection_prop(ssid: str, prop: str) -> str:
-    props = _get_conn_props(ssid)
-    return props.get(prop, "")
-
-
-_CONN_PROPS_CACHE: dict[str, tuple[dict[str, str], float]] = {}
-
-def _get_conn_props(ssid: str, ttl: float = 3.0) -> dict[str, str]:
-    """Fetch and cache ALL connection properties in a single nmcli call."""
-    now = time.monotonic()
-    cached = _CONN_PROPS_CACHE.get(ssid)
-    if cached and now - cached[1] < ttl:
-        return cached[0]
-    res = nmcli_run(["connection", "show", "id", ssid])
-    if res is None:
-        return {}
-    props: dict[str, str] = {}
-    for line in res.splitlines():
-        if ":" in line:
-            k, _, v = line.partition(":")
-            props[k.strip()] = v.strip()
-    _CONN_PROPS_CACHE[ssid] = (props, now)
-    return props
+    return nm_dbus.get_connection_prop(ssid, prop)
 
 
 def get_power_save() -> Optional[bool]:
-    res = nmcli_run(["-t", "-f", "DEVICE,TYPE", "device"])
-    if res is None:
-        return None
-    iface = None
-    for line in res.splitlines():
-        dev, typ = line.split(":", 1)
-        if typ == "wifi":
-            iface = dev
-            break
+    iface = nm_dbus.get_wifi_iface()
     if not iface:
         return None
     try:
@@ -278,10 +232,7 @@ def get_power_save() -> Optional[bool]:
 
 
 def check_connectivity() -> str:
-    res = nmcli_run(["networking", "connectivity", "check"])
-    if res is None:
-        return "unknown"
-    return res.strip()
+    return nm_dbus.get_connectivity()
 
 
 def get_public_ip() -> Optional[str]:
@@ -306,18 +257,8 @@ def get_public_ip() -> Optional[str]:
 
 
 def get_vpn_list() -> list[str]:
-    out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show"])
-    if out is None:
-        return []
-    return [line.split(":", 1)[0] for line in out.splitlines() if line.endswith(":vpn")]
+    return nm_dbus.vpn_list()
 
 
 def get_active_vpn() -> Optional[str]:
-    out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show", "--active"])
-    if out is None:
-        return None
-    for line in out.splitlines():
-        name, typ = line.split(":", 1)
-        if typ == "vpn":
-            return name
-    return None
+    return nm_dbus.get_active_vpn()

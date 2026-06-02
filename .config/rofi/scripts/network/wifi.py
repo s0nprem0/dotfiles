@@ -1,6 +1,8 @@
 import re
 from typing import Optional
 
+from network import nm_dbus
+
 from network.common import (
     notify, back_icon, BACK,
     shut_lock, open_lock, wifi_enable, wifi_disable, wifi_known,
@@ -144,14 +146,7 @@ def toggle_power_save() -> None:
 
 
 def _get_wifi_iface() -> Optional[str]:
-    res = nmcli_run(["-t", "-f", "DEVICE,TYPE", "device"])
-    if res is None:
-        return None
-    for line in res.splitlines():
-        dev, typ = line.split(":", 1)
-        if typ == "wifi":
-            return dev
-    return None
+    return nm_dbus.get_wifi_iface()
 
 
 # ─── Band / MAC / Priority ────────────────────────────────────────────────
@@ -299,79 +294,46 @@ def set_dns_servers(network: WifiNetwork) -> None:
 # ─── Connection Details ─────────────────────────────────────────────────────
 
 def show_connection_details(network: WifiNetwork) -> None:
-    res = nmcli_run(["connection", "show", "id", network.ssid])
-    if res is None:
-        error_menu("Failed to fetch details")
-        show_network_actions(network)
-        return
-
     opts = [f"SSID:  {network.ssid}"]
-    iface = ""
-    for line in res.splitlines():
-        if line.startswith("connection.interface-name:"):
-            iface = line.split(":", 1)[1].strip()
-        elif line.startswith("connection.autoconnect:"):
-            opts.append(f"Auto-connect:  {line.split(':', 1)[1].strip()}")
-        elif line.startswith("ipv4.method:"):
-            opts.append(f"IP method:  {line.split(':', 1)[1].strip()}")
-
+    iface = get_connection_prop(network.ssid, "connection.interface-name")
+    if not iface:
+        iface = nm_dbus.get_wifi_iface() or ""
+    aconnect = get_connection_prop(network.ssid, "connection.autoconnect")
+    if aconnect:
+        opts.append(f"Auto-connect:  {aconnect}")
+    ipmethod = get_connection_prop(network.ssid, "ipv4.method")
+    if ipmethod:
+        opts.append(f"IP method:  {ipmethod}")
     if iface:
         opts.append(f"Interface:  {iface}")
-        dev = nmcli_run(["-t", "-f", "GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,GENERAL.SPEED",
-                        "device", "show", iface])
+        dev = nm_dbus.get_device_info(iface)
         if dev:
-            for line in dev.splitlines():
-                if ":" in line:
-                    k, v = line.split(":", 1)
-                    k = k.replace("GENERAL.", "").replace("IP4.", "").split("[")[0]
-                    if k == "HWADDR":
-                        opts.append(f"MAC:  {v}")
-                    elif k == "ADDRESS":
-                        opts.append(f"IP:  {v}")
-                    elif k == "GATEWAY":
-                        opts.append(f"Gateway:  {v}")
-                    elif k == "DNS":
-                        opts.append(f"DNS:  {v}")
-                    elif k == "SPEED":
-                        opts.append(f"Speed:  {v}")
-
+            if dev.get("mac"):
+                opts.append(f"MAC:  {dev['mac']}")
+            if dev.get("ip"):
+                opts.append(f"IP:  {dev['ip']}")
+            if dev.get("gateway"):
+                opts.append(f"Gateway:  {dev['gateway']}")
+            if dev.get("dns"):
+                opts.append(f"DNS:  {dev['dns']}")
+            if dev.get("speed"):
+                opts.append(f"Speed:  {dev['speed']} Mb/s")
     opts.append(f"{back_icon}  Back")
     rofi_menu(opts, prompt=f"{wifi_enable} Details", selected_row=len(opts) - 1)
     show_network_actions(network)
 
 
 def show_wifi_info_menu(network: WifiNetwork) -> None:
-    res = nmcli_run(["-t", "-f", "SSID,SECURITY,SIGNAL,BARS,CHAN,FREQ,RATE",
-                     "device", "wifi", "list", "--rescan", "no"])
-    if res is None:
-        error_menu("Failed to fetch Wi-Fi info")
-        return
-
-    extra_info = {}
-    for line in res.splitlines():
-        if not line.strip():
-            continue
-        parts = line.split(":")
-        if len(parts) < 7:
-            continue
-        rate = parts[-1]
-        freq = parts[-2]
-        chan = parts[-3]
-        bars = parts[-4]
-        sig_str = parts[-5]
-        sec = parts[-6]
-        line_ssid = ":".join(parts[:-6])
-        if line_ssid == network.ssid and sig_str.isdigit():
-            extra_info = {"signal": f"{sig_str}%", "bars": bars, "security": sec,
-                          "channel": chan, "frequency": freq, "rate": rate}
-            break
+    ap = nm_dbus.get_wifi_ap_info(network.ssid)
 
     opts = [f"SSID:  {network.ssid}"]
-    if extra_info:
-        opts.append(f"Security:  {extra_info['security'] or 'Open'}")
-        opts.append(f"Signal:  {extra_info['signal']}  {extra_info['bars']}")
-        opts.append(f"Channel:  {extra_info['channel']}  ({extra_info['frequency']})")
-        opts.append(f"Rate:  {extra_info['rate']}")
+    if ap:
+        opts.append(f"Security:  {ap.get('security') or 'Open'}")
+        opts.append(f"Signal:  {ap.get('signal', 0)}%  {signal_bars(ap.get('signal', 0))}")
+        opts.append(f"Channel:  {ap.get('channel', '?')}  ({ap.get('frequency', '?')} MHz)")
+        opts.append(f"Rate:  {ap.get('rate', '?')}")
+        if ap.get("bssid"):
+            opts.append(f"BSSID:  {ap['bssid']}")
     else:
         opts.append(f"Security:  {network.security or 'Open'}")
         opts.append(f"Signal:  {network.signal}%  {signal_bars(network.signal)}")

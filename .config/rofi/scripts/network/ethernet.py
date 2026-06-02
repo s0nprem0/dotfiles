@@ -4,22 +4,11 @@ from network.common import (
     NOTIFY_TITLE, NOTIFY_OK,
     nmcli_run, rofi_menu, error_menu,
 )
+from network import nm_dbus
 
 
 def get_ethernet_info() -> dict:
-    out = nmcli_run(["-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device"])
-    if out is None:
-        return {}
-    for line in out.splitlines():
-        dev, typ, state, conn = line.split(":", 3)
-        if typ == "ethernet":
-            ip = ""
-            if state == "connected":
-                ip_out = nmcli_run(["-t", "-f", "IP4.ADDRESS", "device", "show", dev])
-                if ip_out:
-                    ip = ip_out.split(":")[-1].strip()
-            return {"device": dev, "state": state, "connection": conn, "ip": ip}
-    return {}
+    return nm_dbus.ethernet_info()
 
 
 def ethernet_menu() -> None:
