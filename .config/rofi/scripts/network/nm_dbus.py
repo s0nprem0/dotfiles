@@ -217,12 +217,9 @@ def list_wifi(no_rescan: bool = True) -> dict:
                     "signal": signal,
                     "saved": ssid in saved,
                     "visible": True,
-                    "device": iface,
                 }
         return networks
     saved = saved_wifi_list()
-    # Get list of Wi-Fi interfaces to run per-device scans
-    ifaces = [d["iface"] for d in get_wifi_ifaces()]
     cmd = ["-t", "-f", "SECURITY,SSID,SIGNAL", "device", "wifi", "list"]
     if no_rescan:
         cmd += ["--rescan", "no"]
@@ -238,13 +235,9 @@ def list_wifi(no_rescan: bool = True) -> dict:
         signal = int(parts[-1]) if parts[-1].isdigit() else 0
         ssid = ":".join(parts[1:-1])
         if ssid:
-            device = ""
-            if len(ifaces) == 1:
-                device = ifaces[0]
             networks[ssid] = {
                 "ssid": ssid, "security": security, "signal": signal,
                 "saved": ssid in saved, "visible": True,
-                "device": device,
             }
     return networks
 
@@ -330,74 +323,20 @@ def get_active_vpn() -> str | None:
 
 
 def get_wifi_iface() -> str | None:
-    ifaces = get_wifi_ifaces()
-    return ifaces[0]["iface"] if ifaces else None
-
-
-def get_wifi_ifaces() -> list[dict]:
-    if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return []
-        result = []
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-            dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
-            if int(dtype) != _NM_DEVICE_TYPE_WIFI:
-                continue
-            iface = str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
-            if not iface:
-                continue
-            state = int(_g(_DEV_IFACE, 'State', dev_obj))
-            mac = str(_g(_DEV_IFACE, 'HwAddress', dev_obj) or "")
-            info: dict[str, str | int] = {
-                "iface": iface,
-                "state": _state_str(state),
-                "mac": mac,
-                "ip": "",
-                "active_ssid": "",
-                "signal": 0,
-            }
-            if state >= _NM_DEVICE_STATE_ACTIVATED:
-                ac_path = _g(_DEV_IFACE, 'ActiveConnection', dev_obj)
-                if ac_path and ac_path != '/':
-                    ac_obj = _bus.get_object('org.freedesktop.NetworkManager', ac_path)
-                    info["active_ssid"] = str(_p(ac_obj).Get(_AC_IFACE, 'Id') or "")
-                ip4_path = _g(_DEV_IFACE, 'Ip4Config', dev_obj)
-                if ip4_path and ip4_path != '/':
-                    ip4_obj = _bus.get_object('org.freedesktop.NetworkManager', ip4_path)
-                    addrs = _g(_IP4_IFACE, 'Addresses', ip4_obj)
-                    if addrs:
-                        info["ip"] = _ip4_str(addrs[0][0])
-                try:
-                    ap_paths = _c('GetAllAccessPoints', _WIFI_DEV_IFACE, dev_obj)
-                    if ap_paths:
-                        best = 0
-                        for ap_path in ap_paths:
-                            ap_obj = _bus.get_object('org.freedesktop.NetworkManager', ap_path)
-                            sig = int(_p(ap_obj).Get(_AP_IFACE, 'Strength'))
-                            best = max(best, sig)
-                        info["signal"] = best
-                except Exception:
-                    pass
-            result.append(info)
-        return result
-    out = nmcli_run(["-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status"])
-    if out is None:
-        return []
-    result = []
-    for line in out.splitlines():
-        parts = line.split(":")
-        if len(parts) >= 3 and parts[1] == "wifi":
-            dev = parts[0]
-            state = parts[2]
-            conn = parts[3] if len(parts) > 3 else ""
-            info: dict[str, str | int] = {"iface": dev, "state": state, "mac": "", "ip": "", "active_ssid": conn, "signal": 0}
-            det = get_device_info(dev)
-            info["mac"] = det.get("mac", "")
-            info["ip"] = det.get("ip", "")
-            result.append(info)
-    return result
+    if not _HAS_DBUS:
+        return None
+    paths = _g(_NM_IFACE, 'AllDevices')
+    if not paths:
+        return None
+    for dp in paths:
+        dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
+        dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
+        if int(dtype) != _NM_DEVICE_TYPE_WIFI:
+            continue
+        iface = str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
+        if iface:
+            return iface
+    return None
 
 
 def get_device_info(iface: str) -> dict:

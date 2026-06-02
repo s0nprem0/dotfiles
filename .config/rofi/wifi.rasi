@@ -2,26 +2,32 @@
 
 /***** Window wider for network list *****/
 window {
-  width: 580px;
-  padding: 6px 6px 8px;
+  width: 620px;
+  padding: 6px 8px 8px;
 }
 
-/***** Network List — show more rows *****/
+/***** Show more rows for scanning convenience *****/
 listview {
-  lines: 10;
+  lines: 12;
 }
 
-/* Slightly tighter rows for faster scanning */
+/***** Tighter rows for denser info *****/
 element {
-  padding: 6px 14px;
+  padding: 5px 14px;
 }
 
-/***** Action items (active: toggles, connect, hotspot, rescan) *****/
+/***** Section headers (non-selectable headings) *****/
+element.nonselectable {
+  background-color: transparent;
+  text-color: @foreground-dim;
+  padding: 10px 14px 4px;
+  font: "JetBrains Mono Nerd Font 10";
+}
+
+/***** Highlighted action items (primary CTAs) *****/
 element active.normal {
   background-color: @background-alt;
   text-color: @selected;
-  border-color: transparent;
-  font-weight: bold;
 }
 
 element active.selected.normal {
@@ -41,7 +47,7 @@ element active.selected.alternate {
   border-color: @selected;
 }
 
-/***** Status items (urgent: connectivity state, errors) *****/
+/***** Status items (urgent: connectivity, errors) *****/
 element urgent.normal {
   background-color: @urgent-bg;
   text-color: @urgent;
@@ -65,7 +71,7 @@ element urgent.selected.alternate {
   border-color: @urgent;
 }
 
-/***** Saved network icons subtle tint *****/
+/***** Icon sizing *****/
 element-icon {
   margin: 0 6px 0 0;
 }
