@@ -110,16 +110,16 @@ end
 -- Common dialogs by *initial* title. Static rules only evaluate at window creation.
 local floating_dialog_titles = {
 	-- File pickers / dialogs
-	{ re = "^(Open File)(.*)$" },
-	{ re = "^(Select a File)(.*)$" },
-	{ re = "^(Open Folder)(.*)$" },
-	{ re = "^(Save As)(.*)$" },
-	{ re = "^(File Upload)(.*)$" },
-	{ re = "^(Library)(.*)$" },
-	{ re = "^(.*)(wants to save)$" },
-	{ re = "^(.*)(wants to open)$" },
+	{ re = "^(Open File)(.*)$",         size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Select a File)(.*)$",     size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Open Folder)(.*)$",       size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Save As)(.*)$",           size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(File Upload)(.*)$",       size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Library)(.*)$",           size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(.*)(wants to save)$",     size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(.*)(wants to open)$",     size = { "monitor_w*0.50", "monitor_h*0.55" } },
 	-- Custom dialogs
-	{ re = "^(Choose wallpaper)(.*)$", size = { "monitor_w*0.60", "monitor_h*0.65" } },
+	{ re = "^(Choose wallpaper)(.*)$",  size = { "monitor_w*0.60", "monitor_h*0.65" } },
 }
 
 for _, d in ipairs(floating_dialog_titles) do
@@ -127,7 +127,7 @@ for _, d in ipairs(floating_dialog_titles) do
 end
 
 -- Portals (file pickers etc.)
-float_centered({ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" }, { size = { "monitor_w*0.60", "monitor_h*0.65" } })
+float_centered({ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" }, { size = { "monitor_w*0.50", "monitor_h*0.55" } })
 
 -- App-specific floating rules with sizing
 local floating_sized_classes = {
