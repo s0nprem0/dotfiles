@@ -10,6 +10,7 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("sleep 1 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 	hl.exec_cmd("~/.config/hypr/scripts/usb-monitor.sh")
 	hl.exec_cmd("~/.config/hypr/scripts/idle-inhibit.sh")
+	hl.exec_cmd("~/.config/waybar/scripts/battery-notify.sh")
 
 	-- audio
 	hl.exec_cmd("easyeffects --hide-window --service-mode")

@@ -1,6 +1,7 @@
 {
   "hyprland/workspaces": {
     "all-outputs": false,
+    "output": "",
     "warp-on-scroll": true,
     "format": "{name}",
     "persistent-only": false,
@@ -58,7 +59,7 @@
 
   "clock": {
     "format": "{:%I:%M %p}",
-    "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>",
+    "tooltip-format": "<big>{:%Y-%m-%d %H:%M:%S}</big>\n<tt>{calendar}</tt>",
     "interval": 1
   },
 
