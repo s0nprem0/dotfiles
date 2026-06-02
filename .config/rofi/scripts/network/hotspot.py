@@ -19,8 +19,12 @@ def create_hotspot() -> None:
             break
         notify(title=NOTIFY_TITLE, message="Password too short — must be at least 8 characters",
                urgency="critical")
+    iface = nm_dbus.get_wifi_iface()
+    if not iface:
+        error_menu("No Wi-Fi interface found", "Cannot create hotspot without a Wi-Fi adapter")
+        return
     notify(title=NOTIFY_TITLE, message=f"Creating hotspot '{ssid}'...", **NOTIFY_BUSY)
-    r = nmcli_run(["device", "wifi", "hotspot", "ifname", "*", "ssid", ssid, "password", pwd], want_result=True)
+    r = nmcli_run(["device", "wifi", "hotspot", "ifname", iface, "ssid", ssid, "password", pwd], want_result=True)
     if isinstance(r, dict) and not r.get("ok"):
         error_menu("Failed to create hotspot", r.get("stderr") or r.get("message", ""))
         return

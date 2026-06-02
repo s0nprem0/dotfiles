@@ -1,4 +1,5 @@
 import re
+import subprocess
 from typing import Optional
 
 from network import nm_dbus
@@ -16,6 +17,7 @@ from network.common import (
     is_wifi_enabled, get_saved_networks, get_active_wifi,
     list_wifi_networks, get_connection_prop,
     get_power_save, check_connectivity,
+    CONFIG_DIR,
 )
 from network.cache import cached, invalidate
 
@@ -195,9 +197,10 @@ def show_mac_spoof_menu(iface: str) -> None:
         opts.append(_ns(""))
 
     add = lambda k, v: (opts.append(k), actions.__setitem__(k, v))
-    add("  Random MAC", f"MACSET:{iface}:random")
-    add("  Random vendor MAC", f"MACSET:{iface}:vendor")
-    add("  Reset to permanent", f"MACSET:{iface}:permanent")
+    add("  Random MAC", f"MACSET:{iface}:random")
+    add("  Random vendor MAC", f"MACSET:{iface}:vendor")
+    add("  Custom MAC", f"MACSET:{iface}:custom")
+    add("  Reset to permanent", f"MACSET:{iface}:permanent")
     add(f"{back_icon}  {BACK}", "back")
 
     chosen = rofi_menu(opts, f"󱞩  Spoof MAC — {iface}")
@@ -239,8 +242,32 @@ def show_mac_spoof_menu(iface: str) -> None:
                 error_menu("MAC spoof failed", r.get("stderr", ""))
             sudo_run(["ip", "link", "set", iface_name, "up"])
             notify(title=NOTIFY_TITLE, message=f"Vendor MAC set on {iface_name}", **NOTIFY_OK)
+        elif mode == "custom":
+            # Prompt for custom MAC in rofi
+            result = subprocess.run(
+                f"echo | rofi -dmenu -p 'Custom MAC ({iface_name}):' -theme {CONFIG_DIR / 'rofi' / 'input.rasi'}",
+                shell=True, text=True, capture_output=True
+            ).stdout.strip()
+            if not result:
+                show_mac_spoof_menu(iface)
+                return
+            mac = result.strip().lower()
+            # Validate MAC format (xx:xx:xx:xx:xx:xx)
+            if not re.match(r'^([0-9a-f]{2}:){5}[0-9a-f]{2}$', mac):
+                error_menu("Invalid MAC format", f"Expected: 00:11:22:33:44:55\nGot: {mac}")
+                show_mac_spoof_menu(iface)
+                return
+            sudo_run(["ip", "link", "set", iface_name, "down"])
+            r = sudo_run(["macchanger", "-m", mac, iface_name])
+            if not r.get("ok"):
+                error_menu("Failed to set custom MAC", r.get("stderr", ""))
+                sudo_run(["ip", "link", "set", iface_name, "up"])
+                show_mac_spoof_menu(iface)
+                return
+            sudo_run(["ip", "link", "set", iface_name, "up"])
+            notify(title=NOTIFY_TITLE, message=f"Custom MAC {mac} set on {iface_name}", **NOTIFY_OK)
         elif mode == "permanent":
-            r = sudo_run(["ip", "link", "set", iface_name, "down"])
+            sudo_run(["ip", "link", "set", iface_name, "down"])
             r = sudo_run(["macchanger", "-p", iface_name])
             if not r.get("ok"):
                 error_menu("MAC reset failed", r.get("stderr", ""))
