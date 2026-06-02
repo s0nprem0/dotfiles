@@ -13,9 +13,9 @@ configuration {
 window {
   location: center;
   anchor: center;
-  width: 540px;
-  border-radius: 12px;
-  padding: 12px 20px;
+  width: 580px;
+  border-radius: 14px;
+  padding: 8px 12px;
   background-color: @background;
   override-redirect: false;
 }
@@ -23,15 +23,16 @@ window {
 /***** Layout *****/
 mainbox {
   orientation: vertical;
-  spacing: 8px;
-  padding: 12px 0;
+  spacing: 6px;
+  padding: 8px 0;
   background-color: transparent;
 }
 
 /***** Input Area *****/
 inputbar {
+  margin: 0 8px 4px;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   background-color: @background-alt;
   children: [ prompt, entry ];
   spacing: 8px;
@@ -55,7 +56,7 @@ entry {
 listview {
   lines: 8;
   columns: 1;
-  spacing: 4px;
+  spacing: 3px;
   dynamic: true;
   layout: vertical;
   fixed-height: true;
@@ -65,16 +66,17 @@ listview {
   scrollbar-width: 6px;
 }
 
-/***** Network Items *****/
+/***** Elements — base *****/
 element {
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 9px 14px;
+  border-radius: 8px;
   background-color: @background-alt;
   text-color: @foreground;
   orientation: horizontal;
   cursor: pointer;
 }
 
+/***** Network items (normal) *****/
 element normal.normal {
   background-color: @background-alt;
   text-color: @foreground;
@@ -85,15 +87,36 @@ element normal.alternate {
   text-color: @foreground;
 }
 
+/***** Action items (active) *****/
+element active.normal {
+  background-color: @background-alt;
+  text-color: @selected;
+}
+
+element active.selected.normal {
+  background-color: @selected;
+  text-color: @background;
+}
+
+/***** Status items (urgent) *****/
+element urgent.normal {
+  background-color: @urgent;
+  text-color: @background;
+}
+
+element urgent.selected.normal {
+  background-color: @selected;
+  text-color: @background;
+}
+
+/***** Selected (generic) *****/
 element selected.normal {
   background-color: @selected;
   text-color: @background;
-  border: 0px 0px 0px 3px;
-  border-color: @selected;
 }
 
 element-icon {
-  size: 20px;
+  size: 18px;
   margin: 0 8px 0 0;
   background-color: transparent;
   text-color: inherit;
@@ -114,7 +137,7 @@ scrollbar {
   background-color: @background-alt;
 }
 
-/***** Fallback/Error/Prompt *****/
+/***** Fallback/Error *****/
 textbox, textbox-prompt-colon, error-message {
   text-color: @foreground;
   background-color: transparent;

@@ -57,10 +57,19 @@ def run_cmd_safe(cmd: list[str], *, error_title: str | None = None, error_notify
         return None
 
 
-def rofi_menu(options: list[str], prompt: str, theme: str, selected_row: int = 0) -> str:
+def rofi_menu(options: list[str], prompt: str, theme: str, selected_row: int = 0,
+              active_rows: list[int] | None = None,
+              urgent_rows: list[int] | None = None) -> str:
+    cmd = ["rofi", "-dmenu", "-i", "-p", prompt, "-theme", theme,
+           "-selected-row", str(selected_row)]
+    if active_rows:
+        for r in active_rows:
+            cmd.extend(["-a", str(r)])
+    if urgent_rows:
+        for r in urgent_rows:
+            cmd.extend(["-u", str(r)])
     result = subprocess.run(
-        ["rofi", "-dmenu", "-i", "-p", prompt, "-theme", theme,
-         "-selected-row", str(selected_row)],
+        cmd,
         input="\n".join(options),
         text=True, capture_output=True,
     ).stdout.strip()

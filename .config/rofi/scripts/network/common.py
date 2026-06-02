@@ -77,8 +77,11 @@ def signal_bars(signal: int) -> str:
 
 # ─── Rofi Wrappers ──────────────────────────────────────────────────────────
 
-def rofi_menu(options: list[str], prompt: str, selected_row: int = 0) -> str:
-    return utils.rofi_menu(options, prompt, ROFI_THEME, selected_row)
+def rofi_menu(options: list[str], prompt: str, selected_row: int = 0,
+              active_rows: list[int] | None = None,
+              urgent_rows: list[int] | None = None) -> str:
+    return utils.rofi_menu(options, prompt, ROFI_THEME, selected_row,
+                           active_rows=active_rows, urgent_rows=urgent_rows)
 
 
 def error_menu(message: str, details: str = "") -> None:
