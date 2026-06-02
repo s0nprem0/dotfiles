@@ -35,7 +35,14 @@ require("lazy").setup({
     -- Disable spectre (redundant with grug-far.nvim)
     { "nvim-pack/nvim-spectre", enabled = false },
 
-    -- 4. Import your custom plugins (including themes and UI tweaks)
+    -- 4. Utility extras
+    -- Jump/motion: press <leader>s then the target character
+    { import = "lazyvim.plugins.extras.editor.leap" },
+
+    -- Auto-session restore per project directory
+    { import = "lazyvim.plugins.extras.util.project" },
+
+    -- 5. Import your custom plugins (including themes and UI tweaks)
     { import = "plugins" },
   },
   defaults = {
