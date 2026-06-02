@@ -1,112 +1,28 @@
-@import "/home/jllyn/.config/rofi/colors.rasi"
+@import "/home/jllyn/.config/rofi/base.rasi"
 
-* {
-  font: "JetBrains Mono Nerd Font 11";
-}
-
+/***** Window for bluetooth device list *****/
 window {
-  location: center;
-  anchor: center;
   width: 540px;
   border-radius: 12px;
   padding: 12px 20px;
-  background-color: @background;
-  override-redirect: false;
 }
 
-mainbox {
-  orientation: vertical;
-  spacing: 8px;
-  padding: 12px 0;
-  background-color: transparent;
-}
-
-inputbar {
-  padding: 10px 14px;
-  border-radius: 8px;
-  background-color: @background-alt;
-  children: [ prompt, entry ];
-  spacing: 8px;
-}
-
-prompt {
-  text-color: @selected;
-  background-color: transparent;
-  padding: 0;
-}
-
-entry {
-  expand: true;
-  text-color: @foreground;
-  background-color: transparent;
-  cursor: text;
-  placeholder-color: @foreground;
-}
-
+/***** Show more rows *****/
 listview {
   lines: 10;
-  columns: 1;
-  spacing: 4px;
-  dynamic: true;
-  layout: vertical;
-  fixed-height: true;
-  scrollbar: true;
-  background-color: transparent;
-  text-color: @foreground;
-  scrollbar-width: 6px;
 }
 
+/***** Element overrides *****/
 element {
   padding: 10px 14px;
   border-radius: 6px;
-  background-color: @background-alt;
-  text-color: @foreground;
-  orientation: horizontal;
-  cursor: pointer;
-}
-
-element normal.normal {
-  background-color: @background-alt;
-  text-color: @foreground;
-}
-
-element normal.alternate {
-  background-color: rgba(38, 30, 25, 0.6);
-  text-color: @foreground;
 }
 
 element selected.normal {
-  background-color: @selected;
-  text-color: @background;
   border: 0px 0px 0px 3px;
   border-color: @selected;
 }
 
 element-icon {
   size: 20px;
-  margin: 0 8px 0 0;
-  background-color: transparent;
-  text-color: inherit;
-}
-
-element-text {
-  text-color: inherit;
-  background-color: transparent;
-  vertical-align: 0.5;
-  horizontal-align: 0.0;
-}
-
-scrollbar {
-  handle-width: 6px;
-  handle-color: @selected;
-  border-radius: 4px;
-  background-color: @background-alt;
-}
-
-textbox, textbox-prompt-colon, error-message {
-  text-color: @foreground;
-  background-color: transparent;
-  highlight: none;
-  vertical-align: 0.5;
-  horizontal-align: 0.0;
 }

@@ -1,13 +1,13 @@
 @import "/home/jllyn/.config/rofi/base.rasi"
 
-/***** Window narrower for password dialogs *****/
+/***** Window for text input dialogs *****/
 window {
   width: 460px;
   border-radius: 12px;
   padding: 16px 20px;
 }
 
-/***** No listview in password dialogs *****/
+/***** No listview in input dialogs *****/
 mainbox {
   padding: 0;
 }
