@@ -37,6 +37,9 @@ _NM_DEVICE_TYPE_WIFI = 2
 _NM_DEVICE_TYPE_ETHERNET = 1
 _NM_DEVICE_STATE_ACTIVATED = 50
 
+# NM 802.11 mode enum (subset)
+_NM_80211_MODE_AP = 3
+
 
 def _g(iface: str, prop: str, obj=None) -> any:
     target = _props if obj is None else dbus.Interface(obj, 'org.freedesktop.DBus.Properties')
@@ -79,8 +82,6 @@ def _freq_to_channel(freq: int) -> int:
 
 
 def _ip4_str(ip_int: int) -> str:
-    if isinstance(ip_int, dbus.Byte):
-        return str(ip_int)
     ip_int = int(ip_int)
     return f"{ip_int & 0xFF}.{(ip_int >> 8) & 0xFF}.{(ip_int >> 16) & 0xFF}.{(ip_int >> 24) & 0xFF}"
 
@@ -120,7 +121,7 @@ def get_active_wifi() -> str | None:
             obj = _bus.get_object('org.freedesktop.NetworkManager', p)
             typ = _p(obj).Get(_AC_IFACE, 'Type')
             if typ == '802-11-wireless':
-                return _p(obj).Get(_AC_IFACE, 'Id')
+                return str(_p(obj).Get(_AC_IFACE, 'Id') or "")
         return None
     res = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show", "--active"])
     if res is None:
@@ -148,7 +149,7 @@ def _all_connections():
 def saved_wifi_list() -> list[str]:
     if _HAS_DBUS:
         conns = _all_connections()
-        return [s.get('connection', {}).get('id', '')
+        return [str(s.get('connection', {}).get('id', '') or "")
                 for _, s in conns
                 if s.get('connection', {}).get('type') == '802-11-wireless']
     res = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show"])
@@ -287,7 +288,7 @@ def get_dns_servers(ssid: str) -> list[str]:
 def vpn_list() -> list[str]:
     if _HAS_DBUS:
         conns = _all_connections()
-        return [s.get('connection', {}).get('id', '')
+        return [str(s.get('connection', {}).get('id', '') or "")
                 for _, s in conns
                 if s.get('connection', {}).get('type') == 'vpn']
     out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show"])
@@ -305,7 +306,7 @@ def get_active_vpn() -> str | None:
             obj = _bus.get_object('org.freedesktop.NetworkManager', p)
             typ = _p(obj).Get(_AC_IFACE, 'Type')
             if typ == 'vpn':
-                return _p(obj).Get(_AC_IFACE, 'Id')
+                return str(_p(obj).Get(_AC_IFACE, 'Id') or "")
         return None
     out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show", "--active"])
     if out is None:
@@ -326,7 +327,7 @@ def get_wifi_iface() -> str | None:
             dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
             dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
             if int(dtype) == _NM_DEVICE_TYPE_WIFI:
-                return _g(_DEV_IFACE, 'Interface', dev_obj)
+                return str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
         return None
     out = nmcli_run(["-t", "-f", "DEVICE,TYPE", "device"])
     if out is None:
@@ -449,14 +450,25 @@ def get_wifi_ap_info(ssid: str) -> dict | None:
 
 def is_hotspot_active() -> str | None:
     if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'ActiveConnections')
+        # Detect hotspot by checking Wi-Fi device mode (AP).
+        paths = _g(_NM_IFACE, 'AllDevices')
         if not paths:
             return None
-        for p in paths:
-            obj = _bus.get_object('org.freedesktop.NetworkManager', p)
-            typ = _p(obj).Get(_AC_IFACE, 'Type')
-            if typ == 'hotspot':
-                return _p(obj).Get(_AC_IFACE, 'Id')
+        for dp in paths:
+            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
+            dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
+            if int(dtype) != _NM_DEVICE_TYPE_WIFI:
+                continue
+            try:
+                mode = int(_g(_WIFI_DEV_IFACE, 'Mode', dev_obj))
+            except Exception:
+                mode = -1
+            if mode != _NM_80211_MODE_AP:
+                continue
+            ac_path = _g(_DEV_IFACE, 'ActiveConnection', dev_obj)
+            if ac_path and ac_path != '/':
+                ac_obj = _bus.get_object('org.freedesktop.NetworkManager', ac_path)
+                return str(_p(ac_obj).Get(_AC_IFACE, 'Id') or "")
         return None
     out = nmcli_run(["-t", "-f", "NAME,TYPE", "connection", "show", "--active"])
     if out is None:

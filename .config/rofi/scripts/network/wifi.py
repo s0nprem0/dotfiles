@@ -83,7 +83,7 @@ def disconnect_wifi() -> None:
 
 
 def connect_hidden_network() -> None:
-    ssid = rofi_password(f"{hidden_icon} Hidden SSID:")
+    ssid = rofi_input(f"{hidden_icon} Hidden SSID:")
     if not ssid:
         return
     pwd = rofi_password(f"{shut_lock} Password (leave empty for open):")
