@@ -40,6 +40,7 @@ def toggle_airplane_mode() -> None:
         invalidate("wifi_on")
         invalidate("networks")
         invalidate("active_ssid")
+        invalidate("bt_blocked")
     else:
         r = nmcli_run(["radio", "wifi", "on"], want_result=True)
         if isinstance(r, dict) and not r.get("ok"):
@@ -51,6 +52,7 @@ def toggle_airplane_mode() -> None:
         invalidate("wifi_on")
         invalidate("networks")
         invalidate("active_ssid")
+        invalidate("bt_blocked")
 
 
 def main_menu() -> None:
