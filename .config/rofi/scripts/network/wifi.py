@@ -563,9 +563,10 @@ def wifi_menu() -> None:
 
     add_option(f"{back_icon}  Back", BACK, active=True)
 
-    selected_row = 1 if wifi_on else 0
+    # With nonselectable headers, rofi's selected-row behavior can vary.
+    # Selecting row 0 consistently lands on the first actionable entry.
     chosen = rofi_menu(option_rows, f" {wifi_enable}",
-                       selected_row=selected_row,
+                       selected_row=0,
                        active_rows=active_rows or None,
                        urgent_rows=urgent_rows or None)
     if not chosen:
