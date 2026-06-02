@@ -478,68 +478,77 @@ def wifi_menu() -> None:
         invalidate("networks")
         invalidate("active_ssid")
 
-    option_labels: list[str] = []
+    option_rows: list[str] = []
     option_values: dict[str, str] = {}
     active_rows: list[int] = []
     urgent_rows: list[int] = []
 
+    def add_option(label: str, value: str, *, active: bool = False, urgent: bool = False,
+                   selectable: bool = True) -> None:
+        row = label
+        if not selectable:
+            # Rofi dmenu protocol: make row unselectable.
+            row = f"{label}\0nonselectable\x1ftrue"
+
+        option_rows.append(row)
+
+        if selectable:
+            option_values[label] = value
+
+        idx = len(option_rows) - 1
+        if active:
+            active_rows.append(idx)
+        if urgent:
+            urgent_rows.append(idx)
+
     if wifi_on:
-        option_labels.append(f"{wifi_disable}  Disable Wi-Fi")
-        option_values[option_labels[-1]] = TOGGLE_WIFI
-        active_rows.append(len(option_labels) - 1)
+        # Sections keep the menu scannable: actions first, then networks.
+        add_option("──── Actions ────", "", selectable=False)
+
+        add_option(f"{wifi_disable}  Disable Wi-Fi", TOGGLE_WIFI, active=True)
 
         if active_ssid:
-            option_labels.append(f"{disconnect_icon}  Disconnect from {active_ssid}")
-            option_values[option_labels[-1]] = DISCONNECT
-            active_rows.append(len(option_labels) - 1)
+            add_option(f"{disconnect_icon}  Disconnect  ({active_ssid})", DISCONNECT, active=True)
 
-        option_labels.append(f"{hidden_icon}  Connect to Hidden Network")
-        option_values[option_labels[-1]] = HIDDEN
-        active_rows.append(len(option_labels) - 1)
+        add_option(f"{hidden_icon}  Connect to Hidden Network", HIDDEN, active=True)
 
-        option_labels.append("󰋁  Create Hotspot")
-        option_values[option_labels[-1]] = HOTSPOT
-        active_rows.append(len(option_labels) - 1)
+        add_option("󰋁  Create Hotspot", HOTSPOT, active=True)
 
         from network.hotspot import is_hotspot_active
         if is_hotspot_active():
-            option_labels.append("󰤂  Stop Hotspot")
-            option_values[option_labels[-1]] = STOP_HOTSPOT
-            active_rows.append(len(option_labels) - 1)
+            add_option("󰤂  Stop Hotspot", STOP_HOTSPOT, active=True)
 
-        option_labels.append(f"{wifi_known}  Saved Networks")
-        option_values[option_labels[-1]] = SAVED
-        active_rows.append(len(option_labels) - 1)
+        add_option(f"{wifi_known}  Saved Networks", SAVED, active=True)
 
-        option_labels.append("  Rescan")
-        option_values[option_labels[-1]] = RESCAN
-        active_rows.append(len(option_labels) - 1)
+        add_option("  Rescan", RESCAN, active=True)
 
         ps = cached("power_save", get_power_save, ttl=5)
         if ps is not None:
             ps_icon = "" if ps else ""
-            option_labels.append(f"{ps_icon}  Power Save: {'On' if ps else 'Off'}")
-            option_values[option_labels[-1]] = POWERSAVE
-            active_rows.append(len(option_labels) - 1)
+            add_option(f"{ps_icon}  Power Save: {'On' if ps else 'Off'}", POWERSAVE, active=True)
 
         conn = cached("connectivity", check_connectivity, ttl=5)
         if conn in ("full", "limited", "portal", "none"):
             ci = {"full": "󰤨", "limited": "󰤢", "portal": "󰤦", "none": "󰤭"}
-            option_labels.append(f"{ci.get(conn, '󰤯')}  Status: {conn}")
-            option_values[option_labels[-1]] = "CONNINFO"
-            urgent_rows.append(len(option_labels) - 1)
+            is_bad = conn in ("limited", "portal", "none")
+            add_option(f"{ci.get(conn, '󰤯')}  Status: {conn}", "", urgent=is_bad, selectable=False)
             if conn == "portal":
-                option_labels.append("󰖐  Open Captive Portal Login")
-                option_values[option_labels[-1]] = "OPEN_PORTAL"
-                active_rows.append(len(option_labels) - 1)
+                add_option("󰖐  Open Captive Portal Login", "OPEN_PORTAL", active=True)
+
+        add_option("──── Networks ────", "", selectable=False)
 
         if "~scanning~" in networks:
-            option_labels.append("󰓨  Scanning...")
-            option_values[option_labels[-1]] = ""
+            add_option("󰓨  Scanning...", "", selectable=False)
         else:
+            # Pin active SSID first, then saved, then strongest.
             sorted_networks = sorted(
                 networks.values(),
-                key=lambda n: (not n.saved, -n.signal),
+                key=lambda n: (
+                    n.ssid != active_ssid,
+                    not n.saved,
+                    -n.signal,
+                    n.ssid.lower(),
+                ),
             )
             for n in sorted_networks:
                 icon = wifi_known if n.saved else (
@@ -547,16 +556,16 @@ def wifi_menu() -> None:
                 )
                 active_tag = f" " if n.ssid == active_ssid else ""
                 label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}"
-                option_labels.append(label)
-                option_values[label] = n.ssid
+                add_option(label, n.ssid)
     else:
-        option_labels.append(f"{wifi_enable}  Enable Wi-Fi")
-        option_values[option_labels[-1]] = TOGGLE_WIFI
+        add_option(f"{wifi_enable}  Enable Wi-Fi", TOGGLE_WIFI, active=True)
+        add_option(f"{wifi_known}  Saved Networks", SAVED, active=True)
 
-    option_labels.append(f"{back_icon}  Back")
-    option_values[option_labels[-1]] = BACK
+    add_option(f"{back_icon}  Back", BACK, active=True)
 
-    chosen = rofi_menu(option_labels, f" {wifi_enable}",
+    selected_row = 1 if wifi_on else 0
+    chosen = rofi_menu(option_rows, f" {wifi_enable}",
+                       selected_row=selected_row,
                        active_rows=active_rows or None,
                        urgent_rows=urgent_rows or None)
     if not chosen:
@@ -598,8 +607,6 @@ def wifi_menu() -> None:
         invalidate("networks")
         invalidate("active_ssid")
         notify(title=NOTIFY_TITLE, message="Started scanning in background...", expire_time=4000)
-        wifi_menu()
-    elif selection == "CONNINFO":
         wifi_menu()
     elif selection == "OPEN_PORTAL":
         import subprocess
