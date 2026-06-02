@@ -7,10 +7,6 @@ vim.g.maplocalleader = ";"
 
 vim.g.snacks_animate = false
 
-vim.scriptencoding = "utf-8"
-vim.opt.encoding = "utf-8"
-vim.opt.fileencoding = "utf-8"
-
 vim.opt.wrap = true
 
 vim.opt.list = true
@@ -24,7 +20,7 @@ vim.opt.autoindent = true
 vim.opt.smartindent = true
 vim.opt.breakindent = true
 
-vim.opt.expandtab = true -- convert tabs to backspace
+vim.opt.expandtab = true -- convert tabs to spaces
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
@@ -38,13 +34,6 @@ vim.opt.scrolloff = 10
 vim.opt.inccommand = "split"
 
 vim.opt.ignorecase = true
-
-vim.opt.smarttab = true
-
--- Don't show the mode, since it's already in the status line
-vim.opt.showmode = false
-
-vim.opt.backspace = { "start", "eol", "indent" }
 
 vim.opt.path:append({ "**" })
 vim.opt.wildignore:append({ "*/node_modules/*" })
@@ -60,13 +49,9 @@ vim.opt.wildignore:append(".eot,*.otf,*.ttf,*.woff")
 vim.opt.wildignore:append(".doc,*.pdf,*.cbr,*.cbz")
 vim.opt.wildignore:append(".zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb")
 vim.opt.wildignore:append(".swp,.lock,.DS_Store,._*")
-vim.opt.wildignore:append(".,..")
 
-vim.opt.splitbelow = true
-vim.opt.splitright = true
 vim.opt.splitkeep = "cursor"
-vim.opt.mouse = "a"
-vim.wo.number = true
+
 -- Add asterisks in block comments
 vim.opt.formatoptions:append({ "r" })
 
