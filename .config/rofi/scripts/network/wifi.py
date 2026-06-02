@@ -1,4 +1,5 @@
 import re
+import subprocess
 from typing import Optional
 
 from network import nm_dbus
@@ -147,10 +148,10 @@ def toggle_power_save() -> None:
     if current is None:
         error_menu("Could not read power save state")
         return
-    new_val = "off" if current else "on"
-    r = nmcli_run(["radio", "wifi", "power", "save", new_val], want_result=True)
+    new_val = "on" if not current else "off"
+    r = sudo_run(["iw", "dev", iface, "set", "power_save", new_val])
     if isinstance(r, dict) and not r.get("ok"):
-        error_menu("Failed to toggle power saving", r.get("stderr") or r.get("message", ""))
+        error_menu("Failed to toggle power saving", r.get("stderr", ""))
         return
     notify(title=NOTIFY_TITLE, message=f"Power saving: {'ON' if new_val == 'on' else 'OFF'}",
            **NOTIFY_OK)
@@ -189,19 +190,19 @@ def _get_macchanger_state(iface: str) -> str | None:
 def show_mac_spoof_menu(iface: str) -> None:
     current = _get_macchanger_state(iface)
     opts: list[str] = []
+    actions: dict[str, str] = {}
     if current:
         for line in current.splitlines():
-            if line.strip():
-                opts.append(line.strip())
+            stripped = line.strip()
+            if stripped:
+                opts.append(_ns(stripped))
+        opts.append(_ns(""))
 
-    actions: dict[str, str] = {}
-    actions["  Random MAC"] = f"MACSET:{iface}:random"
-    actions["  Random vendor MAC"] = f"MACSET:{iface}:vendor"
-    actions["  Reset to permanent"] = f"MACSET:{iface}:permanent"
-    actions[f"{back_icon}  {BACK}"] = "back"
-
-    for k in actions:
-        opts.append(k)
+    add = lambda k, v: (opts.append(k), actions.__setitem__(k, v))
+    add("  Random MAC", f"MACSET:{iface}:random")
+    add("  Random vendor MAC", f"MACSET:{iface}:vendor")
+    add("  Reset to permanent", f"MACSET:{iface}:permanent")
+    add(f"{back_icon}  {BACK}", "back")
 
     chosen = rofi_menu(opts, f"󱞩  Spoof MAC — {iface}")
     if not chosen:
@@ -256,6 +257,11 @@ def show_mac_spoof_menu(iface: str) -> None:
 
 # ─── Adapter Actions ──────────────────────────────────────────────────────
 
+def _ns(label: str) -> str:
+    """Mark a row as non-selectable in rofi dmenu protocol."""
+    return f"{label}\0nonselectable\x1ftrue"
+
+
 def show_adapter_menu(iface: str) -> None:
     ifaces_list = get_wifi_ifaces()
     info = next((d for d in ifaces_list if d["iface"] == iface), None)
@@ -267,32 +273,31 @@ def show_adapter_menu(iface: str) -> None:
     signal = int(info.get("signal", 0))
 
     opts: list[str] = []
-    opts.append(f"Interface:  {iface}")
-    opts.append(f"State:  {info['state']}")
-    if info.get("mac"):
-        opts.append(f"MAC:  {info['mac']}")
-    if info.get("ip"):
-        opts.append(f"IP:  {info['ip']}")
-    if active_ssid:
-        opts.append(f"Connected:  {active_ssid}")
-        if signal:
-            opts.append(f"Signal:  {signal}%  {signal_bars(signal)}")
-    opts.append("")
-
     actions: dict[str, str] = {}
 
-    actions["  Scan"] = f"SCAN:{iface}"
+    opts.append(_ns(f"Interface:  {iface}"))
+    opts.append(_ns(f"State:  {info['state']}"))
+    if info.get("mac"):
+        opts.append(_ns(f"MAC:  {info['mac']}"))
+    if info.get("ip"):
+        opts.append(_ns(f"IP:  {info['ip']}"))
     if active_ssid:
-        actions[f"{disconnect_icon}  Disconnect"] = f"DISC:{iface}"
+        opts.append(_ns(f"Connected:  {active_ssid}"))
+        if signal:
+            opts.append(_ns(f"Signal:  {signal}%  {signal_bars(signal)}"))
+    opts.append(_ns(""))
+
+    add = lambda k, v: (opts.append(k), actions.__setitem__(k, v))
+
+    add("  Scan", f"SCAN:{iface}")
+    if active_ssid:
+        add(f"{disconnect_icon}  Disconnect", f"DISC:{iface}")
     ps = get_power_save(iface)
     if ps is not None:
         ps_icon = "" if ps else ""
-        actions[f"{ps_icon}  Power Save: {'On' if ps else 'Off'}"] = f"PS:{iface}"
-    actions["󱞩  MAC Spoof"] = f"MACSPOOF:{iface}"
-    actions[f"{back_icon}  {BACK}"] = "back"
-
-    for k in actions:
-        opts.append(k)
+        add(f"{ps_icon}  Power Save: {'On' if ps else 'Off'}", f"PS:{iface}")
+    add("󱞩  MAC Spoof", f"MACSPOOF:{iface}")
+    add(f"{back_icon}  {BACK}", "back")
 
     chosen = rofi_menu(opts, f"󰖩  {iface}")
     if not chosen:
@@ -323,10 +328,10 @@ def show_adapter_menu(iface: str) -> None:
         if current is None:
             error_menu("Could not read power save state")
             return
-        new_val = "off" if current else "on"
-        r = nmcli_run(["radio", "wifi", "power", "save", new_val], want_result=True)
+        new_val = "on" if not current else "off"
+        r = sudo_run(["iw", "dev", iface, "set", "power_save", new_val])
         if isinstance(r, dict) and not r.get("ok"):
-            error_menu("Failed to toggle power saving", r.get("stderr") or r.get("message", ""))
+            error_menu("Failed to toggle power saving", r.get("stderr", ""))
         else:
             notify(title=NOTIFY_TITLE, message=f"Power save: {'OFF' if current else 'ON'} on {iface}", **NOTIFY_OK)
             invalidate("power_save")
@@ -480,30 +485,30 @@ def set_dns_servers(network: WifiNetwork) -> None:
 # ─── Connection Details ─────────────────────────────────────────────────────
 
 def show_connection_details(network: WifiNetwork) -> None:
-    opts = [f"SSID:  {network.ssid}"]
+    opts = [_ns(f"SSID:  {network.ssid}")]
     iface = get_connection_prop(network.ssid, "connection.interface-name")
     if not iface:
         iface = nm_dbus.get_wifi_iface() or ""
     aconnect = get_connection_prop(network.ssid, "connection.autoconnect")
     if aconnect:
-        opts.append(f"Auto-connect:  {aconnect}")
+        opts.append(_ns(f"Auto-connect:  {aconnect}"))
     ipmethod = get_connection_prop(network.ssid, "ipv4.method")
     if ipmethod:
-        opts.append(f"IP method:  {ipmethod}")
+        opts.append(_ns(f"IP method:  {ipmethod}"))
     if iface:
-        opts.append(f"Interface:  {iface}")
+        opts.append(_ns(f"Interface:  {iface}"))
         dev = nm_dbus.get_device_info(iface)
         if dev:
             if dev.get("mac"):
-                opts.append(f"MAC:  {dev['mac']}")
+                opts.append(_ns(f"MAC:  {dev['mac']}"))
             if dev.get("ip"):
-                opts.append(f"IP:  {dev['ip']}")
+                opts.append(_ns(f"IP:  {dev['ip']}"))
             if dev.get("gateway"):
-                opts.append(f"Gateway:  {dev['gateway']}")
+                opts.append(_ns(f"Gateway:  {dev['gateway']}"))
             if dev.get("dns"):
-                opts.append(f"DNS:  {dev['dns']}")
+                opts.append(_ns(f"DNS:  {dev['dns']}"))
             if dev.get("speed"):
-                opts.append(f"Speed:  {dev['speed']} Mb/s")
+                opts.append(_ns(f"Speed:  {dev['speed']} Mb/s"))
     opts.append(f"{back_icon}  Back")
     rofi_menu(opts, prompt=f"{wifi_enable} Details", selected_row=len(opts) - 1)
     show_network_actions(network)
@@ -512,19 +517,19 @@ def show_connection_details(network: WifiNetwork) -> None:
 def show_wifi_info_menu(network: WifiNetwork) -> None:
     ap = nm_dbus.get_wifi_ap_info(network.ssid)
 
-    opts = [f"SSID:  {network.ssid}"]
+    opts = [_ns(f"SSID:  {network.ssid}")]
     if ap:
-        opts.append(f"Security:  {ap.get('security') or 'Open'}")
-        opts.append(f"Signal:  {ap.get('signal', 0)}%  {signal_bars(ap.get('signal', 0))}")
-        opts.append(f"Channel:  {ap.get('channel', '?')}  ({ap.get('frequency', '?')} MHz)")
-        opts.append(f"Rate:  {ap.get('rate', '?')}")
+        opts.append(_ns(f"Security:  {ap.get('security') or 'Open'}"))
+        opts.append(_ns(f"Signal:  {ap.get('signal', 0)}%  {signal_bars(ap.get('signal', 0))}"))
+        opts.append(_ns(f"Channel:  {ap.get('channel', '?')}  ({ap.get('frequency', '?')} MHz)"))
+        opts.append(_ns(f"Rate:  {ap.get('rate', '?')}"))
         if ap.get("bssid"):
-            opts.append(f"BSSID:  {ap['bssid']}")
+            opts.append(_ns(f"BSSID:  {ap['bssid']}"))
     else:
-        opts.append(f"Security:  {network.security or 'Open'}")
-        opts.append(f"Signal:  {network.signal}%  {signal_bars(network.signal)}")
+        opts.append(_ns(f"Security:  {network.security or 'Open'}"))
+        opts.append(_ns(f"Signal:  {network.signal}%  {signal_bars(network.signal)}"))
     if network.saved:
-        opts.append(f"Saved:  Yes")
+        opts.append(_ns(f"Saved:  Yes"))
     opts.append(f"{back_icon}  Back")
     rofi_menu(opts, prompt=f"{wifi_enable} Info", selected_row=len(opts) - 1)
 
@@ -688,7 +693,7 @@ def wifi_menu() -> None:
             urgent_rows.append(idx)
 
     if wifi_on:
-        add_option("──── Actions ────", "", selectable=False)
+        add_option("  󰅬  Actions", "", selectable=False)
 
         add_option(f"{wifi_disable}  Disable Wi-Fi", TOGGLE_WIFI, active=True)
 
@@ -721,7 +726,7 @@ def wifi_menu() -> None:
                 add_option("󰖐  Open Captive Portal Login", "OPEN_PORTAL", active=True)
 
         if ifaces:
-            add_option("──── Interfaces ────", "", selectable=False)
+            add_option("  󰖩  Interfaces", "", selectable=False)
             for iface_info in ifaces:
                 iface = iface_info["iface"]
                 iface_ssid = str(iface_info.get("active_ssid", "") or "")
@@ -733,7 +738,7 @@ def wifi_menu() -> None:
                     label += f"  ({iface_info['state']})"
                 add_option(label, f"IFACE:{iface}", active=True)
 
-        add_option("──── Networks ────", "", selectable=False)
+        add_option("  󰤨  Networks", "", selectable=False)
 
         if "~scanning~" in networks:
             add_option("󰓨  Scanning...", "", selectable=False)

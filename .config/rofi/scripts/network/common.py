@@ -90,11 +90,11 @@ def rofi_menu(options: list[str], prompt: str, selected_row: int = 0,
 
 
 def error_menu(message: str, details: str = "") -> None:
-    opts = [f"Error: {message}"]
+    opts = [f"{message}\0nonselectable\x1ftrue"]
     if details:
-        opts.append(details[:100])
+        opts.append(f"{details[:120]}\0nonselectable\x1ftrue")
     opts.append(f"{utils.back_icon}  Back")
-    rofi_menu(opts, prompt=f"{wifi_enable}  Error", selected_row=1, urgent_rows=[0])
+    rofi_menu(opts, prompt=f"󰀨  Error", selected_row=len(opts) - 1)
 
 
 def confirm_menu(message: str) -> bool:
