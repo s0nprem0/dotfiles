@@ -267,10 +267,23 @@ def check_connectivity() -> str:
 
 def get_public_ip() -> Optional[str]:
     import urllib.request
+    v4 = v6 = None
     try:
-        return urllib.request.urlopen("https://ifconfig.me", timeout=3).read().decode().strip()
+        v4 = urllib.request.urlopen("https://api.ipify.org", timeout=3).read().decode().strip()
     except Exception:
+        pass
+    try:
+        v6 = urllib.request.urlopen("https://api6.ipify.org", timeout=3).read().decode().strip()
+    except Exception:
+        pass
+    if not v4 and not v6:
         return None
+    parts = []
+    if v4:
+        parts.append(f"v4: {v4}")
+    if v6:
+        parts.append(f"v6: {v6}")
+    return "  ".join(parts)
 
 
 def get_vpn_list() -> list[str]:
