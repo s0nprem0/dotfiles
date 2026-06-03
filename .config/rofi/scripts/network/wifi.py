@@ -711,10 +711,8 @@ def wifi_menu() -> None:
                     shut_lock if n.security and n.security.startswith("WPA") else open_lock
                 )
                 active_tag = f" " if n.ssid == active_ssid else ""
-                band_tag = f" {n.band}G  " if n.band else "  "
-                label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}"
-                if n.band:
-                    label += f"  {n.band}"
+                band_tag = f" [{n.band}]" if n.band else ""
+                label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}{band_tag}"
                 add_option(label, n.ssid)
     else:
         add_option(f"{wifi_enable}  Enable Wi-Fi", TOGGLE_WIFI)

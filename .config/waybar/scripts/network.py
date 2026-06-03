@@ -72,7 +72,7 @@ def main():
         print(json.dumps(out))
         return
 
-    band_tag = f" {wifi['band']}" if wifi["band"] else ""
+    band_tag = f" [{wifi['band']}]" if wifi["band"] else ""
     icon = signal_bars(wifi["signal"])
     text = f"{icon}  {wifi['ssid']}{band_tag}  {wifi['signal']}%"
 
