@@ -26,24 +26,24 @@ element.nonselectable {
 
 /***** Highlighted action items (primary CTAs) *****/
 element active.normal {
-  background-color: @background-alt;
+  background-color: @selected-bg;
   text-color: @selected;
 }
 
 element active.selected.normal {
-  background-color: @selected-bg;
-  text-color: @selected;
+  background-color: @selected;
+  text-color: @background;
   border-color: @selected;
 }
 
 element active.alternate {
-  background-color: @background-alt;
+  background-color: @selected-bg;
   text-color: @selected;
 }
 
 element active.selected.alternate {
-  background-color: @selected-bg;
-  text-color: @selected;
+  background-color: @selected;
+  text-color: @background;
   border-color: @selected;
 }
 

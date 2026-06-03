@@ -1,6 +1,6 @@
 import re
 import subprocess
-from typing import Optional
+from typing import Optional, Callable
 
 from network import nm_dbus
 
@@ -12,7 +12,7 @@ from network.common import (
     WifiNetwork,
     TOGGLE_WIFI, CONNECT, FORGET, DISCONNECT, HIDDEN, RESCAN,
     HOTSPOT, STOP_HOTSPOT, SAVED, POWERSAVE,
-    signal_bars, nmcli_run,
+    signal_bars, nmcli_run, chk_nmcli, chk_sudo,
     rofi_menu, error_menu, confirm_menu, rofi_input, rofi_password,
     is_wifi_enabled, get_saved_networks, get_active_wifi,
     list_wifi_networks, get_connection_prop,
@@ -25,24 +25,15 @@ from network.cache import cached, invalidate
 # ─── Wi-Fi Toggle ───────────────────────────────────────────────────────────
 
 def toggle_wifi() -> None:
-    if is_wifi_enabled():
-        r = nmcli_run(["radio", "wifi", "off"], want_result=True)
-        if isinstance(r, dict) and not r.get("ok"):
-            error_menu("Failed to disable Wi-Fi", r.get("stderr") or r.get("message", ""))
-            return
-        notify(title=NOTIFY_TITLE, message="Wi-Fi disabled", **NOTIFY_OK)
-        invalidate("wifi_on")
-        invalidate("networks")
-        invalidate("active_ssid")
-    else:
-        r = nmcli_run(["radio", "wifi", "on"], want_result=True)
-        if isinstance(r, dict) and not r.get("ok"):
-            error_menu("Failed to enable Wi-Fi", r.get("stderr") or r.get("message", ""))
-            return
-        notify(title=NOTIFY_TITLE, message="Wi-Fi enabled", **NOTIFY_OK)
-        invalidate("wifi_on")
-        invalidate("networks")
-        invalidate("active_ssid")
+    enable = not is_wifi_enabled()
+    cmd = ["radio", "wifi", "on" if enable else "off"]
+    r = nmcli_run(cmd, want_result=True)
+    if not chk_nmcli(r, f"Failed to {'enable' if enable else 'disable'} Wi-Fi"):
+        return
+    notify(title=NOTIFY_TITLE, message=f"Wi-Fi {'enabled' if enable else 'disabled'}", **NOTIFY_OK)
+    invalidate("wifi_on")
+    invalidate("networks")
+    invalidate("active_ssid")
 
 
 # ─── Connection Actions ─────────────────────────────────────────────────────
@@ -50,10 +41,7 @@ def toggle_wifi() -> None:
 def connect_existing_network(ssid: str) -> bool:
     notify(title=NOTIFY_TITLE, message=f"Connecting to {ssid}...", **NOTIFY_BUSY)
     result = nmcli_run(["connection", "up", "id", ssid], timeout=20, want_result=True)
-    if isinstance(result, dict) and not result.get("ok"):
-        emsg = result.get("message") or "Failed to connect."
-        errd = result.get("stderr") or result.get("stdout") or str(result)
-        error_menu(f"Failed to connect to {ssid}", errd)
+    if not chk_nmcli(result, f"Failed to connect to {ssid}"):
         return False
     notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
     invalidate("active_ssid")
@@ -69,10 +57,7 @@ def connect_new_network(ssid: str, security: Optional[str]) -> bool:
         cmd += ["password", pwd]
     notify(title=NOTIFY_TITLE, message=f"Connecting to {ssid}...", **NOTIFY_BUSY)
     result = nmcli_run(cmd, timeout=20, want_result=True)
-    if isinstance(result, dict) and not result.get("ok"):
-        emsg = result.get("message") or "Failed to connect."
-        errd = result.get("stderr") or result.get("stdout") or str(result)
-        error_menu(f"Failed to connect to {ssid}", errd)
+    if not chk_nmcli(result, f"Failed to connect to {ssid}"):
         return False
     notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
     invalidate("active_ssid")
@@ -83,8 +68,7 @@ def disconnect_wifi() -> None:
     active = get_active_wifi()
     if active:
         r = nmcli_run(["connection", "down", "id", active], want_result=True)
-        if isinstance(r, dict) and not r.get("ok"):
-            error_menu(f"Failed to disconnect from {active}", r.get("stderr") or r.get("message", ""))
+        if not chk_nmcli(r, f"Failed to disconnect from {active}"):
             return
         notify(title=NOTIFY_TITLE, message=f"Disconnected from {active}", **NOTIFY_OK)
         invalidate("active_ssid")
@@ -100,10 +84,7 @@ def connect_hidden_network() -> None:
         cmd += ["password", pwd]
     notify(title=NOTIFY_TITLE, message="Connecting to hidden SSID...", **NOTIFY_BUSY)
     result = nmcli_run(cmd, timeout=20, want_result=True)
-    if isinstance(result, dict) and not result.get("ok"):
-        emsg = result.get("message") or "Failed to connect."
-        errd = result.get("stderr") or result.get("stdout") or str(result)
-        error_menu(f"Failed to connect to hidden SSID {ssid}", errd)
+    if not chk_nmcli(result, f"Failed to connect to hidden SSID {ssid}"):
         return
     notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
     invalidate("active_ssid")
@@ -111,8 +92,7 @@ def connect_hidden_network() -> None:
 
 def forget_network(ssid: str) -> bool:
     result = nmcli_run(["connection", "delete", "id", ssid], want_result=True)
-    if isinstance(result, dict) and not result.get("ok"):
-        error_menu(f"Failed to forget network {ssid}", result.get("stderr") or result.get("message", ""))
+    if not chk_nmcli(result, f"Failed to forget network {ssid}"):
         return False
     notify(title=NOTIFY_TITLE, message=f"Forgot network: {ssid}", **NOTIFY_OK)
     invalidate("networks")
@@ -131,15 +111,14 @@ def toggle_autoconnect(ssid: str) -> None:
     current = is_auto_connect(ssid)
     new_val = "no" if current else "yes"
     r = nmcli_run(["connection", "modify", "id", ssid, "connection.autoconnect", new_val], want_result=True)
-    if isinstance(r, dict) and not r.get("ok"):
-        error_menu(f"Failed to toggle auto-connect for {ssid}", r.get("stderr") or r.get("message", ""))
+    if not chk_nmcli(r, f"Failed to toggle auto-connect for {ssid}"):
         return
     notify(title=NOTIFY_TITLE, message=f"Auto-connect: {'ON' if new_val == 'yes' else 'OFF'} for {ssid}",
            **NOTIFY_OK)
 
 
 def toggle_power_save() -> None:
-    iface = _get_wifi_iface()
+    iface = nm_dbus.get_wifi_iface()
     if not iface:
         return
     current = get_power_save()
@@ -148,16 +127,11 @@ def toggle_power_save() -> None:
         return
     new_val = "on" if not current else "off"
     r = sudo_run(["iw", "dev", iface, "set", "power_save", new_val])
-    if isinstance(r, dict) and not r.get("ok"):
-        error_menu("Failed to toggle power saving", r.get("stderr", ""))
+    if not chk_sudo(r, "Failed to toggle power saving"):
         return
     notify(title=NOTIFY_TITLE, message=f"Power saving: {'ON' if new_val == 'on' else 'OFF'}",
            **NOTIFY_OK)
     invalidate("power_save")
-
-
-def _get_wifi_iface() -> Optional[str]:
-    return nm_dbus.get_wifi_iface()
 
 
 # ─── Sudo helper (tries SUDO_ASKPASS first, falls back to plain sudo) ───
@@ -181,7 +155,20 @@ def sudo_run(cmd: list[str]) -> dict:
     return {"ok": True, "stdout": result.stdout.strip()}
 
 
-# ─── MAC Spoof Menu ──────────────────────────────────────────────────────
+def _mac_spoof_apply(iface: str, macchanger_args: list[str], success_msg: str) -> bool:
+    r = sudo_run(["ip", "link", "set", iface, "down"])
+    if not r.get("ok"):
+        error_menu("Failed to bring interface down", r.get("stderr", ""))
+        return False
+    r = sudo_run(["macchanger"] + macchanger_args + [iface])
+    if not r.get("ok"):
+        error_menu("MAC operation failed", r.get("stderr", ""))
+        sudo_run(["ip", "link", "set", iface, "up"])
+        return False
+    sudo_run(["ip", "link", "set", iface, "up"])
+    notify(title=NOTIFY_TITLE, message=success_msg, **NOTIFY_OK)
+    return True
+
 
 def _get_macchanger_state(iface: str) -> str | None:
     r = sudo_run(["macchanger", "--show", iface])
@@ -228,37 +215,10 @@ def show_mac_spoof_menu(iface: str) -> None:
     if action.startswith("MACSET:"):
         _, iface_name, mode = action.split(":", 2)
         if mode == "random":
-            cmd = ["ip", "link", "set", iface_name, "down"]
-            r = sudo_run(cmd)
-            if not r.get("ok"):
-                error_menu("Failed to bring interface down", r.get("stderr", ""))
-                show_mac_spoof_menu(iface)
-                return
-            r = sudo_run(["macchanger", "-r", iface_name])
-            if not r.get("ok"):
-                error_menu("MAC spoof failed", r.get("stderr", ""))
-                sudo_run(["ip", "link", "set", iface_name, "up"])
-                show_mac_spoof_menu(iface)
-                return
-            sudo_run(["ip", "link", "set", iface_name, "up"])
-            new_mac = r.get("stdout", "")
-            notify(title=NOTIFY_TITLE, message=f"Random MAC set on {iface_name}", **NOTIFY_OK)
+            _mac_spoof_apply(iface_name, ["-r"], f"Random MAC set on {iface_name}")
         elif mode == "vendor":
-            r = sudo_run(["ip", "link", "set", iface_name, "down"])
-            if not r.get("ok"):
-                error_menu("Failed to bring interface down", r.get("stderr", ""))
-                show_mac_spoof_menu(iface)
-                return
-            r = sudo_run(["macchanger", "-a", iface_name])
-            if not r.get("ok"):
-                error_menu("MAC spoof failed", r.get("stderr", ""))
-                sudo_run(["ip", "link", "set", iface_name, "up"])
-                show_mac_spoof_menu(iface)
-                return
-            sudo_run(["ip", "link", "set", iface_name, "up"])
-            notify(title=NOTIFY_TITLE, message=f"Vendor MAC set on {iface_name}", **NOTIFY_OK)
+            _mac_spoof_apply(iface_name, ["-a"], f"Vendor MAC set on {iface_name}")
         elif mode == "custom":
-            # Prompt for custom MAC in rofi
             result = subprocess.run(
                 f"echo | rofi -dmenu -p 'Custom MAC ({iface_name}):' -theme {CONFIG_DIR / 'rofi' / 'input.rasi'}",
                 shell=True, text=True, capture_output=True
@@ -267,34 +227,13 @@ def show_mac_spoof_menu(iface: str) -> None:
                 show_mac_spoof_menu(iface)
                 return
             mac = result.strip().lower()
-            # Validate MAC format (xx:xx:xx:xx:xx:xx)
             if not re.match(r'^([0-9a-f]{2}:){5}[0-9a-f]{2}$', mac):
                 error_menu("Invalid MAC format", f"Expected: 00:11:22:33:44:55\nGot: {mac}")
                 show_mac_spoof_menu(iface)
                 return
-            sudo_run(["ip", "link", "set", iface_name, "down"])
-            r = sudo_run(["macchanger", "-m", mac, iface_name])
-            if not r.get("ok"):
-                error_menu("Failed to set custom MAC", r.get("stderr", ""))
-                sudo_run(["ip", "link", "set", iface_name, "up"])
-                show_mac_spoof_menu(iface)
-                return
-            sudo_run(["ip", "link", "set", iface_name, "up"])
-            notify(title=NOTIFY_TITLE, message=f"Custom MAC {mac} set on {iface_name}", **NOTIFY_OK)
+            _mac_spoof_apply(iface_name, ["-m", mac], f"Custom MAC {mac} set on {iface_name}")
         elif mode == "permanent":
-            r = sudo_run(["ip", "link", "set", iface_name, "down"])
-            if not r.get("ok"):
-                error_menu("Failed to bring interface down", r.get("stderr", ""))
-                show_mac_spoof_menu(iface)
-                return
-            r = sudo_run(["macchanger", "-p", iface_name])
-            if not r.get("ok"):
-                error_menu("MAC reset failed", r.get("stderr", ""))
-                sudo_run(["ip", "link", "set", iface_name, "up"])
-                show_mac_spoof_menu(iface)
-                return
-            sudo_run(["ip", "link", "set", iface_name, "up"])
-            notify(title=NOTIFY_TITLE, message=f"MAC reset to permanent on {iface_name}", **NOTIFY_OK)
+            _mac_spoof_apply(iface_name, ["-p"], f"MAC reset to permanent on {iface_name}")
         invalidate("networks")
         invalidate("active_ssid")
         wifi_menu()
@@ -513,80 +452,95 @@ def show_network_actions(network: WifiNetwork, active_ssid: Optional[str] = None
     if is_connected:
         title += "  "
 
-    actions: dict[str, str] = {}
+    rows: list[str] = []
+    vals: dict[str, str] = {}
+
+    def add(label: str, action: str, *, selectable: bool = True) -> None:
+        if not selectable:
+            rows.append(f"{label}\0nonselectable\x1ftrue")
+        else:
+            rows.append(label)
+            vals[label] = action
+
+    add("󰅬  Connection", "", selectable=False)
+
     if not is_connected:
-        actions[f"{connect_icon}  {CONNECT}"] = "connect"
-    actions[f"  Info"] = "info"
-    if network.saved:
-        actions[f"{forget_icon}  {FORGET}"] = "forget"
+        add(f"{connect_icon}  {CONNECT}", "connect")
+    add("\uf05a  Info", "info")
     if is_connected:
-        actions[f"  Details"] = "details"
+        add("\uf0ac  Details", "details")
+
     if network.saved:
+        add("", "", selectable=False)
+        add("  Settings", "", selectable=False)
+
         auto = is_auto_connect(network.ssid)
-        icon = "" if auto else ""
-        actions[f"{icon}  Auto-connect: {'On' if auto else 'Off'}"] = "autoconnect"
+        auto_icon = "" if auto else ""
+        add(f"{auto_icon}  Auto-connect: {'On' if auto else 'Off'}", "autoconnect")
         band = get_band_preference(network.ssid)
         bl = {"auto": "Auto", "a": "5 GHz", "bg": "2.4 GHz"}
-        actions[f"  Band: {bl.get(band, band)}"] = "band"
+        add(f"  Band: {bl.get(band, band)}", "band")
         mac = get_mac_mode(network.ssid)
-        label = "custom" if _is_custom_mac(mac) else mac
-        actions[f"  MAC: {label}"] = "mac"
-        actions["  Set custom MAC"] = "setmac"
+        mac_label = "custom" if _is_custom_mac(mac) else mac
+        add(f"  MAC: {mac_label}", "mac")
+        add("  Set custom MAC", "setmac")
         if _is_custom_mac(mac):
-            actions["  Reset MAC to permanent"] = "resetmac"
+            add("  Reset MAC to permanent", "resetmac")
         prio = get_autoconnect_priority(network.ssid)
-        actions[f"  Priority: {prio}"] = "priority"
+        add(f"  Priority: {prio}", "priority")
         dns = get_dns_servers(network.ssid)
         dns_label = " ".join(dns) if dns else "auto"
-        actions[f"  DNS: {dns_label}"] = "dns"
-    actions[f"{back_icon}  {BACK}"] = "back"
+        add(f"  DNS: {dns_label}", "dns")
 
-    chosen = rofi_menu(list(actions.keys()), title)
+    if network.saved:
+        add("", "", selectable=False)
+        add("  Danger Zone", "", selectable=False)
+        add(f"{forget_icon}  {FORGET}", "forget")
+
+    add("", "", selectable=False)
+    add(f"{back_icon}  {BACK}", "back")
+
+    chosen = rofi_menu(rows, title)
     if not chosen:
         return
 
-    action = actions.get(chosen)
+    action = vals.get(chosen)
+    _ACTIONS: dict[str, Callable[[], None]] = {
+        "back": lambda: wifi_menu(),
+        "connect": lambda: _handle_connect(network),
+        "forget": lambda: _handle_forget(network),
+        "info": lambda: (show_wifi_info_menu(network), show_network_actions(network)),
+        "details": lambda: show_connection_details(network),
+        "autoconnect": lambda: (toggle_autoconnect(network.ssid), show_network_actions(network)),
+        "band": lambda: cycle_band(network),
+        "mac": lambda: cycle_mac(network),
+        "setmac": lambda: set_custom_mac(network),
+        "resetmac": lambda: reset_mac(network),
+        "priority": lambda: cycle_priority(network),
+        "dns": lambda: set_dns_servers(network),
+    }
+    handler = _ACTIONS.get(action)
+    if handler:
+        handler()
 
-    if action == "back":
+
+def _handle_connect(network: WifiNetwork) -> None:
+    ok = connect_existing_network(network.ssid) if network.saved else connect_new_network(network.ssid, network.security)
+    if ok:
         wifi_menu()
-    elif action == "connect":
-        if network.saved:
-            ok = connect_existing_network(network.ssid)
-        else:
-            ok = connect_new_network(network.ssid, network.security)
+    else:
+        show_network_actions(network)
+
+
+def _handle_forget(network: WifiNetwork) -> None:
+    if confirm_menu(f"{forget_icon} Forget {network.ssid}?"):
+        ok = forget_network(network.ssid)
         if ok:
             wifi_menu()
         else:
             show_network_actions(network)
-    elif action == "forget":
-        if confirm_menu(f"{forget_icon} Forget {network.ssid}?"):
-            ok = forget_network(network.ssid)
-            if ok:
-                wifi_menu()
-            else:
-                show_network_actions(network)
-        else:
-            show_network_actions(network)
-    elif action == "info":
-        show_wifi_info_menu(network)
+    else:
         show_network_actions(network)
-    elif action == "details":
-        show_connection_details(network)
-    elif action == "autoconnect":
-        toggle_autoconnect(network.ssid)
-        show_network_actions(network)
-    elif action == "band":
-        cycle_band(network)
-    elif action == "mac":
-        cycle_mac(network)
-    elif action == "setmac":
-        set_custom_mac(network)
-    elif action == "resetmac":
-        reset_mac(network)
-    elif action == "priority":
-        cycle_priority(network)
-    elif action == "dns":
-        set_dns_servers(network)
 
 
 # ─── Saved Networks Menu ───────────────────────────────────────────────────
@@ -692,6 +646,8 @@ def wifi_menu() -> None:
             if conn == "portal":
                 add_option("󰖐  Open Captive Portal Login", "OPEN_PORTAL")
 
+        add_option("", "", selectable=False)
+
         add_option("󰤨  Networks", "", selectable=False)
 
         if "~scanning~" in networks:
@@ -710,9 +666,9 @@ def wifi_menu() -> None:
                 icon = wifi_known if n.saved else (
                     shut_lock if n.security and n.security.startswith("WPA") else open_lock
                 )
-                active_tag = f" " if n.ssid == active_ssid else ""
-                band_tag = f" [{n.band}]" if n.band else ""
-                label = f"{active_tag}{icon}  {signal_bars(n.signal)} {n.signal:>3}%  {n.ssid}{band_tag}"
+                active_tag = " " if n.ssid == active_ssid else ""
+                band_tag = f"  [{n.band}]" if n.band else ""
+                label = f"{active_tag}{icon}  {signal_bars(n.signal)}  {n.ssid}{band_tag}"
                 add_option(label, n.ssid)
     else:
         add_option(f"{wifi_enable}  Enable Wi-Fi", TOGGLE_WIFI)
@@ -734,46 +690,62 @@ def wifi_menu() -> None:
     if not selection:
         return
 
-    if selection == TOGGLE_WIFI:
-        toggle_wifi()
-        wifi_menu()
-    elif selection == BACK:
-        from network.main import main_menu
-        main_menu()
-    elif selection == "MACSPOOF":
-        iface = _get_wifi_iface()
-        if iface:
-            show_mac_spoof_menu(iface)
-    elif selection == DISCONNECT:
-        disconnect_wifi()
-        wifi_menu()
-    elif selection == HIDDEN:
-        connect_hidden_network()
-        wifi_menu()
-    elif selection == HOTSPOT:
-        from network.hotspot import create_hotspot
-        create_hotspot()
-        wifi_menu()
-    elif selection == STOP_HOTSPOT:
-        from network.hotspot import stop_hotspot
-        stop_hotspot()
-        wifi_menu()
-    elif selection == SAVED:
-        saved_networks_menu()
-    elif selection == POWERSAVE:
-        toggle_power_save()
-        wifi_menu()
-    elif selection == RESCAN:
-        invalidate("networks")
-        invalidate("active_ssid")
-        notify(title=NOTIFY_TITLE, message="Started scanning in background...", expire_time=4000)
-        wifi_menu()
-    elif selection == "OPEN_PORTAL":
-        import subprocess
-        for url in ("http://detectportal.firefox.com/canonical.html",
-                    "http://captive.apple.com",
-                    "http://www.msftconnecttest.com"):
-            subprocess.Popen(["xdg-open", url])
-        wifi_menu()
-    elif selection in networks and selection != "~scanning~":
+    if selection in networks and selection != "~scanning~":
         show_network_actions(networks[selection])
+        return
+
+    _wifi_handlers: dict[str, Callable[[], None]] = {
+        TOGGLE_WIFI: lambda: (toggle_wifi(), wifi_menu()),
+        BACK: _go_back,
+        "MACSPOOF": _handle_macspoof,
+        DISCONNECT: lambda: (disconnect_wifi(), wifi_menu()),
+        HIDDEN: lambda: (connect_hidden_network(), wifi_menu()),
+        HOTSPOT: _do_hotspot,
+        STOP_HOTSPOT: _stop_hotspot,
+        SAVED: saved_networks_menu,
+        POWERSAVE: lambda: (toggle_power_save(), wifi_menu()),
+        RESCAN: _handle_rescan,
+        "OPEN_PORTAL": _open_portal,
+    }
+    handler = _wifi_handlers.get(selection)
+    if handler:
+        handler()
+
+
+def _go_back() -> None:
+    from network.main import main_menu
+    main_menu()
+
+
+def _handle_macspoof() -> None:
+    iface = nm_dbus.get_wifi_iface()
+    if iface:
+        show_mac_spoof_menu(iface)
+
+
+def _do_hotspot() -> None:
+    from network.hotspot import create_hotspot
+    create_hotspot()
+    wifi_menu()
+
+
+def _stop_hotspot() -> None:
+    from network.hotspot import stop_hotspot
+    stop_hotspot()
+    wifi_menu()
+
+
+def _handle_rescan() -> None:
+    invalidate("networks")
+    invalidate("active_ssid")
+    notify(title=NOTIFY_TITLE, message="Started scanning in background...", expire_time=4000)
+    wifi_menu()
+
+
+def _open_portal() -> None:
+    import subprocess
+    for url in ("http://detectportal.firefox.com/canonical.html",
+                "http://captive.apple.com",
+                "http://www.msftconnecttest.com"):
+        subprocess.Popen(["xdg-open", url])
+    wifi_menu()

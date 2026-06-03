@@ -21,6 +21,23 @@ back_icon = utils.back_icon
 BACK = utils.BACK
 CONFIG_DIR = utils.CONFIG_DIR
 
+
+def chk_nmcli(result, fail_msg: str) -> bool:
+    """Check nmcli_run result; show error menu & return False on failure."""
+    if isinstance(result, dict) and not result.get("ok"):
+        errd = result.get("stderr") or result.get("stdout") or result.get("message", "")
+        error_menu(fail_msg, errd)
+        return False
+    return True
+
+
+def chk_sudo(result, fail_msg: str) -> bool:
+    """Check sudo_run result; show error menu & return False on failure."""
+    if not result.get("ok"):
+        error_menu(fail_msg, result.get("stderr", ""))
+        return False
+    return True
+
 # ─── Icons ──────────────────────────────────────────────────────────────────
 
 shut_lock = ""
@@ -181,7 +198,7 @@ def start_wifi_bg_scan():
                 os.remove(WIFI_SCAN_PID)
         os._exit(0)
 
-def _freq_to_band(freq: int) -> str:
+def freq_to_band(freq: int) -> str:
     if 2412 <= freq <= 2484:
         return "2.4"
     if 5170 <= freq <= 5825:
@@ -205,7 +222,7 @@ def list_wifi_networks(no_rescan: bool = True) -> dict[str, WifiNetwork]:
                 signal=info.get("signal", 0),
                 saved=info.get("saved", False),
                 visible=info.get("visible", True),
-                band=_freq_to_band(info.get("frequency", 0)),
+                band=freq_to_band(info.get("frequency", 0)),
             )
         return networks
     # Fallback: try the file cache

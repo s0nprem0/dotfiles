@@ -2,7 +2,7 @@ from network.common import (
     notify, back_icon, BACK,
     wifi_enable, shut_lock,
     NOTIFY_TITLE, NOTIFY_OK, NOTIFY_BUSY,
-    nmcli_run, error_menu, rofi_input, rofi_password,
+    nmcli_run, chk_nmcli, error_menu, rofi_input, rofi_password,
 )
 from network import nm_dbus
 
@@ -25,8 +25,7 @@ def create_hotspot() -> None:
         return
     notify(title=NOTIFY_TITLE, message=f"Creating hotspot '{ssid}'...", **NOTIFY_BUSY)
     r = nmcli_run(["device", "wifi", "hotspot", "ifname", iface, "ssid", ssid, "password", pwd], want_result=True)
-    if isinstance(r, dict) and not r.get("ok"):
-        error_menu("Failed to create hotspot", r.get("stderr") or r.get("message", ""))
+    if not chk_nmcli(r, "Failed to create hotspot"):
         return
     notify(title=NOTIFY_TITLE, message=f"Hotspot '{ssid}' active", **NOTIFY_OK)
 
@@ -41,7 +40,6 @@ def stop_hotspot() -> None:
         notify(title=NOTIFY_TITLE, message="No active hotspot", urgency="normal")
         return
     r = nmcli_run(["connection", "down", name], want_result=True)
-    if isinstance(r, dict) and not r.get("ok"):
-        error_menu(f"Failed to stop hotspot '{name}'", r.get("stderr") or r.get("message", ""))
+    if not chk_nmcli(r, f"Failed to stop hotspot '{name}'"):
         return
     notify(title=NOTIFY_TITLE, message=f"Hotspot '{name}' stopped", **NOTIFY_OK)

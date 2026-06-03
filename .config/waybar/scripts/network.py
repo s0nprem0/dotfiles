@@ -10,15 +10,7 @@ sys.path.insert(0, os.path.expanduser("~/.config/rofi/scripts"))
 sys.path.insert(0, os.path.expanduser("~/.config/rofi/scripts/network"))
 
 from network import nm_dbus
-from network.common import get_power_save, check_connectivity, signal_bars, PUBLIC_IP_CACHE
-
-
-def _freq_to_band(freq: int) -> str:
-    if 2412 <= freq <= 2484:
-        return "2.4"
-    if 5170 <= freq <= 5825:
-        return "5"
-    return ""
+from network.common import get_power_save, check_connectivity, signal_bars, freq_to_band, PUBLIC_IP_CACHE
 
 
 def get_active_wifi_info():
@@ -32,7 +24,7 @@ def get_active_wifi_info():
     ap = nm_dbus.get_wifi_ap_info(ssid) if ssid else None
     freq = int(ap.get("frequency", 0)) if ap else 0
     signal = ap.get("signal", 0) if ap else 0
-    band = _freq_to_band(freq)
+    band = freq_to_band(freq)
     return {
         "ssid": ssid,
         "signal": signal,

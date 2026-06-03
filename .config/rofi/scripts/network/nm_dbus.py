@@ -56,6 +56,30 @@ def _c(method: str, iface: str, obj=None, *args) -> any:
     return getattr(target, method)(*args)
 
 
+def _iter_devices(device_type: int | None = None):
+    """Yield (path, dev_obj) for all devices, optionally filtered by type."""
+    paths = _g(_NM_IFACE, 'AllDevices')
+    if not paths:
+        return
+    for dp in paths:
+        obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
+        if device_type is not None:
+            dtype = int(_g(_DEV_IFACE, 'DeviceType', obj))
+            if dtype != device_type:
+                continue
+        yield dp, obj
+
+
+def _iter_aps(dev_obj):
+    """Yield (ap_path, ap_obj) for all access points on a Wi-Fi device."""
+    ap_paths = _c('GetAllAccessPoints', _WIFI_DEV_IFACE, dev_obj)
+    if not ap_paths:
+        return
+    for ap_path in ap_paths:
+        ap_obj = _bus.get_object('org.freedesktop.NetworkManager', ap_path)
+        yield ap_path, ap_obj
+
+
 def _ssid(ssid_bytes) -> str:
     if not ssid_bytes:
         return ""
@@ -164,20 +188,13 @@ def saved_wifi_list() -> list[str]:
 def trigger_scan() -> bool:
     if not _HAS_DBUS:
         return False
-    paths = _g(_NM_IFACE, 'AllDevices')
-    if not paths:
-        return False
     triggered = False
-    for dp in paths:
-        dtype = _g(_DEV_IFACE, 'DeviceType',
-                   _bus.get_object('org.freedesktop.NetworkManager', dp))
-        if int(dtype) == _NM_DEVICE_TYPE_WIFI:
-            try:
-                dev = _bus.get_object('org.freedesktop.NetworkManager', dp)
-                dbus.Interface(dev, _WIFI_DEV_IFACE).RequestScan({})
-                triggered = True
-            except Exception:
-                pass
+    for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_WIFI):
+        try:
+            dbus.Interface(dev_obj, _WIFI_DEV_IFACE).RequestScan({})
+            triggered = True
+        except Exception:
+            pass
     return triggered
 
 
@@ -185,25 +202,13 @@ def list_wifi(no_rescan: bool = True) -> dict:
     if _HAS_DBUS:
         saved = saved_wifi_list()
         networks = {}
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return {}
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-            dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
-            if int(dtype) != _NM_DEVICE_TYPE_WIFI:
-                continue
-            iface = str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
+        for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_WIFI):
             if not no_rescan:
                 try:
                     dbus.Interface(dev_obj, _WIFI_DEV_IFACE).RequestScan({})
                 except Exception:
                     pass
-            ap_paths = _c('GetAllAccessPoints', _WIFI_DEV_IFACE, dev_obj)
-            if not ap_paths:
-                continue
-            for ap_path in ap_paths:
-                ap_obj = _bus.get_object('org.freedesktop.NetworkManager', ap_path)
+            for _, ap_obj in _iter_aps(dev_obj):
                 ssid = _ssid(_p(ap_obj).Get(_AP_IFACE, 'Ssid'))
                 if not ssid:
                     continue
@@ -331,14 +336,7 @@ def get_active_vpn() -> str | None:
 def get_wifi_iface() -> str | None:
     if not _HAS_DBUS:
         return None
-    paths = _g(_NM_IFACE, 'AllDevices')
-    if not paths:
-        return None
-    for dp in paths:
-        dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-        dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
-        if int(dtype) != _NM_DEVICE_TYPE_WIFI:
-            continue
+    for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_WIFI):
         iface = str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
         if iface:
             return iface
@@ -348,11 +346,7 @@ def get_wifi_iface() -> str | None:
 def get_device_info(iface: str) -> dict:
     """Returns {mac, ip, gateway, dns, speed} for a device by interface name."""
     if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return {}
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
+        for _, dev_obj in _iter_devices():
             if _g(_DEV_IFACE, 'Interface', dev_obj) != iface:
                 continue
             info: dict[str, str] = {"mac": "", "ip": "", "gateway": "", "dns": "", "speed": ""}
@@ -400,19 +394,8 @@ def get_device_info(iface: str) -> dict:
 def get_wifi_ap_info(ssid: str) -> dict | None:
     """Returns {channel, frequency, rate, signal, security, bssid} for a given SSID."""
     if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return None
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-            dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
-            if int(dtype) != _NM_DEVICE_TYPE_WIFI:
-                continue
-            ap_paths = _c('GetAllAccessPoints', _WIFI_DEV_IFACE, dev_obj)
-            if not ap_paths:
-                continue
-            for ap_path in ap_paths:
-                ap_obj = _bus.get_object('org.freedesktop.NetworkManager', ap_path)
+        for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_WIFI):
+            for _, ap_obj in _iter_aps(dev_obj):
                 name = _ssid(_p(ap_obj).Get(_AP_IFACE, 'Ssid'))
                 if name != ssid:
                     continue
@@ -456,14 +439,7 @@ def get_wifi_ap_info(ssid: str) -> dict | None:
 
 def is_hotspot_active() -> str | None:
     if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return None
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-            dtype = _g(_DEV_IFACE, 'DeviceType', dev_obj)
-            if int(dtype) != _NM_DEVICE_TYPE_WIFI:
-                continue
+        for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_WIFI):
             try:
                 mode = int(_g(_WIFI_DEV_IFACE, 'Mode', dev_obj))
             except Exception:
@@ -488,14 +464,7 @@ def is_hotspot_active() -> str | None:
 def ethernet_info() -> dict:
     """Returns {device, state, connection, ip} for the first ethernet device."""
     if _HAS_DBUS:
-        paths = _g(_NM_IFACE, 'AllDevices')
-        if not paths:
-            return {}
-        for dp in paths:
-            dev_obj = _bus.get_object('org.freedesktop.NetworkManager', dp)
-            dtype = int(_g(_DEV_IFACE, 'DeviceType', dev_obj))
-            if dtype != _NM_DEVICE_TYPE_ETHERNET:
-                continue
+        for _, dev_obj in _iter_devices(_NM_DEVICE_TYPE_ETHERNET):
             dev = str(_g(_DEV_IFACE, 'Interface', dev_obj) or "")
             state = int(_g(_DEV_IFACE, 'State', dev_obj))
             ac_path = _g(_DEV_IFACE, 'ActiveConnection', dev_obj)
