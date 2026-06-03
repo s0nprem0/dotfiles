@@ -1,0 +1,16 @@
+#!/bin/bash
+status=$(systemctl is-active docker)
+
+if [ "$1" = "status" ]; then
+  echo "Docker: $status"
+  exit 0
+fi
+
+case "$status" in
+  active)
+    sudo systemctl stop docker.socket docker
+    notify-send -a docker-toggle -t 1500 -i dialog-warning "Docker" "Stopped" ;;
+  inactive)
+    sudo systemctl start docker
+    notify-send -a docker-toggle -t 1500 -i dialog-information "Docker" "Started" ;;
+esac
