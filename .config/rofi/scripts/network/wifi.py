@@ -160,12 +160,20 @@ def _get_wifi_iface() -> Optional[str]:
     return nm_dbus.get_wifi_iface()
 
 
-# ─── Sudo helper (uses SUDO_ASKPASS for GUI password) ────────────────────
+# ─── Sudo helper (tries SUDO_ASKPASS first, falls back to plain sudo) ───
 
 def sudo_run(cmd: list[str]) -> dict:
     import subprocess
+    import os
+
+    askpass = os.environ.get("SUDO_ASKPASS")
+    sudo_cmd = ["sudo"]
+
+    if askpass and os.path.exists(askpass):
+        sudo_cmd = ["sudo", "-A"]
+
     result = subprocess.run(
-        ["sudo", "-A"] + cmd,
+        sudo_cmd + cmd,
         capture_output=True, text=True, timeout=30,
     )
     if result.returncode != 0:

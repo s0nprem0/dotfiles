@@ -9,7 +9,7 @@
   "modules-center": ["clock"],
   "modules-right": [
     "bluetooth",
-    "network",
+    "custom/network",
     "pulseaudio",
     "battery",
     "tray",

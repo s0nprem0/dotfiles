@@ -82,8 +82,7 @@ window#waybar.empty {
 
 #clock,
 #battery,
-#network,
-#pulseaudio,
+#custom-network,#pulseaudio,
 #tray,
 #custom-swaync,
 #bluetooth,
@@ -106,8 +105,7 @@ window#waybar.empty {
 
 #clock:hover,
 #battery:hover,
-#network:hover,
-#pulseaudio:hover,
+#custom-network:hover,#pulseaudio:hover,
 #tray:hover,
 #custom-swaync:hover,
 #bluetooth:hover,
@@ -147,12 +145,17 @@ window#waybar.empty {
   font-weight: bold;
 }
 
-#network.disconnected {
+#custom-network.disconnected {
   color: alpha(@foreground, 0.4);
 }
 
-#network.disabled {
+#custom-network.disabled {
   color: alpha(@foreground, 0.3);
+}
+
+#custom-network.limited {
+  color: @warning;
+  border-color: alpha(@warning, 0.4);
 }
 
 #pulseaudio.muted {

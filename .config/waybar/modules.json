@@ -103,27 +103,13 @@
     "format-icons": ["", "", "", "", ""]
   },
 
-  "network": {
-    "interval": 5,
-    "format-wifi": "{icon}  {essid} ({signalStrength}%)",
-    "format-ethernet": "󰈀 {ifname}",
-    "format-disconnected": "󰤯  Disconnected",
-    "format-disabled": "󰖩 Wi-Fi Off",
-    "format-linked": "󰈀 Wired (No IP)",
-    "format-vpn": " VPN ({ifname})",
+  "custom/network": {
+    "exec": "/home/jllyn/.config/waybar/scripts/network.py",
+    "interval": 10,
+    "return-type": "json",
+    "format": "{}",
     "tooltip": true,
-    "tooltip-format-wifi": "WiFi: {essid} ({signalStrength}%)\nIP: {ipaddr}/{cidr}\nUp: {bandwidthUpBytes} | Down: {bandwidthDownBytes}",
-    "tooltip-format-ethernet": "Ethernet: {ifname}\nIP: {ipaddr}/{cidr}\nUp: {bandwidthUpBytes} | Down: {bandwidthDownBytes}",
-    "tooltip-format-vpn": "VPN: {vpn_name} ({ipaddr})",
-    "tooltip-format-disconnected": "No Network Connection",
-    "tooltip-format-disabled": "Wi-Fi Disabled",
-    "format-icons": {
-      "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-      "ethernet": "󰈀",
-      "disconnected": "󰤯",
-      "disabled": "󰖩",
-      "vpn": ""
-    },
-    "on-click": "/home/jllyn/.config/rofi/scripts/wifi-manager"
+    "on-click": "/home/jllyn/.config/rofi/scripts/wifi-manager",
+    "signal": 1
   }
 }
