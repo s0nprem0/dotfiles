@@ -1,9 +1,5 @@
 [config]
 
-[templates.hyprland]
-input_path = "~/.config/matugen/templates/hypr/hyprland-colors.conf"
-output_path = "~/.config/hypr/colors.conf"
-
 [templates.rofi]
 input_path = "~/.config/matugen/templates/rofi/colors.rasi"
 output_path = "~/.config/rofi/colors.rasi"
@@ -20,7 +16,11 @@ output_path = "~/.config/swaync/colors.css"
 input_path = "~/.config/matugen/templates/wofi/style.css"
 output_path = "~/.config/wofi/style.css"
 
-[templates.hyprlock]
+[templates.gen_lua]
+input_path = "~/.config/matugen/templates/hypr/hyprland-colors.lua"
+output_path = "~/.config/hypr/colors.lua"
+
+[templates.gen_lock]
 input_path = "~/.config/matugen/templates/hypr/hyprlock-colors.conf"
 output_path = "~/.config/hypr/colors-hyprlock.conf"
 
@@ -31,4 +31,3 @@ output_path = "~/.config/gtk-3.0/gtk.css"
 [templates.gtk4]
 input_path = "~/.config/matugen/templates/gtk/gtk4.css"
 output_path = "~/.config/gtk-4.0/gtk.css"
-

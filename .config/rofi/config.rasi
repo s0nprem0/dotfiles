@@ -47,7 +47,7 @@ window {
     location:                    center;
     anchor:                      center;
     fullscreen:                  false;
-    width:                       230px;
+    width:                       400px;
     x-offset:                    0px;
     y-offset:                    0px;
     enabled:                     true;
@@ -81,9 +81,9 @@ inputbar {
     padding:                     5px;
     border:                      2px;
     border-radius:               10px;
-    border-color:                @background-colour;
-    background-color:            @border-colour;
-    text-color:                  @background-colour;
+    border-color:                @border-colour;
+    background-color:            @background-alt;
+    text-color:                  @foreground;
     children:                    [ "textbox-prompt-colon", "entry" ];
 }
 
@@ -138,7 +138,7 @@ case-indicator {
 listview {
     enabled:                     true;
     columns:                     1;
-    lines:                       5;
+    lines:                       6;
     cycle:                       true;
     dynamic:                     true;
     scrollbar:                   false;
@@ -146,7 +146,7 @@ listview {
     reverse:                     false;
     fixed-height:                true;
     fixed-columns:               true;
-    spacing:                     10px;
+    spacing:                     5px;
     margin:                      0px;
     padding:                     10px;
     border:                      2px solid;
@@ -169,9 +169,9 @@ element {
     enabled:                     true;
     spacing:                     10px;
     margin:                      0px;
-    padding:                     8px;
+    padding:                     10px;
     border:                      0px solid;
-    border-radius:               0px;
+    border-radius:               8px;
     border-color:                @selected;
     background-color:            transparent;
     text-color:                  @foreground;
@@ -182,8 +182,8 @@ element normal.normal {
     text-color:                  @foreground;
 }
 element selected.normal {
-    background-color:            @background-alt;
-    text-color:                  @foreground;
+    background-color:            @selected-bg;
+    text-color:                  @selected;
 }
 element-icon {
     background-color:            transparent;

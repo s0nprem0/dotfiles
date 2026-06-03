@@ -1,13 +1,13 @@
 * {
-    background:       #19120d;
-    background-alt:   #261e19;
-    background-trans: rgba(38, 30, 25, 0.6);
-    bg:               #19120d;
-    foreground:       #f0dfd6;
-    foreground-dim:   #a09080;
-    selected:         #ffb785;
-    selected-bg:      rgba(255, 183, 133, 0.15);
-    active:           #e4bfa8;
+    background:       #1a1110;
+    background-alt:   #271d1c;
+    background-trans: rgba(39, 29, 28, 0.6);
+    bg:               #1a1110;
+    foreground:       #f1dfdb;
+    foreground-dim:   #d8c2be;
+    selected:         #ffb4a7;
+    selected-bg:      rgba(255, 180, 167, 0.15);
+    active:           #e7bdb5;
     urgent:           #ffb4ab;
     urgent-bg:        rgba(255, 180, 171, 0.15);
 }
