@@ -149,3 +149,8 @@ tmp/
 
 # Personal scripts - track them
 !.local/bin/
+
+# gnugpg
+.gnupg/private-keys-v1.d/
+.gnupg/pubring.kbx
+.gnupg/trustdb.gpg
