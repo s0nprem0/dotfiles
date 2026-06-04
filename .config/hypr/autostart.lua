@@ -1,6 +1,6 @@
 hl.on("hyprland.start", function()
 	-- bar (quickshell replaces waybar)
-	hl.exec_cmd("uwsm app -- qs -p ~/.config/quickshell/bar.qml")
+	hl.exec_cmd("uwsm app -- qs")
 	hl.exec_cmd("uwsm app -- hyprpaper")
 
 	-- core components (auth, lockscreen, notification daemon)
