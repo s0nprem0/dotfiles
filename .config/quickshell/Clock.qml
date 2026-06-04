@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 
 Text {
   id: root
@@ -11,7 +10,6 @@ Text {
   font.family: theme.fontFamily
   font.pixelSize: 11
   font.bold: true
-  Layout.alignment: Qt.AlignCenter
 
   Timer {
     interval: 1000

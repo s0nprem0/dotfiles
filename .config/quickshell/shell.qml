@@ -31,20 +31,20 @@ PanelWindow {
     }
   }
 
+  // ── Main bar layout ─────────────────────────────────────
   RowLayout {
     anchors.fill: parent
     anchors.leftMargin: 8
     anchors.rightMargin: 8
     spacing: 0
 
-    // ── LEFT: Workspaces + Window ──────────────────────
+    // LEFT
     RowLayout {
       spacing: 0
       Layout.alignment: Qt.AlignVCenter
 
       Workspaces {}
 
-      // Window title
       Text {
         id: windowTitle
         text: {
@@ -67,16 +67,19 @@ PanelWindow {
 
     Item { Layout.fillWidth: true }
 
-    // ── CENTER: Clock ─────────────────────────
-    Clock {}
+    // CENTER spacer (clock overlays here)
+    Item {
+      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignCenter
+      implicitWidth: 1
+    }
 
     Item { Layout.fillWidth: true }
 
-    // ── RIGHT: Modules ─────────────────────────────────
+    // RIGHT
     RowLayout {
       spacing: 3
       Layout.alignment: Qt.AlignVCenter
-
       BtModule {}
       NetModule {}
       Audio {}
@@ -84,5 +87,10 @@ PanelWindow {
       Tray {}
       Notifications {}
     }
+  }
+
+  // ── Truly centered clock overlay ────────────────────────
+  Clock {
+    anchors.centerIn: parent
   }
 }
