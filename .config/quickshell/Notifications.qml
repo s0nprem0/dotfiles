@@ -1,4 +1,3 @@
-import Quickshell
 import Quickshell.Io
 import QtQuick
 
@@ -13,7 +12,7 @@ BarModule {
   property bool dnd: false
 
   DataModule {
-    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_notif_status"
+    path: Theme.bin("get_notif_status")
     interval: 2000
     onDataReceived: function(j) {
       root.count = j.count
@@ -23,7 +22,7 @@ BarModule {
 
   Process { id: notifRunner }
 
-  mA.acceptedButtons: Qt.LeftButton | Qt.RightButton
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
 
   Connections {
     target: mA

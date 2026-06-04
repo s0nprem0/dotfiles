@@ -8,6 +8,7 @@ Rectangle {
   property alias mA: mA
   property alias tooltipText: tooltipLabel.text
   property bool tooltipVisible: tooltipLabel.text.length > 0
+  property int acceptedButtons: Qt.LeftButton
 
   height: 28
   radius: 10
@@ -42,5 +43,6 @@ Rectangle {
     id: mA
     anchors.fill: parent
     hoverEnabled: true
+    acceptedButtons: root.acceptedButtons
   }
 }

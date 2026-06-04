@@ -8,3 +8,9 @@ var primary = "#ffb4a7";
 var muted = "#66f1dfdb";
 var error = "#f38ba8";
 var warning = "#f9e2af";
+
+var helperDir = "/home/jllyn/.config/quickshell/helpers";
+
+function bin(name) {
+  return helperDir + "/" + name;
+}

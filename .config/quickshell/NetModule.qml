@@ -1,4 +1,3 @@
-import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -14,7 +13,7 @@ BarModule {
   property string networkSsid: ""
 
   DataModule {
-    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_network_status"
+    path: Theme.bin("get_network_status")
     interval: 10000
     onDataReceived: function(j) {
       root.networkConnected = j.connected
@@ -24,7 +23,7 @@ BarModule {
 
   Process { id: nmRunner }
 
-  mA.acceptedButtons: Qt.LeftButton | Qt.RightButton
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
 
   Connections {
     target: mA

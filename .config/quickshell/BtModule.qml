@@ -1,4 +1,3 @@
-import Quickshell
 import Quickshell.Io
 import QtQuick
 
@@ -15,7 +14,7 @@ BarModule {
   property string btTooltip: ""
 
   DataModule {
-    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_bluetooth_status"
+    path: Theme.bin("get_bluetooth_status")
     interval: 30000
     onDataReceived: function(j) {
       root.btEnabled = j.enabled
@@ -33,7 +32,7 @@ BarModule {
 
   Process { id: btRunner }
 
-  mA.acceptedButtons: Qt.LeftButton | Qt.RightButton
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
 
   Connections {
     target: mA

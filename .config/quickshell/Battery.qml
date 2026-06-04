@@ -1,4 +1,3 @@
-import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
@@ -31,7 +30,7 @@ BarModule {
   readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝"]
 
   DataModule {
-    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_battery_status"
+    path: Theme.bin("get_battery_status")
     interval: 10000
     onDataReceived: function(j) {
       root.pct = j.capacity

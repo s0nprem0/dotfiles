@@ -1,4 +1,3 @@
-import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -14,7 +13,7 @@ BarModule {
   property bool isMuted: false
 
   DataModule {
-    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_audio_status"
+    path: Theme.bin("get_audio_status")
     interval: 3000
     onDataReceived: function(j) {
       root.vol = j.volume
@@ -24,7 +23,7 @@ BarModule {
 
   Process { id: runner }
 
-  mA.acceptedButtons: Qt.LeftButton | Qt.RightButton
+  acceptedButtons: Qt.LeftButton | Qt.RightButton
 
   Connections {
     target: mA
