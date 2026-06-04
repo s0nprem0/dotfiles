@@ -3,13 +3,18 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
-FloatingWindow {
+PanelWindow {
   id: window
-  title: "network_popup"
+  exclusionMode: PanelWindow.ExclusionMode.Ignore
+  focusable: true
   implicitWidth: 380
   implicitHeight: 460
-  visible: true
   color: "transparent"
+
+  anchors.right: true
+  anchors.top: true
+  margins.top: 44
+  margins.right: 12
 
   readonly property color _bg: "#1a1110"
   readonly property color _fg: "#f1dfdb"
@@ -209,8 +214,6 @@ FloatingWindow {
   }
 
   // ── Initial Scan + Timer ───────────────────────────────
-  Component.onCompleted: scanWifi()
-
   Timer {
     interval: 10000
     running: true
@@ -509,10 +512,9 @@ FloatingWindow {
     }
   }
 
-  // ── Close on Escape ────────────────────────────────────
   Item {
     focus: true
     Keys.onEscapePressed: Qt.quit()
-    Component.onCompleted: forceActiveFocus()
+    Component.onCompleted: { scanWifi(); forceActiveFocus() }
   }
 }
