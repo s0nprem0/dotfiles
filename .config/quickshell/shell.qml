@@ -111,20 +111,15 @@ PanelWindow {
     visible: false
   }
 
-  // ── Network popup (loaded once, toggled via IPC) ────────
-  Loader {
-    id: networkPopupLoader
-    source: "popups/network_popup.qml"
-    active: true
-    onLoaded: {
-      NetState.popup = item
-      item.visible = false
-    }
-  }
-
   Component.onCompleted: {
     State.service = notifService
     State.centerPopup = centerPopup
     State.toastModel = notifService.toastModel
+
+    var comp = Qt.createComponent("popups/network_popup.qml")
+    if (comp.status === Component.Ready) {
+      NetState.popup = comp.createObject(root)
+      NetState.popup.visible = false
+    }
   }
 }

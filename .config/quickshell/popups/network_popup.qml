@@ -101,13 +101,13 @@ PanelWindow {
   }
 
   function fetchSaved() {
-    savedProc.running = false
+    if (savedProc.running) return
     savedProc.command = ["nmcli", "-g", "NAME", "connection", "show"]
     savedProc.running = true
   }
 
   function doScan() {
-    scanProc.running = false
+    if (scanProc.running) return
     scanProc.command = ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w"]
     scanProc.running = true
   }
@@ -119,17 +119,15 @@ PanelWindow {
   }
 
   function toggleWifi() {
-    toggleProc.running = false
-    toggleProc.command = ["nmcli", "radio", "wifi", wifiEnabled ? "off" : "on"]
-    toggleProc.running = true
+    Quickshell.execDetached(["nmcli", "radio", "wifi", wifiEnabled ? "off" : "on"])
+    doScanIfVisible()
   }
 
   function connectToNetwork(ssid) {
-    if (ssid === activeSsid || connecting) return
+    if (ssid === activeSsid || connecting || connectProc.running) return
     connecting = true
     pendingSsid = ""
     connectProc.usePassword = false
-    connectProc.running = false
     connectProc.command = ["nmcli", "dev", "wifi", "connect", ssid]
     connectProc.running = true
   }
@@ -139,7 +137,6 @@ PanelWindow {
     if (!pwd || !pendingSsid) return
     connecting = true
     connectProc.usePassword = true
-    connectProc.running = false
     connectProc.command = ["nmcli", "dev", "wifi", "connect", pendingSsid, "password", pwd]
     connectProc.running = true
     pwdDialog.visible = false
@@ -148,9 +145,8 @@ PanelWindow {
 
   function disconnectWifi() {
     if (!activeSsid) return
-    disconnectProc.running = false
-    disconnectProc.command = ["nmcli", "connection", "down", "id", activeSsid]
-    disconnectProc.running = true
+    Quickshell.execDetached(["nmcli", "connection", "down", "id", activeSsid])
+    doScanIfVisible()
   }
 
   // ── Saved Connections Process ──────────────────────────
@@ -199,32 +195,33 @@ PanelWindow {
     }
   }
 
-  // ── Disconnect Process ─────────────────────────────────
-  Process {
-    id: disconnectProc
-    stdout: SplitParser { onRead: scanWifi() }
-  }
-
-  // ── Toggle Process ─────────────────────────────────────
-  Process {
-    id: toggleProc
-    stdout: SplitParser { onRead: scanWifi() }
-  }
-
-  // ── nmcli monitor (reactive on changes) ────────────────
-  Process {
-    id: subscriber
-    running: true
-    command: ["nmcli", "monitor"]
-    stdout: SplitParser { onRead: scanWifi() }
-  }
-
-  // ── Initial Scan + Timer ───────────────────────────────
+  // ── Polling Timer ──────────────────────────────────────
   Timer {
+    id: pollTimer
     interval: 10000
-    running: true
+    running: window.visible
     repeat: true
-    onTriggered: scanWifi()
+    onTriggered: { if (!scanning) scanWifi() }
+  }
+
+  // ── Debounce: coalesce rapid triggers ──────────────────
+  property bool __needsScan
+  Timer {
+    id: debounce
+    interval: 300
+    repeat: false
+    onTriggered: { __needsScan = false; scanWifi() }
+  }
+  function doScanIfVisible() {
+    if (!window.visible) return
+    if (__needsScan) return
+    __needsScan = true
+    debounce.restart()
+  }
+
+  onVisibleChanged: {
+    pollTimer.running = window.visible
+    if (window.visible) doScanIfVisible()
   }
 
   // ── Background ─────────────────────────────────────────
