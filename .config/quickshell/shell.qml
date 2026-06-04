@@ -18,12 +18,13 @@ PanelWindow {
   anchors.right: true
   implicitHeight: 36
   color: "transparent"
+  //output: "eDP-1" // ← uncomment if you want bar on one display only
 
-  // ── Waybar-like warm theme ─────────────────────────────
-  property color _bg: "#19120d"
-  property color _fg: "#f0dfd6"
-  property color _surface: "#261e19"
-  property color _primary: "#ffb785"
+  // ── Waybar-exact color palette ──────────────────────────
+  property color _bg: "#1a1110"
+  property color _fg: "#f1dfdb"
+  property color _surface: "#271d1c"
+  property color _primary: "#ffb4a7"
   property color _muted: Qt.alpha(_fg, 0.4)
   property color _error: "#f38ba8"
   property color _warning: "#f9e2af"
@@ -36,6 +37,7 @@ PanelWindow {
   property int notificationCount: 0
   property bool dnd: false
 
+  // ── Background ───────────────────────────────────────────
   Rectangle {
     anchors.fill: parent
     color: Qt.alpha(_bg, 0.65)
@@ -82,8 +84,8 @@ PanelWindow {
             Rectangle {
               id: wsBtn
               required property int index
-        property var ws: Hyprland.workspaces.values.find(function(w) { return w.id === index + 1 })
-        property bool isActive: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id === index + 1 : false
+              property var ws: Hyprland.workspaces.values.find(function(w) { return w.id === index + 1 })
+              property bool isActive: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id === index + 1 : false
 
               width: 20
               height: 22
@@ -136,10 +138,10 @@ PanelWindow {
 
     Item { Layout.fillWidth: true }
 
-    // ── CENTER: Clock ──────────────────────────────────
+    // ── CENTER: Clock (12‑hour) ─────────────────────────
     Text {
       id: clock
-      text: Qt.formatDateTime(new Date(), "ddd MMM dd - HH:mm")
+      text: Qt.formatDateTime(new Date(), "hh:mm AP")
       color: _fg
       font.pixelSize: 11
       font.bold: true
@@ -149,7 +151,7 @@ PanelWindow {
         interval: 1000
         running: true
         repeat: true
-        onTriggered: clock.text = Qt.formatDateTime(new Date(), "ddd MMM dd - HH:mm")
+        onTriggered: clock.text = Qt.formatDateTime(new Date(), "hh:mm AP")
       }
     }
 
@@ -185,7 +187,7 @@ PanelWindow {
           font.pixelSize: 12
         }
 
-        // ── Tooltip element (floats above module) ──
+        // Tooltip
         Rectangle {
           id: btTooltip
           anchors.bottom: parent.top
@@ -237,21 +239,34 @@ PanelWindow {
         }
       }
 
-      // Network
+      // Network (icon + ssid)
       Rectangle {
         id: netModule
         height: 28
-        width: 32
+        implicitWidth: netLabel.implicitWidth + 20
         radius: 10
         color: mA_net.containsMouse ? Qt.alpha(_primary, 0.2) : Qt.alpha(_surface, 0.4)
         border.color: mA_net.containsMouse ? Qt.alpha(_primary, 0.3) : Qt.alpha(_primary, 0.1)
         border.width: 1
 
-        Text {
+        RowLayout {
           anchors.centerIn: parent
-          text: networkConnected ? "󰤨" : "󰤭"
-          color: networkConnected ? _fg : _muted
-          font.pixelSize: 12
+          spacing: 4
+
+          Text {
+            id: netIcon
+            text: networkConnected ? "󰤨" : "󰤭"
+            color: networkConnected ? _fg : _muted
+            font.pixelSize: 12
+          }
+
+          Text {
+            id: netLabel
+            text: networkConnected ? networkSsid : "Disconnected"
+            color: networkConnected ? Qt.alpha(_fg, 0.7) : _muted
+            font.pixelSize: 10
+            visible: text.length > 0
+          }
         }
 
         Rectangle {
@@ -315,7 +330,7 @@ PanelWindow {
       Rectangle {
         id: audioModule
         height: 28
-        width: 52
+        implicitWidth: audioLabel.x + audioLabel.implicitWidth + 10
         radius: 10
         color: mA_audio.containsMouse ? Qt.alpha(_primary, 0.2) : Qt.alpha(_surface, 0.4)
         border.color: mA_audio.containsMouse ? Qt.alpha(_primary, 0.3) : Qt.alpha(_primary, 0.1)
@@ -336,10 +351,10 @@ PanelWindow {
           }
 
           Text {
-            text: audioModule.muted ? "M" : audioModule.vol + "%"
+            id: audioLabel
+            text: audioModule.muted ? "Muted" : audioModule.vol + "%"
             color: audioModule.muted ? _muted : Qt.alpha(_fg, 0.7)
             font.pixelSize: 10
-            visible: audioModule.vol > 0 || audioModule.muted
           }
         }
 
@@ -366,11 +381,11 @@ PanelWindow {
         }
       }
 
-      // Battery
+      // Battery (icon + percentage)
       Rectangle {
         id: battModule
         height: 28
-        width: 32
+        implicitWidth: battLabel.x + battLabel.implicitWidth + 10
         radius: 10
         color: mA_batt.containsMouse ? Qt.alpha(_primary, 0.2) : Qt.alpha(_surface, 0.4)
         border.color: {
@@ -395,24 +410,35 @@ PanelWindow {
         property bool battWarning: !charging && pct <= 20
         property bool battCritical: !charging && pct <= 10
 
-        Text {
+        RowLayout {
           anchors.centerIn: parent
-          text: {
-            if (battModule.charging && battModule.pct >= 100) return "󰂄"
-            if (battModule.charging) return "󰂄"
-            if (battModule.pct >= 90) return "󰁹"
-            if (battModule.pct >= 80) return "󰂂"
-            if (battModule.pct >= 70) return "󰂁"
-            if (battModule.pct >= 60) return "󰂀"
-            if (battModule.pct >= 50) return "󰁿"
-            if (battModule.pct >= 40) return "󰁾"
-            if (battModule.pct >= 30) return "󰁽"
-            if (battModule.pct >= 20) return "󰁼"
-            if (battModule.pct >= 10) return "󰁻"
-            return "󰁺"
+          spacing: 3
+
+          Text {
+            text: {
+              if (battModule.charging && battModule.pct >= 100) return "󰂄"
+              if (battModule.charging) return "󰂄"
+              if (battModule.pct >= 90) return "󰁹"
+              if (battModule.pct >= 80) return "󰂂"
+              if (battModule.pct >= 70) return "󰂁"
+              if (battModule.pct >= 60) return "󰂀"
+              if (battModule.pct >= 50) return "󰁿"
+              if (battModule.pct >= 40) return "󰁾"
+              if (battModule.pct >= 30) return "󰁽"
+              if (battModule.pct >= 20) return "󰁼"
+              if (battModule.pct >= 10) return "󰁻"
+              return "󰁺"
+            }
+            color: battModule.battCritical ? _error : battModule.battWarning ? _warning : (battModule.charging ? "#a6e3a1" : _fg)
+            font.pixelSize: 12
           }
-          color: battModule.battCritical ? _error : battModule.battWarning ? _warning : (battModule.charging ? "#a6e3a1" : _fg)
-          font.pixelSize: 12
+
+          Text {
+            id: battLabel
+            text: battModule.pct + "%"
+            color: Qt.alpha(_fg, 0.7)
+            font.pixelSize: 10
+          }
         }
 
         Rectangle {
