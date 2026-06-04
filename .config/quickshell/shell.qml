@@ -19,7 +19,11 @@ PanelWindow {
   // ── Background ───────────────────────────────────────────
   Rectangle {
     anchors.fill: parent
-    color: Qt.alpha(Theme.bg, 0.65)
+    // Init helperDir here — this binding runs before modules are created
+    color: {
+      Theme.helperDir = Quickshell.env("HOME") + "/.config/quickshell/helpers";
+      return Qt.alpha(Theme.bg, 0.65);
+    }
     border.color: Qt.alpha(Theme.primary, 0.15)
     Rectangle {
       anchors.left: parent.left

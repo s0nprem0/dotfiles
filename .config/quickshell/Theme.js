@@ -9,7 +9,7 @@ var muted = "#66f1dfdb";
 var error = "#f38ba8";
 var warning = "#f9e2af";
 
-var helperDir = "/home/jllyn/.config/quickshell/helpers";
+var helperDir = "";
 
 function bin(name) {
   return helperDir + "/" + name;
