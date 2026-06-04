@@ -1,6 +1,6 @@
 import QtQuick
 
-import "Theme.js" as Theme
+import "../Theme.js" as Theme
 
 Text {
   id: root

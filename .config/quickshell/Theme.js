@@ -12,5 +12,7 @@ var warning = "#f9e2af";
 var helperDir = "";
 
 function bin(name) {
+  if (helperDir === "")
+    helperDir = "/home/jllyn/.config/quickshell/helpers";
   return helperDir + "/" + name;
 }

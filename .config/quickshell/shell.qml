@@ -6,6 +6,8 @@ import QtQuick
 import QtQuick.Layouts
 
 import "Theme.js" as Theme
+import "components"
+import "modules"
 
 PanelWindow {
   id: root
@@ -19,7 +21,6 @@ PanelWindow {
   // ── Background ───────────────────────────────────────────
   Rectangle {
     anchors.fill: parent
-    // Init helperDir here — this binding runs before modules are created
     color: {
       Theme.helperDir = Quickshell.env("HOME") + "/.config/quickshell/helpers";
       return Qt.alpha(Theme.bg, 0.65);

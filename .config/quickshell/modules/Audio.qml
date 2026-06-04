@@ -2,7 +2,8 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
-import "Theme.js" as Theme
+import "../Theme.js" as Theme
+import "../components"
 
 BarModule {
   id: root
