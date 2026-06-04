@@ -1,6 +1,7 @@
 import Quickshell.Services.SystemTray
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls // Required for ToolTip
 
 import "../Theme.js" as Theme
 
@@ -8,7 +9,9 @@ Rectangle {
   id: root
 
   height: 28
-  implicitWidth: trayRepeater.count * 24 + 8
+  // Let the Layout calculate the width automatically based on its children + margins
+  implicitWidth: trayLayout.implicitWidth + 8
+
   radius: 10
   color: Qt.alpha(Theme.surface, 0.4)
   border.color: Qt.alpha(Theme.primary, 0.1)
@@ -16,6 +19,7 @@ Rectangle {
   visible: trayRepeater.count > 0
 
   RowLayout {
+    id: trayLayout
     anchors.fill: parent
     anchors.leftMargin: 4
     anchors.rightMargin: 4
@@ -27,10 +31,26 @@ Rectangle {
 
       Item {
         required property var modelData
-        width: 20
-        height: 20
+
+        // Use Layout properties instead of static width/height
+        Layout.preferredWidth: 20
+        Layout.preferredHeight: 20
+
+        // Subtle highlight on hover
+        Rectangle {
+            anchors.fill: parent
+            radius: 4
+            color: Qt.alpha(Theme.fg, 0.1)
+            visible: mouseArea.containsMouse
+        }
+
+        // Show standard tooltips for apps that provide them
+        ToolTip.visible: mouseArea.containsMouse
+        ToolTip.text: modelData.title || ""
+        ToolTip.delay: 500
 
         Image {
+          id: trayIcon // Explicit ID assigned
           anchors.centerIn: parent
           width: 16
           height: 16
@@ -47,16 +67,32 @@ Rectangle {
           color: Theme.fg
           font.family: Theme.fontFamily
           font.pixelSize: 10
-          visible: parent.children[0].status !== Image.Ready
+          // Reference the explicit ID instead of the fragile child index
+          visible: trayIcon.status !== Image.Ready
         }
 
         MouseArea {
+          id: mouseArea
           anchors.fill: parent
-          onClicked: {
-            if (modelData.menu && modelData.hasMenu)
-              modelData.menu.popup()
-            else
+          hoverEnabled: true
+          // Allow the MouseArea to listen for Left, Right, and Middle clicks
+          acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+
+          onClicked: (mouse) => {
+            if (mouse.button === Qt.LeftButton) {
+              // Left click: Open the app window
               modelData.activate()
+            } else if (mouse.button === Qt.RightButton) {
+              // Right click: Open the context menu
+              if (modelData.menu && modelData.hasMenu) {
+                modelData.menu.popup()
+              }
+            } else if (mouse.button === Qt.MiddleButton) {
+              // Middle click: Standard SNI secondary action (e.g., mute audio)
+              if (typeof modelData.secondaryActivate === "function") {
+                  modelData.secondaryActivate()
+              }
+            }
           }
         }
       }
