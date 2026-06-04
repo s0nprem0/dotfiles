@@ -17,11 +17,21 @@ hl.on("hyprland.start", function()
 
 	hl.exec_cmd("hyprctl setcursor macos 20")
 	hl.exec_cmd("uwsm app -- hypridle")
-	hl.exec_cmd("uwsm app -- swaync")
-
 	-- clipboard watcher
 	hl.exec_cmd("uwsm app -- ~/.config/hypr/scripts/cliphist.sh store")
 
-	-- Quickshell WiFi panel window rule
-	hl.exec_cmd("hyprctl eval 'hl.window_rule({ name = \"qwifi\", match = { class = \"org.quickshell\" }, float = true, pin = true, move = { \"monitor_w-window_w-12\", \"40\" }, size = { 380, 460 }, no_initial_focus = true })'")
+	-- Quickshell window rules (FloatingWindow xdg-toplevel positioning)
+	local qsRule = function(name, title, moveX, moveY, width, height)
+	  local size = ""
+	  if width and height then
+	    size = ", size = { " .. width .. ", " .. height .. " }"
+	  elseif width then
+	    size = ", size = { " .. width .. ", -1 }"
+	  end
+	  hl.exec_cmd("hyprctl eval 'hl.window_rule({ name = \"" .. name .. "\", match = { class = \"org.quickshell\", title = \"" .. title .. "\" }, float = true, pin = true, move = { \"" .. moveX .. "\", \"" .. moveY .. "\" }" .. size .. ", no_initial_focus = true })'")
+	end
+
+	qsRule("qwifi",           "network_popup",       "monitor_w-window_w-12", "40",  "380", "460")
+	qsRule("notif_center",    "notification_center",  "monitor_w-window_w-12", "44",  "400", "460")
+	qsRule("notif_toast",     "notification_toast",   "monitor_w-window_w-12", "44",  "360", nil)
 end)
