@@ -1,6 +1,6 @@
 hl.on("hyprland.start", function()
-	-- bar, wallpaper
-	hl.exec_cmd("uwsm app -- waybar")
+	-- bar (quickshell replaces waybar)
+	hl.exec_cmd("uwsm app -- qs -p ~/.config/quickshell/bar.qml")
 	hl.exec_cmd("uwsm app -- hyprpaper")
 
 	-- core components (auth, lockscreen, notification daemon)
@@ -21,4 +21,7 @@ hl.on("hyprland.start", function()
 
 	-- clipboard watcher
 	hl.exec_cmd("uwsm app -- ~/.config/hypr/scripts/cliphist.sh store")
+
+	-- Quickshell WiFi panel window rule
+	hl.exec_cmd("hyprctl eval 'hl.window_rule({ name = \"qwifi\", match = { class = \"org.quickshell\" }, float = true, pin = true, move = { \"monitor_w-window_w-12\", \"40\" }, size = { 380, 460 }, no_initial_focus = true })'")
 end)

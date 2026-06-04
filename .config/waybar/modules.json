@@ -109,7 +109,7 @@
     "return-type": "json",
     "format": "{}",
     "tooltip": true,
-    "on-click": "/home/jllyn/.config/rofi/scripts/wifi-manager",
+    "on-click": "qs -p /home/jllyn/.config/quickshell/wifi.qml",
     "signal": 1
   }
 }

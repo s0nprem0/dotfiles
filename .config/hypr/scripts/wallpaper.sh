@@ -25,7 +25,6 @@ sed -i "s|^path = .*|path = $WALLPAPER|" "$HOME/.config/hypr/hyprpaper.conf"
 sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprlock.conf"
 
 # Step 3: Reload services
-pkill -SIGUSR2 waybar 2>/dev/null || true
 pkill swaync 2>/dev/null; sleep 0.2; swaync &>/dev/null &
 
 echo "Wallpaper and colors updated!"

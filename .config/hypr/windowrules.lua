@@ -164,6 +164,17 @@ hl.window_rule({
 	tile = true,
 })
 
+-- Quickshell WiFi panel: float + top-right below waybar
+hl.window_rule({
+	name = "quickshell_wifi",
+	match = { class = "^(org.quickshell)$" },
+	float = true,
+	pin = true,
+	move = { "monitor_w-window_w-12", "40" },
+	size = { 380, 460 },
+	no_initial_focus = true,
+})
+
 local floating_classes = {
 	-- Your extras
 	"^(blueberry\\.py)$",
@@ -173,6 +184,7 @@ local floating_classes = {
 	".*bluedevilwizard",
 	"^(illogical-impulse Settings)$",
 
+	"^(org\\.quickshell)$",
 	"^(vlc)$",
 	"^(kvantummanager)$",
 	"^(qt5ct)$",
@@ -276,5 +288,6 @@ hl.window_rule({
 	match = { float = false },
 	no_shadow = true,
 })
+
 
 
