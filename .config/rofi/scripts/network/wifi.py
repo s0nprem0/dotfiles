@@ -78,16 +78,24 @@ def connect_hidden_network() -> None:
     ssid = rofi_input(f"{hidden_icon} Hidden SSID:")
     if not ssid:
         return
+
+    # Use saved profile if it exists
+    if ssid in get_saved_networks():
+        connect_existing_network(ssid)
+        invalidate("networks")
+        return
+
     pwd = rofi_password(f"{shut_lock} Password (leave empty for open):")
     cmd = ["device", "wifi", "connect", ssid, "hidden", "yes"]
     if pwd:
         cmd += ["password", pwd]
     notify(title=NOTIFY_TITLE, message="Connecting to hidden SSID...", **NOTIFY_BUSY)
-    result = nmcli_run(cmd, timeout=20, want_result=True)
+    result = nmcli_run(cmd, timeout=40, want_result=True)
     if not chk_nmcli(result, f"Failed to connect to hidden SSID {ssid}"):
         return
     notify(title=NOTIFY_TITLE, message=f"Connected to {ssid}", **NOTIFY_OK)
     invalidate("active_ssid")
+    invalidate("networks")
 
 
 def forget_network(ssid: str) -> bool:
