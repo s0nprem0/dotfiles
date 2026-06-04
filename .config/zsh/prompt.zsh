@@ -12,11 +12,11 @@ configure_prompt() {
 
     case "$PROMPT_ALTERNATIVE" in
         twoline)
-            PROMPT=$'%F{green}┌──'"$chroot$venv"$'──(%B%F{blue}%n@%m%b%f)-[%B%4~%b]\n└─%(?..%F{red}✘ %? ›%f )%(#.%F{red}#.%F{blue}$)%f '
+            PROMPT=$'%F{green}┌──'"$chroot$venv"$'──(%B%F{blue}%n@%m%b%f)-[%B%4~%b]\n└─%(#.%F{red}#.%F{blue}$)%f '
             RPROMPT='%F{cyan}${vcs_info_msg_0_}%f'
             ;;
         oneline)
-            PROMPT="$chroot$venv"$'%B%F{blue}%n@%m%b%f:%B%F{green}%~%b%f %(?..%F{red}✘%f )%(#.#.$) '
+            PROMPT="$chroot$venv"$'%B%F{blue}%n@%m%b%f:%B%F{green}%~%b%f %(#.#.$) '
             RPROMPT='%F{cyan}${vcs_info_msg_0_}%f'
             ;;
     esac
