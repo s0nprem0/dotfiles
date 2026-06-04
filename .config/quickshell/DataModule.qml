@@ -2,8 +2,9 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-QtObject {
+Item {
   id: root
+  visible: false
 
   property string path: ""
   property int interval: 5000
