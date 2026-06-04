@@ -198,7 +198,7 @@ PanelWindow {
   // ── Polling Timer ──────────────────────────────────────
   Timer {
     id: pollTimer
-    interval: 10000
+    interval: 5000
     running: window.visible
     repeat: true
     onTriggered: { if (!scanning) scanWifi() }
