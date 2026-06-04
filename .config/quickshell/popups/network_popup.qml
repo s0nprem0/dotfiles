@@ -10,11 +10,17 @@ PanelWindow {
   implicitWidth: 380
   implicitHeight: 460
   color: "transparent"
+  visible: false
 
   anchors.right: true
   anchors.top: true
   margins.top: 44
   margins.right: 12
+
+  IpcHandler {
+    target: "network_popup"
+    function toggle() { window.visible = !window.visible }
+  }
 
   readonly property color _bg: "#1a1110"
   readonly property color _fg: "#f1dfdb"
@@ -259,7 +265,7 @@ PanelWindow {
             text: "󰅖"
             color: _muted
             font.pixelSize: 16
-            MouseArea { anchors.fill: parent; onClicked: Qt.quit() }
+            MouseArea { anchors.fill: parent; onClicked: window.visible = false }
           }
         }
       }
@@ -514,7 +520,7 @@ PanelWindow {
 
   Item {
     focus: true
-    Keys.onEscapePressed: Qt.quit()
+    Keys.onEscapePressed: window.visible = false
     Component.onCompleted: { scanWifi(); forceActiveFocus() }
   }
 }

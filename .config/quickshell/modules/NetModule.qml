@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../Theme.js" as Theme
+import "../NetworkState.js" as NetState
 import "../components"
 
 BarModule {
@@ -32,9 +33,8 @@ BarModule {
       if (mouse.button === Qt.RightButton) {
         nmRunner.command = ["nm-connection-editor"]
         nmRunner.running = true
-      } else {
-        nmRunner.command = ["qs", "-p", Theme.config("quickshell/wifi.qml")]
-        nmRunner.running = true
+      } else if (NetState.popup) {
+        NetState.popup.visible = !NetState.popup.visible
       }
     }
   }

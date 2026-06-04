@@ -6,8 +6,11 @@ import QtQuick
 import QtQuick.Layouts
 
 import "Theme.js" as Theme
+import "NotificationState.js" as State
+import "NetworkState.js" as NetState
 import "components"
 import "modules"
+import "popups/notification" as Notif
 
 PanelWindow {
   id: root
@@ -96,5 +99,32 @@ PanelWindow {
   // ── Truly centered clock overlay ────────────────────────
   Clock {
     anchors.centerIn: parent
+  }
+
+  // ── Notification System ─────────────────────────────────
+  Notif.NotificationService { id: notifService }
+
+  Notif.ToastPopup { }
+
+  Notif.CenterPopup {
+    id: centerPopup
+    visible: false
+  }
+
+  // ── Network popup (loaded once, toggled via IPC) ────────
+  Loader {
+    id: networkPopupLoader
+    source: "popups/network_popup.qml"
+    active: true
+    onLoaded: {
+      NetState.popup = item
+      item.visible = false
+    }
+  }
+
+  Component.onCompleted: {
+    State.service = notifService
+    State.centerPopup = centerPopup
+    State.toastModel = notifService.toastModel
   }
 }
