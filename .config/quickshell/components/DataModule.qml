@@ -28,6 +28,10 @@ Item {
     onTriggered: proc.running = true
   }
 
+  function refresh() {
+    proc.running = true
+  }
+
   Component.onCompleted: proc.running = true
 
   signal dataReceived(var json)

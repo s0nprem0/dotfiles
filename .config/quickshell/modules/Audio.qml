@@ -8,14 +8,15 @@ import "../components"
 BarModule {
   id: root
 
-  implicitWidth: audioLabel.x + audioLabel.implicitWidth + 10
+  implicitWidth: contentRow.implicitWidth + 12
 
   property int vol: 0
   property bool isMuted: false
 
   DataModule {
+    id: audioData
     path: Theme.bin("get_audio_status")
-    interval: 3000
+    interval: 100
     onDataReceived: function(j) {
       root.vol = j.volume
       root.isMuted = j.muted
@@ -33,25 +34,32 @@ BarModule {
         runner.command = ["pavucontrol"]
         runner.running = true
       } else {
-        runner.command = ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+        runner.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
         runner.running = true
       }
     }
     function onWheel(wheel) {
-      runner.command = [
-        "pactl", "set-sink-volume", "@DEFAULT_SINK@",
-        wheel.angleDelta.y > 0 ? "+5%" : "-5%"
-      ]
+      runner.command = wheel.angleDelta.y > 0
+        ? ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", "5%+"]
+        : ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"]
       runner.running = true
     }
   }
 
+  Connections {
+    target: runner
+    function onRunningChanged() {
+      if (!runner.running) audioData.refresh()
+    }
+  }
+
   RowLayout {
+    id: contentRow
     anchors.centerIn: parent
     spacing: 3
 
     Text {
-      text: root.isMuted ? "󰝟" : (root.vol > 50 ? "󰕾" : root.vol > 0 ? "󰖀" : "󰕿")
+      text: root.isMuted ? "󰝟" : (root.vol > 70 ? "󰕾" : root.vol > 30 ? "󰖀" : "󰕿")
       color: root.isMuted ? Theme.muted : Theme.fg
       font.family: Theme.fontFamily
       font.pixelSize: 12

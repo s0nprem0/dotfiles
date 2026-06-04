@@ -7,8 +7,8 @@ import "../components"
 BarModule {
   id: root
 
-  visible: btEnabled
-  width: 32
+  opacity: btEnabled ? 1.0 : 0.4
+  implicitWidth: 32
 
   property bool btEnabled: false
   property bool hasConnected: false
@@ -39,7 +39,7 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        btRunner.command = ["/home/jllyn/.config/rofi/scripts/bluetooth-manager"]
+        btRunner.command = [Theme.config("rofi/scripts/bluetooth-manager")]
         btRunner.running = true
       } else {
         btRunner.command = ["bluetoothctl", "power", root.btEnabled ? "off" : "on"]

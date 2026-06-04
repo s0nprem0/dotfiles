@@ -7,7 +7,7 @@ import "../components"
 BarModule {
   id: root
 
-  width: 32
+  implicitWidth: 32
 
   property int count: 0
   property bool dnd: false

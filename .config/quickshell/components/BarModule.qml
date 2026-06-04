@@ -19,8 +19,8 @@ Rectangle {
 
   Rectangle {
     id: tooltip
-    anchors.bottom: parent.top
-    anchors.bottomMargin: 4
+    anchors.top: parent.bottom
+    anchors.topMargin: 4
     anchors.horizontalCenter: parent.horizontalCenter
     height: 20
     width: tooltipLabel.width + 12
@@ -35,7 +35,7 @@ Rectangle {
       anchors.centerIn: parent
       color: Theme.fg
       font.family: Theme.fontFamily
-      font.pixelSize: 9
+      font.pixelSize: 10
     }
   }
 

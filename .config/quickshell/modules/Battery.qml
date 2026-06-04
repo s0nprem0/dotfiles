@@ -1,3 +1,4 @@
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -7,7 +8,7 @@ import "../components"
 BarModule {
   id: root
 
-  implicitWidth: battLabel.x + battLabel.implicitWidth + 10
+  implicitWidth: contentRow.implicitWidth + 12
   visible: batteryDevice !== null
 
   border.color: {
@@ -35,11 +36,11 @@ BarModule {
     interval: 10000
     onDataReceived: function(j) {
       root.pct = j.capacity
-      root.charging = String(j.status).toLowerCase().includes("charging")
-        || String(j.status).toLowerCase().includes("fully")
+      root.charging = String(j.status).toLowerCase() === "charging"
+        || String(j.status).toLowerCase() === "full"
       root.healthStr = "Health: " + j.health + "%"
       root.powerStr = "Power: " + j.power_draw_w + "W"
-      root.timeStr = j.time_remaining
+      root.timeStr = j.time_remaining || ""
       root.batteryDevice = j
     }
   }
@@ -52,10 +53,31 @@ BarModule {
     onTriggered: root.animFrame = (root.animFrame + 1) % root.chargingIcons.length
   }
 
-  tooltipText: root.pct + "%" + (root.charging ? " (charging)" : "") + " - " + root.timeStr + " | " + root.healthStr + " | " + root.powerStr
+  acceptedButtons: Qt.LeftButton
+
+  Process { id: runner }
+
+  Connections {
+    target: mA
+    function onClicked(mouse) {
+      runner.command = ["acpi", "-V"]
+      runner.running = true
+    }
+  }
+
+  tooltipText: {
+    if (!root.batteryDevice) return ""
+    var parts = [root.pct + "%"]
+    if (root.charging) parts.push("(charging)")
+    if (root.timeStr) parts.push("- " + root.timeStr)
+    parts.push(root.healthStr)
+    parts.push(root.powerStr)
+    return parts.join(" ")
+  }
   tooltipVisible: root.batteryDevice !== null
 
   RowLayout {
+    id: contentRow
     anchors.centerIn: parent
     spacing: 3
 

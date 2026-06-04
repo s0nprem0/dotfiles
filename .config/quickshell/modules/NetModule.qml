@@ -8,7 +8,7 @@ import "../components"
 BarModule {
   id: root
 
-  implicitWidth: netLabel.implicitWidth + 20
+  implicitWidth: contentRow.implicitWidth + 12
 
   property bool networkConnected: false
   property string networkSsid: ""
@@ -33,7 +33,7 @@ BarModule {
         nmRunner.command = ["nm-connection-editor"]
         nmRunner.running = true
       } else {
-        nmRunner.command = ["qs", "-p", "/home/jllyn/.config/quickshell/wifi.qml"]
+        nmRunner.command = ["qs", "-p", Theme.config("quickshell/wifi.qml")]
         nmRunner.running = true
       }
     }
@@ -42,6 +42,7 @@ BarModule {
   tooltipText: root.networkConnected ? root.networkSsid : "Disconnected"
 
   RowLayout {
+    id: contentRow
     anchors.centerIn: parent
     spacing: 4
 

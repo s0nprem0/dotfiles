@@ -12,6 +12,9 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File m
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/cliphist.sh menu"), { description = "Clipboard history" })
 
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("rofi -show network -theme ~/.config/rofi/wifi.rasi"), { description = "Network menu" })
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("rofi -show bt -theme ~/.config/rofi/bluetooth.rasi"), { description = "Bluetooth menu" })
+
 -- Windows
 hl.bind(mainMod .. " + W", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("hyprctl kill"), { description = "Force kill window" })
@@ -153,7 +156,7 @@ hl.bind(
 hl.bind(
 	"XF86AudioMute",
 	hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-	{ repeating = true, locked = true, description = "Mute toggle" }
+	{ locked = true, description = "Mute toggle" }
 )
 
 -- Brightness

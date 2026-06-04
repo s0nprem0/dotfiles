@@ -23,6 +23,7 @@ PanelWindow {
     anchors.fill: parent
     color: {
       Theme.helperDir = Quickshell.env("HOME") + "/.config/quickshell/helpers";
+      Theme.home = Quickshell.env("HOME");
       return Qt.alpha(Theme.bg, 0.65);
     }
     border.color: Qt.alpha(Theme.primary, 0.15)
