@@ -1,6 +1,5 @@
 import Quickshell
 import Quickshell.Io
-import Quickshell.Services.Pipewire
 import QtQuick
 import Quickshell.Widgets
 import QtQuick.Layouts
@@ -17,11 +16,33 @@ Rectangle {
   border.color: mA.containsMouse ? Qt.alpha(theme.primary, 0.3) : Qt.alpha(theme.primary, 0.1)
   border.width: 1
 
-  property var sink: Pipewire.defaultAudioSink
-  property int vol: sink ? Math.round(sink.volume * 100) : 0
-  property bool isMuted: sink && sink.mute !== undefined ? sink.mute : false
+  property int vol: 0
+  property bool isMuted: false
 
+  Process {
+    id: audioHelper
+    command: [Quickshell.env("HOME") + "/.config/quickshell/helpers/get_audio_status"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var j = JSON.parse(this.text)
+          root.vol = j.volume
+          root.isMuted = j.muted
+        } catch (e) {}
+      }
+    }
+  }
+  
   Process { id: runner }
+
+  Timer {
+    interval: 3000
+    running: true
+    repeat: true
+    onTriggered: audioHelper.running = true
+  }
+
+  Component.onCompleted: audioHelper.running = true
 
   RowLayout {
     anchors.centerIn: parent
@@ -52,15 +73,17 @@ Rectangle {
       if (mouse.button === Qt.RightButton) {
         runner.command = ["pavucontrol"]
         runner.running = true
-      } else if (Pipewire.defaultAudioSink) {
-        Pipewire.defaultAudioSink.mute = !Pipewire.defaultAudioSink.mute
+      } else {
+        runner.command = ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+        runner.running = true
       }
     }
     onWheel: (wheel) => {
-      if (!Pipewire.defaultAudioSink) return
-      var step = 0.05
-      var newVol = Pipewire.defaultAudioSink.volume + (wheel.angleDelta.y > 0 ? step : -step)
-      Pipewire.defaultAudioSink.volume = Math.max(0, Math.min(1, newVol))
+      runner.command = [
+        "pactl", "set-sink-volume", "@DEFAULT_SINK@",
+        wheel.angleDelta.y > 0 ? "+5%" : "-5%"
+      ]
+      runner.running = true
     }
   }
 }

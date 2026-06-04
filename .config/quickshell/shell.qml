@@ -1,10 +1,6 @@
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Bluetooth
-import Quickshell.Services.Pipewire
-import Quickshell.Services.UPower
 import Quickshell.Services.SystemTray
 import QtQuick
 import Quickshell.Widgets
@@ -20,14 +16,6 @@ PanelWindow {
   color: "transparent"
 
   Theme { id: theme }
-
-  // ── Network State ──────────────────────────────────────
-  property string networkSsid: ""
-  property bool networkConnected: false
-
-  // ── Swaync State ──────────────────────────────────────
-  property int notificationCount: 0
-  property bool dnd: false
 
   // ── Background ───────────────────────────────────────────
   Rectangle {
@@ -90,64 +78,11 @@ PanelWindow {
       Layout.alignment: Qt.AlignVCenter
 
       BtModule {}
-
-      NetModule {
-        networkConnected: root.networkConnected
-        networkSsid: root.networkSsid
-      }
-
+      NetModule {}
       Audio {}
-
       Battery {}
-
       Tray {}
-
-      Notifications {
-        notificationCount: root.notificationCount
-        dnd: root.dnd
-      }
-    }
-  }
-
-  // ── Periodic Network Poll ──────────────────────────────
-  Timer {
-    interval: 60000
-    running: true
-    repeat: true
-    onTriggered: netProc.running = true
-  }
-  Component.onCompleted: netProc.running = true
-
-  Process {
-    id: netProc
-    command: ["nmcli", "-g", "ACTIVE,SSID", "d", "w"]
-    environment: ({ LANG: "C", LC_ALL: "C" })
-    stdout: SplitParser {
-      onRead: function(data) {
-        if (!data) return
-        var idx = data.indexOf(":")
-        if (idx > 0) {
-          root.networkConnected = data.slice(0, idx) === "yes"
-          root.networkSsid = data.slice(idx + 1)
-        }
-      }
-    }
-  }
-
-  // ── Swaync Listener ────────────────────────────────────
-  Process {
-    id: swayncSub
-    running: true
-    command: ["swaync-client", "--subscribe-waybar"]
-    stdout: SplitParser {
-      onRead: function(data) {
-        if (!data) return
-        try {
-          var j = JSON.parse(data)
-          if (j.hasOwnProperty("count")) root.notificationCount = j.count
-          if (j.hasOwnProperty("dnd")) root.dnd = j.dnd
-        } catch (e) {}
-      }
+      Notifications {}
     }
   }
 }

@@ -1,3 +1,4 @@
+import Quickshell
 import Quickshell.Io
 import QtQuick
 import Quickshell.Widgets
@@ -15,10 +16,33 @@ Rectangle {
   border.color: mA.containsMouse ? Qt.alpha(theme.primary, 0.3) : Qt.alpha(theme.primary, 0.1)
   border.width: 1
 
-  Process { id: nmRunner }
-
   property bool networkConnected: false
   property string networkSsid: ""
+
+  Process { id: nmRunner }
+  
+  Process {
+    id: netHelper
+    command: [Quickshell.env("HOME") + "/.config/quickshell/helpers/get_network_status"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var j = JSON.parse(this.text)
+          root.networkConnected = j.connected
+          root.networkSsid = j.ssid
+        } catch (e) {}
+      }
+    }
+  }
+
+  Timer {
+    interval: 10000
+    running: true
+    repeat: true
+    onTriggered: netHelper.running = true
+  }
+
+  Component.onCompleted: netHelper.running = true
 
   RowLayout {
     anchors.centerIn: parent

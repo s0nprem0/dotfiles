@@ -1,5 +1,5 @@
 import Quickshell
-import Quickshell.Services.UPower
+import Quickshell.Io
 import QtQuick
 import Quickshell.Widgets
 import QtQuick.Layouts
@@ -24,17 +24,44 @@ Rectangle {
   visible: batteryDevice !== null
 
   property var batteryDevice: null
-  property int pct: batteryDevice ? Math.round(batteryDevice.percentage) : 0
-  property bool charging: batteryDevice
-    ? (String(batteryDevice.state).toLowerCase().includes("charging")
-      || String(batteryDevice.state).toLowerCase().includes("fully"))
-    : false
+  property int pct: 0
+  property bool charging: false
+  property string healthStr: ""
+  property string powerStr: ""
+  property string timeStr: ""
   property bool battWarning: !charging && pct <= 20
   property bool battCritical: !charging && pct <= 10
 
-  // Charging animation
   property int animFrame: 0
   readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝"]
+
+  Process {
+    id: battHelper
+    command: [Quickshell.env("HOME") + "/.config/quickshell/helpers/get_battery_status"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var j = JSON.parse(this.text)
+          root.pct = j.capacity
+          root.charging = String(j.status).toLowerCase().includes("charging")
+            || String(j.status).toLowerCase().includes("fully")
+          root.healthStr = "Health: " + j.health + "%"
+          root.powerStr = "Power: " + j.power_draw_w + "W"
+          root.timeStr = j.time_remaining
+          root.batteryDevice = j
+        } catch (e) {}
+      }
+    }
+  }
+
+  Timer {
+    interval: 10000
+    running: true
+    repeat: true
+    onTriggered: battHelper.running = true
+  }
+
+  Component.onCompleted: battHelper.running = true
 
   Timer {
     id: batteryAnim
@@ -42,27 +69,6 @@ Rectangle {
     running: root.charging && root.pct < 100
     repeat: true
     onTriggered: root.animFrame = (root.animFrame + 1) % root.chargingIcons.length
-  }
-
-  function refreshBattery() {
-    for (var i = 0; i < UPower.devices.count; i++) {
-      var dev = UPower.devices.get(i)
-      if (String(dev.type).toLowerCase().includes("battery")) {
-        root.batteryDevice = dev
-        return
-      }
-    }
-    root.batteryDevice = null
-  }
-
-  Component.onCompleted: refreshBattery()
-
-  Connections {
-    target: UPower
-
-    function onDevicesChanged() {
-      root.refreshBattery()
-    }
   }
 
   RowLayout {
@@ -115,15 +121,7 @@ Rectangle {
     Text {
       id: battTooltipText
       anchors.centerIn: parent
-      text: {
-        var d = root.batteryDevice
-        if (!d) return ""
-        var txt = root.pct + "%"
-        if (root.charging) txt += " (charging)"
-        if (d.timeToFull > 0 && root.charging) txt += " - " + Math.round(d.timeToFull) + "m to full"
-        if (d.timeToEmpty > 0 && !root.charging) txt += " - " + Math.round(d.timeToEmpty) + "m remaining"
-        return txt
-      }
+      text: root.pct + "%" + (root.charging ? " (charging)" : "") + " - " + root.timeStr + " | " + root.healthStr + " | " + root.powerStr
       color: theme.fg
       font.family: theme.fontFamily
       font.pixelSize: 9
