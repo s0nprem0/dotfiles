@@ -28,6 +28,9 @@ def chk_nmcli(result, fail_msg: str) -> bool:
         errd = result.get("stderr") or result.get("stdout") or result.get("message", "")
         error_menu(fail_msg, errd)
         return False
+    if not isinstance(result, dict):
+        error_menu(fail_msg, "unexpected result type")
+        return False
     return True
 
 
