@@ -3,8 +3,9 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
 import QtQuick
-import Quickshell.Widgets
 import QtQuick.Layouts
+
+import "Theme.js" as Theme
 
 PanelWindow {
   id: root
@@ -15,19 +16,17 @@ PanelWindow {
   implicitHeight: 36
   color: "transparent"
 
-  Theme { id: theme }
-
   // ── Background ───────────────────────────────────────────
   Rectangle {
     anchors.fill: parent
-    color: Qt.alpha(theme.bg, 0.65)
-    border.color: Qt.alpha(theme.primary, 0.15)
+    color: Qt.alpha(Theme.bg, 0.65)
+    border.color: Qt.alpha(Theme.primary, 0.15)
     Rectangle {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.bottom: parent.bottom
       height: 1
-      color: Qt.alpha(theme.primary, 0.15)
+      color: Qt.alpha(Theme.primary, 0.15)
     }
   }
 
@@ -54,8 +53,8 @@ PanelWindow {
           if (!title || title === "") return ""
           return title
         }
-        color: theme.fg
-        font.family: theme.fontFamily
+        color: Theme.fg
+        font.family: Theme.fontFamily
         font.pixelSize: 11
         elide: Text.ElideRight
         visible: text.length > 0
@@ -67,7 +66,6 @@ PanelWindow {
 
     Item { Layout.fillWidth: true }
 
-    // CENTER spacer (clock overlays here)
     Item {
       Layout.fillWidth: true
       Layout.alignment: Qt.AlignCenter

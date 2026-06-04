@@ -1,48 +1,44 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
-import Quickshell.Widgets
 import QtQuick.Layouts
 
-Rectangle {
+import "Theme.js" as Theme
+
+BarModule {
   id: root
 
-  Theme { id: theme }
-
-  height: 28
   implicitWidth: netLabel.implicitWidth + 20
-  radius: 10
-  color: mA.containsMouse ? Qt.alpha(theme.primary, 0.2) : Qt.alpha(theme.surface, 0.4)
-  border.color: mA.containsMouse ? Qt.alpha(theme.primary, 0.3) : Qt.alpha(theme.primary, 0.1)
-  border.width: 1
 
   property bool networkConnected: false
   property string networkSsid: ""
 
+  DataModule {
+    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_network_status"
+    interval: 10000
+    onDataReceived: function(j) {
+      root.networkConnected = j.connected
+      root.networkSsid = j.ssid
+    }
+  }
+
   Process { id: nmRunner }
-  
-  Process {
-    id: netHelper
-    command: [Quickshell.env("HOME") + "/.config/quickshell/helpers/get_network_status"]
-    stdout: StdioCollector {
-      onStreamFinished: {
-        try {
-          var j = JSON.parse(this.text)
-          root.networkConnected = j.connected
-          root.networkSsid = j.ssid
-        } catch (e) {}
+
+  mA.acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+  Connections {
+    target: mA
+    function onClicked(mouse) {
+      if (mouse.button === Qt.RightButton) {
+        nmRunner.command = ["nm-connection-editor"]
+        nmRunner.running = true
+      } else {
+        nmRunner.command = ["qs", "-p", "/home/jllyn/.config/quickshell/wifi.qml"]
+        nmRunner.running = true
       }
     }
   }
 
-  Timer {
-    interval: 10000
-    running: true
-    repeat: true
-    onTriggered: netHelper.running = true
-  }
-
-  Component.onCompleted: netHelper.running = true
+  tooltipText: root.networkConnected ? root.networkSsid : "Disconnected"
 
   RowLayout {
     anchors.centerIn: parent
@@ -51,57 +47,18 @@ Rectangle {
     Text {
       id: netIcon
       text: root.networkConnected ? "󰤨" : "󰤭"
-      color: root.networkConnected ? theme.fg : theme.muted
-      font.family: theme.fontFamily
+      color: root.networkConnected ? Theme.fg : Theme.muted
+      font.family: Theme.fontFamily
       font.pixelSize: 12
     }
 
     Text {
       id: netLabel
       text: root.networkConnected ? root.networkSsid : "Disconnected"
-      color: root.networkConnected ? Qt.alpha(theme.fg, 0.7) : theme.muted
-      font.family: theme.fontFamily
+      color: root.networkConnected ? Qt.alpha(Theme.fg, 0.7) : Theme.muted
+      font.family: Theme.fontFamily
       font.pixelSize: 10
       visible: text.length > 0
-    }
-  }
-
-  Rectangle {
-    id: netTooltip
-    anchors.bottom: parent.top
-    anchors.bottomMargin: 4
-    anchors.horizontalCenter: parent.horizontalCenter
-    height: 20
-    width: netTooltipText.width + 12
-    radius: 4
-    color: Qt.alpha(theme.surface, 0.9)
-    border.color: Qt.alpha(theme.primary, 0.2)
-    border.width: 1
-    visible: mA.containsMouse
-
-    Text {
-      id: netTooltipText
-      anchors.centerIn: parent
-      text: root.networkConnected ? root.networkSsid : "Disconnected"
-      color: theme.fg
-      font.family: theme.fontFamily
-      font.pixelSize: 9
-    }
-  }
-
-  MouseArea {
-    id: mA
-    anchors.fill: parent
-    hoverEnabled: true
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: (mouse) => {
-      if (mouse.button === Qt.RightButton) {
-        nmRunner.command = ["nm-connection-editor"]
-        nmRunner.running = true
-      } else {
-        nmRunner.command = ["qs", "-p", "/home/jllyn/.config/quickshell/wifi.qml"]
-        nmRunner.running = true
-      }
     }
   }
 }

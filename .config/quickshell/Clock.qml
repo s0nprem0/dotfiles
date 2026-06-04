@@ -1,13 +1,13 @@
 import QtQuick
 
+import "Theme.js" as Theme
+
 Text {
   id: root
 
-  Theme { id: theme }
-
   text: Qt.formatDateTime(new Date(), "ddd MMM d  hh:mm")
-  color: theme.fg
-  font.family: theme.fontFamily
+  color: Theme.fg
+  font.family: Theme.fontFamily
   font.pixelSize: 11
   font.bold: true
 

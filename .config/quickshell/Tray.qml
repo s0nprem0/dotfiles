@@ -1,18 +1,17 @@
 import Quickshell.Services.SystemTray
 import QtQuick
-import Quickshell.Widgets
 import QtQuick.Layouts
+
+import "Theme.js" as Theme
 
 Rectangle {
   id: root
 
-  Theme { id: theme }
-
   height: 28
   implicitWidth: trayRepeater.count * 24 + 8
   radius: 10
-  color: Qt.alpha(theme.surface, 0.4)
-  border.color: Qt.alpha(theme.primary, 0.1)
+  color: Qt.alpha(Theme.surface, 0.4)
+  border.color: Qt.alpha(Theme.primary, 0.1)
   border.width: 1
   visible: trayRepeater.count > 0
 
@@ -45,8 +44,8 @@ Rectangle {
         Text {
           anchors.centerIn: parent
           text: modelData.title ? modelData.title.charAt(0).toUpperCase() : "?"
-          color: theme.fg
-          font.family: theme.fontFamily
+          color: Theme.fg
+          font.family: Theme.fontFamily
           font.pixelSize: 10
           visible: parent.children[0].status !== Image.Ready
         }

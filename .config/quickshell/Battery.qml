@@ -1,27 +1,22 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
-import Quickshell.Widgets
 import QtQuick.Layouts
 
-Rectangle {
+import "Theme.js" as Theme
+
+BarModule {
   id: root
 
-  Theme { id: theme }
-
-  height: 28
   implicitWidth: battLabel.x + battLabel.implicitWidth + 10
-  radius: 10
-  color: mA.containsMouse ? Qt.alpha(theme.primary, 0.2) : Qt.alpha(theme.surface, 0.4)
-  border.color: {
-    if (mA.containsMouse) return Qt.alpha(theme.primary, 0.3)
-    if (root.battCritical) return theme.error
-    if (root.battWarning) return theme.warning
-    if (root.charging) return Qt.alpha("#a6e3a1", 0.4)
-    return Qt.alpha(theme.primary, 0.1)
-  }
-  border.width: 1
   visible: batteryDevice !== null
+
+  border.color: {
+    if (mA.containsMouse) return Qt.alpha(Theme.primary, 0.3)
+    if (root.battCritical) return Theme.error
+    if (root.battWarning) return Theme.warning
+    if (root.charging) return Qt.alpha("#a6e3a1", 0.4)
+    return Qt.alpha(Theme.primary, 0.1)
+  }
 
   property var batteryDevice: null
   property int pct: 0
@@ -35,33 +30,19 @@ Rectangle {
   property int animFrame: 0
   readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝"]
 
-  Process {
-    id: battHelper
-    command: [Quickshell.env("HOME") + "/.config/quickshell/helpers/get_battery_status"]
-    stdout: StdioCollector {
-      onStreamFinished: {
-        try {
-          var j = JSON.parse(this.text)
-          root.pct = j.capacity
-          root.charging = String(j.status).toLowerCase().includes("charging")
-            || String(j.status).toLowerCase().includes("fully")
-          root.healthStr = "Health: " + j.health + "%"
-          root.powerStr = "Power: " + j.power_draw_w + "W"
-          root.timeStr = j.time_remaining
-          root.batteryDevice = j
-        } catch (e) {}
-      }
+  DataModule {
+    path: Quickshell.env("HOME") + "/.config/quickshell/helpers/get_battery_status"
+    interval: 10000
+    onDataReceived: function(j) {
+      root.pct = j.capacity
+      root.charging = String(j.status).toLowerCase().includes("charging")
+        || String(j.status).toLowerCase().includes("fully")
+      root.healthStr = "Health: " + j.health + "%"
+      root.powerStr = "Power: " + j.power_draw_w + "W"
+      root.timeStr = j.time_remaining
+      root.batteryDevice = j
     }
   }
-
-  Timer {
-    interval: 10000
-    running: true
-    repeat: true
-    onTriggered: battHelper.running = true
-  }
-
-  Component.onCompleted: battHelper.running = true
 
   Timer {
     id: batteryAnim
@@ -70,6 +51,9 @@ Rectangle {
     repeat: true
     onTriggered: root.animFrame = (root.animFrame + 1) % root.chargingIcons.length
   }
+
+  tooltipText: root.pct + "%" + (root.charging ? " (charging)" : "") + " - " + root.timeStr + " | " + root.healthStr + " | " + root.powerStr
+  tooltipVisible: root.batteryDevice !== null
 
   RowLayout {
     anchors.centerIn: parent
@@ -91,46 +75,17 @@ Rectangle {
         if (root.pct >= 10) return "󰁻"
         return "󰁺"
       }
-      color: root.battCritical ? theme.error : root.battWarning ? theme.warning : (root.charging ? "#a6e3a1" : theme.fg)
-      font.family: theme.fontFamily
+      color: root.battCritical ? Theme.error : root.battWarning ? Theme.warning : (root.charging ? "#a6e3a1" : Theme.fg)
+      font.family: Theme.fontFamily
       font.pixelSize: 12
     }
 
     Text {
       id: battLabel
       text: root.pct + "%"
-      color: Qt.alpha(theme.fg, 0.7)
-      font.family: theme.fontFamily
+      color: Qt.alpha(Theme.fg, 0.7)
+      font.family: Theme.fontFamily
       font.pixelSize: 10
     }
-  }
-
-  Rectangle {
-    id: battTooltip
-    anchors.bottom: parent.top
-    anchors.bottomMargin: 4
-    anchors.horizontalCenter: parent.horizontalCenter
-    height: 20
-    width: battTooltipText.width + 12
-    radius: 4
-    color: Qt.alpha(theme.surface, 0.9)
-    border.color: Qt.alpha(theme.primary, 0.2)
-    border.width: 1
-    visible: mA.containsMouse && root.batteryDevice
-
-    Text {
-      id: battTooltipText
-      anchors.centerIn: parent
-      text: root.pct + "%" + (root.charging ? " (charging)" : "") + " - " + root.timeStr + " | " + root.healthStr + " | " + root.powerStr
-      color: theme.fg
-      font.family: theme.fontFamily
-      font.pixelSize: 9
-    }
-  }
-
-  MouseArea {
-    id: mA
-    anchors.fill: parent
-    hoverEnabled: true
   }
 }

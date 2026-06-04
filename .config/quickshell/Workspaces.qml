@@ -1,17 +1,15 @@
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
 import QtQuick
-import Quickshell.Widgets
 import QtQuick.Layouts
+
+import "Theme.js" as Theme
 
 Rectangle {
   id: root
 
-  Theme { id: theme }
-
-  color: Qt.alpha(theme.surface, 0.3)
-  border.color: Qt.alpha(theme.primary, 0.1)
+  color: Qt.alpha(Theme.surface, 0.3)
+  border.color: Qt.alpha(Theme.primary, 0.1)
   border.width: 1
   radius: 10
   height: 28
@@ -37,15 +35,15 @@ Rectangle {
         width: 28
         height: 24
         radius: 8
-        color: isActive ? Qt.alpha(theme.primary, 0.25) : "transparent"
-        border.color: isActive ? theme.primary : "transparent"
+        color: isActive ? Qt.alpha(Theme.primary, 0.25) : "transparent"
+        border.color: isActive ? Theme.primary : "transparent"
         border.width: isActive ? 1 : 0
 
         Text {
           anchors.centerIn: parent
           text: index + 1
-          color: isActive ? theme.bg : (ws ? theme.fg : Qt.alpha(theme.fg, 0.3))
-          font.family: theme.fontFamily
+          color: isActive ? Theme.bg : (ws ? Theme.fg : Qt.alpha(Theme.fg, 0.3))
+          font.family: Theme.fontFamily
           font.pixelSize: 11
           font.bold: isActive
         }
@@ -53,7 +51,7 @@ Rectangle {
         MouseArea {
           anchors.fill: parent
           hoverEnabled: true
-          onEntered: if (!isActive) parent.color = Qt.alpha(theme.primary, 0.15)
+          onEntered: if (!isActive) parent.color = Qt.alpha(Theme.primary, 0.15)
           onExited: if (!isActive) parent.color = "transparent"
           onClicked: {
             wsRunner.command = ["hyprctl", "dispatch", "workspace", String(index + 1)]
