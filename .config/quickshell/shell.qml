@@ -6,8 +6,6 @@ import QtQuick
 import QtQuick.Layouts
 
 import "."
-import "NotificationState.js" as State
-import "NetworkState.js" as NetState
 import "components"
 import "modules"
 import "popups/notification" as Notif
@@ -108,13 +106,13 @@ PanelWindow {
   }
 
   Component.onCompleted: {
-    State.service = notifService
-    State.centerPopup = centerPopup
-    State.toastModel = notifService.toastModel
+    NotificationState.service = notifService
+    NotificationState.centerPopup = centerPopup
+    NotificationState.toastModel = notifService.toastModel
 
     var comp = Qt.createComponent("popups/network_popup.qml")
     if (comp.status === Component.Ready) {
-      NetState.popup = comp.createObject(root)
+      NetworkState.popup = comp.createObject(root)
     }
   }
 }

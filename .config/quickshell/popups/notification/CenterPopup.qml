@@ -3,7 +3,6 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../.."
-import "../../NotificationState.js" as State
 
 FloatingWindow {
   id: centerPopup
@@ -72,25 +71,25 @@ FloatingWindow {
           spacing: 12
 
           Text {
-            text: State.dnd ? "󰂛  DND On" : "󰂚  DND Off"
-            color: State.dnd ? Theme.error : (State.server && State.server.trackedNotifications.count > 0 ? Theme.primary : Theme.muted)
+            text: NotificationState.dnd ? "󰂛  DND On" : "󰂚  DND Off"
+            color: NotificationState.dnd ? Theme.error : (NotificationState.server && NotificationState.server.trackedNotifications.count > 0 ? Theme.primary : Theme.muted)
             font.pixelSize: 11
             MouseArea {
               anchors.fill: parent
-              onClicked: State.service.toggleDnd()
+              onClicked: NotificationState.service.toggleDnd()
             }
           }
 
           Item { Layout.fillWidth: true }
 
           Text {
-            visible: State.server && State.server.trackedNotifications.count > 0
+            visible: NotificationState.server && NotificationState.server.trackedNotifications.count > 0
             text: "󰧨  Clear All"
             color: Theme.muted
             font.pixelSize: 11
             MouseArea {
               anchors.fill: parent
-              onClicked: State.service.clearAll()
+              onClicked: NotificationState.service.clearAll()
             }
           }
         }
@@ -108,7 +107,7 @@ FloatingWindow {
         Layout.fillWidth: true
         Layout.fillHeight: true
         clip: true
-        model: State.server ? State.server.trackedNotifications : null
+        model: NotificationState.server ? NotificationState.server.trackedNotifications : null
         spacing: 2
 
         delegate: Rectangle {

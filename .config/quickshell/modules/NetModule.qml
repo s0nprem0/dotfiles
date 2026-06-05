@@ -4,7 +4,6 @@ import QtQuick
 import QtQuick.Layouts
 
 import ".."
-import "../NetworkState.js" as NetState
 import "../components"
 
 BarModule {
@@ -36,8 +35,8 @@ BarModule {
             if (mouse.button === Qt.RightButton) {
                 Quickshell.execDetached(["nm-connection-editor"]);
             } else if (mouse.button === Qt.LeftButton) {
-                if (NetState.popup) {
-                    NetState.popup.showPopup = !NetState.popup.showPopup;
+                if (NetworkState.popup) {
+                    NetworkState.popup.showPopup = !NetworkState.popup.showPopup;
                 }
             }
         }

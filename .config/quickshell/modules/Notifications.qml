@@ -1,7 +1,6 @@
 import QtQuick
 
 import ".."
-import "../NotificationState.js" as State
 import "../components"
 
 BarModule {
@@ -18,24 +17,24 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        State.service.toggleDnd()
+        NotificationState.service.toggleDnd()
       } else {
-        State.centerPopup.visible = !State.centerPopup.visible
+        NotificationState.centerPopup.visible = !NotificationState.centerPopup.visible
       }
     }
   }
 
-  tooltipText: State.dnd ? "Do Not Disturb" : (notifCount > 0 ? notifCount + " notification(s)" : "No notifications")
+  tooltipText: NotificationState.dnd ? "Do Not Disturb" : (notifCount > 0 ? notifCount + " notification(s)" : "No notifications")
 
   Text {
     id: notifText
     anchors.centerIn: parent
     text: {
-      if (State.dnd) return "󰂛"
+      if (NotificationState.dnd) return "󰂛"
       if (notifCount > 0) return "󰂚"
       return "󰂜"
     }
-    color: State.dnd ? Theme.muted : (notifCount > 0 ? Theme.primary : Theme.fg)
+    color: NotificationState.dnd ? Theme.muted : (notifCount > 0 ? Theme.primary : Theme.fg)
     font.family: Theme.fontFamily
     font.pixelSize: 11
   }

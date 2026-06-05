@@ -2,7 +2,7 @@ import Quickshell.Services.Notifications
 import QtQuick
 import QtQml.Models
 
-import "../../NotificationState.js" as State
+import "../.."
 
 Item {
   visible: false
@@ -10,7 +10,7 @@ Item {
 
   property bool dnd: false
   property ListModel toastModel: ListModel {}
-  readonly property int trackedCount: notifServer.trackedNotifications.count
+  property int trackedCount: notifServer && notifServer.trackedNotifications ? notifServer.trackedNotifications.count : 0
 
   NotificationServer {
     id: notifServer
@@ -37,12 +37,12 @@ Item {
     }
   }
 
-  onDndChanged: { State.dnd = dnd }
+  onDndChanged: { NotificationState.dnd = dnd }
 
   Component.onCompleted: {
-    State.server = notifServer
-    State.dnd = dnd
-    State.toastModel = toastModel
+    NotificationState.server = notifServer
+    NotificationState.dnd = dnd
+    NotificationState.toastModel = toastModel
   }
 
   function toggleDnd() { dnd = !dnd }

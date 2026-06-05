@@ -3,7 +3,6 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../.."
-import "../../NotificationState.js" as State
 
 FloatingWindow {
   id: toastPopup
@@ -28,7 +27,7 @@ FloatingWindow {
 
       Repeater {
         id: toastRepeater
-        model: State.toastModel
+        model: NotificationState.toastModel
 
         delegate: Rectangle {
           id: card
@@ -61,7 +60,7 @@ FloatingWindow {
           Timer {
             id: fadeTimer
             interval: 200
-            onTriggered: State.service.dismissToast(index)
+            onTriggered: NotificationState.service.dismissToast(index)
           }
 
           RowLayout {
