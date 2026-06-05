@@ -212,7 +212,7 @@ Scope {
                 visible: false
 
                 property bool isClosing: false
-                property real animLeftMargin: -260
+                property real animRightMargin: -260
                 property real animOpacity: 0
                 property bool showPopup: root.showPopup
 
@@ -220,7 +220,7 @@ Scope {
                     if (root.showPopup) {
                         exitAnim.stop();
                         isClosing = false;
-                        animLeftMargin = -260;
+                        animRightMargin = -260;
                         animOpacity = 0;
                         root.triggerRefresh();
                         win.visible = true;
@@ -245,7 +245,7 @@ Scope {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
-                implicitWidth: 240
+                implicitWidth: 360
                 implicitHeight: mainLayout.implicitHeight + 20
 
                 Component.onCompleted: { root.triggerRefresh(); }
@@ -256,19 +256,19 @@ Scope {
                 }
 
                 anchors {
-                    bottom: true
-                    left: true
+                    top: true
+                    right: true
                 }
 
                 margins {
-                    bottom: 18
-                    left: win.animLeftMargin
+                    top: (root.parent && root.parent.implicitHeight ? root.parent.implicitHeight : 36) + 4
+                    right: win.animRightMargin
                 }
 
                 // Slide-in + fade-in
                 ParallelAnimation {
                     id: introAnim
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: -260; to: 32; duration: 120; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animRightMargin"; from: -260; to: 32; duration: 120; easing.type: Easing.OutCubic }
                     NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 120; easing.type: Easing.OutCubic }
                 }
 
@@ -279,7 +279,7 @@ Scope {
                         win.visible = false;
                         root.showPopup = false;
                     }
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: 32; to: -260; duration: 100; easing.type: Easing.InCubic }
+                    NumberAnimation { target: win; property: "animRightMargin"; from: 32; to: -260; duration: 100; easing.type: Easing.InCubic }
                     NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 100; easing.type: Easing.InCubic }
                 }
 
@@ -321,7 +321,7 @@ Scope {
                                     : (root.connected ? "Wi-Fi Connected" : "Wi-Fi Disconnected")
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: 13
                                 font.bold: true
                                 renderType: Text.NativeRendering
                             }
@@ -335,7 +335,7 @@ Scope {
                                     text: "SSID: " + root.activeSsid
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 9
+                                    font.pixelSize: 14
                                     elide: Text.ElideRight
                                     renderType: Text.NativeRendering
                                 }
@@ -345,7 +345,7 @@ Scope {
                                     color: Theme.fg
                                     opacity: 0.6
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
+                                    font.pixelSize: 14
                                     renderType: Text.NativeRendering
                                 }
                             }
@@ -367,7 +367,7 @@ Scope {
                                 text: "Wi-Fi: " + (root.wifiEnabled ? "On" : "Off")
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 font.bold: true
                                 renderType: Text.NativeRendering
 
@@ -382,7 +382,7 @@ Scope {
                                 text: "Airplane: " + (root.airplaneMode ? "On" : "Off")
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 font.bold: true
                                 renderType: Text.NativeRendering
 
@@ -415,7 +415,7 @@ Scope {
                                     text: "Details " + (root.detailsExpanded ? "▲" : "▼")
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 9
+                                    font.pixelSize: 14
                                     font.bold: true
                                     renderType: Text.NativeRendering
                                 }
@@ -432,19 +432,19 @@ Scope {
                                 spacing: 2
                                 visible: root.detailsExpanded && root.connected
 
-                                Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
+                                Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
+                                Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
+                                Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
+                                Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
+                                Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14; renderType: Text.NativeRendering }
                             }
 
                             Text {
                                 text: "  No connection active"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                                 visible: root.detailsExpanded && !root.connected
                             }
@@ -459,7 +459,7 @@ Scope {
                                 text: "VPN"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 font.bold: true
                                 renderType: Text.NativeRendering
                             }
@@ -475,7 +475,7 @@ Scope {
                                     text: "WARP: " + (root.warpConnected ? "Connected" : "Disconnected")
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
+                                    font.pixelSize: 14
                                     renderType: Text.NativeRendering
                                 }
 
@@ -485,7 +485,7 @@ Scope {
                                     text: root.warpConnected ? "disconnect" : "connect"
                                     color: Theme.primary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
+                                    font.pixelSize: 14
                                     renderType: Text.NativeRendering
 
                                     MouseArea {
@@ -514,7 +514,7 @@ Scope {
                                             text: modelData.name + " (" + modelData.vpn_type + ")"
                                             color: Theme.fg
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 8
+                                            font.pixelSize: 14
                                             renderType: Text.NativeRendering
                                         }
 
@@ -524,7 +524,7 @@ Scope {
                                             text: modelData.active ? "disconnect" : "connect"
                                             color: Theme.primary
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 8
+                                            font.pixelSize: 14
                                             renderType: Text.NativeRendering
 
                                             MouseArea {
@@ -545,7 +545,7 @@ Scope {
                                 text: "  Disabled"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                                 visible: root.vpns.length === 0 && !root.warpConnected
                             }
@@ -560,7 +560,7 @@ Scope {
                                 text: "WiFi Networks"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 font.bold: true
                                 renderType: Text.NativeRendering
                             }
@@ -570,7 +570,7 @@ Scope {
                                 text: "Scanning…"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                             }
 
@@ -579,7 +579,7 @@ Scope {
                                 text: "No networks found"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                             }
 
@@ -588,7 +588,7 @@ Scope {
                                 text: "Wi-Fi is off"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                             }
 
@@ -617,10 +617,10 @@ Scope {
                                                     text: (modelData.active ? "* " : "  ") + modelData.ssid
                                                     color: Theme.fg
                                                     font.family: Theme.fontFamily
-                                                    font.pixelSize: 8
+                                                    font.pixelSize: 14
                                                     font.bold: modelData.active
                                                     elide: Text.ElideRight
-                                                    width: 140
+                                                    width: 240
                                                     renderType: Text.NativeRendering
                                                 }
                                             }
@@ -637,7 +637,7 @@ Scope {
                                                     return s;
                                                 }
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 8
+                                                font.pixelSize: 14
                                                 renderType: Text.NativeRendering
                                             }
 
@@ -683,7 +683,7 @@ Scope {
                                                     text: modelData.active ? "Disconnect" : "Connect"
                                                     color: Theme.primary
                                                     font.family: Theme.fontFamily
-                                                    font.pixelSize: 8
+                                                    font.pixelSize: 14
                                                     renderType: Text.NativeRendering
 
                                                     MouseArea {
@@ -703,7 +703,7 @@ Scope {
                                                     text: "Forget"
                                                     color: Theme.error
                                                     font.family: Theme.fontFamily
-                                                    font.pixelSize: 8
+                                                    font.pixelSize: 14
                                                     renderType: Text.NativeRendering
 
                                                     MouseArea {
@@ -720,7 +720,7 @@ Scope {
                                                     text: "Auto: " + (modelData.autoconnect ? "On" : "Off")
                                                     color: Theme.fg
                                                     font.family: Theme.fontFamily
-                                                    font.pixelSize: 8
+                                                    font.pixelSize: 14
                                                     renderType: Text.NativeRendering
 
                                                     MouseArea {
@@ -740,7 +740,7 @@ Scope {
                                                 text: "Security: " + modelData.security + " | Rate: " + modelData.rate
                                                 color: Theme.muted
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 7
+                                                font.pixelSize: 13
                                                 renderType: Text.NativeRendering
                                             }
                                         }
@@ -758,7 +758,7 @@ Scope {
                                 text: "Settings"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
 
                                 MouseArea {
@@ -775,7 +775,7 @@ Scope {
                                 text: "Restart Wi-Fi"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
 
                                 MouseArea {
@@ -809,7 +809,7 @@ Scope {
                             anchors.centerIn: parent
                             text: root.errorMessage
                             color: Theme.bg
-                            font.pixelSize: 10
+                            font.pixelSize: 13
                             font.bold: true
                             renderType: Text.NativeRendering
                         }
@@ -835,7 +835,7 @@ Scope {
                                     text: "Password for " + root.pendingSsid
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 12
+                                    font.pixelSize: 14
                                     font.bold: true
                                     elide: Text.ElideRight
                                     width: parent.width
@@ -853,7 +853,7 @@ Scope {
                                         anchors.fill: parent; anchors.margins: 8
                                         color: Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 12
+                                        font.pixelSize: 14
                                         echoMode: TextInput.Password
                                         focus: root.pendingSsid !== ""
                                         onVisibleChanged: if (visible) forceActiveFocus()
@@ -870,7 +870,7 @@ Scope {
                                         text: "Cancel"
                                         color: Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: 14
                                         anchors.verticalCenter: parent.verticalCenter
 
                                         MouseArea {
@@ -888,7 +888,7 @@ Scope {
                                             text: "Connect"
                                             color: Theme.bg
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 11
+                                            font.pixelSize: 14
                                             font.bold: true
                                         }
                                         MouseArea {
