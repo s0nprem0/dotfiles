@@ -3,10 +3,11 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import "../.."
 
-Scope {
+Item {
     id: root
 
     property bool showPopup: false
@@ -22,9 +23,96 @@ Scope {
     property bool audioMuted: false
     property bool glassEnabled: true
 
-    function closePopup() {
-        root.showPopup = false;
+    // ─── Clock Timer ────────────────────────────────────────────────
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: {
+            var now = new Date()
+            var hours = now.getHours()
+            var ampm = hours >= 12 ? "PM" : "AM"
+            hours = hours % 12 || 12
+            root.hourStr = hours.toString().padStart(2, " ")
+            root.minStr = now.getMinutes().toString().padStart(2, "0")
+            root.secStr = now.getSeconds().toString().padStart(2, "0")
+            root.ampmStr = ampm
+        }
     }
+
+    // ─── Uptime Process ─────────────────────────────────────────────
+    Process {
+        id: uptimeProc
+        command: ["uptime", "-p"]
+        onExited: function(exitCode) {
+            if (exitCode === 0 && uptimeProc.stdout.text)
+                root.uptimeStr = uptimeProc.stdout.text.trim()
+        }
+    }
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: { if (!uptimeProc.running) uptimeProc.running = true }
+    }
+
+    // ─── Wi‑Fi Status ───────────────────────────────────────────────
+    Connections {
+        target: NetworkState
+        function onNetworkDataChanged() {
+            var data = NetworkState.networkData
+            if (data) root.wifiEnabled = data.wifi_enabled
+        }
+    }
+
+    // ─── Audio Muted Status ─────────────────────────────────────────
+    Process {
+        id: audioProc
+        command: [Theme.helperDir + "/get_audio_status"]
+        onExited: function(exitCode) {
+            if (exitCode === 0 && audioProc.stdout.text) {
+                try {
+                    var json = JSON.parse(audioProc.stdout.text)
+                    root.audioMuted = json.muted || false
+                } catch(e) {}
+            }
+        }
+    }
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+        onTriggered: { if (!audioProc.running) audioProc.running = true }
+    }
+
+    // ─── Bluetooth Status ───────────────────────────────────────────
+    Process {
+        id: btProc
+        command: [Theme.helperDir + "/get_bluetooth_status"]
+        onExited: function(exitCode) {
+            if (exitCode === 0 && btProc.stdout.text) {
+                try {
+                    var json = JSON.parse(btProc.stdout.text)
+                    root.btEnabled = json.enabled || false
+                } catch(e) {}
+            }
+        }
+    }
+    Timer {
+        interval: 5000
+        running: true
+        repeat: true
+        onTriggered: { if (!btProc.running) btProc.running = true }
+    }
+
+    Component.onCompleted: {
+        uptimeProc.running = true
+        audioProc.running = true
+        btProc.running = true
+    }
+
+    // ─── Helper Functions ───────────────────────────────────────────
+    function closePopup() { root.showPopup = false; }
 
     function getCalendarDays(offset) {
         var date = new Date();
@@ -36,25 +124,17 @@ Scope {
         var numDays = new Date(year, month + 1, 0).getDate();
         var numDaysPrev = new Date(year, month, 0).getDate();
         var days = [];
-        for (var i = startDayOfWeek - 1; i >= 0; i--) {
-            days.push({ "day": numDaysPrev - i, "isCurrentMonth": false, "isToday": false });
-        }
+        for (var i = startDayOfWeek - 1; i >= 0; i--)
+            days.push({ day: numDaysPrev - i, isCurrentMonth: false, isToday: false });
         var todayDate = new Date();
         for (var d = 1; d <= numDays; d++) {
             var isToday = (todayDate.getDate() === d && todayDate.getMonth() === month && todayDate.getFullYear() === year);
-            days.push({ "day": d, "isCurrentMonth": true, "isToday": isToday });
+            days.push({ day: d, isCurrentMonth: true, isToday: isToday });
         }
         var remaining = 42 - days.length;
-        for (var n = 1; n <= remaining; n++) {
-            days.push({ "day": n, "isCurrentMonth": false, "isToday": false });
-        }
+        for (var n = 1; n <= remaining; n++)
+            days.push({ day: n, isCurrentMonth: false, isToday: false });
         return days;
-    }
-
-    function urgencyColor(urgency) {
-        if (urgency === 2) return Theme.error;
-        if (urgency === 1) return Theme.primary;
-        return Theme.muted;
     }
 
     function formatTime(dateObj) {
@@ -64,9 +144,9 @@ Scope {
         return h + ":" + m;
     }
 
+    // ─── Popup Windows (fixed layout, clock restored) ───────────────
     Variants {
         model: Quickshell.screens
-
         delegate: Component {
             PanelWindow {
                 id: win
@@ -74,58 +154,57 @@ Scope {
                 visible: false
 
                 property bool isClosing: false
-                property real animLeftMargin: -260
+                property real animLeftMargin: -360
                 property real animOpacity: 0
                 property bool showPopup: root.showPopup
 
                 onShowPopupChanged: {
                     if (root.showPopup) {
-                        exitAnim.stop();
-                        isClosing = false;
-                        animLeftMargin = -260;
-                        animOpacity = 0;
-                        win.visible = true;
-                        introAnim.start();
+                        exitAnim.stop()
+                        isClosing = false
+                        animLeftMargin = -360
+                        animOpacity = 0
+                        win.visible = true
+                        introAnim.start()
                     } else if (!isClosing) {
-                        introAnim.stop();
-                        closeAnim();
+                        introAnim.stop()
+                        closeAnim()
                     }
                 }
 
                 function closeAnim() {
-                    if (isClosing) return;
-                    isClosing = true;
-                    root.showPopup = false;
-                    exitAnim.start();
+                    if (isClosing) return
+                    isClosing = true
+                    root.showPopup = false
+                    exitAnim.start()
                 }
 
                 screen: modelData
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
-                implicitWidth: 240
-                implicitHeight: Math.min(mainLayout.implicitHeight + 20, 520)
+                implicitWidth: 380
+                implicitHeight: Math.min(mainColumn.implicitHeight + 32, 720)
 
                 anchors { left: true }
                 margins { left: win.animLeftMargin }
 
                 ParallelAnimation {
                     id: introAnim
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: -260; to: 32; duration: 120; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 120; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: -360; to: 48; duration: 140; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 140; easing.type: Easing.OutCubic }
                 }
-
                 ParallelAnimation {
                     id: exitAnim
-                    onStopped: { win.visible = false; }
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: 32; to: -260; duration: 100; easing.type: Easing.InCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 100; easing.type: Easing.InCubic }
+                    onStopped: win.visible = false
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: 48; to: -360; duration: 120; easing.type: Easing.InCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
                 }
 
                 HyprlandFocusGrab {
                     active: !win.isClosing
                     windows: [win]
-                    onCleared: { win.closeAnim(); }
+                    onCleared: win.closeAnim()
                 }
 
                 Rectangle {
@@ -135,182 +214,146 @@ Scope {
                     border.width: 1
                     border.color: Theme.primary
                     radius: 0
-                    antialiasing: false
                     focus: true
                     Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Escape) win.closeAnim();
+                        if (event.key === Qt.Key_Escape) win.closeAnim()
                     }
-                    Component.onCompleted: { forceActiveFocus(); }
+                    Component.onCompleted: forceActiveFocus()
 
                     Column {
-                        id: mainLayout
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.margins: 10
-                        spacing: 10
+                        id: mainColumn
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 16
 
-                        // ── Clock + Calendar ─────────────────────────────────
+                        // ── Row: Calendar + Clock (original layout) ──────────
                         Row {
                             width: parent.width
-                            spacing: 10
+                            spacing: 20
 
-                            Item {
-                                id: calendarWrapper
-                                width: 120
-                                height: calCol.implicitHeight
+                            // Calendar column (left)
+                            Column {
+                                width: 140
+                                spacing: 6
 
-                                Column {
-                                    id: calCol
-                                    anchors.left: parent.left
-                                    anchors.top: parent.top
-                                    width: 110
-                                    spacing: 2
-
+                                // Month header with arrows
+                                Row {
+                                    spacing: 8
                                     Text {
                                         text: {
-                                            var date = new Date();
-                                            date.setMonth(date.getMonth() + root.calendarMonthOffset);
-                                            var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                                            return months[date.getMonth()] + " " + date.getFullYear();
+                                            var date = new Date()
+                                            date.setMonth(date.getMonth() + root.calendarMonthOffset)
+                                            var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+                                            return months[date.getMonth()] + " " + date.getFullYear()
                                         }
                                         color: Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 8
+                                        font.pixelSize: 12
                                         font.bold: true
-                                        opacity: 0.8
-                                        renderType: Text.NativeRendering
                                     }
-
-                                    Row {
-                                        width: parent.width
-                                        Repeater {
-                                            model: ["S","M","T","W","T","F","S"]
-                                            delegate: Item {
-                                                width: parent.width / 7
-                                                height: 10
-                                                Text {
-                                                    anchors.centerIn: parent
-                                                    text: modelData
-                                                    color: Theme.primary
-                                                    opacity: 0.5
-                                                    font.family: Theme.fontFamily
-                                                    font.pixelSize: 6
-                                                    font.bold: true
-                                                    renderType: Text.NativeRendering
-                                                }
-                                            }
+                                    Text {
+                                        text: ""
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.calendarMonthOffset -= 1
                                         }
                                     }
-
-                                    Grid {
-                                        width: parent.width
-                                        columns: 7
-                                        rowSpacing: 1
-                                        columnSpacing: 0
-                                        Repeater {
-                                            model: root.getCalendarDays(root.calendarMonthOffset)
-                                            delegate: Rectangle {
-                                                width: parent.width / 7
-                                                height: 11
-                                                color: modelData.isToday ? Theme.primary : "transparent"
-                                                radius: 1
-                                                Text {
-                                                    anchors.centerIn: parent
-                                                    text: String(modelData.day)
-                                                    color: modelData.isToday ? Theme.bg : Theme.primary
-                                                    opacity: modelData.isToday ? 1 : (modelData.isCurrentMonth ? 0.85 : 0.25)
-                                                    font.family: Theme.fontFamily
-                                                    font.pixelSize: 6
-                                                    font.bold: modelData.isToday
-                                                    renderType: Text.NativeRendering
-                                                }
-                                            }
+                                    Text {
+                                        text: ""
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.calendarMonthOffset += 1
                                         }
                                     }
                                 }
 
-                                Text {
-                                    anchors.top: parent.top
-                                    anchors.right: parent.right
-                                    text: ""
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 7
-                                    opacity: 0.6
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.calendarMonthOffset -= 1
+                                // Day names
+                                Row {
+                                    width: parent.width
+                                    Repeater {
+                                        model: ["S","M","T","W","T","F","S"]
+                                        delegate: Text {
+                                            width: parent.width / 7
+                                            horizontalAlignment: Text.AlignHCenter
+                                            text: modelData
+                                            color: Theme.primary
+                                            opacity: 0.5
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                        }
                                     }
                                 }
 
-                                Text {
-                                    anchors.bottom: parent.bottom
-                                    anchors.right: parent.right
-                                    text: ""
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 7
-                                    opacity: 0.6
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.calendarMonthOffset += 1
+                                // Calendar grid
+                                Grid {
+                                    width: parent.width
+                                    columns: 7
+                                    rowSpacing: 2
+                                    columnSpacing: 0
+                                    Repeater {
+                                        model: root.getCalendarDays(root.calendarMonthOffset)
+                                        delegate: Rectangle {
+                                            width: parent.width / 7
+                                            height: 18
+                                            color: modelData.isToday ? Theme.primary : "transparent"
+                                            radius: 0
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: modelData.day
+                                                color: modelData.isToday ? Theme.bg : Theme.primary
+                                                opacity: modelData.isToday ? 1 : (modelData.isCurrentMonth ? 0.85 : 0.3)
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 9
+                                                font.bold: modelData.isToday
+                                            }
+                                        }
                                     }
                                 }
                             }
 
+                            // Digital clock column (centered, original style)
                             Column {
-                                width: parent.width - 130
+                                width: parent.width - 160
+                                spacing: 2
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: 1
 
                                 Text {
                                     text: root.hourStr
                                     color: Theme.primary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 18
+                                    font.pixelSize: 28
                                     font.bold: true
-                                    renderType: Text.NativeRendering
                                     anchors.horizontalCenter: parent.horizontalCenter
                                 }
-
                                 Text {
                                     text: root.minStr
                                     color: Theme.primary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 18
-                                    renderType: Text.NativeRendering
+                                    font.pixelSize: 24
                                     anchors.horizontalCenter: parent.horizontalCenter
                                 }
-
                                 Row {
+                                    spacing: 4
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    spacing: 2
-                                    Text {
-                                        text: root.secStr
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 8
-                                        renderType: Text.NativeRendering
-                                    }
-                                    Text {
-                                        text: root.ampmStr
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 8
-                                        renderType: Text.NativeRendering
-                                    }
+                                    Text { text: root.secStr; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                                    Text { text: root.ampmStr; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 11 }
                                 }
-
                                 Item { width: 1; height: 4 }
-
                                 Text {
                                     text: root.uptimeStr.replace("UP ", "")
                                     color: Theme.primary
                                     opacity: 0.75
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
-                                    renderType: Text.NativeRendering
+                                    font.pixelSize: 10
                                     anchors.horizontalCenter: parent.horizontalCenter
                                 }
                             }
@@ -323,150 +366,139 @@ Scope {
                             opacity: 0.15
                         }
 
-                        // ── Active Notifications ─────────────────────────────
+                        // ── Notifications section (scrollable) ──────────────
                         Column {
                             width: parent.width
-                            spacing: 4
+                            spacing: 8
 
                             Text {
                                 text: "Active"
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 7
+                                font.pixelSize: 10
                                 font.bold: true
                                 opacity: 0.6
-                                renderType: Text.NativeRendering
                             }
 
-                            Text {
-                                text: "No active notifications"
-                                color: Theme.primary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 7
-                                opacity: 0.4
-                                visible: !NotificationState.server || NotificationState.server.trackedNotifications.count === 0
-                            }
+                            ScrollView {
+                                width: parent.width
+                                height: Math.min(notifColumn.implicitHeight, 320)
+                                clip: true
+                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-                            Repeater {
-                                model: NotificationState.server ? NotificationState.server.trackedNotifications : []
-
-                                delegate: Rectangle {
+                                Column {
+                                    id: notifColumn
                                     width: parent.width
-                                    height: activeBoxCol.implicitHeight + 8
-                                    color: Theme.surface
-                                    border.width: 1
-                                    border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
-                                    radius: 4
+                                    spacing: 8
 
-                                    Column {
-                                        id: activeBoxCol
-                                        anchors.top: parent.top
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.margins: 4
-                                        spacing: 2
-
-                                        Row {
+                                    Repeater {
+                                        model: (NotificationState.server && NotificationState.server.trackedNotifications) ? NotificationState.server.trackedNotifications : []
+                                        delegate: Rectangle {
                                             width: parent.width
-                                            spacing: 6
-
-                                            Rectangle {
-                                                width: 16
-                                                height: 16
-                                                color: "transparent"
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                visible: modelData.appIcon && modelData.appIcon.length > 0
-
-                                                Image {
-                                                    anchors.fill: parent
-                                                    source: modelData.appIcon.startsWith("/") ? ("file://" + modelData.appIcon) : ("image://icon/" + modelData.appIcon)
-                                                    fillMode: Image.PreserveAspectFit
-                                                    asynchronous: true
-                                                }
-                                            }
+                                            height: notifContent.implicitHeight + 12
+                                            color: Theme.surface
+                                            border.width: 1
+                                            border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
+                                            radius: 0
 
                                             Column {
-                                                width: parent.width - (modelData.appIcon && modelData.appIcon.length > 0 ? 24 : 0)
-                                                spacing: 1
-                                                anchors.verticalCenter: parent.verticalCenter
+                                                id: notifContent
+                                                anchors.fill: parent
+                                                anchors.margins: 8
+                                                spacing: 6
 
-                                                Item {
+                                                Row {
                                                     width: parent.width
-                                                    height: 12
-
-                                                    Text {
-                                                        text: modelData.summary
-                                                        color: Theme.fg
-                                                        font.family: Theme.fontFamily
-                                                        font.pixelSize: 7
-                                                        font.bold: true
-                                                        elide: Text.ElideRight
-                                                        anchors.left: parent.left
-                                                        anchors.right: dismissBtn.left
-                                                        anchors.rightMargin: 4
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        renderType: Text.NativeRendering
+                                                    spacing: 10
+                                                    Rectangle {
+                                                        width: 24; height: 24
+                                                        color: "transparent"
+                                                        visible: modelData.appIcon && modelData.appIcon.length > 0
+                                                        Image {
+                                                            anchors.fill: parent
+                                                            source: modelData.appIcon.startsWith("/") ? ("file://" + modelData.appIcon) : ("image://icon/" + modelData.appIcon)
+                                                            fillMode: Image.PreserveAspectFit
+                                                        }
                                                     }
-
+                                                    Column {
+                                                        width: parent.width - 34
+                                                        spacing: 2
+                                                        Text {
+                                                            text: modelData.summary
+                                                            color: Theme.fg
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 10
+                                                            font.bold: true
+                                                            wrapMode: Text.Wrap
+                                                            width: parent.width
+                                                        }
+                                                        Text {
+                                                            text: formatTime(new Date(modelData.timestamp))
+                                                            color: Theme.muted
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 8
+                                                        }
+                                                    }
                                                     Text {
-                                                        id: dismissBtn
-                                                        anchors.right: parent.right
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: "dismiss"
-                                                        color: Theme.primary
+                                                        text: "✕"
+                                                        color: Theme.muted
                                                         font.family: Theme.fontFamily
-                                                        font.pixelSize: 7
-                                                        renderType: Text.NativeRendering
+                                                        font.pixelSize: 9
                                                         MouseArea {
                                                             anchors.fill: parent
-                                                            hoverEnabled: true
+                                                            cursorShape: Qt.PointingHandCursor
                                                             onClicked: {
                                                                 if (NotificationState.service && modelData)
-                                                                    NotificationState.service.dismissNotification(modelData.id);
+                                                                    NotificationState.service.dismissNotification(modelData.id)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                Text {
+                                                    text: modelData.body
+                                                    color: Theme.muted
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: 9
+                                                    wrapMode: Text.Wrap
+                                                    width: parent.width
+                                                    elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
+                                                    maximumLineCount: root.expandedNotifIds[modelData.id] ? 6 : 2
+                                                }
+
+                                                Item {
+                                                    width: parent.width; height: 10
+                                                    visible: modelData.body.length > 70 || modelData.body.includes("\n")
+                                                    Text {
+                                                        anchors.right: parent.right
+                                                        text: root.expandedNotifIds[modelData.id] ? "less" : "more"
+                                                        color: Theme.primary
+                                                        font.family: Theme.fontFamily
+                                                        font.pixelSize: 8
+                                                        font.bold: true
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: {
+                                                                var copy = Object.assign({}, root.expandedNotifIds)
+                                                                copy[modelData.id] = !copy[modelData.id]
+                                                                root.expandedNotifIds = copy
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
                                         }
+                                    }
 
-                                        Text {
-                                            id: descText
-                                            text: modelData.body
-                                            color: Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 7
-                                            wrapMode: Text.Wrap
-                                            width: parent.width
-                                            elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
-                                            maximumLineCount: root.expandedNotifIds[modelData.id] ? 99 : 1
-                                            renderType: Text.NativeRendering
-                                        }
-
-                                        Item {
-                                            width: parent.width
-                                            height: 8
-                                            visible: modelData.body.length > 50 || modelData.body.includes("\n")
-
-                                            Text {
-                                                anchors.right: parent.right
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: root.expandedNotifIds[modelData.id] ? "show less" : "show more"
-                                                color: Theme.primary
-                                                font.family: Theme.fontFamily
-                                                font.pixelSize: 6
-                                                font.bold: true
-                                                renderType: Text.NativeRendering
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    onClicked: {
-                                                        var copy = Object.assign({}, root.expandedNotifIds);
-                                                        copy[modelData.id] = !copy[modelData.id];
-                                                        root.expandedNotifIds = copy;
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    Text {
+                                        width: parent.width
+                                        text: "No active notifications"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        opacity: 0.4
+                                        visible: (NotificationState.server && NotificationState.server.trackedNotifications.count === 0) || !NotificationState.server
                                     }
                                 }
                             }
@@ -479,112 +511,22 @@ Scope {
                             opacity: 0.15
                         }
 
-                        // ── Quick Launcher Buttons ──────────────────────────
+                        // ── Quick action buttons ───────────────────────────
                         Row {
                             width: parent.width
-                            spacing: 0
+                            spacing: 12
 
-                            Item {
-                                width: parent.width / 6
-                                height: 12
-
-                                Text {
-                                    id: btnVol
-                                    anchors.centerIn: parent
-                                    text: root.audioMuted ? "󰝟" : "󰕾"
-                                    color: Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: {
-                                        Quickshell.execDetached(["quickshell", "--config", "volume_popup"]);
-                                        win.closeAnim();
-                                    }
-                                }
-                            }
-
-                            Item {
-                                width: parent.width / 6
-                                height: 12
-
-                                Text {
-                                    id: btnNet
-                                    anchors.centerIn: parent
-                                    text: root.wifiEnabled ? "󰖩" : "󰖪"
-                                    color: Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: {
-                                        Quickshell.execDetached(["quickshell", "--config", "network_popup"]);
-                                        win.closeAnim();
-                                    }
-                                }
-                            }
-
-                            Item {
-                                width: parent.width / 6
-                                height: 12
-
-                                Text {
-                                    id: btnBt
-                                    anchors.centerIn: parent
-                                    text: root.btEnabled ? "󰂯" : "󰂲"
-                                    color: Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: {
-                                        Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"]);
-                                        win.closeAnim();
-                                    }
-                                }
-                            }
-
-                            Item {
-                                width: parent.width / 6
-                                height: 12
-
-                                Text {
-                                    id: btnBright
-                                    anchors.centerIn: parent
-                                    text: "󰃠"
-                                    color: Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: {
-                                        Quickshell.execDetached(["quickshell", "--config", "brightness_popup"]);
-                                        win.closeAnim();
-                                    }
-                                }
-                            }
-
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.audioMuted ? "󰝟" : "󰕾"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "volume_popup"]); win.closeAnim() } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.wifiEnabled ? "󰖩" : "󰖪"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "network_popup"]); win.closeAnim() } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.btEnabled ? "󰂯" : "󰂲"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"]); win.closeAnim() } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: "󰃠"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "brightness_popup"]); win.closeAnim() } } }
                             Item { Layout.fillWidth: true }
-
                             Text {
                                 text: formatTime(new Date())
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: 13
                                 font.bold: true
-                                renderType: Text.NativeRendering
                             }
                         }
                     }
