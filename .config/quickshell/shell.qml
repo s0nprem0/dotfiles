@@ -107,11 +107,22 @@ PanelWindow {
   Component.onCompleted: {
     NotificationState.service = notifService
     NotificationState.centerPopup = centerPopup
-    NotificationState.toastModel = notifService.toastModel
 
     var comp = Qt.createComponent("popups/network_popup.qml")
-    if (comp.status === Component.Ready) {
-      NetworkState.popup = comp.createObject(root)
+    function finishCreate() {
+      if (comp.status === Component.Ready) {
+        NetworkState.popup = comp.createObject(root)
+        if (!NetworkState.popup) {
+          console.warn("network_popup: createObject returned null")
+        }
+      } else if (comp.status === Component.Error) {
+        console.warn("network_popup: " + comp.errorString())
+      }
+    }
+    if (comp.status === Component.Loading) {
+      comp.statusChanged.connect(finishCreate)
+    } else {
+      finishCreate()
     }
   }
 }

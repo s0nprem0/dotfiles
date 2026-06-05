@@ -51,11 +51,14 @@ Scope {
         root.runAction(["nmcli", "connection", "down", "id", root.activeSsid]);
     }
 
+    property string lastConnectSsid: ""
+
     function connectToNetwork(ssid) {
         if (ssid === root.activeSsid || root.connecting || connectProc.running) return;
         root.connecting = true;
         root.retryCount = 0;
         root.pendingSsid = "";
+        root.lastConnectSsid = ssid;
         connectProc.usePassword = false;
         connectProc.command = ["nmcli", "dev", "wifi", "connect", ssid];
         connectProc.running = true;
@@ -128,7 +131,7 @@ Scope {
                     if (connectProc.usePassword) {
                         root.showError("Connection failed. Wrong password?");
                     } else {
-                        root.pendingSsid = connectProc.command[4];
+                        root.pendingSsid = root.lastConnectSsid;
                     }
                 } else {
                     root.showError("Failed to connect: " + err.trim().substring(0, 60));

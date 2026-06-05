@@ -185,7 +185,7 @@ Scope {
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: NotificationState.service.toggleDnd()
+                                        onClicked: { if (NotificationState.service) NotificationState.service.toggleDnd() }
                                     }
                                 }
 
@@ -197,7 +197,7 @@ Scope {
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: NotificationState.service.clearAll()
+                                        onClicked: { if (NotificationState.service) NotificationState.service.clearAll() }
                                     }
                                 }
 
@@ -254,6 +254,7 @@ Scope {
 
                             delegate: Rectangle {
                                 id: notifCard
+                                readonly property int notifIndex: index
                                 width: notifList.width - 16
                                 height: notifBody.implicitHeight + 44 + (actionRow.visible ? 32 : 0)
                                 radius: 8
@@ -384,9 +385,9 @@ Scope {
                                                         anchors.fill: parent
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: {
-                                                            var notif = notifList.model.get(index);
+                                                            var notif = notifList.model.get(notifCard.notifIndex);
                                                             if (notif && notif.invokeAction) {
-                                                                notif.invokeAction(model.index);
+                                                                notif.invokeAction(modelData);
                                                             }
                                                         }
                                                     }

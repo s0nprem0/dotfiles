@@ -17,9 +17,11 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        NotificationState.service.toggleDnd()
+        if (NotificationState.service) NotificationState.service.toggleDnd()
       } else {
-        NotificationState.centerPopup.showPopup = !NotificationState.centerPopup.showPopup
+        if (NotificationState.centerPopup) {
+          NotificationState.centerPopup.showPopup = !NotificationState.centerPopup.showPopup
+        }
       }
     }
   }

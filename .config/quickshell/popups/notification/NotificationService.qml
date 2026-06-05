@@ -41,6 +41,7 @@ Item {
   onDndChanged: { NotificationState.dnd = dnd }
 
   Component.onCompleted: {
+    NotificationState.service = service
     NotificationState.server = notifServer
     NotificationState.dnd = dnd
     NotificationState.toastModel = toastModel
@@ -59,6 +60,15 @@ Item {
 
   function dismissToast(index) {
     toastModel.remove(index, 1)
+  }
+
+  function dismissToastById(notifId) {
+    for (var i = 0; i < toastModel.count; i++) {
+      if (toastModel.get(i).notifId === notifId) {
+        toastModel.remove(i, 1)
+        break
+      }
+    }
   }
 
   function dismissNotification(index) {

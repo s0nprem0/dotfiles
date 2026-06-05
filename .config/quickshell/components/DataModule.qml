@@ -25,7 +25,7 @@ Item {
     interval: root.interval
     running: true
     repeat: true
-    onTriggered: proc.running = true
+    onTriggered: { if (!proc.running) proc.running = true }
   }
 
   function refresh() {

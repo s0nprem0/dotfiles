@@ -49,6 +49,7 @@ PanelWindow {
 
                 property real slideOffset: 0
                 property real cardOpacity: 0
+                readonly property int toastNotifId: model.notifId
 
                 Component.onCompleted: {
                     slideOffset = 80;
@@ -65,7 +66,9 @@ PanelWindow {
                 ParallelAnimation {
                     id: exitAnim
                     onStopped: {
-                        NotificationState.service.dismissToast(index);
+                        if (NotificationState.service) {
+                            NotificationState.service.dismissToastById(toastNotifId);
+                        }
                     }
                     NumberAnimation { target: parent; property: "slideOffset"; to: 80; duration: 200; easing.type: Easing.InCubic }
                     NumberAnimation { target: parent; property: "cardOpacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
@@ -104,7 +107,7 @@ PanelWindow {
                     Timer {
                         id: dismissTimer
                         interval: model.expireTimeout > 0
-                            ? Math.min(model.expireTimeout * 1000, 8000)
+                            ? Math.min(model.expireTimeout, 8000)
                             : model.urgency === 2 ? 8000 : 4000
                         running: true
                         onTriggered: {
