@@ -214,6 +214,7 @@ Scope {
                 property bool isClosing: false
                 property real animLeftMargin: -260
                 property real animOpacity: 0
+                property bool showPopup: root.showPopup
 
                 onShowPopupChanged: {
                     if (root.showPopup) {
