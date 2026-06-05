@@ -220,7 +220,7 @@ Scope {
                 }
 
                 margins {
-                    top: (root.parent && root.parent.implicitHeight ? root.parent.implicitHeight : 36) + 4
+                    top: 40
                     right: win.animRightMargin
                 }
 
