@@ -5,7 +5,7 @@ import Quickshell.Services.SystemTray
 import QtQuick
 import QtQuick.Layouts
 
-import "Theme.js" as Theme
+import "."
 import "NotificationState.js" as State
 import "NetworkState.js" as NetState
 import "components"
@@ -26,10 +26,6 @@ PanelWindow {
     anchors.fill: parent
     color: Qt.alpha(Theme.bg, 0.65)
     border.color: Qt.alpha(Theme.primary, 0.15)
-    Component.onCompleted: {
-      Theme.helperDir = Quickshell.env("HOME") + "/.config/quickshell/helpers";
-      Theme.home = Quickshell.env("HOME");
-    }
     Rectangle {
       anchors.left: parent.left
       anchors.right: parent.right

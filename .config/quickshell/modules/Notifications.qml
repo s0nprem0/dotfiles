@@ -1,6 +1,6 @@
 import QtQuick
 
-import "../Theme.js" as Theme
+import ".."
 import "../NotificationState.js" as State
 import "../components"
 

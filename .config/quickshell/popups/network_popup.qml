@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import "../Theme.js" as Theme
+import ".."
 
 Scope {
     id: root

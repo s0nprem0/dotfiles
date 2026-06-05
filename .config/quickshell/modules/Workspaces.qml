@@ -2,7 +2,7 @@ import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 
-import "../Theme.js" as Theme
+import ".."
 
 Rectangle {
   id: root

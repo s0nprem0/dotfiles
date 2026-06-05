@@ -1,7 +1,7 @@
 import Quickshell.Io
 import QtQuick
 
-import "../Theme.js" as Theme
+import ".."
 import "../components"
 
 BarModule {

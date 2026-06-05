@@ -3,7 +3,7 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
-import "../Theme.js" as Theme
+import ".."
 import "../NetworkState.js" as NetState
 import "../components"
 

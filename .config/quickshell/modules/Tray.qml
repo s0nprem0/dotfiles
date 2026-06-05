@@ -3,14 +3,14 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls // Required for ToolTip
 
-import "../Theme.js" as Theme
+import ".."
 
 Rectangle {
   id: root
 
   height: 28
   // Let the Layout calculate the width automatically based on its children + margins
-  implicitWidth: trayLayout.implicitWidth + 8
+  implicitWidth: trayLayout.implicitWidth + 12
 
   radius: 10
   color: Qt.alpha(Theme.surface, 0.4)
@@ -66,7 +66,7 @@ Rectangle {
           text: modelData.title ? modelData.title.charAt(0).toUpperCase() : "?"
           color: Theme.fg
           font.family: Theme.fontFamily
-          font.pixelSize: 10
+          font.pixelSize: 11
           // Reference the explicit ID instead of the fragile child index
           visible: trayIcon.status !== Image.Ready
         }

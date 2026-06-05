@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-import "../../Theme.js" as Theme
+import "../.."
 import "../../NotificationState.js" as State
 
 FloatingWindow {
