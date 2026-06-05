@@ -9,7 +9,8 @@ BarModule {
 
   implicitWidth: notifText.implicitWidth + 12
 
-  property int notifCount: State.server ? State.server.trackedNotifications.count : 0
+  required property var notifService
+  property int notifCount: notifService.trackedCount
 
   acceptedButtons: Qt.LeftButton | Qt.RightButton
 

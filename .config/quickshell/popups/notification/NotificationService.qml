@@ -10,6 +10,7 @@ Item {
 
   property bool dnd: false
   property ListModel toastModel: ListModel {}
+  readonly property int trackedCount: notifServer.trackedNotifications.count
 
   NotificationServer {
     id: notifServer

@@ -88,7 +88,7 @@ PanelWindow {
       Audio {}
       Battery {}
       Tray {}
-      Notifications {}
+      Notifications { notifService: notifService }
     }
   }
 
