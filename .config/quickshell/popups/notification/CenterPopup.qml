@@ -30,16 +30,6 @@ Scope {
         return h + ":" + m;
     }
 
-    function formatDate(dateObj) {
-        if (!dateObj) return "";
-        var now = new Date();
-        var diff = now - dateObj;
-        if (diff < 60000) return "just now";
-        if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
-        if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
-        return dateObj.toLocaleDateString();
-    }
-
     Variants {
         model: Quickshell.screens
 
@@ -169,7 +159,7 @@ Scope {
                                     color: NotificationState.dnd ? Theme.error : "transparent"
                                     border.color: NotificationState.dnd ? "transparent" : Theme.surfaceLighter
                                     border.width: 1
-                                    visible: NotificationState.server && NotificationState.server.trackedNotifications.count > 0
+                                    visible: NotificationState.activeNotifs.length > 0
 
                                     Behavior on color { ColorAnimation { duration: 200 } }
 
@@ -193,11 +183,14 @@ Scope {
                                     text: "Clear"
                                     color: Theme.muted
                                     font.pixelSize: 11
-                                    visible: NotificationState.server && NotificationState.server.trackedNotifications.count > 0
+                                    visible: NotificationState.activeNotifs.length > 0 || NotificationState.historyNotifs.length > 0
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: { if (NotificationState.service) NotificationState.service.clearAll() }
+                                        onClicked: {
+                                            if (NotificationState.service) NotificationState.service.clearAll();
+                                            root.refreshRequested();
+                                        }
                                     }
                                 }
 
@@ -243,9 +236,9 @@ Scope {
                         ListView {
                             id: notifList
                             width: parent.width
-                            height: Math.min(contentHeight, 440)
+                            height: Math.min(contentHeight + 20, 340)
                             clip: true
-                            model: NotificationState.server ? NotificationState.server.trackedNotifications : null
+                            model: NotificationState.activeNotifs
                             spacing: 6
                             topMargin: 8
                             bottomMargin: 8
@@ -265,7 +258,6 @@ Scope {
 
                                 Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                                // Urgency left border
                                 Rectangle {
                                     anchors.left: parent.left
                                     anchors.top: parent.top
@@ -286,7 +278,6 @@ Scope {
                                     anchors.bottomMargin: 10
                                     spacing: 10
 
-                                    // App icon
                                     Rectangle {
                                         width: 32
                                         height: 32
@@ -296,10 +287,28 @@ Scope {
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
+                                            text: {
+                                                var icon = modelData.icon || ""
+                                                if (icon && icon.length > 0) return ""
+                                                var name = modelData.app_name || "N"
+                                                return name.charAt(0).toUpperCase()
+                                            }
                                             color: urgencyColor(model.urgency)
                                             font.pixelSize: 14
                                             font.bold: true
+                                        }
+
+                                        Image {
+                                            anchors.fill: parent
+                                            source: {
+                                                var icon = modelData.icon || ""
+                                                if (!icon || icon.length === 0) return ""
+                                                if (icon.startsWith("/")) return "file://" + icon
+                                                return "image://icon/" + icon
+                                            }
+                                            fillMode: Image.PreserveAspectFit
+                                            asynchronous: true
+                                            visible: source.length > 0
                                         }
                                     }
 
@@ -307,13 +316,12 @@ Scope {
                                         spacing: 2
                                         Layout.fillWidth: true
 
-                                        // App name + time
                                         RowLayout {
                                             spacing: 6
                                             Layout.fillWidth: true
 
                                             Text {
-                                                text: model.appName || "Notification"
+                                                text: model.app_name || "Notification"
                                                 color: Theme.muted
                                                 font.pixelSize: 10
                                                 font.bold: true
@@ -322,14 +330,13 @@ Scope {
                                             }
 
                                             Text {
-                                                text: formatTime(model.timestamp)
+                                                text: formatTime(new Date())
                                                 color: Theme.muted
                                                 font.pixelSize: 9
                                                 opacity: 0.6
                                             }
                                         }
 
-                                        // Summary
                                         Text {
                                             id: notifSummary
                                             text: model.summary
@@ -342,7 +349,6 @@ Scope {
                                             Layout.fillWidth: true
                                         }
 
-                                        // Body
                                         Text {
                                             id: notifBody
                                             text: model.body
@@ -350,9 +356,33 @@ Scope {
                                             font.pixelSize: 11
                                             elide: Text.ElideRight
                                             wrapMode: Text.Wrap
-                                            maximumLineCount: 3
+                                            maximumLineCount: root.expandedNotifIds[model.id] ? 99 : 3
                                             visible: text.length > 0
                                             Layout.fillWidth: true
+                                        }
+
+                                        Item {
+                                            width: parent.width
+                                            height: 10
+                                            visible: model.body.length > 60 || (model.body.includes("\n") && !root.expandedNotifIds[model.id])
+
+                                            Text {
+                                                anchors.right: parent.right
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: root.expandedNotifIds[model.id] ? "show less" : "show more"
+                                                color: Theme.primary
+                                                font.pixelSize: 9
+                                                font.bold: true
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        var copy = Object.assign({}, root.expandedNotifIds);
+                                                        copy[model.id] = !copy[model.id];
+                                                        root.expandedNotifIds = copy;
+                                                    }
+                                                }
+                                            }
                                         }
 
                                         // Action buttons
@@ -385,9 +415,8 @@ Scope {
                                                         anchors.fill: parent
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: {
-                                                            var notif = notifList.model.get(notifCard.notifIndex);
-                                                            if (notif && notif.invokeAction) {
-                                                                notif.invokeAction(modelData);
+                                                            if (NotificationState.service) {
+                                                                NotificationState.service.dismissNotification(notifCard.notifIndex)
                                                             }
                                                         }
                                                     }
@@ -406,8 +435,9 @@ Scope {
                                             anchors.fill: parent
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                var notif = notifList.model.get(index);
-                                                if (notif) notif.dismiss();
+                                                if (NotificationState.service) {
+                                                    NotificationState.service.dismissNotification(notifCard.notifIndex)
+                                                }
                                             }
                                         }
                                     }
@@ -425,7 +455,7 @@ Scope {
                             Item {
                                 anchors.centerIn: parent
                                 width: parent.width - 32
-                                visible: notifList.count === 0
+                                visible: notifList.count === 0 && NotificationState.historyNotifs.length === 0
 
                                 Column {
                                     anchors.centerIn: parent
@@ -451,6 +481,289 @@ Scope {
                                         color: Qt.alpha(Theme.muted, 0.6)
                                         font.pixelSize: 11
                                     }
+                                }
+                            }
+                        }
+
+                        // ── History Section ─────────────────────────────
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Theme.surfaceLighter
+                        }
+
+                        Column {
+                            width: parent.width
+                            spacing: 4
+                            visible: NotificationState.historyNotifs.length > 0
+
+                            Rectangle {
+                                width: parent.width
+                                height: 28
+                                color: "transparent"
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 10
+                                    spacing: 8
+
+                                    Text {
+                                        text: NotificationState.historyExpanded ? "" : ""
+                                        color: Theme.muted
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        opacity: 0.6
+                                    }
+
+                                    Text {
+                                        text: "History"
+                                        color: Theme.muted
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        opacity: 0.6
+                                    }
+
+                                    Text {
+                                        text: "Restore Last"
+                                        color: Theme.primary
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                Quickshell.execDetached(["makoctl", "restore"])
+                                                root.refreshRequested()
+                                            }
+                                        }
+                                    }
+
+                                    Item { Layout.fillWidth: true }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        NotificationState.historyExpanded = !NotificationState.historyExpanded
+                                    }
+                                }
+                            }
+
+                            Column {
+                                width: parent.width
+                                spacing: 4
+                                visible: NotificationState.historyExpanded
+
+                                Repeater {
+                                    model: NotificationState.historyNotifs
+
+                                    delegate: Rectangle {
+                                        width: parent.width - 16
+                                        height: histBoxCol.implicitHeight + 10
+                                        color: Theme.surface
+                                        border.width: 1
+                                        border.color: Theme.surfaceLighter
+                                        radius: 6
+                                        anchors.horizontalCenter: parent.horizontalCenter
+
+                                        Column {
+                                            id: histBoxCol
+                                            anchors.top: parent.top
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.margins: 8
+                                            spacing: 3
+
+                                            Row {
+                                                width: parent.width
+                                                spacing: 8
+
+                                                Text {
+                                                    text: model.app_name ? model.app_name.charAt(0).toUpperCase() : "N"
+                                                    color: Theme.muted
+                                                    font.pixelSize: 10
+                                                    font.bold: true
+                                                }
+
+                                                Column {
+                                                    width: parent.width - 20
+                                                    spacing: 1
+
+                                                    Text {
+                                                        text: model.summary
+                                                        color: Theme.fg
+                                                        font.pixelSize: 10
+                                                        font.bold: true
+                                                        elide: Text.ElideRight
+                                                        width: parent.width
+                                                    }
+
+                                                    Text {
+                                                        text: model.body
+                                                        color: Qt.alpha(Theme.fg, 0.6)
+                                                        font.pixelSize: 9
+                                                        wrapMode: Text.Wrap
+                                                        width: parent.width
+                                                        maximumLineCount: root.expandedNotifIds[model.id + "_hist"] ? 99 : 2
+                                                        elide: root.expandedNotifIds[model.id + "_hist"] ? Text.ElideNone : Text.ElideRight
+                                                    }
+                                                }
+                                            }
+
+                                            Item {
+                                                width: parent.width
+                                                height: 10
+                                                visible: model.body.length > 40 || model.body.includes("\n")
+
+                                                Text {
+                                                    anchors.right: parent.right
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: root.expandedNotifIds[model.id + "_hist"] ? "show less" : "show more"
+                                                    color: Theme.primary
+                                                    font.pixelSize: 8
+                                                    font.bold: true
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            var copy = Object.assign({}, root.expandedNotifIds);
+                                                            copy[model.id + "_hist"] = !copy[model.id + "_hist"];
+                                                            root.expandedNotifIds = copy;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Quick Launcher Buttons ──────────────────────
+                        Rectangle {
+                            width: parent.width
+                            height: 36
+                            color: Theme.surface
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                spacing: 0
+
+                                Item {
+                                    width: parent.width / 6
+                                    height: 14
+
+                                    Text {
+                                        id: btnVol
+                                        anchors.centerIn: parent
+                                        text: "󰕾"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 12
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: btnVol.color = Theme.fg
+                                        onExited: btnVol.color = Theme.muted
+                                        onClicked: {
+                                            Quickshell.execDetached(["quickshell", "--config", "volume_popup"])
+                                            win.closeAnim()
+                                        }
+                                    }
+                                }
+
+                                Item {
+                                    width: parent.width / 6
+                                    height: 14
+
+                                    Text {
+                                        id: btnNet
+                                        anchors.centerIn: parent
+                                        text: "󰖩"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 12
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: btnNet.color = Theme.fg
+                                        onExited: btnNet.color = Theme.muted
+                                        onClicked: {
+                                            Quickshell.execDetached(["quickshell", "--config", "network_popup"])
+                                            win.closeAnim()
+                                        }
+                                    }
+                                }
+
+                                Item {
+                                    width: parent.width / 6
+                                    height: 14
+
+                                    Text {
+                                        id: btnBt
+                                        anchors.centerIn: parent
+                                        text: "󰂯"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 12
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: btnBt.color = Theme.fg
+                                        onExited: btnBt.color = Theme.muted
+                                        onClicked: {
+                                            Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"])
+                                            win.closeAnim()
+                                        }
+                                    }
+                                }
+
+                                Item {
+                                    width: parent.width / 6
+                                    height: 14
+
+                                    Text {
+                                        id: btnBright
+                                        anchors.centerIn: parent
+                                        text: "󰃠"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 12
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: btnBright.color = Theme.fg
+                                        onExited: btnBright.color = Theme.muted
+                                        onClicked: {
+                                            Quickshell.execDetached(["quickshell", "--config", "brightness_popup"])
+                                            win.closeAnim()
+                                        }
+                                    }
+                                }
+
+                                Item { Layout.fillWidth: true }
+
+                                Text {
+                                    text: formatTime(new Date())
+                                    color: Theme.muted
+                                    font.pixelSize: 12
+                                    font.bold: true
                                 }
                             }
                         }

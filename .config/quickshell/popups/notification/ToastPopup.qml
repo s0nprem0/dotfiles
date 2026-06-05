@@ -50,6 +50,7 @@ PanelWindow {
                 property real slideOffset: 0
                 property real cardOpacity: 0
                 readonly property int toastNotifId: model.notifId
+                property bool exiting: false
 
                 Component.onCompleted: {
                     slideOffset = 80;
@@ -77,7 +78,7 @@ PanelWindow {
                 Rectangle {
                     id: toastCard
                     width: parent.width
-                    height: cardLayout.implicitHeight + 20
+                    height: exiting ? cardLayout.implicitHeight + 20 : 0
                     radius: 8
                     color: Theme.surface
                     border.color: borderColor
@@ -90,27 +91,26 @@ PanelWindow {
                     readonly property int urg: model.urgency
                     readonly property color borderColor: Qt.alpha(urgencyColor(urg), 0.4)
 
-                    // Urgency left border
+                    Behavior on height { NumberAnimation { duration: 180 } }
+
                     Rectangle {
                         anchors.left: parent.left
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
                         width: 3
                         radius: 2
-                        color: urgencyColor(urg)
+                        color: urgencyColor(toastCard.urg)
                         anchors.topMargin: 6
                         anchors.bottomMargin: 6
                         anchors.leftMargin: 3
                     }
 
-                    // Auto-dismiss timer
                     Timer {
                         id: dismissTimer
-                        interval: model.expireTimeout > 0
-                            ? Math.min(model.expireTimeout, 8000)
-                            : model.urgency === 2 ? 8000 : 4000
-                        running: true
+                        interval: 5000
+                        running: !parent.exiting
                         onTriggered: {
+                            parent.exiting = true
                             exitAnim.start();
                         }
                     }
@@ -121,18 +121,17 @@ PanelWindow {
                         anchors.margins: 10
                         spacing: 10
 
-                        // App icon
                         Rectangle {
                             width: 28
                             height: 28
                             radius: 5
-                            color: Qt.alpha(urgencyColor(urg), 0.12)
+                            color: Qt.alpha(urgencyColor(toastCard.urg), 0.12)
                             Layout.alignment: Qt.AlignTop
 
                             Text {
                                 anchors.centerIn: parent
                                 text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
-                                color: urgencyColor(urg)
+                                color: urgencyColor(toastCard.urg)
                                 font.pixelSize: 12
                                 font.bold: true
                             }
@@ -174,7 +173,6 @@ PanelWindow {
                             }
                         }
 
-                        // Dismiss button
                         Rectangle {
                             width: 20
                             height: 20
@@ -196,18 +194,19 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     dismissTimer.stop();
+                                    parent.exiting = true
                                     exitAnim.start();
                                 }
                             }
                         }
                     }
 
-                    // Click to dismiss
                     MouseArea {
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
                         onClicked: {
                             dismissTimer.stop();
+                            parent.exiting = true
                             exitAnim.start();
                         }
                     }
