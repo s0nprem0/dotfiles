@@ -24,12 +24,12 @@ PanelWindow {
   // ── Background ───────────────────────────────────────────
   Rectangle {
     anchors.fill: parent
-    color: {
+    color: Qt.alpha(Theme.bg, 0.65)
+    border.color: Qt.alpha(Theme.primary, 0.15)
+    Component.onCompleted: {
       Theme.helperDir = Quickshell.env("HOME") + "/.config/quickshell/helpers";
       Theme.home = Quickshell.env("HOME");
-      return Qt.alpha(Theme.bg, 0.65);
     }
-    border.color: Qt.alpha(Theme.primary, 0.15)
     Rectangle {
       anchors.left: parent.left
       anchors.right: parent.right
