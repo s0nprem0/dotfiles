@@ -16,7 +16,7 @@ BarModule {
   DataModule {
     id: audioData
     path: Theme.bin("get_audio_status")
-    interval: 100
+    interval: 1000
     onDataReceived: function(j) {
       root.vol = j.volume
       root.isMuted = j.muted

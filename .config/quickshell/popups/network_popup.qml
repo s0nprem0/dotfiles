@@ -2,11 +2,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import "../Theme.js" as Theme
 
 Scope {
     id: root
-
-    property string homeDir: Quickshell.env("HOME")
 
     property bool showPopup: false
     property bool dataLoaded: false
@@ -40,15 +39,7 @@ Scope {
         function toggle() { root.requestClose(); }
     }
 
-    // ── Theme ──────────────────────────────────────────────────────────────────
-    readonly property color _fg:            "#f1dfdb"
-    readonly property color _bg:            "#1a1110"
-    readonly property color _surface:       "#271d1c"
-    readonly property color _primary:       "#ffb4a7"
-    readonly property color _muted:         "#66f1dfdb"
-    readonly property color _error:         "#f38ba8"
-    readonly property color _green:         "#A6DA95"
-    readonly property color _blue:          "#8AADF4"
+    // ── Theme (imported from Theme.js) ──────────────────────────────────────────
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -101,7 +92,7 @@ Scope {
     // ── Status Helper Process (Rust binary) ───────────────────────────────────
     Process {
         id: checkStatusProc
-        command: [root.homeDir + "/.config/quickshell/helpers/get_network_status"]
+        command: [Theme.bin("get_network_status")]
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
@@ -300,9 +291,9 @@ Scope {
                 Rectangle {
                     anchors.fill: parent
                     opacity: win.animOpacity
-                    color: root._bg
+                    color: Theme.bg
                     border.width: 1
-                    border.color: root._primary
+                    border.color: Theme.primary
                     radius: 0
                     focus: true
                     Keys.onPressed: (event) => {
@@ -327,8 +318,8 @@ Scope {
                                 text: root.connecting
                                     ? "Connecting…"
                                     : (root.connected ? "Wi-Fi Connected" : "Wi-Fi Disconnected")
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 10
                                 font.bold: true
                                 renderType: Text.NativeRendering
@@ -341,8 +332,8 @@ Scope {
 
                                 Text {
                                     text: "SSID: " + root.activeSsid
-                                    color: root._fg
-                                    font.family: "FiraCode Nerd Font"
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 9
                                     elide: Text.ElideRight
                                     renderType: Text.NativeRendering
@@ -350,9 +341,9 @@ Scope {
 
                                 Text {
                                     text: "Signal: " + root.activeSignal + "%"
-                                    color: root._fg
+                                    color: Theme.fg
                                     opacity: 0.6
-                                    font.family: "FiraCode Nerd Font"
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 8
                                     renderType: Text.NativeRendering
                                 }
@@ -362,7 +353,7 @@ Scope {
                         Rectangle {
                             width: parent.width
                             height: 1
-                            color: root._primary
+                            color: Theme.primary
                             opacity: 0.15
                         }
 
@@ -373,8 +364,8 @@ Scope {
 
                             Text {
                                 text: "Wi-Fi: " + (root.wifiEnabled ? "On" : "Off")
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 renderType: Text.NativeRendering
@@ -388,8 +379,8 @@ Scope {
 
                             Text {
                                 text: "Airplane: " + (root.airplaneMode ? "On" : "Off")
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 renderType: Text.NativeRendering
@@ -405,7 +396,7 @@ Scope {
                         Rectangle {
                             width: parent.width
                             height: 1
-                            color: root._primary
+                            color: Theme.primary
                             opacity: 0.15
                         }
 
@@ -421,8 +412,8 @@ Scope {
 
                                 Text {
                                     text: "Details " + (root.detailsExpanded ? "▲" : "▼")
-                                    color: root._fg
-                                    font.family: "FiraCode Nerd Font"
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 9
                                     font.bold: true
                                     renderType: Text.NativeRendering
@@ -440,18 +431,18 @@ Scope {
                                 spacing: 2
                                 visible: root.detailsExpanded && root.connected
 
-                                Text { text: "  IP: " + root.details.ip_address; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Gateway: " + root.details.gateway; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Subnet: " + root.details.subnet; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  DNS: " + root.details.dns; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  BSSID: " + root.details.bssid; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
-                                Text { text: "  Security: " + root.details.security; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 8; renderType: Text.NativeRendering }
                             }
 
                             Text {
                                 text: "  No connection active"
-                                color: root._muted
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 8
                                 renderType: Text.NativeRendering
                                 visible: root.detailsExpanded && !root.connected
@@ -465,8 +456,8 @@ Scope {
 
                             Text {
                                 text: "VPN"
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 renderType: Text.NativeRendering
@@ -481,8 +472,8 @@ Scope {
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: "WARP: " + (root.warpConnected ? "Connected" : "Disconnected")
-                                    color: root._fg
-                                    font.family: "FiraCode Nerd Font"
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 8
                                     renderType: Text.NativeRendering
                                 }
@@ -491,8 +482,8 @@ Scope {
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.warpConnected ? "disconnect" : "connect"
-                                    color: root._primary
-                                    font.family: "FiraCode Nerd Font"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 8
                                     renderType: Text.NativeRendering
 
@@ -520,8 +511,8 @@ Scope {
                                             anchors.left: parent.left
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: modelData.name + " (" + modelData.vpn_type + ")"
-                                            color: root._fg
-                                            font.family: "FiraCode Nerd Font"
+                                            color: Theme.fg
+                                            font.family: Theme.fontFamily
                                             font.pixelSize: 8
                                             renderType: Text.NativeRendering
                                         }
@@ -530,8 +521,8 @@ Scope {
                                             anchors.right: parent.right
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: modelData.active ? "disconnect" : "connect"
-                                            color: root._primary
-                                            font.family: "FiraCode Nerd Font"
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
                                             font.pixelSize: 8
                                             renderType: Text.NativeRendering
 
@@ -551,8 +542,8 @@ Scope {
 
                             Text {
                                 text: "  Disabled"
-                                color: root._muted
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 8
                                 renderType: Text.NativeRendering
                                 visible: root.vpns.length === 0 && !root.warpConnected
@@ -566,8 +557,8 @@ Scope {
 
                             Text {
                                 text: "WiFi Networks"
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 renderType: Text.NativeRendering
@@ -576,8 +567,8 @@ Scope {
                             Text {
                                 visible: !root.dataLoaded || (root.networks.length === 0 && checkStatusProc.running)
                                 text: "Scanning…"
-                                color: root._muted
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 8
                                 renderType: Text.NativeRendering
                             }
@@ -585,8 +576,8 @@ Scope {
                             Text {
                                 visible: root.dataLoaded && root.networks.length === 0 && !checkStatusProc.running && root.wifiEnabled
                                 text: "No networks found"
-                                color: root._muted
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 8
                                 renderType: Text.NativeRendering
                             }
@@ -594,8 +585,8 @@ Scope {
                             Text {
                                 visible: root.dataLoaded && !root.wifiEnabled
                                 text: "Wi-Fi is off"
-                                color: root._muted
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 8
                                 renderType: Text.NativeRendering
                             }
@@ -623,8 +614,8 @@ Scope {
 
                                                 Text {
                                                     text: (modelData.active ? "* " : "  ") + modelData.ssid
-                                                    color: root._fg
-                                                    font.family: "FiraCode Nerd Font"
+                                                    color: Theme.fg
+                                                    font.family: Theme.fontFamily
                                                     font.pixelSize: 8
                                                     font.bold: modelData.active
                                                     elide: Text.ElideRight
@@ -644,7 +635,7 @@ Scope {
                                                         s += "<font color='" + (i < bars ? on : off) + "'>█</font>";
                                                     return s;
                                                 }
-                                                font.family: "FiraCode Nerd Font"
+                                                font.family: Theme.fontFamily
                                                 font.pixelSize: 8
                                                 renderType: Text.NativeRendering
                                             }
@@ -689,8 +680,8 @@ Scope {
 
                                                 Text {
                                                     text: modelData.active ? "Disconnect" : "Connect"
-                                                    color: root._primary
-                                                    font.family: "FiraCode Nerd Font"
+                                                    color: Theme.primary
+                                                    font.family: Theme.fontFamily
                                                     font.pixelSize: 8
                                                     renderType: Text.NativeRendering
 
@@ -709,8 +700,8 @@ Scope {
 
                                                 Text {
                                                     text: "Forget"
-                                                    color: root._error
-                                                    font.family: "FiraCode Nerd Font"
+                                                    color: Theme.error
+                                                    font.family: Theme.fontFamily
                                                     font.pixelSize: 8
                                                     renderType: Text.NativeRendering
 
@@ -726,8 +717,8 @@ Scope {
 
                                                 Text {
                                                     text: "Auto: " + (modelData.autoconnect ? "On" : "Off")
-                                                    color: root._fg
-                                                    font.family: "FiraCode Nerd Font"
+                                                    color: Theme.fg
+                                                    font.family: Theme.fontFamily
                                                     font.pixelSize: 8
                                                     renderType: Text.NativeRendering
 
@@ -746,8 +737,8 @@ Scope {
                                             Text {
                                                 anchors.horizontalCenter: parent.horizontalCenter
                                                 text: "Security: " + modelData.security + " | Rate: " + modelData.rate
-                                                color: root._muted
-                                                font.family: "FiraCode Nerd Font"
+                                                color: Theme.muted
+                                                font.family: Theme.fontFamily
                                                 font.pixelSize: 7
                                                 renderType: Text.NativeRendering
                                             }
@@ -764,8 +755,8 @@ Scope {
 
                             Text {
                                 text: "Settings"
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 renderType: Text.NativeRendering
 
@@ -781,8 +772,8 @@ Scope {
 
                             Text {
                                 text: "Restart Wi-Fi"
-                                color: root._fg
-                                font.family: "FiraCode Nerd Font"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 renderType: Text.NativeRendering
 
@@ -806,7 +797,7 @@ Scope {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: parent.width - 20
                         height: Math.max(28, errText.implicitHeight + 10)
-                        color: root._error
+                        color: Theme.error
                         radius: 6
                         opacity: root.errorMessage !== "" ? 1 : 0
                         visible: opacity > 0
@@ -816,7 +807,7 @@ Scope {
                             id: errText
                             anchors.centerIn: parent
                             text: root.errorMessage
-                            color: root._bg
+                            color: Theme.bg
                             font.pixelSize: 10
                             font.bold: true
                             renderType: Text.NativeRendering
@@ -833,16 +824,16 @@ Scope {
                         Rectangle {
                             anchors.centerIn: parent
                             width: parent.width - 24; height: 148
-                            radius: 8; color: root._surface
-                            border.color: root._primary; border.width: 1
+                            radius: 8; color: Theme.surface
+                            border.color: Theme.primary; border.width: 1
 
                             Column {
                                 anchors.fill: parent; anchors.margins: 14; spacing: 10
 
                                 Text {
                                     text: "Password for " + root.pendingSsid
-                                    color: root._fg
-                                    font.family: "FiraCode Nerd Font"
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
                                     font.pixelSize: 12
                                     font.bold: true
                                     elide: Text.ElideRight
@@ -851,16 +842,16 @@ Scope {
 
                                 Rectangle {
                                     width: parent.width; height: 34
-                                    color: root._bg
+                                    color: Theme.bg
                                     radius: 5
-                                    border.color: pwdInput.activeFocus ? root._primary : root._surface
+                                    border.color: pwdInput.activeFocus ? Theme.primary : Theme.surface
                                     border.width: 1
 
                                     TextInput {
                                         id: pwdInput
                                         anchors.fill: parent; anchors.margins: 8
-                                        color: root._fg
-                                        font.family: "FiraCode Nerd Font"
+                                        color: Theme.fg
+                                        font.family: Theme.fontFamily
                                         font.pixelSize: 12
                                         echoMode: TextInput.Password
                                         focus: root.pendingSsid !== ""
@@ -876,8 +867,8 @@ Scope {
 
                                     Text {
                                         text: "Cancel"
-                                        color: root._muted
-                                        font.family: "FiraCode Nerd Font"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
                                         font.pixelSize: 11
                                         anchors.verticalCenter: parent.verticalCenter
 
@@ -890,12 +881,12 @@ Scope {
 
                                     Rectangle {
                                         width: 64; height: 28
-                                        radius: 5; color: root._blue
+                                        radius: 5; color: Theme.blue
                                         Text {
                                             anchors.centerIn: parent
                                             text: "Connect"
-                                            color: root._bg
-                                            font.family: "FiraCode Nerd Font"
+                                            color: Theme.bg
+                                            font.family: Theme.fontFamily
                                             font.pixelSize: 11
                                             font.bold: true
                                         }

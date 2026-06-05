@@ -16,13 +16,9 @@ var home = "";
 var helperDir = "";
 
 function bin(name) {
-  if (helperDir === "")
-    helperDir = "/home/jllyn/.config/quickshell/helpers";
   return helperDir + "/" + name;
 }
 
 function config(path) {
-  if (home === "")
-    home = "/home/jllyn";
   return home + "/.config/" + path;
 }

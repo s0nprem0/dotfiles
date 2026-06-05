@@ -16,7 +16,7 @@ Item {
       onStreamFinished: {
         try {
           root.dataReceived(JSON.parse(this.text))
-        } catch (e) {}
+        } catch (e) { console.warn("DataModule JSON parse error:", e) }
       }
     }
   }
