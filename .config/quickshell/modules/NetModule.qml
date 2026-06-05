@@ -16,6 +16,7 @@ BarModule {
     property string networkBand: ""
 
     DataModule {
+        id: netData
         path: Theme.bin("get_network_status")
         interval: 10000
 
@@ -23,7 +24,12 @@ BarModule {
             root.networkConnected = j.connected || false;
             root.networkSsid = j.active_ssid || "";
             root.networkBand = j.active_band || "";
+            NetworkState.networkData = j;
         }
+    }
+
+    Component.onCompleted: {
+        NetworkState.refreshNetworkData = function() { netData.refresh(); };
     }
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton

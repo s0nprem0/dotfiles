@@ -31,6 +31,7 @@ Scope {
     property string pendingSsid: ""
     property bool connecting: false
     property string errorMessage: ""
+    property var networkData: NetworkState.networkData
 
     signal requestClose()
 
@@ -50,7 +51,7 @@ Scope {
     }
 
     function triggerRefresh() {
-        refreshTimer.restart();
+        if (NetworkState.refreshNetworkData) NetworkState.refreshNetworkData();
     }
 
     function disconnectWifi() {
@@ -90,31 +91,20 @@ Scope {
         actionProc.running = true;
     }
 
-    // ── Status Helper Process (Rust binary) ───────────────────────────────────
-    Process {
-        id: checkStatusProc
-        command: [Theme.bin("get_network_status")]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    var data = JSON.parse(this.text);
-                    root.dataLoaded    = true;
-                    root.wifiEnabled   = data.wifi_enabled;
-                    root.airplaneMode  = data.airplane_mode;
-                    root.connected     = data.connected;
-                    root.activeSsid    = data.active_ssid  || "";
-                    root.activeSignal  = data.active_signal || 0;
-                    root.warpConnected = data.warp_connected || false;
-                    root.details       = data.details  || { ip_address:"", gateway:"", dns:"", subnet:"", security:"", bssid:"" };
-                    root.networks      = data.networks || [];
-                    root.vpns          = data.vpns     || [];
-                } catch (e) {
-                    console.log("Failed to parse network status: " + e);
-                }
-                root.dataLoaded = true;
-            }
-        }
+    // ── Network Data (shared from NetModule via NetworkState) ─────────────────
+    onNetworkDataChanged: {
+        var data = NetworkState.networkData;
+        if (!data) return;
+        root.dataLoaded    = true;
+        root.wifiEnabled   = data.wifi_enabled;
+        root.airplaneMode  = data.airplane_mode;
+        root.connected     = data.connected;
+        root.activeSsid    = data.active_ssid  || "";
+        root.activeSignal  = data.active_signal || 0;
+        root.warpConnected = data.warp_connected || false;
+        root.details       = data.details  || { ip_address:"", gateway:"", dns:"", subnet:"", security:"", bssid:"" };
+        root.networks      = data.networks || [];
+        root.vpns          = data.vpns     || [];
     }
 
     // ── Generic Action Process (captures stderr, shows errors) ────────────────
@@ -168,29 +158,6 @@ Scope {
                 root.retryCount++;
                 connectProc.running = true;
             }
-        }
-    }
-
-    // ── Polling & Refresh Timers ──────────────────────────────────────────────
-    Timer {
-        id: refreshTimer
-        interval: 800
-        repeat: false
-        onTriggered: {
-            checkStatusProc.running = false;
-            checkStatusProc.running = true;
-        }
-    }
-
-    Timer {
-        id: pollTimer
-        interval: 3000
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: {
-            if (!checkStatusProc.running && !root.connecting)
-                checkStatusProc.running = true;
         }
     }
 
