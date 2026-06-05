@@ -10,11 +10,52 @@ Scope {
     id: root
 
     property bool showPopup: false
+    property string hourStr: ""
+    property string minStr: ""
+    property string secStr: ""
+    property string ampmStr: ""
+    property string uptimeStr: ""
+    property int calendarMonthOffset: 0
+    property var expandedNotifIds: ({})
+    property bool historyExpanded: false
+    property bool btEnabled: false
+    property bool wifiEnabled: false
+    property bool audioMuted: false
+    property bool glassEnabled: true
 
     signal refreshRequested()
 
     function closePopup() {
         root.showPopup = false;
+    }
+
+    function getCalendarDays(offset) {
+        var date = new Date();
+        date.setMonth(date.getMonth() + offset);
+        var year = date.getFullYear();
+        var month = date.getMonth();
+        var firstDay = new Date(year, month, 1);
+        var startDayOfWeek = firstDay.getDay();
+        var numDays = new Date(year, month + 1, 0).getDate();
+        var numDaysPrev = new Date(year, month, 0).getDate();
+        var days = [];
+        for (var i = startDayOfWeek - 1; i >= 0; i--) {
+            days.push({ "day": numDaysPrev - i, "isCurrentMonth": false, "isToday": false });
+        }
+        var todayDate = new Date();
+        for (var d = 1; d <= numDays; d++) {
+            var isToday = (todayDate.getDate() === d && todayDate.getMonth() === month && todayDate.getFullYear() === year);
+            days.push({ "day": d, "isCurrentMonth": true, "isToday": isToday });
+        }
+        var remaining = 42 - days.length;
+        for (var n = 1; n <= remaining; n++) {
+            days.push({ "day": n, "isCurrentMonth": false, "isToday": false });
+        }
+        return days;
+    }
+
+    function triggerRefresh() {
+        if (NotificationState.service) NotificationState.service.refreshNotifs();
     }
 
     function urgencyColor(urgency) {
@@ -40,18 +81,16 @@ Scope {
                 visible: false
 
                 property bool isClosing: false
-                property real animRightMargin: -420
+                property real animLeftMargin: -260
                 property real animOpacity: 0
-                property real animHeaderY: -60
                 property bool showPopup: root.showPopup
 
                 onShowPopupChanged: {
                     if (root.showPopup) {
                         exitAnim.stop();
                         isClosing = false;
-                        animRightMargin = -420;
+                        animLeftMargin = -260;
                         animOpacity = 0;
-                        animHeaderY = -60;
                         root.refreshRequested();
                         win.visible = true;
                         introAnim.start();
@@ -64,6 +103,7 @@ Scope {
                 function closeAnim() {
                     if (isClosing) return;
                     isClosing = true;
+                    root.showPopup = false;
                     exitAnim.start();
                 }
 
@@ -71,36 +111,26 @@ Scope {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
-                implicitWidth: 380
-                implicitHeight: Math.min(mainColumn.implicitHeight, 520)
+                implicitWidth: 240
+                implicitHeight: Math.min(mainLayout.implicitHeight + 20, 520)
+
+                anchors { left: true }
+
+                margins { left: win.animLeftMargin }
 
                 Component.onCompleted: { root.refreshRequested(); }
 
-                anchors {
-                    top: true
-                    right: true
-                }
-
-                margins {
-                    top: 40
-                    right: win.animRightMargin
-                }
-
                 ParallelAnimation {
                     id: introAnim
-                    NumberAnimation { target: win; property: "animRightMargin"; from: -420; to: 8; duration: 150; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: win; property: "animHeaderY"; from: -60; to: 0; duration: 150; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: -260; to: 32; duration: 120; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 120; easing.type: Easing.OutCubic }
                 }
 
                 ParallelAnimation {
                     id: exitAnim
-                    onStopped: {
-                        win.visible = false;
-                        root.showPopup = false;
-                    }
-                    NumberAnimation { target: win; property: "animRightMargin"; from: 8; to: -420; duration: 120; easing.type: Easing.InCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
+                    onStopped: { win.visible = false; }
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: 32; to: -260; duration: 100; easing.type: Easing.InCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 100; easing.type: Easing.InCubic }
                 }
 
                 HyprlandFocusGrab {
@@ -114,9 +144,9 @@ Scope {
                     opacity: win.animOpacity
                     color: Theme.bg
                     border.width: 1
-                    border.color: Theme.surfaceLighter
-                    radius: 10
-                    clip: true
+                    border.color: Theme.primary
+                    radius: 0
+                    antialiasing: false
                     focus: true
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Escape) win.closeAnim();
@@ -124,512 +154,369 @@ Scope {
                     Component.onCompleted: { forceActiveFocus(); }
 
                     Column {
-                        id: mainColumn
-                        anchors.fill: parent
-                        spacing: 0
+                        id: mainLayout
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: 10
+                        spacing: 10
 
-                        // ── Header ────────────────────────────────────────
-                        Rectangle {
+                        // ── Clock + Calendar ─────────────────────────────────
+                        Row {
                             width: parent.width
-                            height: 44
-                            color: Theme.surface
-                            transform: Translate { y: win.animHeaderY }
-                            Behavior on color { ColorAnimation { duration: 200 } }
+                            spacing: 10
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 14
-                                anchors.rightMargin: 10
-                                spacing: 8
-
-                                Text {
-                                    text: "Notifications"
-                                    color: Theme.fg
-                                    font.pixelSize: 14
-                                    font.bold: true
-                                }
-
-                                Item { Layout.fillWidth: true }
-
-                                Rectangle {
-                                    id: dndBtn
-                                    height: 24
-                                    width: dndLabel.implicitWidth + 16
-                                    radius: 12
-                                    color: NotificationState.dnd ? Theme.error : "transparent"
-                                    border.color: NotificationState.dnd ? "transparent" : Theme.surfaceLighter
-                                    border.width: 1
-                                    visible: NotificationState.activeNotifs.length > 0
-
-                                    Behavior on color { ColorAnimation { duration: 200 } }
-
-                                    Text {
-                                        id: dndLabel
-                                        anchors.centerIn: parent
-                                        text: "DND"
-                                        color: NotificationState.dnd ? Theme.bg : Theme.muted
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: { if (NotificationState.service) NotificationState.service.toggleDnd() }
-                                    }
-                                }
-
-                                Text {
-                                    text: "Clear"
-                                    color: Theme.muted
-                                    font.pixelSize: 11
-                                    visible: NotificationState.activeNotifs.length > 0 || NotificationState.historyNotifs.length > 0
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            if (NotificationState.service) NotificationState.service.clearAll();
-                                            root.refreshRequested();
-                                        }
-                                    }
-                                }
-
-                                Text {
-                                    text: "✕"
-                                    color: Theme.fg
-                                    font.pixelSize: 14
-                                    font.bold: true
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: win.closeAnim()
-                                    }
-                                }
-                            }
-                        }
-
-                        // DND banner
-                        Rectangle {
-                            width: parent.width
-                            height: dndActive ? 28 : 0
-                            color: Qt.alpha(Theme.error, 0.1)
-                            visible: dndActive
-                            clip: true
-
-                            readonly property bool dndActive: NotificationState.dnd
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "Do Not Disturb — notifications are being silenced"
-                                color: Theme.error
-                                font.pixelSize: 10
-                            }
-                        }
-
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            color: Theme.surfaceLighter
-                        }
-
-                        // ── Notification List ─────────────────────────────
-                        ListView {
-                            id: notifList
-                            width: parent.width
-                            height: Math.min(contentHeight + 20, 340)
-                            clip: true
-                            model: NotificationState.activeNotifs
-                            spacing: 6
-                            topMargin: 8
-                            bottomMargin: 8
-                            leftMargin: 8
-                            rightMargin: 8
-
-                            delegate: Rectangle {
-                                id: notifCard
-                                readonly property int notifIndex: index
-                                width: notifList.width - 16
-                                height: notifBody.implicitHeight + 44 + (actionRow.visible ? 32 : 0)
-                                radius: 8
-                                color: Theme.surface
-                                border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : "transparent"
-                                border.width: 1
-                                clip: true
-
-                                Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                                Rectangle {
-                                    anchors.left: parent.left
-                                    anchors.top: parent.top
-                                    anchors.bottom: parent.bottom
-                                    width: 3
-                                    radius: 2
-                                    color: urgencyColor(model.urgency)
-                                    anchors.topMargin: 6
-                                    anchors.bottomMargin: 6
-                                    anchors.leftMargin: 3
-                                }
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 12
-                                    anchors.rightMargin: 10
-                                    anchors.topMargin: 10
-                                    anchors.bottomMargin: 10
-                                    spacing: 10
-
-                                    Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 6
-                                        color: Qt.alpha(urgencyColor(model.urgency), 0.15)
-                                        Layout.alignment: Qt.AlignTop
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: {
-                                                var icon = modelData.icon || ""
-                                                if (icon && icon.length > 0) return ""
-                                                var name = modelData.app_name || "N"
-                                                return name.charAt(0).toUpperCase()
-                                            }
-                                            color: urgencyColor(model.urgency)
-                                            font.pixelSize: 14
-                                            font.bold: true
-                                        }
-
-                                        Image {
-                                            anchors.fill: parent
-                                            source: {
-                                                var icon = modelData.icon || ""
-                                                if (!icon || icon.length === 0) return ""
-                                                if (icon.startsWith("/")) return "file://" + icon
-                                                return "image://icon/" + icon
-                                            }
-                                            fillMode: Image.PreserveAspectFit
-                                            asynchronous: true
-                                            visible: source.length > 0
-                                        }
-                                    }
-
-                                    ColumnLayout {
-                                        spacing: 2
-                                        Layout.fillWidth: true
-
-                                        RowLayout {
-                                            spacing: 6
-                                            Layout.fillWidth: true
-
-                                            Text {
-                                                text: model.app_name || "Notification"
-                                                color: Theme.muted
-                                                font.pixelSize: 10
-                                                font.bold: true
-                                                elide: Text.ElideRight
-                                                Layout.fillWidth: true
-                                            }
-
-                                            Text {
-                                                text: formatTime(new Date())
-                                                color: Theme.muted
-                                                font.pixelSize: 9
-                                                opacity: 0.6
-                                            }
-                                        }
-
-                                        Text {
-                                            id: notifSummary
-                                            text: model.summary
-                                            color: Theme.fg
-                                            font.pixelSize: 12
-                                            font.bold: true
-                                            elide: Text.ElideRight
-                                            wrapMode: Text.Wrap
-                                            maximumLineCount: 2
-                                            Layout.fillWidth: true
-                                        }
-
-                                        Text {
-                                            id: notifBody
-                                            text: model.body
-                                            color: Qt.alpha(Theme.fg, 0.7)
-                                            font.pixelSize: 11
-                                            elide: Text.ElideRight
-                                            wrapMode: Text.Wrap
-                                            maximumLineCount: root.expandedNotifIds[model.id] ? 99 : 3
-                                            visible: text.length > 0
-                                            Layout.fillWidth: true
-                                        }
-
-                                        Item {
-                                            width: parent.width
-                                            height: 10
-                                            visible: model.body.length > 60 || (model.body.includes("\n") && !root.expandedNotifIds[model.id])
-
-                                            Text {
-                                                anchors.right: parent.right
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: root.expandedNotifIds[model.id] ? "show less" : "show more"
-                                                color: Theme.primary
-                                                font.pixelSize: 9
-                                                font.bold: true
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        var copy = Object.assign({}, root.expandedNotifIds);
-                                                        copy[model.id] = !copy[model.id];
-                                                        root.expandedNotifIds = copy;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        // Action buttons
-                                        Row {
-                                            id: actionRow
-                                            spacing: 6
-                                            visible: model.actions && model.actions.length > 0
-                                            Layout.topMargin: 4
-
-                                            Repeater {
-                                                model: model.actions || []
-
-                                                Rectangle {
-                                                    height: 22
-                                                    width: actionLabel.implicitWidth + 12
-                                                    radius: 4
-                                                    color: Qt.alpha(Theme.primary, 0.1)
-                                                    border.color: Qt.alpha(Theme.primary, 0.3)
-                                                    border.width: 1
-
-                                                    Text {
-                                                        id: actionLabel
-                                                        anchors.centerIn: parent
-                                                        text: modelData || ""
-                                                        color: Theme.primary
-                                                        font.pixelSize: 10
-                                                    }
-
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        cursorShape: Qt.PointingHandCursor
-                                                        onClicked: {
-                                                            if (NotificationState.service) {
-                                                                NotificationState.service.dismissNotification(notifCard.notifIndex)
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // Dismiss
-                                    Text {
-                                        text: "✕"
-                                        color: Theme.muted
-                                        font.pixelSize: 12
-                                        Layout.alignment: Qt.AlignTop
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (NotificationState.service) {
-                                                    NotificationState.service.dismissNotification(notifCard.notifIndex)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: mA
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    acceptedButtons: Qt.LeftButton
-                                }
-                            }
-
-                            // Empty state
                             Item {
-                                anchors.centerIn: parent
-                                width: parent.width - 32
-                                visible: notifList.count === 0 && NotificationState.historyNotifs.length === 0
+                                id: calendarWrapper
+                                width: 120
+                                height: calCol.implicitHeight
 
                                 Column {
-                                    anchors.centerIn: parent
-                                    spacing: 8
+                                    id: calCol
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    width: 110
+                                    spacing: 2
 
                                     Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "󰂜"
-                                        color: Theme.muted
-                                        font.pixelSize: 32
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "No notifications"
-                                        color: Theme.muted
-                                        font.pixelSize: 13
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "You're all caught up"
-                                        color: Qt.alpha(Theme.muted, 0.6)
-                                        font.pixelSize: 11
-                                    }
-                                }
-                            }
-                        }
-
-                        // ── History Section ─────────────────────────────
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            color: Theme.surfaceLighter
-                        }
-
-                        Column {
-                            width: parent.width
-                            spacing: 4
-                            visible: NotificationState.historyNotifs.length > 0
-
-                            Rectangle {
-                                width: parent.width
-                                height: 28
-                                color: "transparent"
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 14
-                                    anchors.rightMargin: 10
-                                    spacing: 8
-
-                                    Text {
-                                        text: NotificationState.historyExpanded ? "" : ""
-                                        color: Theme.muted
-                                        font.pixelSize: 8
-                                        font.bold: true
-                                        opacity: 0.6
-                                    }
-
-                                    Text {
-                                        text: "History"
-                                        color: Theme.muted
-                                        font.pixelSize: 8
-                                        font.bold: true
-                                        opacity: 0.6
-                                    }
-
-                                    Text {
-                                        text: "Restore Last"
+                                        text: {
+                                            var date = new Date();
+                                            date.setMonth(date.getMonth() + root.calendarMonthOffset);
+                                            var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                                            return months[date.getMonth()] + " " + date.getFullYear();
+                                        }
                                         color: Theme.primary
+                                        font.family: Theme.fontFamily
                                         font.pixelSize: 8
                                         font.bold: true
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                Quickshell.execDetached(["makoctl", "restore"])
-                                                root.refreshRequested()
+                                        opacity: 0.8
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Row {
+                                        width: parent.width
+                                        Repeater {
+                                            model: ["S","M","T","W","T","F","S"]
+                                            delegate: Item {
+                                                width: parent.width / 7
+                                                height: 10
+                                                Text {
+                                                    anchors.centerIn: parent
+                                                    text: modelData
+                                                    color: Theme.primary
+                                                    opacity: 0.5
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: 6
+                                                    font.bold: true
+                                                    renderType: Text.NativeRendering
+                                                }
                                             }
                                         }
                                     }
 
-                                    Item { Layout.fillWidth: true }
+                                    Grid {
+                                        width: parent.width
+                                        columns: 7
+                                        rowSpacing: 1
+                                        columnSpacing: 0
+                                        Repeater {
+                                            model: root.getCalendarDays(root.calendarMonthOffset)
+                                            delegate: Rectangle {
+                                                width: parent.width / 7
+                                                height: 11
+                                                color: modelData.isToday ? Theme.primary : "transparent"
+                                                radius: 1
+                                                Text {
+                                                    anchors.centerIn: parent
+                                                    text: String(modelData.day)
+                                                    color: modelData.isToday ? Theme.bg : Theme.primary
+                                                    opacity: modelData.isToday ? 1 : (modelData.isCurrentMonth ? 0.85 : 0.25)
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: 6
+                                                    font.bold: modelData.isToday
+                                                    renderType: Text.NativeRendering
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        NotificationState.historyExpanded = !NotificationState.historyExpanded
+                                Text {
+                                    anchors.top: parent.top
+                                    anchors.right: parent.right
+                                    text: ""
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 7
+                                    opacity: 0.6
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.calendarMonthOffset -= 1
+                                    }
+                                }
+
+                                Text {
+                                    anchors.bottom: parent.bottom
+                                    anchors.right: parent.right
+                                    text: ""
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 7
+                                    opacity: 0.6
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.calendarMonthOffset += 1
                                     }
                                 }
                             }
 
                             Column {
+                                width: parent.width - 130
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 1
+
+                                Text {
+                                    text: root.hourStr
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 18
+                                    font.bold: true
+                                    renderType: Text.NativeRendering
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+
+                                Text {
+                                    text: root.minStr
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 18
+                                    renderType: Text.NativeRendering
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+
+                                Row {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    spacing: 2
+                                    Text {
+                                        text: root.secStr
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 8
+                                        renderType: Text.NativeRendering
+                                    }
+                                    Text {
+                                        text: root.ampmStr
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 8
+                                        renderType: Text.NativeRendering
+                                    }
+                                }
+
+                                Item { width: 1; height: 4 }
+
+                                Text {
+                                    text: root.uptimeStr.replace("UP ", "")
+                                    color: Theme.primary
+                                    opacity: 0.75
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 8
+                                    renderType: Text.NativeRendering
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Theme.primary
+                            opacity: 0.15
+                        }
+
+                        // ── Notifications Header + List ─────────────────────
+                        Column {
+                            width: parent.width
+                            spacing: 2
+
+                            Item {
+                                width: parent.width
+                                height: 14
+
+                                Row {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 4
+
+                                    Text {
+                                        text: "Notifications"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Text {
+                                        id: clearAllBtn
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Clear All"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 7
+                                        renderType: Text.NativeRendering
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onClicked: {
+                                                if (NotificationState.service) NotificationState.service.clearAll();
+                                                root.refreshRequested();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Active Notifications
+                            Column {
                                 width: parent.width
                                 spacing: 4
-                                visible: NotificationState.historyExpanded
+
+                                Text {
+                                    text: "Active"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 7
+                                    font.bold: true
+                                    opacity: 0.6
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Text {
+                                    text: "No active notifications"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 7
+                                    opacity: 0.4
+                                    visible: NotificationState.activeNotifs.length === 0
+                                }
 
                                 Repeater {
-                                    model: NotificationState.historyNotifs
+                                    model: NotificationState.activeNotifs
 
                                     delegate: Rectangle {
-                                        width: parent.width - 16
-                                        height: histBoxCol.implicitHeight + 10
+                                        width: parent.width
+                                        height: activeBoxCol.implicitHeight + 8
                                         color: Theme.surface
                                         border.width: 1
-                                        border.color: Theme.surfaceLighter
-                                        radius: 6
-                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
+                                        radius: 4
 
                                         Column {
-                                            id: histBoxCol
+                                            id: activeBoxCol
                                             anchors.top: parent.top
                                             anchors.left: parent.left
                                             anchors.right: parent.right
-                                            anchors.margins: 8
-                                            spacing: 3
+                                            anchors.margins: 4
+                                            spacing: 2
 
                                             Row {
                                                 width: parent.width
-                                                spacing: 8
+                                                spacing: 6
 
-                                                Text {
-                                                    text: model.app_name ? model.app_name.charAt(0).toUpperCase() : "N"
-                                                    color: Theme.muted
-                                                    font.pixelSize: 10
-                                                    font.bold: true
+                                                Rectangle {
+                                                    width: 16
+                                                    height: 16
+                                                    color: "transparent"
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    visible: modelData.icon && modelData.icon.length > 0
+
+                                                    Image {
+                                                        anchors.fill: parent
+                                                        source: modelData.icon.startsWith("/") ? ("file://" + modelData.icon) : ("image://icon/" + modelData.icon)
+                                                        fillMode: Image.PreserveAspectFit
+                                                        asynchronous: true
+                                                    }
                                                 }
 
                                                 Column {
-                                                    width: parent.width - 20
+                                                    width: parent.width - (modelData.icon && modelData.icon.length > 0 ? 24 : 0)
                                                     spacing: 1
+                                                    anchors.verticalCenter: parent.verticalCenter
 
-                                                    Text {
-                                                        text: model.summary
-                                                        color: Theme.fg
-                                                        font.pixelSize: 10
-                                                        font.bold: true
-                                                        elide: Text.ElideRight
+                                                    Item {
                                                         width: parent.width
-                                                    }
+                                                        height: 12
 
-                                                    Text {
-                                                        text: model.body
-                                                        color: Qt.alpha(Theme.fg, 0.6)
-                                                        font.pixelSize: 9
-                                                        wrapMode: Text.Wrap
-                                                        width: parent.width
-                                                        maximumLineCount: root.expandedNotifIds[model.id + "_hist"] ? 99 : 2
-                                                        elide: root.expandedNotifIds[model.id + "_hist"] ? Text.ElideNone : Text.ElideRight
+                                                        Text {
+                                                            text: modelData.summary
+                                                            color: Theme.fg
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 7
+                                                            font.bold: true
+                                                            elide: Text.ElideRight
+                                                            anchors.left: parent.left
+                                                            anchors.right: dismissBtn.left
+                                                            anchors.rightMargin: 4
+                                                            anchors.verticalCenter: parent.verticalCenter
+                                                            renderType: Text.NativeRendering
+                                                        }
+
+                                                        Text {
+                                                            id: dismissBtn
+                                                            anchors.right: parent.right
+                                                            anchors.verticalCenter: parent.verticalCenter
+                                                            text: "dismiss"
+                                                            color: Theme.primary
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 7
+                                                            renderType: Text.NativeRendering
+                                                            MouseArea {
+                                                                anchors.fill: parent
+                                                                hoverEnabled: true
+                                                                onClicked: {
+                                                                    if (NotificationState.service) NotificationState.service.dismissNotification(index);
+                                                                    root.refreshRequested();
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
 
+                                            Text {
+                                                id: descText
+                                                text: modelData.body
+                                                color: Theme.muted
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 7
+                                                wrapMode: Text.Wrap
+                                                width: parent.width
+                                                elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
+                                                maximumLineCount: root.expandedNotifIds[modelData.id] ? 99 : 1
+                                                renderType: Text.NativeRendering
+                                            }
+
                                             Item {
                                                 width: parent.width
-                                                height: 10
-                                                visible: model.body.length > 40 || model.body.includes("\n")
+                                                height: 8
+                                                visible: modelData.body.length > 50 || modelData.body.includes("\n")
 
                                                 Text {
                                                     anchors.right: parent.right
                                                     anchors.verticalCenter: parent.verticalCenter
-                                                    text: root.expandedNotifIds[model.id + "_hist"] ? "show less" : "show more"
+                                                    text: root.expandedNotifIds[modelData.id] ? "show less" : "show more"
                                                     color: Theme.primary
-                                                    font.pixelSize: 8
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: 6
                                                     font.bold: true
+                                                    renderType: Text.NativeRendering
                                                     MouseArea {
                                                         anchors.fill: parent
-                                                        cursorShape: Qt.PointingHandCursor
                                                         onClicked: {
                                                             var copy = Object.assign({}, root.expandedNotifIds);
-                                                            copy[model.id + "_hist"] = !copy[model.id + "_hist"];
+                                                            copy[modelData.id] = !copy[modelData.id];
                                                             root.expandedNotifIds = copy;
                                                         }
                                                     }
@@ -639,144 +526,267 @@ Scope {
                                     }
                                 }
                             }
+
+                            // History
+                            Column {
+                                width: parent.width
+                                spacing: 4
+
+                                Item {
+                                    width: parent.width
+                                    height: 12
+
+                                    Row {
+                                        id: historyTitleRow
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 3
+
+                                        Text {
+                                            text: root.historyExpanded ? "" : ""
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 7
+                                            font.bold: true
+                                            opacity: 0.6
+                                            renderType: Text.NativeRendering
+                                        }
+
+                                        Text {
+                                            text: "History"
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 7
+                                            font.bold: true
+                                            opacity: 0.6
+                                            renderType: Text.NativeRendering
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: historyTitleRow
+                                        onClicked: { root.historyExpanded = !root.historyExpanded; }
+                                    }
+
+                                    Text {
+                                        id: restoreBtn
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Restore Last"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 7
+                                        renderType: Text.NativeRendering
+                                        visible: NotificationState.historyNotifs.length > 0
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onClicked: {
+                                                Quickshell.execDetached(["makoctl", "restore"]);
+                                                root.refreshRequested();
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Column {
+                                    width: parent.width
+                                    spacing: 3
+                                    visible: root.historyExpanded
+
+                                    Text {
+                                        text: "No history"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 7
+                                        opacity: 0.4
+                                        visible: NotificationState.historyNotifs.length === 0
+                                    }
+
+                                    Repeater {
+                                        model: NotificationState.historyNotifs
+
+                                        delegate: Rectangle {
+                                            width: parent.width
+                                            height: histBoxCol.implicitHeight + 8
+                                            color: Theme.bg
+                                            border.width: 1
+                                            border.color: Theme.surfaceLighter
+                                            radius: 4
+
+                                            Column {
+                                                id: histBoxCol
+                                                anchors.top: parent.top
+                                                anchors.left: parent.left
+                                                anchors.right: parent.right
+                                                anchors.margins: 4
+                                                spacing: 2
+
+                                                Row {
+                                                    width: parent.width
+                                                    spacing: 6
+
+                                                    Text {
+                                                        text: modelData.app_name ? modelData.app_name.charAt(0).toUpperCase() : "N"
+                                                        color: Theme.muted
+                                                        font.family: Theme.fontFamily
+                                                        font.pixelSize: 8
+                                                        font.bold: true
+                                                    }
+
+                                                    Column {
+                                                        width: parent.width - 18
+                                                        spacing: 1
+
+                                                        Text {
+                                                            text: modelData.summary
+                                                            color: Theme.fg
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 7
+                                                            font.bold: true
+                                                            elide: Text.ElideRight
+                                                            width: parent.width
+                                                            renderType: Text.NativeRendering
+                                                        }
+
+                                                        Text {
+                                                            text: modelData.body
+                                                            color: Theme.muted
+                                                            font.family: Theme.fontFamily
+                                                            font.pixelSize: 7
+                                                            wrapMode: Text.Wrap
+                                                            width: parent.width
+                                                            maximumLineCount: 1
+                                                            elide: Text.ElideRight
+                                                            renderType: Text.NativeRendering
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
-                        // ── Quick Launcher Buttons ──────────────────────
                         Rectangle {
                             width: parent.width
-                            height: 36
-                            color: Theme.surface
+                            height: 1
+                            color: Theme.primary
+                            opacity: 0.15
+                        }
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 10
-                                anchors.rightMargin: 10
-                                spacing: 0
+                        // ── Quick Launcher Buttons ──────────────────────────
+                        Row {
+                            width: parent.width
+                            spacing: 0
 
-                                Item {
-                                    width: parent.width / 6
-                                    height: 14
-
-                                    Text {
-                                        id: btnVol
-                                        anchors.centerIn: parent
-                                        text: "󰕾"
-                                        color: Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 12
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: btnVol.color = Theme.fg
-                                        onExited: btnVol.color = Theme.muted
-                                        onClicked: {
-                                            Quickshell.execDetached(["quickshell", "--config", "volume_popup"])
-                                            win.closeAnim()
-                                        }
-                                    }
-                                }
-
-                                Item {
-                                    width: parent.width / 6
-                                    height: 14
-
-                                    Text {
-                                        id: btnNet
-                                        anchors.centerIn: parent
-                                        text: "󰖩"
-                                        color: Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 12
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: btnNet.color = Theme.fg
-                                        onExited: btnNet.color = Theme.muted
-                                        onClicked: {
-                                            Quickshell.execDetached(["quickshell", "--config", "network_popup"])
-                                            win.closeAnim()
-                                        }
-                                    }
-                                }
-
-                                Item {
-                                    width: parent.width / 6
-                                    height: 14
-
-                                    Text {
-                                        id: btnBt
-                                        anchors.centerIn: parent
-                                        text: "󰂯"
-                                        color: Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 12
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: btnBt.color = Theme.fg
-                                        onExited: btnBt.color = Theme.muted
-                                        onClicked: {
-                                            Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"])
-                                            win.closeAnim()
-                                        }
-                                    }
-                                }
-
-                                Item {
-                                    width: parent.width / 6
-                                    height: 14
-
-                                    Text {
-                                        id: btnBright
-                                        anchors.centerIn: parent
-                                        text: "󰃠"
-                                        color: Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 12
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: btnBright.color = Theme.fg
-                                        onExited: btnBright.color = Theme.muted
-                                        onClicked: {
-                                            Quickshell.execDetached(["quickshell", "--config", "brightness_popup"])
-                                            win.closeAnim()
-                                        }
-                                    }
-                                }
-
-                                Item { Layout.fillWidth: true }
+                            Item {
+                                width: parent.width / 6
+                                height: 12
 
                                 Text {
-                                    text: formatTime(new Date())
+                                    id: btnVol
+                                    anchors.centerIn: parent
+                                    text: root.audioMuted ? "󰝟" : "󰕾"
                                     color: Theme.muted
-                                    font.pixelSize: 12
-                                    font.bold: true
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
                                 }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        Quickshell.execDetached(["quickshell", "--config", "volume_popup"]);
+                                        win.closeAnim();
+                                    }
+                                }
+                            }
+
+                            Item {
+                                width: parent.width / 6
+                                height: 12
+
+                                Text {
+                                    id: btnNet
+                                    anchors.centerIn: parent
+                                    text: root.wifiEnabled ? "󰖩" : "󰖪"
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        Quickshell.execDetached(["quickshell", "--config", "network_popup"]);
+                                        win.closeAnim();
+                                    }
+                                }
+                            }
+
+                            Item {
+                                width: parent.width / 6
+                                height: 12
+
+                                Text {
+                                    id: btnBt
+                                    anchors.centerIn: parent
+                                    text: root.btEnabled ? "󰂯" : "󰂲"
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"]);
+                                        win.closeAnim();
+                                    }
+                                }
+                            }
+
+                            Item {
+                                width: parent.width / 6
+                                height: 12
+
+                                Text {
+                                    id: btnBright
+                                    anchors.centerIn: parent
+                                    text: "󰃠"
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        Quickshell.execDetached(["quickshell", "--config", "brightness_popup"]);
+                                        win.closeAnim();
+                                    }
+                                }
+                            }
+
+                            Item { Layout.fillWidth: true }
+
+                            Text {
+                                text: formatTime(new Date())
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                                font.bold: true
+                                renderType: Text.NativeRendering
                             }
                         }
                     }
                 }
             }
-        }
-    }
-
-    IpcHandler {
-        target: "notification_center"
-        function close() {
-            root.closePopup();
         }
     }
 }
