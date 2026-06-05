@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell.Io
 
-import ".."
+import "../.."
 
 Item {
   visible: false

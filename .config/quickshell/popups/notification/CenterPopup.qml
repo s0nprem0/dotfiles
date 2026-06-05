@@ -343,7 +343,7 @@ Scope {
                                 width: parent.width
                                 height: 14
 
-                                Row {
+                                RowLayout {
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: 4
@@ -357,10 +357,10 @@ Scope {
                                         renderType: Text.NativeRendering
                                     }
 
+                                    Item { Layout.fillWidth: true }
+
                                     Text {
                                         id: clearAllBtn
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
                                         text: "Clear All"
                                         color: Theme.primary
                                         font.family: Theme.fontFamily
