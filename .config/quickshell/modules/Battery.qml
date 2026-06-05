@@ -12,10 +12,10 @@ BarModule {
   visible: batteryDevice !== null
 
   border.color: {
-    if (mA.containsMouse) return Qt.alpha(Theme.primary, 0.3)
     if (root.battCritical) return Theme.error
     if (root.battWarning) return Theme.warning
     if (root.charging) return Qt.alpha("#a6e3a1", 0.4)
+    if (mA.containsMouse) return Qt.alpha(Theme.primary, 0.3)
     return Qt.alpha(Theme.primary, 0.1)
   }
 
