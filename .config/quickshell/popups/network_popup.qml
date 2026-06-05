@@ -7,6 +7,10 @@ import ".."
 Scope {
     id: root
 
+    Component.onCompleted: {
+        NetworkState.popup = root
+    }
+
     property bool showPopup: false
     property bool dataLoaded: false
     property int retryCount: 0
