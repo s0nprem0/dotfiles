@@ -28,8 +28,9 @@ BarModule {
         }
     }
 
-    Component.onCompleted: {
-        NetworkState.refreshNetworkData = function() { netData.refresh(); };
+    Connections {
+        target: NetworkState
+        function onRefreshRequested() { netData.refresh(); }
     }
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton

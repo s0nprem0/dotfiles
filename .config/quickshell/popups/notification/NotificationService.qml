@@ -27,7 +27,8 @@ Item {
           summary: notification.summary,
           body: notification.body,
           urgency: notification.urgency,
-          expireTimeout: notification.expireTimeout
+          expireTimeout: notification.expireTimeout,
+          timestamp: new Date()
         })
 
         while (service.toastModel.count > 5) {

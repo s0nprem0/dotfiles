@@ -19,7 +19,7 @@ BarModule {
       if (mouse.button === Qt.RightButton) {
         NotificationState.service.toggleDnd()
       } else {
-        NotificationState.centerPopup.visible = !NotificationState.centerPopup.visible
+        NotificationState.centerPopup.showPopup = !NotificationState.centerPopup.showPopup
       }
     }
   }

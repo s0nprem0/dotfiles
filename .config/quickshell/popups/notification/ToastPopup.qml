@@ -4,129 +4,212 @@ import QtQuick.Layouts
 
 import "../.."
 
-FloatingWindow {
-  id: toastPopup
-  title: "notification_toast"
-  color: "transparent"
-  visible: toastRepeater.count > 0
+PanelWindow {
+    id: toastPopup
+    visible: toastRepeater.count > 0
 
-  implicitWidth: 360
-  implicitHeight: toastColumn.height + 16
-
-  Rectangle {
-    anchors.fill: parent
+    screen: Quickshell.screens[0]
     color: "transparent"
+    exclusionMode: PanelWindow.ExclusionMode.Ignore
+    focusable: false
+
+    implicitWidth: 360
+    implicitHeight: Math.min(toastColumn.implicitHeight + 16, 400)
+
+    anchors {
+        top: true
+        right: true
+    }
+
+    margins {
+        top: 44
+        right: 8
+    }
+
+    function urgencyColor(urgency) {
+        if (urgency === 2) return Theme.error;
+        if (urgency === 1) return Theme.primary;
+        return Theme.muted;
+    }
 
     Column {
-      id: toastColumn
-      anchors.top: parent.top
-      anchors.right: parent.right
-      anchors.topMargin: 8
-      anchors.rightMargin: 8
-      spacing: 6
+        id: toastColumn
+        anchors.fill: parent
+        anchors.margins: 4
+        spacing: 6
 
-      Repeater {
-        id: toastRepeater
-        model: NotificationState.toastModel
+        Repeater {
+            id: toastRepeater
+            model: NotificationState.toastModel
 
-        delegate: Rectangle {
-          id: card
-          width: 344
-          height: cardLayout.implicitHeight + 20
-          radius: 10
-          color: Theme.surface
-          border.color: borderColor
-          border.width: 1
-          clip: true
+            delegate: Item {
+                width: toastColumn.width - 8
+                height: toastCard.height
+                anchors.horizontalCenter: parent.horizontalCenter
 
-          readonly property int urg: model.urgency
-          readonly property color borderColor: urg === 2 ? Theme.error : urg === 1 ? Theme.primary : Theme.surfaceLighter
+                property real slideOffset: 0
+                property real cardOpacity: 0
 
-          opacity: 1
-          Behavior on opacity { NumberAnimation { duration: 200 } }
-
-          Timer {
-            id: dismissTimer
-            interval: model.expireTimeout > 0
-              ? Math.min(model.expireTimeout * 1000, 10000)
-              : model.urgency === 2 ? 10000 : 5000
-            running: true
-            onTriggered: {
-              card.opacity = 0
-              fadeTimer.start()
-            }
-          }
-
-          Timer {
-            id: fadeTimer
-            interval: 200
-            onTriggered: NotificationState.service.dismissToast(index)
-          }
-
-          RowLayout {
-            id: cardLayout
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 10
-
-            ColumnLayout {
-              spacing: 2
-              Layout.fillWidth: true
-
-              Text {
-                text: model.appName || "Notification"
-                color: Theme.muted
-                font.pixelSize: 10
-                font.bold: true
-              }
-
-              Text {
-                text: model.summary
-                color: Theme.fg
-                font.pixelSize: 12
-                font.bold: true
-                elide: Text.ElideRight
-                wrapMode: Text.Wrap
-                maximumLineCount: 2
-              }
-
-              Text {
-                text: model.body
-                color: Qt.alpha(Theme.fg, 0.7)
-                font.pixelSize: 11
-                elide: Text.ElideRight
-                wrapMode: Text.Wrap
-                maximumLineCount: 2
-                visible: text.length > 0
-              }
-            }
-
-            Text {
-              text: "󰅖"
-              color: Theme.muted
-              font.pixelSize: 14
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  dismissTimer.stop()
-                  card.opacity = 0
-                  fadeTimer.start()
+                Component.onCompleted: {
+                    slideOffset = 80;
+                    cardOpacity = 0;
+                    introAnim.start();
                 }
-              }
-            }
-          }
 
-          MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            onClicked: {
-              dismissTimer.stop()
-              card.opacity = 0
-              fadeTimer.start()
+                ParallelAnimation {
+                    id: introAnim
+                    NumberAnimation { target: parent; property: "slideOffset"; from: 80; to: 0; duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: parent; property: "cardOpacity"; from: 0; to: 1; duration: 250; easing.type: Easing.OutCubic }
+                }
+
+                ParallelAnimation {
+                    id: exitAnim
+                    onStopped: {
+                        NotificationState.service.dismissToast(index);
+                    }
+                    NumberAnimation { target: parent; property: "slideOffset"; to: 80; duration: 200; easing.type: Easing.InCubic }
+                    NumberAnimation { target: parent; property: "cardOpacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
+                }
+
+                Rectangle {
+                    id: toastCard
+                    width: parent.width
+                    height: cardLayout.implicitHeight + 20
+                    radius: 8
+                    color: Theme.surface
+                    border.color: borderColor
+                    border.width: 1
+                    clip: true
+
+                    transform: Translate { x: parent.slideOffset }
+                    opacity: parent.cardOpacity
+
+                    readonly property int urg: model.urgency
+                    readonly property color borderColor: Qt.alpha(urgencyColor(urg), 0.4)
+
+                    // Urgency left border
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: 3
+                        radius: 2
+                        color: urgencyColor(urg)
+                        anchors.topMargin: 6
+                        anchors.bottomMargin: 6
+                        anchors.leftMargin: 3
+                    }
+
+                    // Auto-dismiss timer
+                    Timer {
+                        id: dismissTimer
+                        interval: model.expireTimeout > 0
+                            ? Math.min(model.expireTimeout * 1000, 8000)
+                            : model.urgency === 2 ? 8000 : 4000
+                        running: true
+                        onTriggered: {
+                            exitAnim.start();
+                        }
+                    }
+
+                    RowLayout {
+                        id: cardLayout
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 10
+
+                        // App icon
+                        Rectangle {
+                            width: 28
+                            height: 28
+                            radius: 5
+                            color: Qt.alpha(urgencyColor(urg), 0.12)
+                            Layout.alignment: Qt.AlignTop
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
+                                color: urgencyColor(urg)
+                                font.pixelSize: 12
+                                font.bold: true
+                            }
+                        }
+
+                        ColumnLayout {
+                            spacing: 2
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: model.appName || "Notification"
+                                color: Theme.muted
+                                font.pixelSize: 9
+                                font.bold: true
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                text: model.summary
+                                color: Theme.fg
+                                font.pixelSize: 12
+                                font.bold: true
+                                elide: Text.ElideRight
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 2
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                text: model.body
+                                color: Qt.alpha(Theme.fg, 0.7)
+                                font.pixelSize: 10
+                                elide: Text.ElideRight
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 2
+                                visible: text.length > 0
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        // Dismiss button
+                        Rectangle {
+                            width: 20
+                            height: 20
+                            radius: 10
+                            color: closeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
+                            Layout.alignment: Qt.AlignTop
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✕"
+                                color: Theme.muted
+                                font.pixelSize: 10
+                            }
+
+                            MouseArea {
+                                id: closeMa
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    dismissTimer.stop();
+                                    exitAnim.start();
+                                }
+                            }
+                        }
+                    }
+
+                    // Click to dismiss
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        onClicked: {
+                            dismissTimer.stop();
+                            exitAnim.start();
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 }

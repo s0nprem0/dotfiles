@@ -102,7 +102,6 @@ PanelWindow {
 
   Notif.CenterPopup {
     id: centerPopup
-    visible: false
   }
 
   Component.onCompleted: {

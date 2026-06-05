@@ -6,5 +6,5 @@ QtObject {
 
     property var popup: null
     property var networkData: null
-    property var refreshNetworkData: null
+    signal refreshRequested()
 }
