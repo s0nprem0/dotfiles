@@ -1,129 +1,98 @@
+import Quickshell.Services.Notifications
 import QtQuick
-import Quickshell.Io
+import QtQml.Models
 
 import "../.."
 
 Item {
-  visible: false
-  id: service
+    visible: false
+    id: service
 
-  property bool dnd: NotificationState.dnd
-  property var toastModel: NotificationState.toastModel
-  property int trackedCount: 0
+    property bool dnd: false
+    property var toastModel: ListModel { id: toastModel }
+    property int maxToasts: 5
 
-  function setProp(path, value) {
-    NotificationState[path] = value
-  }
+    // Reference to the server
+    property alias server: notifServer
 
-  function refreshNotifs() {
-    checkProc.running = false
-    checkProc.running = true
-  }
+    NotificationServer {
+        id: notifServer
+        keepOnReload: true
 
-  Process {
-    id: checkProc
-    command: [Theme.bin("get_notif_status")]
-    running: false
-    stdout: StdioCollector {
-      onStreamFinished: {
-        try {
-          var data = JSON.parse(this.text)
-          NotificationState.activeNotifs = data.active || []
-          NotificationState.historyNotifs = data.history || []
-          NotificationState.dnd = data.dnd || false
-          service.dnd = NotificationState.dnd
-          service.trackedCount = data.count || 0
+        // When a notification arrives
+        onNotification: (notification) => {
+            notification.tracked = true
 
-          syncToastModel(data.active || [])
-        } catch (e) {
-          console.log("Failed to parse notif status: " + e)
+            if (!service.dnd) {
+                // Add to toast model
+                toastModel.insert(0, {
+                    notifId: notification.id,
+                    appName: notification.appName,
+                    appIcon: notification.appIcon,
+                    summary: notification.summary,
+                    body: notification.body,
+                    urgency: notification.urgency,
+                    expireTimeout: notification.expireTimeout,
+                    timestamp: new Date(),
+                    notification: notification  // keep reference for actions
+                })
+                // Limit to maxToasts
+                while (toastModel.count > service.maxToasts)
+                    toastModel.remove(service.maxToasts, 1)
+            }
         }
-      }
-    }
-  }
-
-  Timer {
-    id: pollTimer
-    interval: 2000
-    repeat: true
-    running: true
-    onTriggered: service.refreshNotifs()
-  }
-
-  function syncToastModel(active) {
-    var existing = {}
-    for (var i = 0; i < service.toastModel.count; i++) {
-      existing[service.toastModel.get(i).notifId] = i
     }
 
-    var seen = {}
-    for (var j = 0; j < active.length; j++) {
-      var n = active[j]
-      seen[n.id] = true
-      if (existing[n.id] !== undefined) {
-        service.toastModel.set(existing[n.id], {
-          notifId: n.id,
-          appName: n.app_name,
-          appIcon: n.icon,
-          summary: n.summary,
-          body: n.body,
-          urgency: n.urgency,
-          expireTimeout: 6000
-        })
-      } else {
-        service.toastModel.append({
-          notifId: n.id,
-          appName: n.app_name,
-          appIcon: n.icon,
-          summary: n.summary,
-          body: n.body,
-          urgency: n.urgency,
-          expireTimeout: 6000
-        })
-      }
+    // Helper to find a notification by id
+    function findNotification(id) {
+        for (var i = 0; i < notifServer.trackedNotifications.count; i++) {
+            var n = notifServer.trackedNotifications.get(i)
+            if (n.id === id) return n
+        }
+        return null
     }
 
-    var toRemove = []
-    for (var k = 0; k < service.toastModel.count; k++) {
-      var id2 = service.toastModel.get(k).notifId
-      if (!seen[id2]) toRemove.push(k)
+    // Dismiss a single notification by id
+    function dismissNotification(id) {
+        var n = findNotification(id)
+        if (n) n.dismiss()
     }
-    for (var m = toRemove.length - 1; m >= 0; m--) {
-      service.toastModel.remove(toRemove[m], 1)
+
+    // Clear all active notifications
+    function clearAll() {
+        var model = notifServer.trackedNotifications
+        for (var i = model.count - 1; i >= 0; i--) {
+            model.get(i).dismiss()
+        }
+        toastModel.clear()
     }
-  }
 
-  function toggleDnd() {
-    Quickshell.execDetached([
-      "swaync-client", "-d"
-    ])
-    setTimeout(function() { service.refreshNotifs() }, 200)
-  }
-
-  function clearAll() {
-    Quickshell.execDetached(["makoctl", "dismiss", "-a"])
-    service.toastModel.clear()
-  }
-
-  function dismissToast(index) {
-    service.toastModel.remove(index, 1)
-  }
-
-  function dismissToastById(notifId) {
-    for (var i = 0; i < service.toastModel.count; i++) {
-      if (service.toastModel.get(i).notifId === notifId) {
-        service.toastModel.remove(i, 1)
-        break
-      }
+    // Toggle Do Not Disturb
+    function toggleDnd() {
+        dnd = !dnd
     }
-  }
 
-  function dismissNotification(index) {
-    var notifs = NotificationState.activeNotifs
-    if (index >= 0 && index < notifs.length) {
-      Quickshell.execDetached([
-        "makoctl", "dismiss", "-n", String(notifs[index].id)
-      ])
+    // Dismiss a toast by model index
+    function dismissToast(index) {
+        var item = toastModel.get(index)
+        if (item && item.notification) {
+            item.notification.dismiss()
+        }
+        toastModel.remove(index, 1)
     }
-  }
+
+    // Update NotificationState singleton
+    onDndChanged: {
+        if (typeof NotificationState !== "undefined")
+            NotificationState.dnd = dnd
+    }
+
+    Component.onCompleted: {
+        if (typeof NotificationState !== "undefined") {
+            NotificationState.service = service
+            NotificationState.server = notifServer
+            NotificationState.toastModel = toastModel
+            NotificationState.dnd = dnd
+        }
+    }
 }

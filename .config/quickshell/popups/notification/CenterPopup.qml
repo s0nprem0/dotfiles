@@ -17,13 +17,10 @@ Scope {
     property string uptimeStr: ""
     property int calendarMonthOffset: 0
     property var expandedNotifIds: ({})
-    property bool historyExpanded: false
     property bool btEnabled: false
     property bool wifiEnabled: false
     property bool audioMuted: false
     property bool glassEnabled: true
-
-    signal refreshRequested()
 
     function closePopup() {
         root.showPopup = false;
@@ -52,10 +49,6 @@ Scope {
             days.push({ "day": n, "isCurrentMonth": false, "isToday": false });
         }
         return days;
-    }
-
-    function triggerRefresh() {
-        if (NotificationState.service) NotificationState.service.refreshNotifs();
     }
 
     function urgencyColor(urgency) {
@@ -91,7 +84,6 @@ Scope {
                         isClosing = false;
                         animLeftMargin = -260;
                         animOpacity = 0;
-                        root.refreshRequested();
                         win.visible = true;
                         introAnim.start();
                     } else if (!isClosing) {
@@ -115,10 +107,7 @@ Scope {
                 implicitHeight: Math.min(mainLayout.implicitHeight + 20, 520)
 
                 anchors { left: true }
-
                 margins { left: win.animLeftMargin }
-
-                Component.onCompleted: { root.refreshRequested(); }
 
                 ParallelAnimation {
                     id: introAnim
@@ -334,332 +323,146 @@ Scope {
                             opacity: 0.15
                         }
 
-                        // ── Notifications Header + List ─────────────────────
+                        // ── Active Notifications ─────────────────────────────
                         Column {
                             width: parent.width
-                            spacing: 2
+                            spacing: 4
 
-                            Item {
-                                width: parent.width
-                                height: 14
-
-                                RowLayout {
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 4
-
-                                    Text {
-                                        text: "Notifications"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
-                                        font.bold: true
-                                        renderType: Text.NativeRendering
-                                    }
-
-                                    Item { Layout.fillWidth: true }
-
-                                    Text {
-                                        id: clearAllBtn
-                                        text: "Clear All"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 7
-                                        renderType: Text.NativeRendering
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            onClicked: {
-                                                if (NotificationState.service) NotificationState.service.clearAll();
-                                                root.refreshRequested();
-                                            }
-                                        }
-                                    }
-                                }
+                            Text {
+                                text: "Active"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 7
+                                font.bold: true
+                                opacity: 0.6
+                                renderType: Text.NativeRendering
                             }
 
-                            // Active Notifications
-                            Column {
-                                width: parent.width
-                                spacing: 4
+                            Text {
+                                text: "No active notifications"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 7
+                                opacity: 0.4
+                                visible: !NotificationState.server || NotificationState.server.trackedNotifications.count === 0
+                            }
 
-                                Text {
-                                    text: "Active"
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 7
-                                    font.bold: true
-                                    opacity: 0.6
-                                    renderType: Text.NativeRendering
-                                }
+                            Repeater {
+                                model: NotificationState.server ? NotificationState.server.trackedNotifications : []
 
-                                Text {
-                                    text: "No active notifications"
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 7
-                                    opacity: 0.4
-                                    visible: NotificationState.activeNotifs.length === 0
-                                }
+                                delegate: Rectangle {
+                                    width: parent.width
+                                    height: activeBoxCol.implicitHeight + 8
+                                    color: Theme.surface
+                                    border.width: 1
+                                    border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
+                                    radius: 4
 
-                                Repeater {
-                                    model: NotificationState.activeNotifs
+                                    Column {
+                                        id: activeBoxCol
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.margins: 4
+                                        spacing: 2
 
-                                    delegate: Rectangle {
-                                        width: parent.width
-                                        height: activeBoxCol.implicitHeight + 8
-                                        color: Theme.surface
-                                        border.width: 1
-                                        border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
-                                        radius: 4
+                                        Row {
+                                            width: parent.width
+                                            spacing: 6
 
-                                        Column {
-                                            id: activeBoxCol
-                                            anchors.top: parent.top
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.margins: 4
-                                            spacing: 2
+                                            Rectangle {
+                                                width: 16
+                                                height: 16
+                                                color: "transparent"
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                visible: modelData.appIcon && modelData.appIcon.length > 0
 
-                                            Row {
-                                                width: parent.width
-                                                spacing: 6
-
-                                                Rectangle {
-                                                    width: 16
-                                                    height: 16
-                                                    color: "transparent"
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    visible: modelData.icon && modelData.icon.length > 0
-
-                                                    Image {
-                                                        anchors.fill: parent
-                                                        source: modelData.icon.startsWith("/") ? ("file://" + modelData.icon) : ("image://icon/" + modelData.icon)
-                                                        fillMode: Image.PreserveAspectFit
-                                                        asynchronous: true
-                                                    }
+                                                Image {
+                                                    anchors.fill: parent
+                                                    source: modelData.appIcon.startsWith("/") ? ("file://" + modelData.appIcon) : ("image://icon/" + modelData.appIcon)
+                                                    fillMode: Image.PreserveAspectFit
+                                                    asynchronous: true
                                                 }
+                                            }
 
-                                                Column {
-                                                    width: parent.width - (modelData.icon && modelData.icon.length > 0 ? 24 : 0)
-                                                    spacing: 1
-                                                    anchors.verticalCenter: parent.verticalCenter
+                                            Column {
+                                                width: parent.width - (modelData.appIcon && modelData.appIcon.length > 0 ? 24 : 0)
+                                                spacing: 1
+                                                anchors.verticalCenter: parent.verticalCenter
 
-                                                    Item {
-                                                        width: parent.width
-                                                        height: 12
+                                                Item {
+                                                    width: parent.width
+                                                    height: 12
 
-                                                        Text {
-                                                            text: modelData.summary
-                                                            color: Theme.fg
-                                                            font.family: Theme.fontFamily
-                                                            font.pixelSize: 7
-                                                            font.bold: true
-                                                            elide: Text.ElideRight
-                                                            anchors.left: parent.left
-                                                            anchors.right: dismissBtn.left
-                                                            anchors.rightMargin: 4
-                                                            anchors.verticalCenter: parent.verticalCenter
-                                                            renderType: Text.NativeRendering
-                                                        }
+                                                    Text {
+                                                        text: modelData.summary
+                                                        color: Theme.fg
+                                                        font.family: Theme.fontFamily
+                                                        font.pixelSize: 7
+                                                        font.bold: true
+                                                        elide: Text.ElideRight
+                                                        anchors.left: parent.left
+                                                        anchors.right: dismissBtn.left
+                                                        anchors.rightMargin: 4
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        renderType: Text.NativeRendering
+                                                    }
 
-                                                        Text {
-                                                            id: dismissBtn
-                                                            anchors.right: parent.right
-                                                            anchors.verticalCenter: parent.verticalCenter
-                                                            text: "dismiss"
-                                                            color: Theme.primary
-                                                            font.family: Theme.fontFamily
-                                                            font.pixelSize: 7
-                                                            renderType: Text.NativeRendering
-                                                            MouseArea {
-                                                                anchors.fill: parent
-                                                                hoverEnabled: true
-                                                                onClicked: {
-                                                                    if (NotificationState.service) NotificationState.service.dismissNotification(index);
-                                                                    root.refreshRequested();
-                                                                }
+                                                    Text {
+                                                        id: dismissBtn
+                                                        anchors.right: parent.right
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        text: "dismiss"
+                                                        color: Theme.primary
+                                                        font.family: Theme.fontFamily
+                                                        font.pixelSize: 7
+                                                        renderType: Text.NativeRendering
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                            onClicked: {
+                                                                if (NotificationState.service && modelData)
+                                                                    NotificationState.service.dismissNotification(modelData.id);
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
+                                        }
+
+                                        Text {
+                                            id: descText
+                                            text: modelData.body
+                                            color: Theme.muted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 7
+                                            wrapMode: Text.Wrap
+                                            width: parent.width
+                                            elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
+                                            maximumLineCount: root.expandedNotifIds[modelData.id] ? 99 : 1
+                                            renderType: Text.NativeRendering
+                                        }
+
+                                        Item {
+                                            width: parent.width
+                                            height: 8
+                                            visible: modelData.body.length > 50 || modelData.body.includes("\n")
 
                                             Text {
-                                                id: descText
-                                                text: modelData.body
-                                                color: Theme.muted
-                                                font.family: Theme.fontFamily
-                                                font.pixelSize: 7
-                                                wrapMode: Text.Wrap
-                                                width: parent.width
-                                                elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
-                                                maximumLineCount: root.expandedNotifIds[modelData.id] ? 99 : 1
-                                                renderType: Text.NativeRendering
-                                            }
-
-                                            Item {
-                                                width: parent.width
-                                                height: 8
-                                                visible: modelData.body.length > 50 || modelData.body.includes("\n")
-
-                                                Text {
-                                                    anchors.right: parent.right
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: root.expandedNotifIds[modelData.id] ? "show less" : "show more"
-                                                    color: Theme.primary
-                                                    font.family: Theme.fontFamily
-                                                    font.pixelSize: 6
-                                                    font.bold: true
-                                                    renderType: Text.NativeRendering
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        onClicked: {
-                                                            var copy = Object.assign({}, root.expandedNotifIds);
-                                                            copy[modelData.id] = !copy[modelData.id];
-                                                            root.expandedNotifIds = copy;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            // History
-                            Column {
-                                width: parent.width
-                                spacing: 4
-
-                                Item {
-                                    width: parent.width
-                                    height: 12
-
-                                    Row {
-                                        id: historyTitleRow
-                                        anchors.left: parent.left
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        spacing: 3
-
-                                        Text {
-                                            text: root.historyExpanded ? "" : ""
-                                            color: Theme.primary
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 7
-                                            font.bold: true
-                                            opacity: 0.6
-                                            renderType: Text.NativeRendering
-                                        }
-
-                                        Text {
-                                            text: "History"
-                                            color: Theme.primary
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 7
-                                            font.bold: true
-                                            opacity: 0.6
-                                            renderType: Text.NativeRendering
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: historyTitleRow
-                                        onClicked: { root.historyExpanded = !root.historyExpanded; }
-                                    }
-
-                                    Text {
-                                        id: restoreBtn
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "Restore Last"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 7
-                                        renderType: Text.NativeRendering
-                                        visible: NotificationState.historyNotifs.length > 0
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            onClicked: {
-                                                Quickshell.execDetached(["makoctl", "restore"]);
-                                                root.refreshRequested();
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Column {
-                                    width: parent.width
-                                    spacing: 3
-                                    visible: root.historyExpanded
-
-                                    Text {
-                                        text: "No history"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 7
-                                        opacity: 0.4
-                                        visible: NotificationState.historyNotifs.length === 0
-                                    }
-
-                                    Repeater {
-                                        model: NotificationState.historyNotifs
-
-                                        delegate: Rectangle {
-                                            width: parent.width
-                                            height: histBoxCol.implicitHeight + 8
-                                            color: Theme.bg
-                                            border.width: 1
-                                            border.color: Theme.surfaceLighter
-                                            radius: 4
-
-                                            Column {
-                                                id: histBoxCol
-                                                anchors.top: parent.top
-                                                anchors.left: parent.left
                                                 anchors.right: parent.right
-                                                anchors.margins: 4
-                                                spacing: 2
-
-                                                Row {
-                                                    width: parent.width
-                                                    spacing: 6
-
-                                                    Text {
-                                                        text: modelData.app_name ? modelData.app_name.charAt(0).toUpperCase() : "N"
-                                                        color: Theme.muted
-                                                        font.family: Theme.fontFamily
-                                                        font.pixelSize: 8
-                                                        font.bold: true
-                                                    }
-
-                                                    Column {
-                                                        width: parent.width - 18
-                                                        spacing: 1
-
-                                                        Text {
-                                                            text: modelData.summary
-                                                            color: Theme.fg
-                                                            font.family: Theme.fontFamily
-                                                            font.pixelSize: 7
-                                                            font.bold: true
-                                                            elide: Text.ElideRight
-                                                            width: parent.width
-                                                            renderType: Text.NativeRendering
-                                                        }
-
-                                                        Text {
-                                                            text: modelData.body
-                                                            color: Theme.muted
-                                                            font.family: Theme.fontFamily
-                                                            font.pixelSize: 7
-                                                            wrapMode: Text.Wrap
-                                                            width: parent.width
-                                                            maximumLineCount: 1
-                                                            elide: Text.ElideRight
-                                                            renderType: Text.NativeRendering
-                                                        }
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: root.expandedNotifIds[modelData.id] ? "show less" : "show more"
+                                                color: Theme.primary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 6
+                                                font.bold: true
+                                                renderType: Text.NativeRendering
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    onClicked: {
+                                                        var copy = Object.assign({}, root.expandedNotifIds);
+                                                        copy[modelData.id] = !copy[modelData.id];
+                                                        root.expandedNotifIds = copy;
                                                     }
                                                 }
                                             }

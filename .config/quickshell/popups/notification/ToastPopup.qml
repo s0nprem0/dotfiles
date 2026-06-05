@@ -43,55 +43,64 @@ PanelWindow {
             model: NotificationState.toastModel
 
             delegate: Item {
+                id: toastDelegate
                 width: toastColumn.width - 8
                 height: toastCard.height
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                property real slideOffset: 0
-                property real cardOpacity: 0
-                readonly property int toastNotifId: model.notifId
-                property bool exiting: false
+                property real opacityValue: 1
+                property real scaleValue: 1
+                property bool closing: false
 
-                Component.onCompleted: {
-                    slideOffset = 80;
-                    cardOpacity = 0;
-                    introAnim.start();
+                Behavior on opacityValue {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                }
+                Behavior on scaleValue {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                 }
 
-                ParallelAnimation {
-                    id: introAnim
-                    NumberAnimation { target: parent; property: "slideOffset"; from: 80; to: 0; duration: 250; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: parent; property: "cardOpacity"; from: 0; to: 1; duration: 250; easing.type: Easing.OutCubic }
+                function close() {
+                    if (closing) return
+                    closing = true
+                    opacityValue = 0
+                    scaleValue = 0.8
+                    dismissTimer.stop()
+                    closeTimer.start()
                 }
 
-                ParallelAnimation {
-                    id: exitAnim
-                    onStopped: {
-                        if (NotificationState.service) {
-                            NotificationState.service.dismissToastById(toastNotifId);
-                        }
+                Timer {
+                    id: closeTimer
+                    interval: 200
+                    onTriggered: {
+                        if (NotificationState.service)
+                            NotificationState.service.dismissToast(index)
                     }
-                    NumberAnimation { target: parent; property: "slideOffset"; to: 80; duration: 200; easing.type: Easing.InCubic }
-                    NumberAnimation { target: parent; property: "cardOpacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
+                }
+
+                Timer {
+                    id: dismissTimer
+                    interval: model.expireTimeout > 0
+                        ? Math.min(model.expireTimeout, 8000)
+                        : model.urgency === 2 ? 8000 : 4000
+                    running: true
+                    onTriggered: close()
                 }
 
                 Rectangle {
                     id: toastCard
                     width: parent.width
-                    height: exiting ? cardLayout.implicitHeight + 20 : 0
+                    height: cardLayout.implicitHeight + 20
                     radius: 8
                     color: Theme.surface
                     border.color: borderColor
                     border.width: 1
                     clip: true
-
-                    transform: Translate { x: parent.slideOffset }
-                    opacity: parent.cardOpacity
+                    opacity: toastDelegate.opacityValue
+                    scale: toastDelegate.scaleValue
+                    transformOrigin: Item.Right
 
                     readonly property int urg: model.urgency
                     readonly property color borderColor: Qt.alpha(urgencyColor(urg), 0.4)
-
-                    Behavior on height { NumberAnimation { duration: 180 } }
 
                     Rectangle {
                         anchors.left: parent.left
@@ -99,20 +108,10 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         width: 3
                         radius: 2
-                        color: urgencyColor(toastCard.urg)
+                        color: urgencyColor(urg)
                         anchors.topMargin: 6
                         anchors.bottomMargin: 6
                         anchors.leftMargin: 3
-                    }
-
-                    Timer {
-                        id: dismissTimer
-                        interval: 5000
-                        running: !parent.exiting
-                        onTriggered: {
-                            parent.exiting = true
-                            exitAnim.start();
-                        }
                     }
 
                     RowLayout {
@@ -125,13 +124,13 @@ PanelWindow {
                             width: 28
                             height: 28
                             radius: 5
-                            color: Qt.alpha(urgencyColor(toastCard.urg), 0.12)
+                            color: Qt.alpha(urgencyColor(urg), 0.12)
                             Layout.alignment: Qt.AlignTop
 
                             Text {
                                 anchors.centerIn: parent
                                 text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
-                                color: urgencyColor(toastCard.urg)
+                                color: urgencyColor(urg)
                                 font.pixelSize: 12
                                 font.bold: true
                             }
@@ -171,6 +170,8 @@ PanelWindow {
                                 visible: text.length > 0
                                 Layout.fillWidth: true
                             }
+
+                            // Optional: action buttons (will add later)
                         }
 
                         Rectangle {
@@ -192,11 +193,7 @@ PanelWindow {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    dismissTimer.stop();
-                                    parent.exiting = true
-                                    exitAnim.start();
-                                }
+                                onClicked: close()
                             }
                         }
                     }
@@ -204,11 +201,7 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
-                        onClicked: {
-                            dismissTimer.stop();
-                            parent.exiting = true
-                            exitAnim.start();
-                        }
+                        onClicked: close()
                     }
                 }
             }
