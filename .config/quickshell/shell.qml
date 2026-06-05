@@ -119,7 +119,6 @@ PanelWindow {
     var comp = Qt.createComponent("popups/network_popup.qml")
     if (comp.status === Component.Ready) {
       NetState.popup = comp.createObject(root)
-      NetState.popup.visible = false
     }
   }
 }

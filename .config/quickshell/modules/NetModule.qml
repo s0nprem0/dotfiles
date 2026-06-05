@@ -1,3 +1,4 @@
+import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -7,60 +8,79 @@ import "../NetworkState.js" as NetState
 import "../components"
 
 BarModule {
-  id: root
+    id: root
 
-  implicitWidth: contentRow.implicitWidth + 12
+    implicitWidth: contentRow.implicitWidth + 24
 
-  property bool networkConnected: false
-  property string networkSsid: ""
+    property bool networkConnected: false
+    property string networkSsid: ""
+    property string networkBand: ""
 
-  DataModule {
-    path: Theme.bin("get_network_status")
-    interval: 10000
-    onDataReceived: function(j) {
-      root.networkConnected = j.connected
-      root.networkSsid = j.ssid
-    }
-  }
+    DataModule {
+        path: Theme.bin("get_network_status")
+        interval: 10000
 
-  Process { id: nmRunner }
-
-  acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-  Connections {
-    target: mA
-    function onClicked(mouse) {
-      if (mouse.button === Qt.RightButton) {
-        nmRunner.command = ["nm-connection-editor"]
-        nmRunner.running = true
-      } else if (NetState.popup) {
-        NetState.popup.visible = !NetState.popup.visible
-      }
-    }
-  }
-
-  tooltipText: root.networkConnected ? root.networkSsid : "Disconnected"
-
-  RowLayout {
-    id: contentRow
-    anchors.centerIn: parent
-    spacing: 4
-
-    Text {
-      id: netIcon
-      text: root.networkConnected ? "󰤨" : "󰤭"
-      color: root.networkConnected ? Theme.fg : Theme.muted
-      font.family: Theme.fontFamily
-      font.pixelSize: 12
+        onDataReceived: function(j) {
+            root.networkConnected = j.connected || false;
+            root.networkSsid = j.active_ssid || "";
+            root.networkBand = j.active_band || "";
+        }
     }
 
-    Text {
-      id: netLabel
-      text: root.networkConnected ? root.networkSsid : "Disconnected"
-      color: root.networkConnected ? Qt.alpha(Theme.fg, 0.7) : Theme.muted
-      font.family: Theme.fontFamily
-      font.pixelSize: 10
-      visible: text.length > 0
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+    Connections {
+        target: mA
+
+        function onClicked(mouse) {
+            if (mouse.button === Qt.RightButton) {
+                Quickshell.execDetached(["nm-connection-editor"]);
+            } else if (mouse.button === Qt.LeftButton) {
+                if (NetState.popup) {
+                    NetState.popup.showPopup = !NetState.popup.showPopup;
+                }
+            }
+        }
     }
-  }
+
+    tooltipText: {
+        if (!root.networkConnected)
+            return "Disconnected";
+
+        return root.networkBand.length > 0
+            ? root.networkSsid + " (" + root.networkBand + ")"
+            : root.networkSsid;
+    }
+
+    RowLayout {
+        id: contentRow
+
+        anchors.centerIn: parent
+        spacing: 4
+
+        Text {
+            text: root.networkConnected ? "󰤨" : "󰤭"
+            color: root.networkConnected ? Theme.fg : Theme.muted
+            font.family: Theme.fontFamily
+            font.pixelSize: 11
+        }
+
+        Text {
+            text: {
+                if (!root.networkConnected)
+                    return "Disconnected";
+
+                if (root.networkBand.length > 0)
+                    return root.networkSsid + " [" + root.networkBand + "]";
+
+                return root.networkSsid;
+            }
+
+            visible: text.length > 0
+            color: root.networkConnected ? Qt.alpha(Theme.fg, 0.7) : Theme.muted
+            font.family: Theme.fontFamily
+            font.pixelSize: 11
+            elide: Text.ElideRight
+        }
+    }
 }

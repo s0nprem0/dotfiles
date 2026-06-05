@@ -8,7 +8,7 @@ BarModule {
   id: root
 
   opacity: btEnabled ? 1.0 : 0.4
-  implicitWidth: 32
+  implicitWidth: btText.implicitWidth + 12
 
   property bool btEnabled: false
   property bool hasConnected: false
@@ -51,10 +51,11 @@ BarModule {
   tooltipText: root.btTooltip
 
   Text {
+    id: btText
     anchors.centerIn: parent
     text: root.hasConnected ? "󰂯" : "󰂲"
     color: root.hasConnected ? Theme.primary : Theme.muted
     font.family: Theme.fontFamily
-    font.pixelSize: 12
+    font.pixelSize: 11
   }
 }

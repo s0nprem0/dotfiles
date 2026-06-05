@@ -99,7 +99,7 @@ BarModule {
       }
       color: root.battCritical ? Theme.error : root.battWarning ? Theme.warning : (root.charging ? "#a6e3a1" : Theme.fg)
       font.family: Theme.fontFamily
-      font.pixelSize: 12
+      font.pixelSize: 11
     }
 
     Text {
@@ -107,7 +107,7 @@ BarModule {
       text: root.pct + "%"
       color: Qt.alpha(Theme.fg, 0.7)
       font.family: Theme.fontFamily
-      font.pixelSize: 10
+      font.pixelSize: 11
     }
   }
 }

@@ -1,523 +1,916 @@
-import Quickshell
-import Quickshell.Io
 import QtQuick
-import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
 
-PanelWindow {
-  id: window
-  exclusionMode: PanelWindow.ExclusionMode.Ignore
-  focusable: true
-  implicitWidth: 380
-  implicitHeight: 460
-  color: "transparent"
-  visible: false
+Scope {
+    id: root
 
-  anchors.right: true
-  anchors.top: true
-  margins.top: 44
-  margins.right: 12
+    property string homeDir: Quickshell.env("HOME")
 
-  IpcHandler {
-    target: "network_popup"
-    function toggle() { window.visible = !window.visible }
-  }
+    property bool showPopup: false
+    property bool dataLoaded: false
+    property int retryCount: 0
 
-  readonly property color _bg: "#1a1110"
-  readonly property color _fg: "#f1dfdb"
-  readonly property color _surface: "#271d1c"
-  readonly property color _surfaceLighter: "#3D2826"
-  readonly property color _primary: "#ffb4a7"
-  readonly property color _muted: "#66f1dfdb"
-  readonly property color _error: "#f38ba8"
-  readonly property color _warning: "#f9e2af"
-  readonly property color _green: "#A6DA95"
-  readonly property color _blue: "#8AADF4"
-
-  // ── State ──────────────────────────────────────────────
-  property var networkList: []
-  property var savedSsids: []
-  property string activeSsid: ""
-  property bool wifiEnabled: true
-  property bool scanning: false
-  property string pendingSsid: ""
-  property bool connecting: false
-
-  function signalIcon(s) {
-    if (s >= 80) return "󰤨"
-    if (s >= 60) return "󰤥"
-    if (s >= 40) return "󰤢"
-    if (s >= 20) return "󰤟"
-    return "󰤫"
-  }
-
-  function splitFields(line) {
-    var fields = []
-    var current = ""
-    var i = 0
-    while (i < line.length) {
-      if (line[i] === "\\" && i + 1 < line.length && line[i + 1] === ":") {
-        current += ":"
-        i += 2
-      } else if (line[i] === ":") {
-        fields.push(current)
-        current = ""
-        i++
-      } else {
-        current += line[i]
-        i++
-      }
-    }
-    fields.push(current)
-    return fields
-  }
-
-  function parseNetworks(text, saved) {
-    var list = []
-    var lines = text.trim().split("\n")
-    for (var i = 0; i < lines.length; i++) {
-      var parts = splitFields(lines[i])
-      if (parts.length < 6) continue
-      var ssid = parts[3]
-      if (!ssid) continue
-      var active = parts[0] === "yes"
-      var signal = parseInt(parts[1])
-      list.push({ ssid: ssid, signal: signal, active: active, saved: saved.indexOf(ssid) >= 0 })
-    }
-    var map = {}
-    for (var j = 0; j < list.length; j++) {
-      var n = list[j]
-      if (!map[n.ssid] || n.signal > map[n.ssid].signal || n.active)
-        map[n.ssid] = n
-    }
-    var result = []
-    for (var key in map) result.push(map[key])
-    result.sort(function(a, b) {
-      if (a.active && !b.active) return -1
-      if (!a.active && b.active) return 1
-      return b.signal - a.signal
+    // ── Network State ──────────────────────────────────────────────────────────
+    property bool wifiEnabled:    false
+    property bool airplaneMode:   false
+    property bool connected:      false
+    property string activeSsid:   ""
+    property int activeSignal:    0
+    property bool warpConnected:  false
+    property var details: ({
+        "ip_address": "", "gateway": "", "dns": "",
+        "subnet": "", "security": "", "bssid": ""
     })
-    activeSsid = result.length > 0 && result[0].active ? result[0].ssid : ""
-    return result
-  }
+    property var networks: []
+    property var vpns: []
+    property bool detailsExpanded: false
+    property string expandedNetworkSsid: ""
 
-  function fetchSaved() {
-    if (savedProc.running) return
-    savedProc.command = ["nmcli", "-g", "NAME", "connection", "show"]
-    savedProc.running = true
-  }
+    property string pendingSsid: ""
+    property bool connecting: false
+    property string errorMessage: ""
 
-  function doScan() {
-    if (scanProc.running) return
-    scanProc.command = ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w"]
-    scanProc.running = true
-  }
+    signal requestClose()
 
-  function scanWifi() {
-    if (scanning) return
-    scanning = true
-    fetchSaved()
-  }
-
-  function toggleWifi() {
-    Quickshell.execDetached(["nmcli", "radio", "wifi", wifiEnabled ? "off" : "on"])
-    doScanIfVisible()
-  }
-
-  function connectToNetwork(ssid) {
-    if (ssid === activeSsid || connecting || connectProc.running) return
-    connecting = true
-    pendingSsid = ""
-    connectProc.usePassword = false
-    connectProc.command = ["nmcli", "dev", "wifi", "connect", ssid]
-    connectProc.running = true
-  }
-
-  function submitPassword() {
-    var pwd = pwdInput.text
-    if (!pwd || !pendingSsid) return
-    connecting = true
-    connectProc.usePassword = true
-    connectProc.command = ["nmcli", "dev", "wifi", "connect", pendingSsid, "password", pwd]
-    connectProc.running = true
-    pwdDialog.visible = false
-    pwdInput.text = ""
-  }
-
-  function disconnectWifi() {
-    if (!activeSsid) return
-    Quickshell.execDetached(["nmcli", "connection", "down", "id", activeSsid])
-    doScanIfVisible()
-  }
-
-  // ── Saved Connections Process ──────────────────────────
-  Process {
-    id: savedProc
-    environment: ({ LANG: "C", LC_ALL: "C" })
-    stdout: StdioCollector {
-      onStreamFinished: function() {
-        savedSsids = savedProc.stdout.text.trim().split("\n").filter(function(s) { return !!s })
-        doScan()
-      }
+    // ── IPC ───────────────────────────────────────────────────────────────────
+    IpcHandler {
+        target: "network_popup"
+        function toggle() { root.requestClose(); }
     }
-  }
 
-  // ── Scan Process ───────────────────────────────────────
-  Process {
-    id: scanProc
-    environment: ({ LANG: "C", LC_ALL: "C" })
-    stdout: StdioCollector {
-      onStreamFinished: {
-        networkList = parseNetworks(scanProc.stdout.text, savedSsids)
-        scanning = false
-      }
+    // ── Theme ──────────────────────────────────────────────────────────────────
+    readonly property color _fg:            "#f1dfdb"
+    readonly property color _bg:            "#1a1110"
+    readonly property color _surface:       "#271d1c"
+    readonly property color _primary:       "#ffb4a7"
+    readonly property color _muted:         "#66f1dfdb"
+    readonly property color _error:         "#f38ba8"
+    readonly property color _green:         "#A6DA95"
+    readonly property color _blue:          "#8AADF4"
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    function showError(msg) {
+        root.errorMessage = msg.length > 80 ? msg.substring(0, 80) + "…" : msg;
+        errorTimer.restart();
     }
-  }
 
-  // ── Connect Process ────────────────────────────────────
-  Process {
-    id: connectProc
-    property bool usePassword: false
-    environment: ({ LANG: "C", LC_ALL: "C" })
-    stderr: StdioCollector {}
-    onExited: function(exitCode, exitStatus) {
-      connecting = false
-      if (exitCode !== 0 && !usePassword) {
-        var err = stderr.text
-        if (err.includes("Secrets were required") || err.includes("password")) {
-          pendingSsid = command[command.length - 1]
-          if (pendingSsid) {
-            pwdDialog.visible = true
-            pwdInput.forceActiveFocus()
-          }
-        }
-      }
-      scanWifi()
+    function triggerRefresh() {
+        refreshTimer.restart();
     }
-  }
 
-  // ── Polling Timer ──────────────────────────────────────
-  Timer {
-    id: pollTimer
-    interval: 5000
-    running: window.visible
-    repeat: true
-    onTriggered: { if (!scanning) scanWifi() }
-  }
+    function disconnectWifi() {
+        if (!root.activeSsid) return;
+        root.runAction(["nmcli", "connection", "down", "id", root.activeSsid]);
+    }
 
-  // ── Debounce: coalesce rapid triggers ──────────────────
-  property bool __needsScan
-  Timer {
-    id: debounce
-    interval: 300
-    repeat: false
-    onTriggered: { __needsScan = false; scanWifi() }
-  }
-  function doScanIfVisible() {
-    if (!window.visible) return
-    if (__needsScan) return
-    __needsScan = true
-    debounce.restart()
-  }
+    function connectToNetwork(ssid) {
+        if (ssid === root.activeSsid || root.connecting || connectProc.running) return;
+        root.connecting = true;
+        root.retryCount = 0;
+        root.pendingSsid = "";
+        connectProc.usePassword = false;
+        connectProc.command = ["nmcli", "dev", "wifi", "connect", ssid];
+        connectProc.running = true;
+    }
 
-  onVisibleChanged: {
-    pollTimer.running = window.visible
-    if (window.visible) doScanIfVisible()
-  }
+    function submitPassword(pwd) {
+        if (!pwd || pwd.trim() === "" || !root.pendingSsid) return;
+        root.connecting = true;
+        connectProc.usePassword = true;
+        connectProc.command = [
+            "nmcli", "dev", "wifi", "connect", root.pendingSsid,
+            "password", pwd
+        ];
+        connectProc.running = true;
+        root.pendingSsid = "";
+    }
 
-  // ── Background ─────────────────────────────────────────
-  Rectangle {
-    anchors.fill: parent
-    color: _bg
-    radius: 12
-    border.color: _surfaceLighter
-    border.width: 1
-    clip: true
-
-    ColumnLayout {
-      anchors.fill: parent
-      spacing: 0
-
-      // ── Header ─────────────────────────────────────────
-      Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 44
-        color: _surfaceLighter
-
-        Item {
-          anchors.fill: parent
-          anchors.leftMargin: 14
-          anchors.rightMargin: 8
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Wi-Fi"
-            color: _fg
-            font.pixelSize: 15
-            font.bold: true
-          }
-
-          Text {
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: "󰅖"
-            color: _muted
-            font.pixelSize: 16
-            MouseArea { anchors.fill: parent; onClicked: window.visible = false }
-          }
+    function runAction(cmdArray) {
+        if (actionProc.running) {
+            Quickshell.execDetached(cmdArray);
+            root.triggerRefresh();
+            return;
         }
-      }
+        actionProc.command = cmdArray;
+        actionProc.running = true;
+    }
 
-      // ── Status ─────────────────────────────────────────
-      Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 30
-        color: "transparent"
-
-        Item {
-          anchors.fill: parent
-          anchors.leftMargin: 14
-          anchors.rightMargin: 14
-
-          Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: connecting
-              ? "󱚼  Connecting..."
-              : activeSsid
-                ? "󰤨  " + activeSsid
-                : "󰤭  Disconnected"
-            color: activeSsid ? _fg : _muted
-            font.pixelSize: 11
-            elide: Text.ElideRight
-          }
+    // ── Status Helper Process (Rust binary) ───────────────────────────────────
+    Process {
+        id: checkStatusProc
+        command: [root.homeDir + "/.config/quickshell/helpers/get_network_status"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var data = JSON.parse(this.text);
+                    root.dataLoaded    = true;
+                    root.wifiEnabled   = data.wifi_enabled;
+                    root.airplaneMode  = data.airplane_mode;
+                    root.connected     = data.connected;
+                    root.activeSsid    = data.active_ssid  || "";
+                    root.activeSignal  = data.active_signal || 0;
+                    root.warpConnected = data.warp_connected || false;
+                    root.details       = data.details  || { ip_address:"", gateway:"", dns:"", subnet:"", security:"", bssid:"" };
+                    root.networks      = data.networks || [];
+                    root.vpns          = data.vpns     || [];
+                } catch (e) {
+                    console.log("Failed to parse network status: " + e);
+                }
+                root.dataLoaded = true;
+            }
         }
-      }
+    }
 
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: _surfaceLighter
-      }
+    // ── Generic Action Process (captures stderr, shows errors) ────────────────
+    Process {
+        id: actionProc
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stderr: StdioCollector {}
+        onExited: function(exitCode) {
+            if (exitCode !== 0) {
+                var err = actionProc.stderr.text.trim().replace(/^Error:\s*/i, "");
+                if (err.length > 0) root.showError(err);
+            }
+            root.triggerRefresh();
+        }
+    }
 
-      // ── Network List ───────────────────────────────────
-      Item {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        clip: true
+    // ── Connection Process (handles password prompts & retry) ─────────────────
+    Process {
+        id: connectProc
+        property bool usePassword: false
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stderr: StdioCollector {}
+        onExited: function(exitCode) {
+            root.connecting = false;
+            if (exitCode !== 0) {
+                var err = connectProc.stderr.text;
+                if (err.includes("Secrets were required") || err.includes("password")) {
+                    if (connectProc.usePassword) {
+                        root.showError("Connection failed. Wrong password?");
+                    } else {
+                        root.pendingSsid = connectProc.command[4];
+                    }
+                } else {
+                    root.showError("Failed to connect: " + err.trim().substring(0, 60));
+                    if (!connectProc.usePassword) {
+                        root.retryCount = 0;
+                        retryConnectTimer.start();
+                    }
+                }
+            }
+            root.triggerRefresh();
+        }
+    }
 
-        ListView {
-          id: listView
-          anchors.fill: parent
-          anchors.margins: 4
-          spacing: 1
-          model: networkList
+    Timer {
+        id: retryConnectTimer
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            if (root.retryCount < 3) {
+                root.retryCount++;
+                connectProc.running = true;
+            }
+        }
+    }
 
-          delegate: Rectangle {
-            width: listView.width - 8
-            height: 42
-            radius: 8
-            color: modelData.active ? _surfaceLighter : (mA.containsMouse ? _surfaceLighter : "transparent")
+    // ── Polling & Refresh Timers ──────────────────────────────────────────────
+    Timer {
+        id: refreshTimer
+        interval: 800
+        repeat: false
+        onTriggered: {
+            checkStatusProc.running = false;
+            checkStatusProc.running = true;
+        }
+    }
 
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: 10
-              anchors.rightMargin: 10
-              spacing: 8
+    Timer {
+        id: pollTimer
+        interval: 3000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: {
+            if (!checkStatusProc.running && !root.connecting)
+                checkStatusProc.running = true;
+        }
+    }
 
-              Text {
-                text: signalIcon(modelData.signal)
-                color: modelData.active ? _green : _fg
-                font.pixelSize: 16
-                Layout.preferredWidth: 22
-              }
+    Timer {
+        id: errorTimer
+        interval: 4000
+        repeat: false
+        onTriggered: root.errorMessage = ""
+    }
 
-              ColumnLayout {
-                spacing: 0
-                Layout.fillWidth: true
+    // ══════════════════════════════════════════════════════════════════════════
+    // Per-screen windows via Variants
+    // ══════════════════════════════════════════════════════════════════════════
+    Variants {
+        model: Quickshell.screens
+        delegate: Component {
+            PanelWindow {
+                id: win
+                required property var modelData
+                visible: false
 
-                RowLayout {
-                  spacing: 4
-                  Layout.fillWidth: true
+                property bool isClosing: false
+                property real animLeftMargin: -260
+                property real animOpacity: 0
 
-                  Text {
-                    text: modelData.ssid
-                    color: _fg
-                    font.pixelSize: 12
-                    font.bold: modelData.active
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                  }
-
-                  Text {
-                    visible: modelData.saved && !modelData.active
-                    text: "󰌉"
-                    color: _warning
-                    font.pixelSize: 10
-                  }
+                onShowPopupChanged: {
+                    if (root.showPopup) {
+                        exitAnim.stop();
+                        isClosing = false;
+                        animLeftMargin = -260;
+                        animOpacity = 0;
+                        root.triggerRefresh();
+                        win.visible = true;
+                        introAnim.start();
+                    } else if (!isClosing) {
+                        introAnim.stop();
+                        closePopup();
+                    }
                 }
 
-                Text {
-                  text: modelData.active ? "Connected" : modelData.saved ? "Saved" : ""
-                  color: modelData.active ? _green : _muted
-                  font.pixelSize: 10
+                function closePopup() {
+                    if (isClosing) return;
+                    isClosing = true;
+                    root.pendingSsid = "";
+                    root.detailsExpanded = false;
+                    root.expandedNetworkSsid = "";
+                    root.errorMessage = "";
+                    exitAnim.start();
                 }
-              }
 
-              Text {
-                text: modelData.signal + "%"
-                color: _muted
-                font.pixelSize: 10
-                Layout.preferredWidth: 30
-                horizontalAlignment: Text.AlignRight
-              }
-            }
+                screen: modelData
+                color: "transparent"
+                exclusionMode: PanelWindow.ExclusionMode.Ignore
+                focusable: true
+                implicitWidth: 240
+                implicitHeight: mainLayout.implicitHeight + 20
 
-            MouseArea {
-              id: mA
-              anchors.fill: parent
-              hoverEnabled: true
-              onClicked: connectToNetwork(modelData.ssid)
+                Component.onCompleted: { root.triggerRefresh(); }
+
+                Connections {
+                    target: root
+                    function onRequestClose() { win.closePopup(); }
+                }
+
+                anchors {
+                    bottom: true
+                    left: true
+                }
+
+                margins {
+                    bottom: 18
+                    left: win.animLeftMargin
+                }
+
+                // Slide-in + fade-in
+                ParallelAnimation {
+                    id: introAnim
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: -260; to: 32; duration: 120; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 120; easing.type: Easing.OutCubic }
+                }
+
+                // Slide-out + fade-out
+                ParallelAnimation {
+                    id: exitAnim
+                    onStopped: {
+                        win.visible = false;
+                        root.showPopup = false;
+                    }
+                    NumberAnimation { target: win; property: "animLeftMargin"; from: 32; to: -260; duration: 100; easing.type: Easing.InCubic }
+                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 100; easing.type: Easing.InCubic }
+                }
+
+                HyprlandFocusGrab {
+                    active: !win.isClosing
+                    windows: [win]
+                    onCleared: { win.closePopup(); }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    opacity: win.animOpacity
+                    color: root._bg
+                    border.width: 1
+                    border.color: root._primary
+                    radius: 0
+                    focus: true
+                    Keys.onPressed: (event) => {
+                        if (event.key === Qt.Key_Escape) win.closePopup();
+                    }
+                    Component.onCompleted: { forceActiveFocus(); }
+
+                    Column {
+                        id: mainLayout
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: 10
+                        spacing: 8
+
+                        // ── Section 1: Header ──────────────────────────────────
+                        Column {
+                            width: parent.width
+                            spacing: 2
+
+                            Text {
+                                text: root.connecting
+                                    ? "Connecting…"
+                                    : (root.connected ? "Wi-Fi Connected" : "Wi-Fi Disconnected")
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 10
+                                font.bold: true
+                                renderType: Text.NativeRendering
+                            }
+
+                            Column {
+                                width: parent.width
+                                spacing: 1
+                                visible: root.connected
+
+                                Text {
+                                    text: "SSID: " + root.activeSsid
+                                    color: root._fg
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 9
+                                    elide: Text.ElideRight
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Text {
+                                    text: "Signal: " + root.activeSignal + "%"
+                                    color: root._fg
+                                    opacity: 0.6
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 8
+                                    renderType: Text.NativeRendering
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: root._primary
+                            opacity: 0.15
+                        }
+
+                        // ── Section 2: Quick Toggles ───────────────────────────
+                        Row {
+                            spacing: 20
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            Text {
+                                text: "Wi-Fi: " + (root.wifiEnabled ? "On" : "Off")
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                font.bold: true
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.runAction(["nmcli", "radio", "wifi", root.wifiEnabled ? "off" : "on"])
+                                }
+                            }
+
+                            Text {
+                                text: "Airplane: " + (root.airplaneMode ? "On" : "Off")
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                font.bold: true
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.runAction(["rfkill", root.airplaneMode ? "unblock" : "block", "all"])
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: root._primary
+                            opacity: 0.15
+                        }
+
+                        // ── Section 3: Connection Details ──────────────────────
+                        Column {
+                            width: parent.width
+                            spacing: 4
+
+                            Rectangle {
+                                width: parent.width
+                                height: 14
+                                color: "transparent"
+
+                                Text {
+                                    text: "Details " + (root.detailsExpanded ? "▲" : "▼")
+                                    color: root._fg
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 9
+                                    font.bold: true
+                                    renderType: Text.NativeRendering
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: { root.detailsExpanded = !root.detailsExpanded; }
+                                }
+                            }
+
+                            Column {
+                                width: parent.width
+                                spacing: 2
+                                visible: root.detailsExpanded && root.connected
+
+                                Text { text: "  IP: " + root.details.ip_address; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Gateway: " + root.details.gateway; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Subnet: " + root.details.subnet; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  DNS: " + root.details.dns; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  BSSID: " + root.details.bssid; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                                Text { text: "  Security: " + root.details.security; color: root._fg; font.family: "FiraCode Nerd Font"; font.pixelSize: 8; renderType: Text.NativeRendering }
+                            }
+
+                            Text {
+                                text: "  No connection active"
+                                color: root._muted
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                                visible: root.detailsExpanded && !root.connected
+                            }
+                        }
+
+                        // ── Section 4: VPN ─────────────────────────────────────
+                        Column {
+                            width: parent.width
+                            spacing: 3
+
+                            Text {
+                                text: "VPN"
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                font.bold: true
+                                renderType: Text.NativeRendering
+                            }
+
+                            Rectangle {
+                                width: parent.width
+                                height: 16
+                                color: "transparent"
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "WARP: " + (root.warpConnected ? "Connected" : "Disconnected")
+                                    color: root._fg
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 8
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Text {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.warpConnected ? "disconnect" : "connect"
+                                    color: root._primary
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 8
+                                    renderType: Text.NativeRendering
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.runAction(root.warpConnected ? ["warp-cli", "disconnect"] : ["warp-cli", "connect"])
+                                    }
+                                }
+                            }
+
+                            Column {
+                                width: parent.width
+                                spacing: 2
+                                visible: root.vpns.length > 0
+
+                                Repeater {
+                                    model: root.vpns
+                                    delegate: Rectangle {
+                                        width: parent.width
+                                        height: 16
+                                        color: "transparent"
+
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.name + " (" + modelData.vpn_type + ")"
+                                            color: root._fg
+                                            font.family: "FiraCode Nerd Font"
+                                            font.pixelSize: 8
+                                            renderType: Text.NativeRendering
+                                        }
+
+                                        Text {
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.active ? "disconnect" : "connect"
+                                            color: root._primary
+                                            font.family: "FiraCode Nerd Font"
+                                            font.pixelSize: 8
+                                            renderType: Text.NativeRendering
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    root.runAction(modelData.active
+                                                        ? ["nmcli", "connection", "down", modelData.name]
+                                                        : ["nmcli", "connection", "up", modelData.name]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text {
+                                text: "  Disabled"
+                                color: root._muted
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                                visible: root.vpns.length === 0 && !root.warpConnected
+                            }
+                        }
+
+                        // ── Section 5: Scanned Network List ────────────────────
+                        Column {
+                            width: parent.width
+                            spacing: 3
+
+                            Text {
+                                text: "WiFi Networks"
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                font.bold: true
+                                renderType: Text.NativeRendering
+                            }
+
+                            Text {
+                                visible: !root.dataLoaded || (root.networks.length === 0 && checkStatusProc.running)
+                                text: "Scanning…"
+                                color: root._muted
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                            }
+
+                            Text {
+                                visible: root.dataLoaded && root.networks.length === 0 && !checkStatusProc.running && root.wifiEnabled
+                                text: "No networks found"
+                                color: root._muted
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                            }
+
+                            Text {
+                                visible: root.dataLoaded && !root.wifiEnabled
+                                text: "Wi-Fi is off"
+                                color: root._muted
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                            }
+
+                            Column {
+                                width: parent.width
+                                spacing: 3
+
+                                Repeater {
+                                    model: root.networks
+
+                                    delegate: Column {
+                                        width: parent.width
+                                        spacing: 2
+
+                                        Rectangle {
+                                            width: parent.width
+                                            height: 16
+                                            color: "transparent"
+
+                                            Row {
+                                                anchors.left: parent.left
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                spacing: 4
+
+                                                Text {
+                                                    text: (modelData.active ? "* " : "  ") + modelData.ssid
+                                                    color: root._fg
+                                                    font.family: "FiraCode Nerd Font"
+                                                    font.pixelSize: 8
+                                                    font.bold: modelData.active
+                                                    elide: Text.ElideRight
+                                                    width: 140
+                                                    renderType: Text.NativeRendering
+                                                }
+                                            }
+
+                                            Text {
+                                                anchors.right: parent.right
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                textFormat: Text.RichText
+                                                text: {
+                                                    var bars = Math.round(modelData.signal / 20);
+                                                    var on  = "#f1dfdb", off = "#271d1c", s = "";
+                                                    for (var i = 0; i < 5; i++)
+                                                        s += "<font color='" + (i < bars ? on : off) + "'>█</font>";
+                                                    return s;
+                                                }
+                                                font.family: "FiraCode Nerd Font"
+                                                font.pixelSize: 8
+                                                renderType: Text.NativeRendering
+                                            }
+
+                                            MouseArea {
+                                                id: ssidMa
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                property bool dblClicked: false
+                                                onClicked: {
+                                                    dblClicked = false;
+                                                    clickTimer.start();
+                                                }
+                                                onDoubleClicked: {
+                                                    dblClicked = true;
+                                                    clickTimer.stop();
+                                                    root.connectToNetwork(modelData.ssid);
+                                                }
+                                            }
+
+                                            Timer {
+                                                id: clickTimer
+                                                interval: 250
+                                                repeat: false
+                                                onTriggered: {
+                                                    if (ssidMa.dblClicked) return;
+                                                    root.expandedNetworkSsid =
+                                                        (root.expandedNetworkSsid === modelData.ssid)
+                                                            ? "" : modelData.ssid;
+                                                }
+                                            }
+                                        }
+
+                                        Column {
+                                            width: parent.width
+                                            spacing: 2
+                                            visible: root.expandedNetworkSsid === modelData.ssid
+
+                                            Row {
+                                                spacing: 10
+                                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                                Text {
+                                                    text: modelData.active ? "Disconnect" : "Connect"
+                                                    color: root._primary
+                                                    font.family: "FiraCode Nerd Font"
+                                                    font.pixelSize: 8
+                                                    renderType: Text.NativeRendering
+
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            if (modelData.active)
+                                                                root.runAction(["nmcli", "connection", "down", "id", modelData.ssid]);
+                                                            else
+                                                                root.connectToNetwork(modelData.ssid);
+                                                            root.expandedNetworkSsid = "";
+                                                        }
+                                                    }
+                                                }
+
+                                                Text {
+                                                    text: "Forget"
+                                                    color: root._error
+                                                    font.family: "FiraCode Nerd Font"
+                                                    font.pixelSize: 8
+                                                    renderType: Text.NativeRendering
+
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            root.runAction(["nmcli", "connection", "delete", modelData.ssid]);
+                                                            root.expandedNetworkSsid = "";
+                                                        }
+                                                    }
+                                                }
+
+                                                Text {
+                                                    text: "Auto: " + (modelData.autoconnect ? "On" : "Off")
+                                                    color: root._fg
+                                                    font.family: "FiraCode Nerd Font"
+                                                    font.pixelSize: 8
+                                                    renderType: Text.NativeRendering
+
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            var val = modelData.autoconnect ? "no" : "yes";
+                                                            root.runAction(["nmcli", "connection", "modify", modelData.ssid, "connection.autoconnect", val]);
+                                                            root.expandedNetworkSsid = "";
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                anchors.horizontalCenter: parent.horizontalCenter
+                                                text: "Security: " + modelData.security + " | Rate: " + modelData.rate
+                                                color: root._muted
+                                                font.family: "FiraCode Nerd Font"
+                                                font.pixelSize: 7
+                                                renderType: Text.NativeRendering
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Section 6: Footer Actions ──────────────────────────
+                        Row {
+                            spacing: 20
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            Text {
+                                text: "Settings"
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        Quickshell.execDetached(["hyprctl", "dispatch", "exec", "[float;size 55% 65%;center] ghostty --title=impala -e impala"]);
+                                        win.closePopup();
+                                    }
+                                }
+                            }
+
+                            Text {
+                                text: "Restart Wi-Fi"
+                                color: root._fg
+                                font.family: "FiraCode Nerd Font"
+                                font.pixelSize: 9
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        Quickshell.execDetached(["nmcli", "radio", "wifi", "off"]);
+                                        Quickshell.execDetached(["sh", "-c", "sleep 0.5 && nmcli radio wifi on"]);
+                                        root.triggerRefresh();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Error Toast ────────────────────────────────────────────
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 10
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width - 20
+                        height: Math.max(28, errText.implicitHeight + 10)
+                        color: root._error
+                        radius: 6
+                        opacity: root.errorMessage !== "" ? 1 : 0
+                        visible: opacity > 0
+                        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+
+                        Text {
+                            id: errText
+                            anchors.centerIn: parent
+                            text: root.errorMessage
+                            color: root._bg
+                            font.pixelSize: 10
+                            font.bold: true
+                            renderType: Text.NativeRendering
+                        }
+                        MouseArea { anchors.fill: parent; onClicked: root.errorMessage = "" }
+                    }
+
+                    // ── Inline Password Dialog ─────────────────────────────────
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(0.1, 0.06, 0.06, 0.88)
+                        visible: root.pendingSsid !== ""
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: parent.width - 24; height: 148
+                            radius: 8; color: root._surface
+                            border.color: root._primary; border.width: 1
+
+                            Column {
+                                anchors.fill: parent; anchors.margins: 14; spacing: 10
+
+                                Text {
+                                    text: "Password for " + root.pendingSsid
+                                    color: root._fg
+                                    font.family: "FiraCode Nerd Font"
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                    width: parent.width
+                                }
+
+                                Rectangle {
+                                    width: parent.width; height: 34
+                                    color: root._bg
+                                    radius: 5
+                                    border.color: pwdInput.activeFocus ? root._primary : root._surface
+                                    border.width: 1
+
+                                    TextInput {
+                                        id: pwdInput
+                                        anchors.fill: parent; anchors.margins: 8
+                                        color: root._fg
+                                        font.family: "FiraCode Nerd Font"
+                                        font.pixelSize: 12
+                                        echoMode: TextInput.Password
+                                        focus: root.pendingSsid !== ""
+                                        onVisibleChanged: if (visible) forceActiveFocus()
+                                        onAccepted: { root.submitPassword(text); text = ""; }
+                                        Keys.onEscapePressed: { root.pendingSsid = ""; text = ""; }
+                                    }
+                                }
+
+                                Row {
+                                    spacing: 14
+                                    anchors.right: parent.right
+
+                                    Text {
+                                        text: "Cancel"
+                                        color: root._muted
+                                        font.family: "FiraCode Nerd Font"
+                                        font.pixelSize: 11
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: { root.pendingSsid = ""; pwdInput.text = ""; }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        width: 64; height: 28
+                                        radius: 5; color: root._blue
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "Connect"
+                                            color: root._bg
+                                            font.family: "FiraCode Nerd Font"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: { root.submitPassword(pwdInput.text); pwdInput.text = ""; }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-          }
         }
-
-        Text {
-          anchors.centerIn: parent
-          visible: networkList.length === 0 && !scanning
-          text: "󰤭  No networks found"
-          color: _muted
-          font.pixelSize: 13
-        }
-
-        Text {
-          anchors.centerIn: parent
-          visible: scanning && networkList.length === 0
-          text: "󰔄  Scanning..."
-          color: _muted
-          font.pixelSize: 13
-        }
-      }
-
-      // ── Footer ─────────────────────────────────────────
-      Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 36
-        color: _surfaceLighter
-
-        Item {
-          anchors.fill: parent
-          anchors.leftMargin: 14
-          anchors.rightMargin: 14
-
-          RowLayout {
-            anchors.fill: parent
-            spacing: 12
-
-            Text {
-              visible: !!activeSsid
-              text: "󰤨  Disconnect"
-              color: _error
-              font.pixelSize: 11
-              MouseArea { anchors.fill: parent; onClicked: disconnectWifi() }
-            }
-
-            Item { Layout.fillWidth: true }
-
-            Text {
-              text: "󰖪  Turn Off"
-              color: _blue
-              font.pixelSize: 11
-              MouseArea { anchors.fill: parent; onClicked: toggleWifi() }
-            }
-
-            Text {
-              text: "󰒅  Refresh"
-              color: _muted
-              font.pixelSize: 11
-              MouseArea { anchors.fill: parent; onClicked: scanWifi() }
-            }
-          }
-        }
-      }
     }
-  }
-
-  // ── Password Dialog ────────────────────────────────────
-  Rectangle {
-    id: pwdDialog
-    anchors.fill: parent
-    color: Qt.rgba(0, 0, 0, 0.7)
-    visible: false
-    radius: 12
-
-    Rectangle {
-      anchors.centerIn: parent
-      width: parent.width - 48
-      height: 140
-      radius: 10
-      color: _surfaceLighter
-      border.color: _muted
-
-      ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
-
-        Text {
-          text: "Password for " + pendingSsid
-          color: _fg
-          font.pixelSize: 13
-          elide: Text.ElideRight
-        }
-
-        Rectangle {
-          Layout.fillWidth: true
-          height: 34
-          color: _bg
-          radius: 6
-          border.color: _muted
-
-          TextInput {
-            id: pwdInput
-            anchors.fill: parent
-            anchors.margins: 8
-            color: _fg
-            font.pixelSize: 13
-            echoMode: TextInput.Password
-            focus: true
-            Keys.onReturnPressed: submitPassword()
-            Keys.onEscapePressed: { pwdDialog.visible = false; pendingSsid = ""; text = "" }
-          }
-        }
-
-        RowLayout {
-          Layout.alignment: Qt.AlignRight
-          spacing: 12
-
-          Text {
-            text: "Cancel"
-            color: _muted
-            font.pixelSize: 12
-            MouseArea {
-              anchors.fill: parent
-              onClicked: { pwdDialog.visible = false; pendingSsid = ""; pwdInput.text = "" }
-            }
-          }
-
-          Text {
-            text: "Connect"
-            color: _blue
-            font.pixelSize: 12
-            font.bold: true
-            MouseArea { anchors.fill: parent; onClicked: submitPassword() }
-          }
-        }
-      }
-    }
-  }
-
-  Item {
-    focus: true
-    Keys.onEscapePressed: window.visible = false
-    Component.onCompleted: { scanWifi(); forceActiveFocus() }
-  }
 }

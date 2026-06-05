@@ -1,27 +1,15 @@
-import Quickshell.Io
 import QtQuick
 
 import "../Theme.js" as Theme
+import "../NotificationState.js" as State
 import "../components"
 
 BarModule {
   id: root
 
-  implicitWidth: 32
+  implicitWidth: notifText.implicitWidth + 12
 
-  property int count: 0
-  property bool dnd: false
-
-  DataModule {
-    path: Theme.bin("get_notif_status")
-    interval: 2000
-    onDataReceived: function(j) {
-      root.count = j.count
-      root.dnd = j.dnd
-    }
-  }
-
-  Process { id: notifRunner }
+  property int notifCount: State.server ? State.server.trackedNotifications.count : 0
 
   acceptedButtons: Qt.LeftButton | Qt.RightButton
 
@@ -29,26 +17,25 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        notifRunner.command = ["swaync-client", "--toggle-dnd"]
-        notifRunner.running = true
+        State.service.toggleDnd()
       } else {
-        notifRunner.command = ["swaync-client", "--toggle-panel"]
-        notifRunner.running = true
+        State.centerPopup.visible = !State.centerPopup.visible
       }
     }
   }
 
-  tooltipText: root.dnd ? "Do Not Disturb" : (root.count > 0 ? root.count + " notification(s)" : "No notifications")
+  tooltipText: State.dnd ? "Do Not Disturb" : (notifCount > 0 ? notifCount + " notification(s)" : "No notifications")
 
   Text {
+    id: notifText
     anchors.centerIn: parent
     text: {
-      if (root.dnd) return "󰂛"
-      if (root.count > 0) return "󰂚"
+      if (State.dnd) return "󰂛"
+      if (notifCount > 0) return "󰂚"
       return "󰂜"
     }
-    color: root.dnd ? Theme.muted : (root.count > 0 ? Theme.primary : Theme.fg)
+    color: State.dnd ? Theme.muted : (notifCount > 0 ? Theme.primary : Theme.fg)
     font.family: Theme.fontFamily
-    font.pixelSize: 12
+    font.pixelSize: 11
   }
 }
