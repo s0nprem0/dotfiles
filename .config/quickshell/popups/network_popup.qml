@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import Quickshell.Ipc
 import ".."
 
 Scope {
@@ -19,6 +18,7 @@ Scope {
     property string activeSsid:   ""
     property int activeSignal:    0
     property bool warpConnected:  false
+    property bool warpAvailable:  false
     property var details: ({
         "ip_address": "", "gateway": "", "dns": "",
         "subnet": "", "security": "", "bssid": ""
@@ -33,14 +33,6 @@ Scope {
     property string errorMessage: ""
     property var networkData: NetworkState.networkData
 
-    signal requestClose()
-
-    // ── IPC ───────────────────────────────────────────────────────────────────
-    IpcHandler {
-        target: "network_popup"
-        function toggle() { root.requestClose(); }
-    }
-
     // ── Theme (imported from Theme.js) ──────────────────────────────────────────
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -51,7 +43,7 @@ Scope {
     }
 
     function triggerRefresh() {
-        if (NetworkState.refreshNetworkData) NetworkState.refreshNetworkData();
+        NetworkState.refreshRequested();
     }
 
     function disconnectWifi() {
@@ -102,6 +94,7 @@ Scope {
         root.activeSsid    = data.active_ssid  || "";
         root.activeSignal  = data.active_signal || 0;
         root.warpConnected = data.warp_connected || false;
+        root.warpAvailable = data.warp_available || false;
         root.details       = data.details  || { ip_address:"", gateway:"", dns:"", subnet:"", security:"", bssid:"" };
         root.networks      = data.networks || [];
         root.vpns          = data.vpns     || [];
@@ -217,11 +210,6 @@ Scope {
                 implicitHeight: mainLayout.implicitHeight + 20
 
                 Component.onCompleted: { root.triggerRefresh(); }
-
-                Connections {
-                    target: root
-                    function onRequestClose() { win.closePopup(); }
-                }
 
                 anchors {
                     top: true
@@ -433,6 +421,7 @@ Scope {
                             }
 
                             Rectangle {
+                                visible: root.warpAvailable
                                 width: parent.width
                                 height: 16
                                 color: "transparent"
@@ -515,7 +504,7 @@ Scope {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 14
                                 renderType: Text.NativeRendering
-                                visible: root.vpns.length === 0 && !root.warpConnected
+                                visible: root.vpns.length === 0 && !(root.warpAvailable && root.warpConnected)
                             }
                         }
 
@@ -534,7 +523,7 @@ Scope {
                             }
 
                             Text {
-                                visible: !root.dataLoaded || (root.networks.length === 0 && checkStatusProc.running)
+                                visible: !root.dataLoaded
                                 text: "Scanning…"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
@@ -543,7 +532,7 @@ Scope {
                             }
 
                             Text {
-                                visible: root.dataLoaded && root.networks.length === 0 && !checkStatusProc.running && root.wifiEnabled
+                                visible: root.dataLoaded && root.networks.length === 0 && root.wifiEnabled
                                 text: "No networks found"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily

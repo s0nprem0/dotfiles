@@ -31,7 +31,8 @@ BarModule {
     }
   }
 
-  Process { id: btRunner }
+  Process { id: btToggle }
+  Process { id: btLauncher }
 
   acceptedButtons: Qt.LeftButton | Qt.RightButton
 
@@ -39,11 +40,11 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        btRunner.command = [Theme.config("rofi/scripts/bluetooth-manager")]
-        btRunner.running = true
+        btLauncher.command = [Theme.config("rofi/scripts/bluetooth-manager")]
+        btLauncher.running = true
       } else {
-        btRunner.command = ["bluetoothctl", "power", root.btEnabled ? "off" : "on"]
-        btRunner.running = true
+        btToggle.command = ["bluetoothctl", "power", root.btEnabled ? "off" : "on"]
+        btToggle.running = true
       }
     }
   }

@@ -23,7 +23,8 @@ BarModule {
     }
   }
 
-  Process { id: runner }
+  Process { id: audioAction }
+  Process { id: audioGui }
 
   acceptedButtons: Qt.LeftButton | Qt.RightButton
 
@@ -31,25 +32,25 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        runner.command = ["pavucontrol"]
-        runner.running = true
+        audioGui.command = ["pavucontrol"]
+        audioGui.running = true
       } else {
-        runner.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
-        runner.running = true
+        audioAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
+        audioAction.running = true
       }
     }
     function onWheel(wheel) {
-      runner.command = wheel.angleDelta.y > 0
+      audioAction.command = wheel.angleDelta.y > 0
         ? ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", "5%+"]
         : ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"]
-      runner.running = true
+      audioAction.running = true
     }
   }
 
   Connections {
-    target: runner
+    target: audioAction
     function onRunningChanged() {
-      if (!runner.running) audioData.refresh()
+      if (!audioAction.running) audioData.refresh()
     }
   }
 

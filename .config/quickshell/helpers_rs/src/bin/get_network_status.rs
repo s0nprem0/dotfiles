@@ -41,6 +41,7 @@ struct NetworkStatus {
     active_band: String,
     active_speed: String,
     warp_connected: bool,
+    warp_available: bool,
     details: ConnectionDetails,
     networks: Vec<WifiNetwork>,
     vpns: Vec<VpnConnection>,
@@ -331,8 +332,10 @@ fn main() {
     }
 
     // 4. Check WARP status
-    let warp_out = run_cmd("warp-cli", &["status"]).unwrap_or_default();
-    let warp_connected = warp_out
+    let warp_out = run_cmd("warp-cli", &["status"]);
+    let warp_available = warp_out.is_some();
+    let warp_out = warp_out.unwrap_or_default();
+    let warp_connected = warp_available && warp_out
         .lines()
         .any(|l| l.to_lowercase().contains("status update: connected"));
 
@@ -345,6 +348,7 @@ fn main() {
         active_band,
         active_speed,
         warp_connected,
+        warp_available,
         details,
         networks,
         vpns,
