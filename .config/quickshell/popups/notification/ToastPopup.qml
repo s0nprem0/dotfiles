@@ -175,7 +175,6 @@ PanelWindow {
                                 Layout.fillWidth: true
                             }
 
-                            // Optional: action buttons (will add later)
                         }
 
                         Rectangle {

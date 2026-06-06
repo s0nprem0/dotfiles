@@ -1,6 +1,4 @@
-import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Services.SystemTray
 import QtQuick
 import QtQuick.Layouts
 
@@ -46,14 +44,6 @@ Bar {
 
         Item { Layout.fillWidth: true }
 
-        Item {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
-            implicitWidth: 1
-        }
-
-        Item { Layout.fillWidth: true }
-
         // RIGHT
         RowLayout {
             spacing: 3
@@ -86,8 +76,6 @@ Bar {
     }
 
     Component.onCompleted: {
-        NotificationState.service = notifService
         NotificationState.centerPopup = centerPopup
-        NotificationState.networkPopup = networkPopup
     }
 }
