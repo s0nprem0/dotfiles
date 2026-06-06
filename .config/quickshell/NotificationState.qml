@@ -4,7 +4,6 @@ import QtQuick
 QtObject {
     id: root
 
-    property bool historyExpanded: false
     property bool dnd: false
     property var expandedNotifIds: ({})
     property var toastModel: ListModel {}

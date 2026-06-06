@@ -21,8 +21,6 @@ Item {
     property bool btEnabled: false
     property bool wifiEnabled: false
     property bool audioMuted: false
-    property bool glassEnabled: true
-
     // ─── Clock Timer ────────────────────────────────────────────────
     Timer {
         interval: 1000
@@ -371,13 +369,43 @@ Item {
                             width: parent.width
                             spacing: 8
 
-                            Text {
-                                text: "Active"
-                                color: Theme.primary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 10
-                                font.bold: true
-                                opacity: 0.6
+                            RowLayout {
+                                width: parent.width
+                                spacing: 8
+                                Text {
+                                    text: "Active"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                    font.bold: true
+                                    opacity: 0.6
+                                }
+                                Item { Layout.fillWidth: true }
+                                Text {
+                                    text: "🔇 DND"
+                                    color: Theme.error
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 9
+                                    font.bold: true
+                                    visible: NotificationState.dnd
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: { if (NotificationState.service) NotificationState.service.toggleDnd() }
+                                    }
+                                }
+                                Text {
+                                    text: "Clear All"
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 9
+                                    visible: NotificationState.server && NotificationState.server.trackedNotifications.count > 0
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: { if (NotificationState.service) NotificationState.service.clearAll() }
+                                    }
+                                }
                             }
 
                             ScrollView {
@@ -400,6 +428,7 @@ Item {
                                             border.width: 1
                                             border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
                                             radius: 0
+                                            property var notif: modelData
 
                                             Column {
                                                 id: notifContent
@@ -464,6 +493,40 @@ Item {
                                                     width: parent.width
                                                     elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
                                                     maximumLineCount: root.expandedNotifIds[modelData.id] ? 6 : 2
+                                                }
+
+                                                Row {
+                                                    width: parent.width
+                                                    spacing: 6
+                                                    visible: modelData.actions && modelData.actions.count > 0
+                                                    Repeater {
+                                                        model: modelData.actions
+                                                        delegate: Rectangle {
+                                                            required property var modelData
+                                                            height: 18
+                                                            width: actLabel.implicitWidth + 10
+                                                            color: Theme.surfaceLighter
+                                                            radius: 3
+                                                            border.width: 1
+                                                            border.color: Qt.alpha(Theme.primary, 0.2)
+                                                            Text {
+                                                                id: actLabel
+                                                                anchors.centerIn: parent
+                                                                text: modelData.label || "unknown"
+                                                                color: Theme.fg
+                                                                font.family: Theme.fontFamily
+                                                                font.pixelSize: 8
+                                                            }
+                                                            MouseArea {
+                                                                anchors.fill: parent
+                                                                cursorShape: Qt.PointingHandCursor
+                                                                onClicked: {
+                                                                    if (typeof notif.invoke === "function")
+                                                                        notif.invoke(modelData.id)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 }
 
                                                 Item {
