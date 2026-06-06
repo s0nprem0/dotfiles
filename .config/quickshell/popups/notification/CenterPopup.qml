@@ -422,11 +422,13 @@ Item {
                                     spacing: 8
 
                                     Repeater {
-                                        model: NotificationState.service ? NotificationState.service.notifList : []
+                                        model: ScriptModel {
+                                            values: NotificationState.service ? NotificationState.service.notifList.filter(n => !n.closed) : []
+                                        }
                                         delegate: Rectangle {
                                             required property var modelData
                                             width: parent.width
-                                            height: modelData.closed ? 0 : notifContent.implicitHeight + 12
+                                            height: notifContent.implicitHeight + 12
                                             clip: true
                                             color: Theme.surface
                                             border.width: 1
@@ -493,10 +495,12 @@ Item {
                                                     color: Theme.muted
                                                     font.family: Theme.fontFamily
                                                     font.pixelSize: 9
+                                                    textFormat: Text.StyledText
                                                     wrapMode: Text.Wrap
                                                     width: parent.width
                                                     elide: root.expandedNotifIds[notif.id] ? Text.ElideNone : Text.ElideRight
                                                     maximumLineCount: root.expandedNotifIds[notif.id] ? 6 : 2
+                                                    onLinkActivated: (link) => Qt.openUrlExternally(link)
                                                 }
 
                                                 Row {

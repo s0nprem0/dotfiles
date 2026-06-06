@@ -168,11 +168,13 @@ PanelWindow {
                                 color: Qt.alpha(Theme.fg, 0.7)
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
+                                textFormat: Text.StyledText
                                 elide: Text.ElideRight
                                 wrapMode: Text.Wrap
                                 maximumLineCount: 2
                                 visible: text.length > 0
                                 Layout.fillWidth: true
+                                onLinkActivated: (link) => Qt.openUrlExternally(link)
                             }
 
                         }

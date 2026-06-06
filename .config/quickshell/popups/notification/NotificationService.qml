@@ -25,6 +25,8 @@ Item {
         id: notifServer
         keepOnReload: true
         actionsSupported: true
+        bodyMarkupSupported: true
+        bodyHyperlinksSupported: true
 
         onNotification: (notification) => {
             var data = notifDataComp.createObject(service, {
@@ -66,6 +68,8 @@ Item {
         var n = findNotification(id)
         if (n) {
             n.close()
+            service.dismissToastById(id)
+            service.notifList = service.notifList.slice()
             service.recalcTrackedCount()
         }
     }
@@ -89,6 +93,7 @@ Item {
         if (item && item.notifData)
             item.notifData.close()
         toastModel.remove(index, 1)
+        service.notifList = service.notifList.slice()
         service.recalcTrackedCount()
     }
 
@@ -98,6 +103,7 @@ Item {
             if (item.notifId === id) {
                 if (item.notifData) item.notifData.close()
                 toastModel.remove(i, 1)
+                service.notifList = service.notifList.slice()
                 service.recalcTrackedCount()
                 return
             }
