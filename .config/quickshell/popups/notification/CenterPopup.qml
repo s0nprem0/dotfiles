@@ -347,7 +347,7 @@ Item {
                                 }
                                 Item { width: 1; height: 4 }
                                 Text {
-                                    text: root.uptimeStr.replace("UP ", "")
+                                    text: root.uptimeStr.replace(/^up /i, "")
                                     color: Theme.primary
                                     opacity: 0.75
                                     font.family: Theme.fontFamily
