@@ -11,6 +11,14 @@ Item {
     property bool dnd: false
     property var toastModel: ListModel { id: toastModel }
     property int maxToasts: 5
+    property int trackedCount: 0
+
+    Binding {
+        target: service
+        property: "trackedCount"
+        value: notifServer.trackedNotifications ? notifServer.trackedNotifications.count : 0
+        when: notifServer && notifServer.trackedNotifications
+    }
 
     // Reference to the server
     property alias server: notifServer
@@ -18,6 +26,7 @@ Item {
     NotificationServer {
         id: notifServer
         keepOnReload: true
+        actionsSupported: true
 
         // When a notification arrives
         onNotification: (notification) => {

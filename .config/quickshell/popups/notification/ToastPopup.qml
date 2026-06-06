@@ -100,7 +100,7 @@ PanelWindow {
                     transformOrigin: Item.Right
 
                     readonly property int urg: model.urgency
-                    readonly property color borderColor: Qt.alpha(urgencyColor(urg), 0.4)
+                    readonly property color borderColor: Qt.alpha(urgencyColor(toastCard.urg), 0.4)
 
                     Rectangle {
                         anchors.left: parent.left
@@ -108,7 +108,7 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         width: 3
                         radius: 2
-                        color: urgencyColor(urg)
+                        color: urgencyColor(toastCard.urg)
                         anchors.topMargin: 6
                         anchors.bottomMargin: 6
                         anchors.leftMargin: 3
@@ -124,13 +124,13 @@ PanelWindow {
                             width: 28
                             height: 28
                             radius: 5
-                            color: Qt.alpha(urgencyColor(urg), 0.12)
+                            color: Qt.alpha(urgencyColor(toastCard.urg), 0.12)
                             Layout.alignment: Qt.AlignTop
 
                             Text {
                                 anchors.centerIn: parent
                                 text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
-                                color: urgencyColor(urg)
+                                color: urgencyColor(toastCard.urg)
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 12
                                 font.bold: true

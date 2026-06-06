@@ -42,9 +42,11 @@ Item {
     Process {
         id: uptimeProc
         command: ["uptime", "-p"]
-        onExited: function(exitCode) {
-            if (exitCode === 0 && uptimeProc.stdout.text)
-                root.uptimeStr = uptimeProc.stdout.text.trim()
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (this.text)
+                    root.uptimeStr = this.text.trim()
+            }
         }
     }
     Timer {
@@ -67,10 +69,10 @@ Item {
     Process {
         id: audioProc
         command: [Theme.helperDir + "/get_audio_status"]
-        onExited: function(exitCode) {
-            if (exitCode === 0 && audioProc.stdout.text) {
+        stdout: StdioCollector {
+            onStreamFinished: {
                 try {
-                    var json = JSON.parse(audioProc.stdout.text)
+                    var json = JSON.parse(this.text)
                     root.audioMuted = json.muted || false
                 } catch(e) {}
             }
@@ -87,10 +89,10 @@ Item {
     Process {
         id: btProc
         command: [Theme.helperDir + "/get_bluetooth_status"]
-        onExited: function(exitCode) {
-            if (exitCode === 0 && btProc.stdout.text) {
+        stdout: StdioCollector {
+            onStreamFinished: {
                 try {
-                    var json = JSON.parse(btProc.stdout.text)
+                    var json = JSON.parse(this.text)
                     root.btEnabled = json.enabled || false
                 } catch(e) {}
             }
@@ -422,6 +424,7 @@ Item {
                                     Repeater {
                                         model: (NotificationState.server && NotificationState.server.trackedNotifications) ? NotificationState.server.trackedNotifications : []
                                         delegate: Rectangle {
+                                            required property var modelData
                                             width: parent.width
                                             height: notifContent.implicitHeight + 12
                                             color: Theme.surface
@@ -442,10 +445,10 @@ Item {
                                                     Rectangle {
                                                         width: 24; height: 24
                                                         color: "transparent"
-                                                        visible: modelData.appIcon && modelData.appIcon.length > 0
+                                                        visible: notif.appIcon && notif.appIcon.length > 0
                                                         Image {
                                                             anchors.fill: parent
-                                                            source: modelData.appIcon.startsWith("/") ? ("file://" + modelData.appIcon) : ("image://icon/" + modelData.appIcon)
+                                                            source: notif.appIcon ? (notif.appIcon.startsWith("/") ? ("file://" + notif.appIcon) : ("image://icon/" + notif.appIcon)) : ""
                                                             fillMode: Image.PreserveAspectFit
                                                         }
                                                     }
@@ -453,7 +456,7 @@ Item {
                                                         width: parent.width - 34
                                                         spacing: 2
                                                         Text {
-                                                            text: modelData.summary
+                                                            text: notif.summary
                                                             color: Theme.fg
                                                             font.family: Theme.fontFamily
                                                             font.pixelSize: 10
@@ -462,7 +465,7 @@ Item {
                                                             width: parent.width
                                                         }
                                                         Text {
-                                                            text: modelData.timestamp ? formatTime(new Date(modelData.timestamp)) : ""
+                                                            text: notif.timestamp ? formatTime(new Date(notif.timestamp)) : ""
                                                             color: Theme.muted
                                                             font.family: Theme.fontFamily
                                                             font.pixelSize: 8
@@ -477,30 +480,30 @@ Item {
                                                             anchors.fill: parent
                                                             cursorShape: Qt.PointingHandCursor
                                                             onClicked: {
-                                                                if (NotificationState.service && modelData)
-                                                                    NotificationState.service.dismissNotification(modelData.id)
+                                                                if (NotificationState.service && notif)
+                                                                    NotificationState.service.dismissNotification(notif.id)
                                                             }
                                                         }
                                                     }
                                                 }
 
                                                 Text {
-                                                    text: modelData.body
+                                                    text: notif.body
                                                     color: Theme.muted
                                                     font.family: Theme.fontFamily
                                                     font.pixelSize: 9
                                                     wrapMode: Text.Wrap
                                                     width: parent.width
-                                                    elide: root.expandedNotifIds[modelData.id] ? Text.ElideNone : Text.ElideRight
-                                                    maximumLineCount: root.expandedNotifIds[modelData.id] ? 6 : 2
+                                                    elide: root.expandedNotifIds[notif.id] ? Text.ElideNone : Text.ElideRight
+                                                    maximumLineCount: root.expandedNotifIds[notif.id] ? 6 : 2
                                                 }
 
                                                 Row {
                                                     width: parent.width
                                                     spacing: 6
-                                                    visible: modelData.actions && modelData.actions.count > 0
+                                                    visible: notif.actions && notif.actions.count > 0
                                                     Repeater {
-                                                        model: modelData.actions
+                                                        model: notif.actions
                                                         delegate: Rectangle {
                                                             required property var modelData
                                                             height: 18
@@ -531,10 +534,10 @@ Item {
 
                                                 Item {
                                                     width: parent.width; height: 10
-                                                    visible: modelData.body.length > 70 || modelData.body.includes("\n")
+                                                    visible: notif.body.length > 70 || notif.body.includes("\n")
                                                     Text {
                                                         anchors.right: parent.right
-                                                        text: root.expandedNotifIds[modelData.id] ? "less" : "more"
+                                                        text: root.expandedNotifIds[notif.id] ? "less" : "more"
                                                         color: Theme.primary
                                                         font.family: Theme.fontFamily
                                                         font.pixelSize: 8
@@ -544,7 +547,7 @@ Item {
                                                             cursorShape: Qt.PointingHandCursor
                                                             onClicked: {
                                                                 var copy = Object.assign({}, root.expandedNotifIds)
-                                                                copy[modelData.id] = !copy[modelData.id]
+                                                                copy[notif.id] = !copy[notif.id]
                                                                 root.expandedNotifIds = copy
                                                             }
                                                         }
