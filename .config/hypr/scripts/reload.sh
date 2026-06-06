@@ -10,7 +10,7 @@ pkill hyprpaper 2>/dev/null || true
 sleep 0.5
 
 hyprpaper &>/dev/null &
-qs --reload &>/dev/null &
+qs --reload &>/dev/null
 
 notify-send "Reload Complete" \
   "Hyprland, Quickshell, and Hyprpaper reloaded."
