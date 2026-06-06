@@ -80,7 +80,7 @@ Item {
         root.pendingSsid = ""
         root.lastConnectSsid = ssid
         connectProc.usePassword = false
-        connectProc.command = ["nmcli", "dev", "wifi", "connect", ssid]
+        connectProc.command = ["nmcli", "dev", "wifi", "connect", "--", ssid]
         connectProc.running = true
     }
 
@@ -89,7 +89,7 @@ Item {
         root.connecting = true
         connectProc.usePassword = true
         connectProc.command = [
-            "nmcli", "dev", "wifi", "connect", root.pendingSsid,
+            "nmcli", "dev", "wifi", "connect", "--", root.pendingSsid,
             "password", pwd
         ]
         connectProc.running = true
@@ -97,16 +97,21 @@ Item {
     }
 
     function runAction(cmdArray) {
-        if (actionProc.running) {
-            Quickshell.execDetached(cmdArray)
-            root.triggerRefresh()
+        if (!actionProc.running) {
+            actionProc.command = cmdArray
+            actionProc.running = true
             return
         }
-        actionProc.command = cmdArray
-        actionProc.running = true
+        if (!fallbackActionProc.running) {
+            fallbackActionProc.command = cmdArray
+            fallbackActionProc.running = true
+            return
+        }
+        Quickshell.execDetached(cmdArray)
+        root.triggerRefresh()
     }
 
-    // ── Generic Action Process (fixed: onExited) ───────────────────────────────
+    // ── Generic Action Processes ───────────────────────────────────────────────
     Process {
         id: actionProc
         environment: ({ LANG: "C", LC_ALL: "C" })
@@ -114,6 +119,19 @@ Item {
         onExited: function(exitCode) {
             if (exitCode !== 0) {
                 var err = actionProc.stderr.text.trim().replace(/^Error:\s*/i, "")
+                if (err.length > 0) root.showError(err)
+            }
+            root.triggerRefresh()
+        }
+    }
+
+    Process {
+        id: fallbackActionProc
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stderr: StdioCollector {}
+        onExited: function(exitCode) {
+            if (exitCode !== 0) {
+                var err = fallbackActionProc.stderr.text.trim().replace(/^Error:\s*/i, "")
                 if (err.length > 0) root.showError(err)
             }
             root.triggerRefresh()
@@ -650,7 +668,7 @@ Item {
                                                     anchors.fill: parent
                                                     cursorShape: Qt.PointingHandCursor
                                                     onClicked: {
-                                                        root.runAction(["nmcli", "connection", "delete", modelData.ssid])
+                                                        root.runAction(["nmcli", "connection", "delete", "id", modelData.ssid])
                                                         root.expandedNetworkSsid = ""
                                                     }
                                                 }
@@ -717,9 +735,7 @@ Item {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        Quickshell.execDetached(["nmcli", "radio", "wifi", "off"])
-                                        Quickshell.execDetached(["sh", "-c", "sleep 0.5 && nmcli radio wifi on"])
-                                        root.triggerRefresh()
+                                        root.runAction(["sh", "-c", "nmcli radio wifi off && sleep 0.5 && nmcli radio wifi on"])
                                     }
                                 }
                             }
@@ -735,8 +751,8 @@ Item {
                         height: Math.max(28, errText.implicitHeight + 10)
                         color: Theme.error
                         radius: 6
+                        visible: root.errorMessage !== ""
                         opacity: root.errorMessage !== "" ? 1 : 0
-                        visible: opacity > 0
                         Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
                         Text {
