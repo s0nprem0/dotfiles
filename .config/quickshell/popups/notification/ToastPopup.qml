@@ -73,7 +73,7 @@ PanelWindow {
                     interval: 200
                     onTriggered: {
                         if (NotificationState.service)
-                            NotificationState.service.dismissToast(index)
+                            NotificationState.service.dismissToastById(model.notifId)
                     }
                 }
 
@@ -82,7 +82,7 @@ PanelWindow {
                     interval: model.expireTimeout > 0
                         ? Math.min(model.expireTimeout, 8000)
                         : model.urgency === 2 ? 8000 : 4000
-                    running: true
+                    running: model.expireTimeout !== -1
                     onTriggered: close()
                 }
 

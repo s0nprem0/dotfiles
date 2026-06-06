@@ -433,7 +433,7 @@ Item {
                                                             width: parent.width
                                                         }
                                                         Text {
-                                                            text: formatTime(new Date(modelData.timestamp))
+                                                            text: modelData.timestamp ? formatTime(new Date(modelData.timestamp)) : ""
                                                             color: Theme.muted
                                                             font.family: Theme.fontFamily
                                                             font.pixelSize: 8

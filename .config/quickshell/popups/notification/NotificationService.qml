@@ -81,6 +81,18 @@ Item {
         toastModel.remove(index, 1)
     }
 
+    // Dismiss a toast by notification id (race-safe: scans by id, not index)
+    function dismissToastById(id) {
+        for (var i = toastModel.count - 1; i >= 0; i--) {
+            var item = toastModel.get(i)
+            if (item.notifId === id || (item.notification && item.notification.id === id)) {
+                if (item.notification) item.notification.dismiss()
+                toastModel.remove(i, 1)
+                return
+            }
+        }
+    }
+
     // Update NotificationState singleton
     onDndChanged: {
         if (typeof NotificationState !== "undefined")
