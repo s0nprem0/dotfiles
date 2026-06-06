@@ -401,7 +401,7 @@ Item {
                                     color: Theme.muted
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 9
-                                    visible: NotificationState.server && NotificationState.server.trackedNotifications.count > 0
+                                    visible: NotificationState.service && NotificationState.service.trackedCount > 0
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
@@ -422,11 +422,12 @@ Item {
                                     spacing: 8
 
                                     Repeater {
-                                        model: (NotificationState.server && NotificationState.server.trackedNotifications) ? NotificationState.server.trackedNotifications : []
+                                        model: NotificationState.service ? NotificationState.service.notifList : []
                                         delegate: Rectangle {
                                             required property var modelData
                                             width: parent.width
-                                            height: notifContent.implicitHeight + 12
+                                            height: modelData.closed ? 0 : notifContent.implicitHeight + 12
+                                            clip: true
                                             color: Theme.surface
                                             border.width: 1
                                             border.color: modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter
@@ -465,7 +466,7 @@ Item {
                                                             width: parent.width
                                                         }
                                                         Text {
-                                                            text: notif.timestamp ? formatTime(new Date(notif.timestamp)) : ""
+                                                            text: notif.time ? notif.timeStr : ""
                                                             color: Theme.muted
                                                             font.family: Theme.fontFamily
                                                             font.pixelSize: 8
@@ -501,7 +502,7 @@ Item {
                                                 Row {
                                                     width: parent.width
                                                     spacing: 6
-                                                    visible: notif.actions && notif.actions.count > 0
+                                                    visible: notif.actions && notif.actions.length > 0
                                                     Repeater {
                                                         model: notif.actions
                                                         delegate: Rectangle {
@@ -523,10 +524,7 @@ Item {
                                                             MouseArea {
                                                                 anchors.fill: parent
                                                                 cursorShape: Qt.PointingHandCursor
-                                                                onClicked: {
-                                                                    if (typeof notif.invoke === "function")
-                                                                        notif.invoke(modelData.id)
-                                                                }
+                                                                onClicked: modelData.invoke()
                                                             }
                                                         }
                                                     }
@@ -564,7 +562,7 @@ Item {
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 9
                                         opacity: 0.4
-                                        visible: (NotificationState.server && NotificationState.server.trackedNotifications.count === 0) || !NotificationState.server
+                                        visible: !NotificationState.service || NotificationState.service.trackedCount === 0
                                     }
                                 }
                             }

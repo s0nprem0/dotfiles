@@ -11,29 +11,31 @@ Item {
     property bool dnd: false
     property var toastModel: ListModel { id: toastModel }
     property int maxToasts: 5
+    property var notifList: []
     property int trackedCount: 0
 
-    Binding {
-        target: service
-        property: "trackedCount"
-        value: notifServer.trackedNotifications ? notifServer.trackedNotifications.count : 0
-        when: notifServer && notifServer.trackedNotifications
-    }
-
-    // Reference to the server
     property alias server: notifServer
+
+    Component {
+        id: notifDataComp
+        NotifData {}
+    }
 
     NotificationServer {
         id: notifServer
         keepOnReload: true
         actionsSupported: true
 
-        // When a notification arrives
         onNotification: (notification) => {
-            notification.tracked = true
+            var data = notifDataComp.createObject(service, {
+                notification: notification
+            })
+
+            var list = service.notifList.slice()
+            list.unshift(data)
+            service.notifList = list
 
             if (!service.dnd) {
-                // Add to toast model
                 toastModel.insert(0, {
                     notifId: notification.id,
                     appName: notification.appName,
@@ -43,66 +45,83 @@ Item {
                     urgency: notification.urgency,
                     expireTimeout: notification.expireTimeout,
                     timestamp: new Date(),
-                    notification: notification  // keep reference for actions
+                    notifData: data
                 })
-                // Limit to maxToasts
                 while (toastModel.count > service.maxToasts)
                     toastModel.remove(service.maxToasts, 1)
             }
         }
     }
 
-    // Helper to find a notification by id
     function findNotification(id) {
-        for (var i = 0; i < notifServer.trackedNotifications.count; i++) {
-            var n = notifServer.trackedNotifications.get(i)
-            if (n.id === id) return n
+        for (var i = 0; i < service.notifList.length; i++) {
+            var n = service.notifList[i]
+            if (!n.closed && n.notification && n.notification.id === id)
+                return n
         }
         return null
     }
 
-    // Dismiss a single notification by id
     function dismissNotification(id) {
         var n = findNotification(id)
-        if (n) n.dismiss()
+        if (n) {
+            n.close()
+            service.recalcTrackedCount()
+        }
     }
 
-    // Clear all active notifications
     function clearAll() {
-        var model = notifServer.trackedNotifications
-        for (var i = model.count - 1; i >= 0; i--) {
-            model.get(i).dismiss()
+        var list = service.notifList.slice()
+        for (var i = 0; i < list.length; i++) {
+            if (!list[i].closed)
+                list[i].close()
         }
+        service.notifList = []
         toastModel.clear()
     }
 
-    // Toggle Do Not Disturb
     function toggleDnd() {
         dnd = !dnd
     }
 
-    // Dismiss a toast by model index
     function dismissToast(index) {
         var item = toastModel.get(index)
-        if (item && item.notification) {
-            item.notification.dismiss()
-        }
+        if (item && item.notifData)
+            item.notifData.close()
         toastModel.remove(index, 1)
+        service.recalcTrackedCount()
     }
 
-    // Dismiss a toast by notification id (race-safe: scans by id, not index)
     function dismissToastById(id) {
         for (var i = toastModel.count - 1; i >= 0; i--) {
             var item = toastModel.get(i)
-            if (item.notifId === id || (item.notification && item.notification.id === id)) {
-                if (item.notification) item.notification.dismiss()
+            if (item.notifId === id) {
+                if (item.notifData) item.notifData.close()
                 toastModel.remove(i, 1)
+                service.recalcTrackedCount()
                 return
             }
         }
     }
 
-    // Update NotificationState singleton
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: service.recalcTrackedCount()
+    }
+
+    function recalcTrackedCount() {
+        var count = 0
+        for (var i = 0; i < service.notifList.length; i++) {
+            if (!service.notifList[i].closed)
+                count++
+        }
+        service.trackedCount = count
+    }
+
+    onNotifListChanged: service.recalcTrackedCount()
+
     onDndChanged: {
         if (typeof NotificationState !== "undefined")
             NotificationState.dnd = dnd
@@ -113,6 +132,7 @@ Item {
             NotificationState.service = service
             NotificationState.server = notifServer
             NotificationState.toastModel = toastModel
+            NotificationState.notifList = notifList
             NotificationState.dnd = dnd
         }
     }
