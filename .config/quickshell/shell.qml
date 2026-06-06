@@ -81,10 +81,13 @@ Bar {
         id: centerPopup
     }
 
-    Popups.NetworkPopup { }
+    Popups.NetworkPopup {
+        id: networkPopup
+    }
 
     Component.onCompleted: {
         NotificationState.service = notifService
         NotificationState.centerPopup = centerPopup
+        NotificationState.networkPopup = networkPopup
     }
 }

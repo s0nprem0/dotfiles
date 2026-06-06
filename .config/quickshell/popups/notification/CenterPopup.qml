@@ -512,14 +512,14 @@ Item {
                         }
 
                         // ── Quick action buttons ───────────────────────────
-                        Row {
+                        RowLayout {
                             width: parent.width
                             spacing: 12
 
-                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.audioMuted ? "󰝟" : "󰕾"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "volume_popup"]); win.closeAnim() } } }
-                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.wifiEnabled ? "󰖩" : "󰖪"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "network_popup"]); win.closeAnim() } } }
-                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.btEnabled ? "󰂯" : "󰂲"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "bluetooth_popup"]); win.closeAnim() } } }
-                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: "󰃠"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["quickshell", "--config", "brightness_popup"]); win.closeAnim() } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.audioMuted ? "󰝟" : "󰕾"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]); root.audioMuted = !root.audioMuted; } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.wifiEnabled ? "󰖩" : "󰖪"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { if (NotificationState.networkPopup) NotificationState.networkPopup.showPopup = !NotificationState.networkPopup.showPopup; win.closeAnim() } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: root.btEnabled ? "󰂯" : "󰂲"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["bluetoothctl", "power", root.btEnabled ? "off" : "on"]); root.btEnabled = !root.btEnabled; } } }
+                            Item { width: 28; height: 28; Text { anchors.centerIn: parent; text: "󰃠"; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 16 } MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { Quickshell.execDetached(["brightnessctl", "set", "10%+"]); } } }
                             Item { Layout.fillWidth: true }
                             Text {
                                 text: formatTime(new Date())

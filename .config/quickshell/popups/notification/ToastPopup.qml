@@ -131,6 +131,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 text: model.appName ? model.appName.charAt(0).toUpperCase() : "N"
                                 color: urgencyColor(urg)
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 12
                                 font.bold: true
                             }
@@ -143,6 +144,7 @@ PanelWindow {
                             Text {
                                 text: model.appName || "Notification"
                                 color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 elide: Text.ElideRight
@@ -152,6 +154,7 @@ PanelWindow {
                             Text {
                                 text: model.summary
                                 color: Theme.fg
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 12
                                 font.bold: true
                                 elide: Text.ElideRight
@@ -163,6 +166,7 @@ PanelWindow {
                             Text {
                                 text: model.body
                                 color: Qt.alpha(Theme.fg, 0.7)
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 10
                                 elide: Text.ElideRight
                                 wrapMode: Text.Wrap
@@ -185,6 +189,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 text: "✕"
                                 color: Theme.muted
+                                font.family: Theme.fontFamily
                                 font.pixelSize: 10
                             }
 
