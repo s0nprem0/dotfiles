@@ -41,14 +41,14 @@ PopupPanel {
 
     Process {
         id: sysInfoProc
-        command: ["sh", "-c", "hostname; echo ---; uname -r; echo ---; . /etc/os-release 2>/dev/null && echo \"$NAME $VERSION_ID\" || echo \"Arch Linux\""]
+        command: [Config.helperDir + "/get_sysinfo.sh"]
         stdout: StdioCollector {
             onStreamFinished: {
-                var parts = (this.text || "").trim().split("\n---\n")
-                if (parts.length >= 3) {
-                    root.hostname = parts[0].trim()
-                    root.kernel = parts[1].trim()
-                    root.os = parts[2].trim()
+                var lines = (this.text || "").trim().split("\n")
+                if (lines.length >= 3) {
+                    root.hostname = lines[0].trim()
+                    root.kernel = lines[1].trim()
+                    root.os = lines.slice(2).join("\n").trim()
                 }
             }
         }

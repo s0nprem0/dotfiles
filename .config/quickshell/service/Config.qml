@@ -9,4 +9,6 @@ QtObject {
         "hyprctl", "dispatch", "exec",
         "[float;size 55% 65%;center] " + terminal + " -T impala impala"
     ]
+
+    readonly property string helperDir: Quickshell.env("HOME") + "/.config/quickshell/helpers"
 }

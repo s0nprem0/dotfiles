@@ -57,7 +57,7 @@ PopupPanel {
     // ── Decode images to temp files ───────────────────────────
     Process {
         id: decodeScript
-        command: ["sh", "-c", "cliphist list | head -n 50 | while read -r line; do if echo \"$line\" | grep -q 'binary data'; then id=$(echo \"$line\" | cut -f1); [ ! -f \"/tmp/clip_$id.png\" ] && echo \"$line\" | cliphist decode > \"/tmp/clip_$id.png\" 2>/dev/null; fi; done"]
+        command: [Config.helperDir + "/decode_clipboard_images.sh"]
         running: false
         onExited: { cliphistListProc.running = true }
     }
