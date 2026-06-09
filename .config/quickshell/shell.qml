@@ -53,7 +53,7 @@ Bar {
             Notifications { notifService: notifService }
             Tray {}
             Clipboard { clipboardPopupRef: clipboardPopup }
-            Audio { mediaPopupRef: mediaPopup }
+            Audio { id: audioModule; mediaPopupRef: mediaPopup }
             Battery {}
             Network {}
             Settings { settingsPopupRef: settingsPopup }
@@ -84,6 +84,7 @@ Bar {
 
     Popups.Media {
         id: mediaPopup
+        audioBarRef: audioModule
     }
 
     Popups.Settings {

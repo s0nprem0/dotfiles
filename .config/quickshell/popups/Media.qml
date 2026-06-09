@@ -91,40 +91,72 @@ PopupPanel {
     property double micVol: 100
     property bool micMuted: false
 
+    // ── Source switch animation ──
+    property bool mediaSwitching: false
+    property real mediaFade: 1
+    property real mediaSlide: 0
+
+    // ── Audio bar ref (immediate volume reflection) ──
+    property var audioBarRef: null
+
+    // ── Volume batch pending values ──
+    property int pendingOutVol: -1
+    property int pendingInVol: -1
+    property var pendingAppVols: ({})
+
     Process { id: sysVolAction }
 
     Process { id: micVolAction }
 
+    // ── Volume batch timer: applies pending changes every 50ms ──
     Timer {
-        id: sysVolDebounce
-        interval: 40
+        id: volumeApplyTimer
+        interval: 50
+        repeat: true
+        running: true
         onTriggered: {
-            sysVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", sysVolDebounce.privValue]
-            sysVolAction.running = true
+            if (root.pendingOutVol !== -1) {
+                var pct = Math.round(root.pendingOutVol * 100)
+                sysVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", pct + "%"]
+                sysVolAction.running = true
+                if (root.audioBarRef) {
+                    root.audioBarRef.vol = Math.round(root.pendingOutVol * 100)
+                    root.audioBarRef.isMuted = false
+                }
+                refreshSinks()
+                root.pendingOutVol = -1
+            }
+            if (root.pendingInVol !== -1) {
+                var pct2 = Math.round(root.pendingInVol * 100)
+                micVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SOURCE@", pct2 + "%"]
+                micVolAction.running = true
+                refreshSinks()
+                root.pendingInVol = -1
+            }
+            var appKeys = Object.keys(root.pendingAppVols)
+            if (appKeys.length > 0) {
+                for (var i = 0; i < appKeys.length; i++) {
+                    var appIdx = appKeys[i]
+                    var appPct = Math.round(root.pendingAppVols[appIdx] * 100)
+                    setAppVolProc.command = ["pactl", "set-sink-input-volume", String(appIdx), appPct + "%"]
+                    setAppVolProc.running = true
+                }
+                root.pendingAppVols = ({})
+                refreshSinks()
+            }
         }
-        property string privValue: ""
-    }
-
-    Timer {
-        id: micVolDebounce
-        interval: 40
-        onTriggered: {
-            micVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SOURCE@", micVolDebounce.privValue]
-            micVolAction.running = true
-        }
-        property string privValue: ""
     }
 
     function setSysVol(frac) {
         frac = Math.max(0, Math.min(1, frac))
-        sysVolDebounce.privValue = String(frac)
-        sysVolDebounce.restart()
+        root.pendingOutVol = frac
+        root.sysVol = Math.round(frac * 100)
     }
 
     function setMicVol(frac) {
         frac = Math.max(0, Math.min(1, frac))
-        micVolDebounce.privValue = String(frac)
-        micVolDebounce.restart()
+        root.pendingInVol = frac
+        root.micVol = Math.round(frac * 100)
     }
 
     // ── Audio Sinks (devices) ──
@@ -198,6 +230,11 @@ PopupPanel {
 
     function refreshSinks() {
         listSinksProc.running = true
+        listSourcesProc.running = true
+    }
+
+    function refreshSources() {
+        listSourcesProc.running = true
     }
 
     function setDefaultSink(id) {
@@ -208,6 +245,79 @@ PopupPanel {
 
     Timer {
         id: resetSinkTimer
+        interval: 150
+        onTriggered: refreshSinks()
+    }
+
+    // ── Audio Sources (input devices) ──
+    property var sourceList: []
+    property string activeSourceId: ""
+
+    Process {
+        id: listSourcesProc
+        command: ["sh", "-c",
+            "echo \"DEFAULT:$(pactl get-default-source 2>/dev/null)\" && " +
+            "pactl list sources | grep -E \"Source #|Description:|Name:\" | sed 's/^[[:space:]]*//'"]
+        running: false
+        stdout: StdioCollector {}
+        onExited: {
+            var out = stdout.text.trim()
+            if (!out) return
+            var lines = out.split("\n")
+            var defaultSource = ""
+            var newList = []
+            var newActive = root.activeSourceId
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim()
+                if (!line) continue
+
+                if (line.indexOf("DEFAULT:") === 0) {
+                    defaultSource = line.substring(8).trim()
+                    continue
+                }
+
+                if (line.indexOf("Source #") === 0) {
+                    var srcId = line.replace(/.*#/, "").replace(/:$/, "").trim()
+                    var srcName = ""
+                    var srcDesc = ""
+
+                    if (i + 1 < lines.length) {
+                        var nameLine = lines[i + 1].trim()
+                        if (nameLine.indexOf("Name:") === 0)
+                            srcName = nameLine.substring(5).trim()
+                    }
+                    if (i + 2 < lines.length) {
+                        var descLine = lines[i + 2].trim()
+                        if (descLine.indexOf("Description:") === 0)
+                            srcDesc = descLine.substring(12).trim()
+                    }
+
+                    var displayName = srcDesc || srcName || ("Source " + srcId)
+                    var isActive = srcName === defaultSource
+                    newList.push(srcId + "||" + displayName)
+                    if (isActive) newActive = srcId
+                }
+            }
+
+            root.sourceList = newList
+            root.activeSourceId = newActive || (newList.length > 0 ? newList[0].split("||")[0].trim() : "")
+        }
+    }
+
+    Process {
+        id: setSourceProc
+        running: false
+    }
+
+    function setDefaultSource(id) {
+        resetSourceTimer.restart()
+        setSourceProc.command = ["pactl", "set-default-source", id]
+        setSourceProc.running = true
+    }
+
+    Timer {
+        id: resetSourceTimer
         interval: 150
         onTriggered: refreshSinks()
     }
@@ -286,14 +396,59 @@ PopupPanel {
     }
 
     function setAppVol(id, frac) {
-        var pct = Math.round(frac * 100)
-        setAppVolProc.command = ["pactl", "set-sink-input-volume", String(id), pct + "%"]
-        setAppVolProc.running = true
+        frac = Math.max(0, Math.min(1, frac))
+        root.pendingAppVols[String(id)] = frac
     }
 
     function toggleAppMute(id) {
         setAppMuteProc.command = ["pactl", "set-sink-input-mute", String(id), "toggle"]
         setAppMuteProc.running = true
+    }
+
+    // ── Position advancement: smooth seek bar while playing ──
+    Timer {
+        id: mediaPositionTimer
+        interval: 500
+        repeat: true
+        running: root.hasPlayer && root.playerStatus === "Playing"
+        onTriggered: {
+            if (root.playerStatus === "Playing") {
+                var newPos = root.position + 0.5
+                if (root.trackLength > 0 && newPos > root.trackLength / 1000000)
+                    newPos = root.trackLength / 1000000
+                root.position = newPos
+            }
+        }
+    }
+
+    // ── Media source switch animation ──
+    function switchMediaSource() {
+        if (root.mediaSwitching || root.availablePlayers.length <= 1) return
+        root.mediaSwitching = true
+        switchAnim.restart()
+    }
+
+    function applyMediaSourceSwitch() {
+        var list = root.availablePlayers
+        var idx = list.indexOf(root.playerName)
+        var nextIdx = (idx + 1) % list.length
+        root.playerName = list[nextIdx]
+        root.fetchMetadata()
+    }
+
+    SequentialAnimation {
+        id: switchAnim
+        ParallelAnimation {
+            NumberAnimation { target: root; property: "mediaFade"; from: 1; to: 0; duration: 140; easing.type: Easing.OutCubic }
+            NumberAnimation { target: root; property: "mediaSlide"; from: 0; to: -8; duration: 140; easing.type: Easing.OutCubic }
+        }
+        ScriptAction { script: root.applyMediaSourceSwitch() }
+        PropertyAction { target: root; property: "mediaSlide"; value: 8 }
+        ParallelAnimation {
+            NumberAnimation { target: root; property: "mediaFade"; from: 0; to: 1; duration: 240; easing.type: Easing.OutCubic }
+            NumberAnimation { target: root; property: "mediaSlide"; from: 8; to: 0; duration: 240; easing.type: Easing.OutCubic }
+        }
+        ScriptAction { script: root.mediaSwitching = false }
     }
 
     // ── Bluetooth detection ──
@@ -485,6 +640,10 @@ PopupPanel {
                                 onClicked: {
                                     sysVolAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
                                     sysVolAction.running = true
+                                    if (root.audioBarRef) {
+                                        root.audioBarRef.isMuted = !root.sysMuted
+                                    }
+                                    root.sysMuted = !root.sysMuted
                                 }
                             }
                         }
@@ -600,6 +759,69 @@ PopupPanel {
                                 }
                             }
                         }
+
+                        Row {
+                             width: parent.width
+                             spacing: 4
+                             visible: root.sourceList.length > 0
+
+                            Text {
+                                text: "󰍬  Input"
+                                color: Qt.alpha(Theme.fg, 0.5)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Item { width: parent.width - childrenRect.width; height: 1 }
+                        }
+
+                        Flow {
+                            width: parent.width
+                            spacing: 4
+                            visible: root.sourceList.length > 0
+
+                            Repeater {
+                                model: root.sourceList
+                                delegate: Rectangle {
+                                    required property string modelData
+                                    height: 20
+                                    width: srcLabel.implicitWidth + 10
+                                    radius: 3
+                                    color: isActive ? Qt.alpha(Theme.primary, 0.2)
+                                         : srcHover.containsMouse ? Qt.alpha(Theme.fg, 0.08)
+                                         : "transparent"
+                                    border.width: 1
+                                    border.color: isActive ? Qt.alpha(Theme.primary, 0.5)
+                                              : srcHover.containsMouse ? Qt.alpha(Theme.fg, 0.2)
+                                              : Qt.alpha(Theme.fg, 0.1)
+
+                                    property string srcId: modelData.split("||")[0].trim()
+                                    property string srcName: modelData.split("||")[1].trim()
+                                    property bool isActive: root.activeSourceId === srcId
+
+                                    Text {
+                                        id: srcLabel
+                                        anchors.centerIn: parent
+                                        text: parent.srcName
+                                        color: parent.isActive ? Theme.fg : Qt.alpha(Theme.fg, 0.6)
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 1
+                                    }
+
+                                    MouseArea {
+                                        id: srcHover
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onClicked: root.setDefaultSource(parent.srcId)
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // ── Mic Input ──
@@ -633,10 +855,11 @@ PopupPanel {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     hoverEnabled: true
-                                    onClicked: {
-                                        micVolAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
-                                        micVolAction.running = true
-                                    }
+                                onClicked: {
+                                    micVolAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
+                                    micVolAction.running = true
+                                    root.micMuted = !root.micMuted
+                                }
                                 }
                             }
                         }
@@ -953,386 +1176,390 @@ PopupPanel {
                     }
                 }
 
-                // ── Section 2: Album Art + Track Info ──
-                Row {
+                // ── Media content (animated on source switch) ──
+                Item {
+                    opacity: root.mediaFade
+                    transform: Translate { y: root.mediaSlide }
                     visible: root.hasPlayer
                     width: parent.width
-                    spacing: 8
-
-                    Rectangle {
-                        id: artFrame
-                        width: 48
-                        height: 48
-                        color: Theme.surface
-                        border.width: 1
-                        border.color: Qt.alpha(Theme.primary, 0.2)
-                        clip: true
-
-                        Image {
-                            id: artImage
-                            anchors.fill: parent
-                            fillMode: Image.PreserveAspectCrop
-                            source: root.artUrl || ""
-                            asynchronous: true
-                            cache: true
+                    
+                    // ── Section 2: Album Art + Track Info ──
+                    Row {
+                        visible: root.hasPlayer
+                        width: parent.width
+                        spacing: 8
+    
+                        Rectangle {
+                            id: artFrame
+                            width: 48
+                            height: 48
+                            color: Theme.surface
+                            border.width: 1
+                            border.color: Qt.alpha(Theme.primary, 0.2)
+                            clip: true
+    
+                            Image {
+                                id: artImage
+                                anchors.fill: parent
+                                fillMode: Image.PreserveAspectCrop
+                                source: root.artUrl || ""
+                                asynchronous: true
+                                cache: true
+                            }
+    
+                            Text {
+                                anchors.centerIn: parent
+                                text: "󰎆"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 20
+                                visible: !root.artUrl || artImage.status === Image.Error
+                            }
                         }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰎆"
-                            color: Theme.primary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 20
-                            visible: !root.artUrl || artImage.status === Image.Error
+    
+                        Column {
+                            width: parent.width - 56
+                            anchors.verticalCenter: artFrame.verticalCenter
+                            spacing: 1
+    
+                            Text {
+                                text: root.title || "No Track"
+                                width: parent.width
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 11
+                                font.bold: true
+                                elide: Text.ElideRight
+                            }
+    
+                            Text {
+                                text: root.artist ? root.artist + (root.album ? " • " + root.album : "") : (root.playerName || "")
+                                width: parent.width
+                                color: Qt.alpha(Theme.fg, 0.6)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                elide: Text.ElideRight
+                            }
+    
+                            Row {
+                                spacing: 4
+                                visible: root.playerStatus
+    
+                                Rectangle {
+                                    height: 4; width: 4
+                                    radius: 2
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: root.playerStatus === "Playing" ? Theme.green
+                                         : root.playerStatus === "Paused" ? Theme.warning
+                                         : Theme.muted
+                                }
+    
+                                Text {
+                                    text: root.playerStatus || ""
+                                    color: root.playerStatus === "Playing" ? Theme.green
+                                         : root.playerStatus === "Paused" ? Theme.warning
+                                         : Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 8
+                                    font.bold: true
+                                }
+                            }
                         }
                     }
-
-                    Column {
-                        width: parent.width - 56
-                        anchors.verticalCenter: artFrame.verticalCenter
-                        spacing: 1
-
+    
+                    // ── Section 3: Controls ──
+                    Row {
+                        visible: root.hasPlayer
+                        width: parent.width
+                        spacing: 12
+    
                         Text {
-                            text: root.title || "No Track"
-                            width: parent.width
-                            color: Theme.fg
+                            id: shuffleLabel
+                            text: "󰒝"
+                            color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-
-                        Text {
-                            text: root.artist ? root.artist + (root.album ? " • " + root.album : "") : (root.playerName || "")
-                            width: parent.width
-                            color: Qt.alpha(Theme.fg, 0.6)
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            elide: Text.ElideRight
-                        }
-
-                        Row {
-                            spacing: 4
-                            visible: root.playerStatus
-
-                            Rectangle {
-                                height: 4; width: 4
-                                radius: 2
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: root.playerStatus === "Playing" ? Theme.green
-                                     : root.playerStatus === "Paused" ? Theme.warning
-                                     : Theme.muted
-                            }
-
-                            Text {
-                                text: root.playerStatus || ""
-                                color: root.playerStatus === "Playing" ? Theme.green
-                                     : root.playerStatus === "Paused" ? Theme.warning
-                                     : Theme.muted
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 8
-                                font.bold: true
-                            }
-                        }
-                    }
-                }
-
-                // ── Section 3: Controls ──
-                Row {
-                    visible: root.hasPlayer
-                    width: parent.width
-                    spacing: 12
-
-                    Text {
-                        id: shuffleLabel
-                        text: "󰒝"
-                        color: Theme.primary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                        anchors.verticalCenter: parent.verticalCenter
-                        opacity: 0.5
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.opacity = 1
-                            onExited: parent.opacity = 0.5
-                            onClicked: root.playerCtl(["shuffle", "toggle"])
-                        }
-                    }
-
-                    Text {
-                        id: prevLabel
-                        text: "prev"
-                        color: Theme.fg
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.color = Theme.primary
-                            onExited: parent.color = Theme.fg
-                            onClicked: root.playerCtl(["previous"])
-                        }
-                    }
-
-                    Text {
-                        id: playLabel
-                        text: root.playerStatus === "Playing" ? "pause" : "play"
-                        color: Theme.primary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        font.bold: true
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.color = Qt.lighter(Theme.primary, 1.2)
-                            onExited: parent.color = Theme.primary
-                            onClicked: root.playerCtl(["play-pause"])
-                        }
-                    }
-
-                    Text {
-                        id: nextLabel
-                        text: "next"
-                        color: Theme.fg
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.color = Theme.primary
-                            onExited: parent.color = Theme.fg
-                            onClicked: root.playerCtl(["next"])
-                        }
-                    }
-
-                    Text {
-                        id: stopLabel
-                        text: "stop"
-                        color: Theme.fg
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        anchors.verticalCenter: parent.verticalCenter
-                        opacity: 0.6
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: { parent.opacity = 1; parent.color = Theme.primary }
-                            onExited: { parent.opacity = 0.6; parent.color = Theme.fg }
-                            onClicked: root.playerCtl(["stop"])
-                        }
-                    }
-
-                    Text {
-                        id: repeatLabel
-                        text: "󰑘"
-                        color: Theme.primary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                        anchors.verticalCenter: parent.verticalCenter
-                        opacity: 0.5
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.opacity = 1
-                            onExited: parent.opacity = 0.5
-                            onClicked: root.playerCtl(["repeat", "toggle"])
-                        }
-                    }
-
-                    Text {
-                        id: sourceSwitchLabel
-                        text: "󰑖"
-                        color: Theme.primary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: root.availablePlayers.length > 1
-                        opacity: 0.5
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.opacity = 1
-                            onExited: parent.opacity = 0.5
-                            onClicked: {
-                                var list = root.availablePlayers
-                                var idx = list.indexOf(root.playerName)
-                                var nextIdx = (idx + 1) % list.length
-                                root.playerName = list[nextIdx]
-                                root.fetchMetadata()
-                            }
-                        }
-                    }
-
-                    Item { width: parent.width - childrenRect.width; height: 1 }
-
-                    // Source indicator: dots per available player
-                    Row {
-                        spacing: 3
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: root.availablePlayers.length > 1
-                        height: 8
-
-                        Repeater {
-                            model: root.availablePlayers
-                            delegate: Rectangle {
-                                width: 5; height: 5
-                                color: modelData === root.playerName ? Theme.primary : Theme.surface
-                                border.width: 1
-                                border.color: Theme.primary
-                                opacity: modelData === root.playerName ? 1 : 0.55
-                            }
-                        }
-                    }
-                }
-
-                // ── Section 4: Seek Bar ──
-                Row {
-                    visible: root.hasPlayer && root.trackLength > 0
-                    width: parent.width
-                    spacing: 4
-                    height: 14
-
-                    Text {
-                        text: root.formatTime(root.position)
-                        color: Qt.alpha(Theme.fg, 0.5)
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Item {
-                        width: parent.width - childrenRect.width - seekTimeEnd.width
-                        height: parent.height
-                        clip: true
-
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            height: 2
-                            color: Theme.surface
-
-                            Rectangle {
-                                width: parent.width * Math.min(1, root.position / (root.trackLength / 1000000))
-                                height: parent.height
-                                color: Theme.primary
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                var frac = Math.max(0, Math.min(1, mouse.x / width))
-                                var secs = frac * (root.trackLength / 1000000)
-                                root.playerCtl(["position", secs.toFixed(1)])
-                            }
-                        }
-                    }
-
-                    Text {
-                        id: seekTimeEnd
-                        text: root.formatTime(root.trackLength / 1000000)
-                        color: Qt.alpha(Theme.fg, 0.5)
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-
-                // ── Section 5: Player Volume ──
-                Column {
-                    visible: root.hasPlayer
-                    width: parent.width
-                    spacing: 4
-
-                    Row {
-                        width: parent.width
-
-                        Text {
-                            text: "󰕾  Volume: " + Math.round(root.volume * 100) + "%"
-                            color: Theme.fg
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 10
-                            font.bold: true
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Item { width: parent.width - childrenRect.width - mutePlayerText.width; height: 1 }
-
-                        Text {
-                            id: mutePlayerText
-                            text: root.volume === 0 ? "Unmute" : "Mute"
-                            color: Theme.primary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            anchors.verticalCenter: parent.verticalCenter
-
+                            opacity: 0.5
+    
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onClicked: root.playerCtl(["volume", root.volume === 0 ? "1.0" : "0.0"])
+                                onEntered: parent.opacity = 1
+                                onExited: parent.opacity = 0.5
+                                onClicked: root.playerCtl(["shuffle", "toggle"])
                             }
                         }
-                    }
-
-                    Item {
-                        width: parent.width
-                        height: 8
-
-                        Row {
-                            id: playerVolBlocks
-                            property double currentVal: Math.min(1, root.volume)
-
-                            anchors.left: parent.left
-                            anchors.right: parent.right
+    
+                        Text {
+                            id: prevLabel
+                            text: "prev"
+                            color: Theme.fg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
                             anchors.verticalCenter: parent.verticalCenter
-                            height: 5
-                            spacing: 1
-
-                            Repeater {
-                                model: 15
-                                delegate: Rectangle {
-                                    height: parent.height
-                                    width: (playerVolBlocks.width - (playerVolBlocks.spacing * 14)) / 15
-                                    radius: 1
-                                    color: index < Math.round(playerVolBlocks.currentVal * 15) ? Theme.primary : Theme.surface
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.color = Theme.primary
+                                onExited: parent.color = Theme.fg
+                                onClicked: root.playerCtl(["previous"])
+                            }
+                        }
+    
+                        Text {
+                            id: playLabel
+                            text: root.playerStatus === "Playing" ? "pause" : "play"
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            font.bold: true
+                            anchors.verticalCenter: parent.verticalCenter
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.color = Qt.lighter(Theme.primary, 1.2)
+                                onExited: parent.color = Theme.primary
+                                onClicked: root.playerCtl(["play-pause"])
+                            }
+                        }
+    
+                        Text {
+                            id: nextLabel
+                            text: "next"
+                            color: Theme.fg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            anchors.verticalCenter: parent.verticalCenter
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.color = Theme.primary
+                                onExited: parent.color = Theme.fg
+                                onClicked: root.playerCtl(["next"])
+                            }
+                        }
+    
+                        Text {
+                            id: stopLabel
+                            text: "stop"
+                            color: Theme.fg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            anchors.verticalCenter: parent.verticalCenter
+                            opacity: 0.6
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: { parent.opacity = 1; parent.color = Theme.primary }
+                                onExited: { parent.opacity = 0.6; parent.color = Theme.fg }
+                                onClicked: root.playerCtl(["stop"])
+                            }
+                        }
+    
+                        Text {
+                            id: repeatLabel
+                            text: "󰑘"
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            anchors.verticalCenter: parent.verticalCenter
+                            opacity: 0.5
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.opacity = 1
+                                onExited: parent.opacity = 0.5
+                                onClicked: root.playerCtl(["repeat", "toggle"])
+                            }
+                        }
+    
+                        Text {
+                            id: sourceSwitchLabel
+                            text: "󰑖"
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: root.availablePlayers.length > 1
+                            opacity: 0.5
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.opacity = 1
+                                onExited: parent.opacity = 0.5
+                                onClicked: {
+                                    root.switchMediaSource()
                                 }
                             }
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            preventStealing: true
-                            onPressed: root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
-                            onPositionChanged: if (pressed) root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
+    
+                        Item { width: parent.width - childrenRect.width; height: 1 }
+    
+                        // Source indicator: dots per available player
+                        Row {
+                            spacing: 3
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: root.availablePlayers.length > 1
+                            height: 8
+    
+                            Repeater {
+                                model: root.availablePlayers
+                                delegate: Rectangle {
+                                    width: 5; height: 5
+                                    color: modelData === root.playerName ? Theme.primary : Theme.surface
+                                    border.width: 1
+                                    border.color: Theme.primary
+                                    opacity: modelData === root.playerName ? 1 : 0.55
+                                }
+                            }
                         }
-
-                        WheelHandler {
-                            acceptedDevices: PointerDevice.Mouse
-                            onWheel: function(event) {
-                                var delta = event.angleDelta.y / 120
-                                var newVol = Math.max(0, Math.min(1, root.volume + delta * 0.05))
-                                root.playerCtl(["volume", newVol.toFixed(2)])
+                    }
+    
+                    // ── Section 4: Seek Bar ──
+                    Row {
+                        visible: root.hasPlayer && root.trackLength > 0
+                        width: parent.width
+                        spacing: 4
+                        height: 14
+    
+                        Text {
+                            text: root.formatTime(root.position)
+                            color: Qt.alpha(Theme.fg, 0.5)
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+    
+                        Item {
+                            width: parent.width - childrenRect.width - seekTimeEnd.width
+                            height: parent.height
+                            clip: true
+    
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 2
+                                color: Theme.surface
+    
+                                Rectangle {
+                                    width: parent.width * Math.min(1, root.position / (root.trackLength / 1000000))
+                                    height: parent.height
+                                    color: Theme.primary
+                                }
+                            }
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var frac = Math.max(0, Math.min(1, mouse.x / width))
+                                    var secs = frac * (root.trackLength / 1000000)
+                                    root.playerCtl(["position", secs.toFixed(1)])
+                                }
+                            }
+                        }
+    
+                        Text {
+                            id: seekTimeEnd
+                            text: root.formatTime(root.trackLength / 1000000)
+                            color: Qt.alpha(Theme.fg, 0.5)
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+    
+                    // ── Section 5: Player Volume ──
+                    Column {
+                        visible: root.hasPlayer
+                        width: parent.width
+                        spacing: 4
+    
+                        Row {
+                            width: parent.width
+    
+                            Text {
+                                text: "󰕾  Volume: " + Math.round(root.volume * 100) + "%"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+    
+                            Item { width: parent.width - childrenRect.width - mutePlayerText.width; height: 1 }
+    
+                            Text {
+                                id: mutePlayerText
+                                text: root.volume === 0 ? "Unmute" : "Mute"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                anchors.verticalCenter: parent.verticalCenter
+    
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    hoverEnabled: true
+                                    onClicked: root.playerCtl(["volume", root.volume === 0 ? "1.0" : "0.0"])
+                                }
+                            }
+                        }
+    
+                        Item {
+                            width: parent.width
+                            height: 8
+    
+                            Row {
+                                id: playerVolBlocks
+                                property double currentVal: Math.min(1, root.volume)
+    
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 5
+                                spacing: 1
+    
+                                Repeater {
+                                    model: 15
+                                    delegate: Rectangle {
+                                        height: parent.height
+                                        width: (playerVolBlocks.width - (playerVolBlocks.spacing * 14)) / 15
+                                        radius: 1
+                                        color: index < Math.round(playerVolBlocks.currentVal * 15) ? Theme.primary : Theme.surface
+                                    }
+                                }
+                            }
+    
+                            MouseArea {
+                                anchors.fill: parent
+                                preventStealing: true
+                                onPressed: root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
+                                onPositionChanged: if (pressed) root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
+                            }
+    
+                            WheelHandler {
+                                acceptedDevices: PointerDevice.Mouse
+                                onWheel: function(event) {
+                                    var delta = event.angleDelta.y / 120
+                                    var newVol = Math.max(0, Math.min(1, root.volume + delta * 0.05))
+                                    root.playerCtl(["volume", newVol.toFixed(2)])
+                                }
                             }
                         }
                     }
