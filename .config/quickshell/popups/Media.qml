@@ -40,6 +40,10 @@ PopupPanel {
         root.artist = module.artist
         root.title = module.title
         root.album = module.album
+        root.artUrl = module.artUrl || ""
+        root.trackLength = module.trackLength || 0
+        root.volume = module.volume || 0
+        root.position = module.position || 0
         root.hasPlayer = module.hasPlayer
     }
 
@@ -583,22 +587,25 @@ PopupPanel {
                     spacing: 6
 
                     Text {
-                        text: "󰝚  Now Playing"
-                        color: Theme.fg
+                        text: "󰝚 Now Playing"
+                        color: Theme.primary
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
                         font.bold: true
                         anchors.verticalCenter: parent.verticalCenter
+                        renderType: Text.NativeRendering
                     }
 
                     Item { width: parent.width - childrenRect.width - 20; height: 1 }
 
                     Text {
                         text: "✕"
-                        color: Theme.muted
+                        color: Theme.primary
+                        opacity: 0.5
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
                         anchors.verticalCenter: parent.verticalCenter
+                        renderType: Text.NativeRendering
 
                         MouseArea {
                             anchors.fill: parent
@@ -612,7 +619,7 @@ PopupPanel {
                     width: parent.width
                     height: 1
                     color: Theme.primary
-                    opacity: 0.2
+                    opacity: 0.25
                 }
 
                 // ── No Player State ──
@@ -620,10 +627,12 @@ PopupPanel {
                     width: parent.width
                     visible: !root.hasPlayer
                     text: "No media players detected"
-                    color: Theme.muted
+                    color: Theme.primary
+                    opacity: 0.5
                     font.family: Theme.fontFamily
                     font.pixelSize: 12
                     horizontalAlignment: Text.AlignHCenter
+                    renderType: Text.NativeRendering
                 }
 
                 // ── Player Selector ──
@@ -639,9 +648,11 @@ PopupPanel {
 
                         Text {
                             text: "Player:"
-                            color: Theme.muted
+                            color: Theme.primary
+                            opacity: 0.5
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
+                            renderType: Text.NativeRendering
                         }
 
                         Repeater {
@@ -651,24 +662,25 @@ PopupPanel {
                                 required property string modelData
                                 height: 20
                                 width: playerLabel.implicitWidth + 12
-                                radius: 4
+                                radius: 0
                                 color: modelData === root.playerName ? Qt.alpha(Theme.primary, 0.25)
                                      : playerBtnMa.containsMouse ? Qt.alpha(Theme.primary, 0.1)
                                      : "transparent"
                                 border.width: modelData === root.playerName ? 1
                                      : playerBtnMa.containsMouse ? 1
                                      : 0
-                                border.color: playerBtnMa.containsMouse ? Qt.alpha(Theme.primary, 0.4) : Qt.alpha(Theme.primary, 0.3)
+                                border.color: Qt.alpha(Theme.primary, 0.4)
 
                                 Text {
                                     id: playerLabel
                                     anchors.centerIn: parent
                                     text: modelData
-                                    color: modelData === root.playerName ? Theme.fg
-                                         : playerBtnMa.containsMouse ? Theme.fg
-                                         : Theme.muted
+                                    color: modelData === root.playerName ? Theme.primary
+                                         : playerBtnMa.containsMouse ? Theme.primary
+                                         : Qt.alpha(Theme.primary, 0.5)
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 10
+                                    renderType: Text.NativeRendering
                                 }
 
                                 MouseArea {
@@ -692,7 +704,13 @@ PopupPanel {
                     transform: Translate { y: root.mediaSlide }
                     visible: root.hasPlayer
                     width: parent.width
-                    
+                    implicitHeight: mediaColumn.implicitHeight
+
+                    Column {
+                        id: mediaColumn
+                        width: parent.width
+                        spacing: 6
+
                     // ── Section 2: Album Art + Track Info ──
                     Row {
                         visible: root.hasPlayer
@@ -705,8 +723,9 @@ PopupPanel {
                             height: 48
                             color: Theme.surface
                             border.width: 1
-                            border.color: Qt.alpha(Theme.primary, 0.2)
+                            border.color: Theme.primary
                             clip: true
+                            radius: 0
     
                             Image {
                                 id: artImage
@@ -724,6 +743,7 @@ PopupPanel {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 20
                                 visible: !root.artUrl || artImage.status === Image.Error
+                                renderType: Text.NativeRendering
                             }
                         }
     
@@ -731,30 +751,59 @@ PopupPanel {
                             width: parent.width - 56
                             anchors.verticalCenter: artFrame.verticalCenter
                             spacing: 1
-    
-                            Text {
-                                text: root.title || "No Track"
+
+                            Row {
                                 width: parent.width
-                                color: Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
-                                font.bold: true
-                                elide: Text.ElideRight
+                                spacing: 6
+
+                                Text {
+                                    width: parent.width - sourceIndicatorRow.implicitWidth - 6
+                                    text: root.title || "No Track"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Row {
+                                    id: sourceIndicatorRow
+                                    spacing: 3
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: root.availablePlayers.length > 1
+                                    height: 8
+
+                                    Repeater {
+                                        model: root.availablePlayers
+                                        delegate: Rectangle {
+                                            width: 5; height: 5
+                                            radius: 0
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            color: modelData === root.playerName ? Theme.primary : Theme.surface
+                                            border.width: 1
+                                            border.color: Theme.primary
+                                            opacity: modelData === root.playerName ? 1 : 0.55
+                                        }
+                                    }
+                                }
                             }
-    
+
                             Text {
                                 text: root.artist ? root.artist + (root.album ? " • " + root.album : "") : (root.playerName || "")
                                 width: parent.width
-                                color: Qt.alpha(Theme.fg, 0.6)
+                                color: Theme.primary
+                                opacity: 0.6
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 elide: Text.ElideRight
+                                renderType: Text.NativeRendering
                             }
-    
+
                             Row {
                                 spacing: 4
                                 visible: root.playerStatus
-    
+
                                 Rectangle {
                                     height: 4; width: 4
                                     radius: 2
@@ -763,7 +812,7 @@ PopupPanel {
                                          : root.playerStatus === "Paused" ? Theme.warning
                                          : Theme.muted
                                 }
-    
+
                                 Text {
                                     text: root.playerStatus || ""
                                     color: root.playerStatus === "Playing" ? Theme.green
@@ -772,6 +821,7 @@ PopupPanel {
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 8
                                     font.bold: true
+                                    renderType: Text.NativeRendering
                                 }
                             }
                         }
@@ -791,7 +841,8 @@ PopupPanel {
                             font.pixelSize: 11
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: 0.5
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -801,25 +852,24 @@ PopupPanel {
                                 onClicked: root.playerCtl(["shuffle", "toggle"])
                             }
                         }
-    
+
                         Text {
                             id: prevLabel
                             text: "prev"
-                            color: Theme.fg
+                            color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             anchors.verticalCenter: parent.verticalCenter
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: parent.color = Theme.primary
-                                onExited: parent.color = Theme.fg
                                 onClicked: root.playerCtl(["previous"])
                             }
                         }
-    
+
                         Text {
                             id: playLabel
                             text: root.playerStatus === "Playing" ? "pause" : "play"
@@ -828,54 +878,51 @@ PopupPanel {
                             font.pixelSize: 9
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: parent.color = Qt.lighter(Theme.primary, 1.2)
-                                onExited: parent.color = Theme.primary
                                 onClicked: root.playerCtl(["play-pause"])
                             }
                         }
-    
+
                         Text {
                             id: nextLabel
                             text: "next"
-                            color: Theme.fg
+                            color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             anchors.verticalCenter: parent.verticalCenter
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: parent.color = Theme.primary
-                                onExited: parent.color = Theme.fg
                                 onClicked: root.playerCtl(["next"])
                             }
                         }
-    
+
                         Text {
                             id: stopLabel
                             text: "stop"
-                            color: Theme.fg
+                            color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: 0.6
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: { parent.opacity = 1; parent.color = Theme.primary }
-                                onExited: { parent.opacity = 0.6; parent.color = Theme.fg }
                                 onClicked: root.playerCtl(["stop"])
                             }
                         }
-    
+
                         Text {
                             id: repeatLabel
                             text: "󰑘"
@@ -884,7 +931,8 @@ PopupPanel {
                             font.pixelSize: 11
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: 0.5
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -894,7 +942,7 @@ PopupPanel {
                                 onClicked: root.playerCtl(["repeat", "toggle"])
                             }
                         }
-    
+
                         Text {
                             id: sourceSwitchLabel
                             text: "󰑖"
@@ -904,7 +952,8 @@ PopupPanel {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: root.availablePlayers.length > 1
                             opacity: 0.5
-    
+                            renderType: Text.NativeRendering
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -918,61 +967,44 @@ PopupPanel {
                         }
     
                         Item { width: parent.width - childrenRect.width; height: 1 }
-    
-                        // Source indicator: dots per available player
-                        Row {
-                            spacing: 3
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: root.availablePlayers.length > 1
-                            height: 8
-    
-                            Repeater {
-                                model: root.availablePlayers
-                                delegate: Rectangle {
-                                    width: 5; height: 5
-                                    color: modelData === root.playerName ? Theme.primary : Theme.surface
-                                    border.width: 1
-                                    border.color: Theme.primary
-                                    opacity: modelData === root.playerName ? 1 : 0.55
-                                }
-                            }
-                        }
                     }
     
                     // ── Section 4: Seek Bar ──
                     Row {
                         visible: root.hasPlayer && root.trackLength > 0
                         width: parent.width
-                        spacing: 4
+                        spacing: 6
                         height: 14
-    
+
                         Text {
                             text: root.formatTime(root.position)
-                            color: Qt.alpha(Theme.fg, 0.5)
+                            color: Theme.primary
+                            opacity: 0.5
                             font.family: Theme.fontFamily
                             font.pixelSize: 8
                             anchors.verticalCenter: parent.verticalCenter
+                            renderType: Text.NativeRendering
                         }
-    
+
                         Item {
                             width: parent.width - childrenRect.width - seekTimeEnd.width
                             height: parent.height
                             clip: true
-    
+
                             Rectangle {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                height: 2
+                                height: 4
                                 color: Theme.surface
-    
+
                                 Rectangle {
                                     width: parent.width * Math.min(1, root.position / (root.trackLength / 1000000))
                                     height: parent.height
                                     color: Theme.primary
                                 }
                             }
-    
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -983,14 +1015,16 @@ PopupPanel {
                                 }
                             }
                         }
-    
+
                         Text {
                             id: seekTimeEnd
                             text: root.formatTime(root.trackLength / 1000000)
-                            color: Qt.alpha(Theme.fg, 0.5)
+                            color: Theme.primary
+                            opacity: 0.5
                             font.family: Theme.fontFamily
                             font.pixelSize: 8
                             anchors.verticalCenter: parent.verticalCenter
+                            renderType: Text.NativeRendering
                         }
                     }
     
@@ -999,21 +1033,22 @@ PopupPanel {
                         visible: root.hasPlayer
                         width: parent.width
                         spacing: 4
-    
+
                         Row {
                             width: parent.width
-    
+
                             Text {
-                                text: "󰕾  Volume: " + Math.round(root.volume * 100) + "%"
-                                color: Theme.fg
+                                text: "󰕾 Volume: " + Math.round(root.volume * 100) + "%"
+                                color: Theme.primary
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
                             }
-    
+
                             Item { width: parent.width - childrenRect.width - mutePlayerText.width; height: 1 }
-    
+
                             Text {
                                 id: mutePlayerText
                                 text: root.volume === 0 ? "Unmute" : "Mute"
@@ -1021,7 +1056,8 @@ PopupPanel {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 anchors.verticalCenter: parent.verticalCenter
-    
+                                renderType: Text.NativeRendering
+
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
@@ -1030,39 +1066,39 @@ PopupPanel {
                                 }
                             }
                         }
-    
+
                         Item {
                             width: parent.width
                             height: 8
-    
+
                             Row {
                                 id: playerVolBlocks
                                 property double currentVal: Math.min(1, root.volume)
-    
+
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: 5
                                 spacing: 1
-    
+
                                 Repeater {
                                     model: 15
                                     delegate: Rectangle {
                                         height: parent.height
                                         width: (playerVolBlocks.width - (playerVolBlocks.spacing * 14)) / 15
-                                        radius: 1
+                                        radius: 0
                                         color: index < Math.round(playerVolBlocks.currentVal * 15) ? Theme.primary : Theme.surface
                                     }
                                 }
                             }
-    
+
                             MouseArea {
                                 anchors.fill: parent
                                 preventStealing: true
                                 onPressed: root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
                                 onPositionChanged: if (pressed) root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
                             }
-    
+
                             WheelHandler {
                                 acceptedDevices: PointerDevice.Mouse
                                 onWheel: function(event) {
@@ -1073,14 +1109,14 @@ PopupPanel {
                             }
                         }
                     }
+                    }
                 }
-
 
                 Rectangle {
                     width: parent.width
                     height: 1
                     color: Theme.primary
-                    opacity: 0.2
+                    opacity: 0.25
                 }
 
                 // ── System Volume ──
@@ -1092,12 +1128,13 @@ PopupPanel {
                         width: parent.width
 
                         Text {
-                            text: "  Output: " + (root.sysMuted ? "Muted" : Math.round(root.sysVol) + "%")
-                            color: Theme.fg
+                            text: (root.sysMuted ? "󰝟" : (root.isBtSink ? "󰋋" : "󰕾")) + " Output: " + (root.sysMuted ? "Muted" : Math.round(root.sysVol) + "%")
+                            color: Theme.primary
                             font.family: Theme.fontFamily
                             font.pixelSize: 10
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
+                            renderType: Text.NativeRendering
                         }
 
                         Item { width: parent.width - childrenRect.width - muteSysText.width; height: 1 }
@@ -1109,6 +1146,7 @@ PopupPanel {
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             anchors.verticalCenter: parent.verticalCenter
+                            renderType: Text.NativeRendering
 
                             MouseArea {
                                 anchors.fill: parent
@@ -1145,7 +1183,7 @@ PopupPanel {
                                 delegate: Rectangle {
                                     height: parent.height
                                     width: (sysBlocks.width - (sysBlocks.spacing * 14)) / 15
-                                    radius: 1
+                                    radius: 0
                                     color: index < Math.round(sysBlocks.currentVal * 15) ? Theme.primary : Theme.surface
                                 }
                             }
@@ -1180,12 +1218,14 @@ PopupPanel {
                             spacing: 4
 
                             Text {
-                                text: "󰓃  Output"
-                                color: Qt.alpha(Theme.fg, 0.5)
+                                text: "󰓃 Output"
+                                color: Theme.primary
+                                opacity: 0.5
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
                             }
 
                             Item { width: parent.width - childrenRect.width; height: 1 }
@@ -1202,14 +1242,14 @@ PopupPanel {
                                     id: deviceChip
                                     height: 20
                                     width: deviceLabel.implicitWidth + 10
-                                    radius: 3
+                                    radius: 0
                                     color: isActive ? Qt.alpha(Theme.primary, 0.2)
-                                         : chipHover.containsMouse ? Qt.alpha(Theme.fg, 0.08)
+                                         : chipHover.containsMouse ? Qt.alpha(Theme.primary, 0.08)
                                          : "transparent"
                                     border.width: 1
                                     border.color: isActive ? Qt.alpha(Theme.primary, 0.5)
-                                              : chipHover.containsMouse ? Qt.alpha(Theme.fg, 0.2)
-                                              : Qt.alpha(Theme.fg, 0.1)
+                                              : chipHover.containsMouse ? Qt.alpha(Theme.primary, 0.2)
+                                              : Qt.alpha(Theme.primary, 0.1)
 
                                     property string sinkId: modelData.split("||")[0].trim()
                                     property string sinkName: modelData.split("||")[1].trim()
@@ -1219,11 +1259,12 @@ PopupPanel {
                                         id: deviceLabel
                                         anchors.centerIn: parent
                                         text: parent.sinkName
-                                        color: parent.isActive ? Theme.fg : Qt.alpha(Theme.fg, 0.6)
+                                        color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 9
                                         elide: Text.ElideRight
                                         maximumLineCount: 1
+                                        renderType: Text.NativeRendering
                                     }
 
                                     MouseArea {
@@ -1243,12 +1284,14 @@ PopupPanel {
                              visible: root.sourceList.length > 0
 
                             Text {
-                                text: "󰍬  Input"
-                                color: Qt.alpha(Theme.fg, 0.5)
+                                text: "󰍬 Input"
+                                color: Theme.primary
+                                opacity: 0.5
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
                             }
 
                             Item { width: parent.width - childrenRect.width; height: 1 }
@@ -1265,14 +1308,14 @@ PopupPanel {
                                     required property string modelData
                                     height: 20
                                     width: srcLabel.implicitWidth + 10
-                                    radius: 3
+                                    radius: 0
                                     color: isActive ? Qt.alpha(Theme.primary, 0.2)
-                                         : srcHover.containsMouse ? Qt.alpha(Theme.fg, 0.08)
+                                         : srcHover.containsMouse ? Qt.alpha(Theme.primary, 0.08)
                                          : "transparent"
                                     border.width: 1
                                     border.color: isActive ? Qt.alpha(Theme.primary, 0.5)
-                                              : srcHover.containsMouse ? Qt.alpha(Theme.fg, 0.2)
-                                              : Qt.alpha(Theme.fg, 0.1)
+                                              : srcHover.containsMouse ? Qt.alpha(Theme.primary, 0.2)
+                                              : Qt.alpha(Theme.primary, 0.1)
 
                                     property string srcId: modelData.split("||")[0].trim()
                                     property string srcName: modelData.split("||")[1].trim()
@@ -1282,11 +1325,12 @@ PopupPanel {
                                         id: srcLabel
                                         anchors.centerIn: parent
                                         text: parent.srcName
-                                        color: parent.isActive ? Theme.fg : Qt.alpha(Theme.fg, 0.6)
+                                        color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 9
                                         elide: Text.ElideRight
                                         maximumLineCount: 1
+                                        renderType: Text.NativeRendering
                                     }
 
                                     MouseArea {
@@ -1310,12 +1354,13 @@ PopupPanel {
                             width: parent.width
 
                             Text {
-                                text: "󰍬  Input: " + (root.micMuted ? "Muted" : Math.round(root.micVol) + "%")
-                                color: Theme.fg
+                                text: (root.micMuted ? "󰍭" : "󰍬") + " Input: " + (root.micMuted ? "Muted" : Math.round(root.micVol) + "%")
+                                color: Theme.primary
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
                             }
 
                             Item { width: parent.width - childrenRect.width - muteMicText.width; height: 1 }
@@ -1327,6 +1372,7 @@ PopupPanel {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 9
                                 anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
 
                                 MouseArea {
                                     anchors.fill: parent
@@ -1360,7 +1406,7 @@ PopupPanel {
                                     delegate: Rectangle {
                                         height: parent.height
                                         width: (micBlocks.width - (micBlocks.spacing * 14)) / 15
-                                        radius: 1
+                                        radius: 0
                                         color: index < Math.round(micBlocks.currentVal * 15) ? Theme.primary : Theme.surface
                                     }
                                 }
@@ -1386,69 +1432,83 @@ PopupPanel {
                     }
                 }
 
-                // ── App Volumes ──
-                Column {
-                    width: parent.width
-                    spacing: 4
-                    visible: root.appList.length > 0
+                    // ── App Volumes ──
+                    Column {
+                        width: parent.width
+                        spacing: 4
+                        visible: root.appList.length > 0
 
-                    Repeater {
-                        model: root.appList
-                        delegate: Item {
-                            required property string modelData
-                            width: parent.width
-                            height: 32
+                        Text {
+                            text: "App Volumes"
+                            color: Theme.primary
+                            opacity: 0.5
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            font.bold: true
+                            renderType: Text.NativeRendering
+                        }
 
-                            property var parts: modelData.split("||")
-                            property int appIndex: parseInt(parts[0])
-                            property string appName: parts[1] || "Unknown"
-                            property int appVol: parseInt(parts[2]) || 0
-                            property bool appMuted: parts[3] === "true"
-
-                            Column {
+                        Repeater {
+                            model: root.appList
+                            delegate: Item {
+                                required property string modelData
                                 width: parent.width
-                                spacing: 2
+                                height: 32
 
-                                RowLayout {
+                                property var parts: modelData.split("||")
+                                property int appIndex: parseInt(parts[0])
+                                property string appName: parts[1] || "Unknown"
+                                property int appVol: parseInt(parts[2]) || 0
+                                property bool appMuted: parts[3] === "true"
+
+                                Column {
                                     width: parent.width
-                                    spacing: 6
+                                    spacing: 2
 
-                                    Text {
-                                        text: parent.parent.parent.appName
-                                        Layout.maximumWidth: 100
-                                        color: Qt.alpha(Theme.fg, 0.7)
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
-                                        elide: Text.ElideRight
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
+                                    RowLayout {
+                                        width: parent.width
+                                        spacing: 6
 
-                                    Text {
-                                        text: parent.parent.parent.appMuted ? "Muted" : parent.parent.parent.appVol + "%"
-                                        color: parent.parent.parent.appMuted ? Theme.muted : Theme.fg
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 8
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
+                                        Text {
+                                            text: parent.parent.parent.appName
+                                            Layout.maximumWidth: 100
+                                            color: Theme.primary
+                                            opacity: 0.7
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            elide: Text.ElideRight
+                                            Layout.alignment: Qt.AlignVCenter
+                                            renderType: Text.NativeRendering
+                                        }
 
-                                    Item { Layout.fillWidth: true; height: 1 }
+                                        Text {
+                                            text: parent.parent.parent.appMuted ? "Muted" : parent.parent.parent.appVol + "%"
+                                            color: parent.parent.parent.appMuted ? Theme.muted : Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 8
+                                            Layout.alignment: Qt.AlignVCenter
+                                            renderType: Text.NativeRendering
+                                        }
 
-                                    Text {
-                                        property var appRef: parent.parent.parent
-                                        text: appRef.appMuted ? "Unmute" : "Mute"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 8
-                                        Layout.alignment: Qt.AlignVCenter
+                                        Item { Layout.fillWidth: true; height: 1 }
 
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            hoverEnabled: true
-                                            onClicked: root.toggleAppMute(parent.appRef.appIndex)
+                                        Text {
+                                            property var appRef: parent.parent.parent
+                                            text: appRef.appMuted ? "Unmute" : "Mute"
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 8
+                                            Layout.alignment: Qt.AlignVCenter
+                                            renderType: Text.NativeRendering
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                hoverEnabled: true
+                                                onClicked: root.toggleAppMute(parent.appRef.appIndex)
+                                            }
                                         }
                                     }
-                                }
 
                                 Item {
                                     width: parent.width
@@ -1463,15 +1523,15 @@ PopupPanel {
                                         height: 5
                                         spacing: 1
 
-                                        Repeater {
-                                            model: 15
-                                            delegate: Rectangle {
-                                                height: parent.height
-                                                width: (parent.parent.width - (parent.parent.spacing * 14)) / 15
-                                                radius: 1
-                                                color: index < Math.round(parent.parent.currentVal * 15) ? Theme.primary : Theme.surface
-                                            }
+                                    Repeater {
+                                        model: 15
+                                        delegate: Rectangle {
+                                            height: parent.height
+                                            width: (parent.parent.width - (parent.parent.spacing * 14)) / 15
+                                            radius: 0
+                                            color: index < Math.round(parent.parent.currentVal * 15) ? Theme.primary : Theme.surface
                                         }
+                                    }
                                     }
 
                                     MouseArea {
@@ -1497,83 +1557,82 @@ PopupPanel {
                 }
 
                 // ── Bluetooth Media Controls ──
-                Column {
-                    width: parent.width
-                    spacing: 6
-                    visible: root.isBtSink && root.hasPlayer
-
-                    Rectangle {
+                    Column {
                         width: parent.width
-                        height: 1
-                        color: Theme.primary
-                        opacity: 0.2
-                    }
+                        spacing: 6
+                        visible: root.isBtSink && root.hasPlayer
 
-                    Text {
-                        text: "󰂯  Bluetooth Controls"
-                        color: Qt.alpha(Theme.fg, 0.5)
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        font.bold: true
-                    }
-
-                    Row {
-                        width: parent.width
-                        spacing: 12
-
-                        Text {
-                            text: "prev"
-                            color: Theme.fg
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            anchors.verticalCenter: parent.verticalCenter
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                hoverEnabled: true
-                                onEntered: parent.color = Theme.primary
-                                onExited: parent.color = Theme.fg
-                                onClicked: root.playerCtl(["previous"])
-                            }
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Theme.primary
+                            opacity: 0.25
                         }
 
                         Text {
-                            text: root.playerStatus === "Playing" ? "pause" : "play"
+                            text: "󰂯 Bluetooth Controls"
                             color: Theme.primary
+                            opacity: 0.5
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             font.bold: true
-                            anchors.verticalCenter: parent.verticalCenter
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                hoverEnabled: true
-                                onEntered: parent.color = Qt.lighter(Theme.primary, 1.2)
-                                onExited: parent.color = Theme.primary
-                                onClicked: root.playerCtl(["play-pause"])
-                            }
+                            renderType: Text.NativeRendering
                         }
 
-                        Text {
-                            text: "next"
-                            color: Theme.fg
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            anchors.verticalCenter: parent.verticalCenter
+                        Row {
+                            width: parent.width
+                            spacing: 20
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                hoverEnabled: true
-                                onEntered: parent.color = Theme.primary
-                                onExited: parent.color = Theme.fg
-                                onClicked: root.playerCtl(["next"])
+                            Text {
+                                text: "󰙣 Prev"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    hoverEnabled: true
+                                    onClicked: root.playerCtl(["previous"])
+                                }
+                            }
+
+                            Text {
+                                text: "󰐊 " + (root.playerStatus === "Playing" ? "Pause" : "Play")
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    hoverEnabled: true
+                                    onClicked: root.playerCtl(["play-pause"])
+                                }
+                            }
+
+                            Text {
+                                text: "󰙡 Next"
+                                color: Theme.primary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                anchors.verticalCenter: parent.verticalCenter
+                                renderType: Text.NativeRendering
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    hoverEnabled: true
+                                    onClicked: root.playerCtl(["next"])
+                                }
                             }
                         }
                     }
-                }
 
             }
         }

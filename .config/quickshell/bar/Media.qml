@@ -15,6 +15,10 @@ BarModule {
     property string artist: ""
     property string title: ""
     property string album: ""
+    property string artUrl: ""
+    property double trackLength: 0
+    property double volume: 0
+    property double position: 0
     property bool hasPlayer: false
     property var mediaPopupRef: null
 
@@ -64,10 +68,14 @@ BarModule {
 
     function fetchMetadata() {
         if (!root.playerName) return
-        metaProc.command = ["playerctl", "-p", root.playerName, "metadata", "--format", "{{artist}}|{{title}}|{{album}}|{{mpris:artUrl}}"]
+        metaProc.command = ["playerctl", "-p", root.playerName, "metadata", "--format", "{{artist}}|{{title}}|{{album}}|{{mpris:artUrl}}|{{mpris:length}}"]
         metaProc.running = true
         statusProc.command = ["playerctl", "-p", root.playerName, "status"]
         statusProc.running = true
+        volProc.command = ["playerctl", "-p", root.playerName, "volume"]
+        volProc.running = true
+        posProc.command = ["playerctl", "-p", root.playerName, "position"]
+        posProc.running = true
     }
 
     Process {
@@ -84,6 +92,13 @@ BarModule {
             root.artist = parts.length > 0 ? parts[0] : ""
             root.title = parts.length > 1 ? parts[1] : ""
             root.album = parts.length > 2 ? parts[2] : ""
+            root.artUrl = parts.length > 3 ? parts[3] : ""
+            if (parts.length > 4) {
+                var len = parseInt(parts[4])
+                root.trackLength = isNaN(len) ? 0 : len
+            } else {
+                root.trackLength = 0
+            }
         }
     }
 
@@ -93,6 +108,26 @@ BarModule {
         stdout: StdioCollector {}
         onExited: {
             root.playerStatus = stdout.text.trim()
+        }
+    }
+
+    Process {
+        id: volProc
+        running: false
+        stdout: StdioCollector {}
+        onExited: {
+            var v = parseFloat(stdout.text.trim())
+            root.volume = isNaN(v) ? 0 : v
+        }
+    }
+
+    Process {
+        id: posProc
+        running: false
+        stdout: StdioCollector {}
+        onExited: {
+            var p = parseFloat(stdout.text.trim())
+            root.position = isNaN(p) ? 0 : p
         }
     }
 
