@@ -19,9 +19,8 @@ Item {
         } catch (e) { console.warn("DataModule JSON parse error:", e) }
       }
     }
-    onExited: {
-      // Restart after short backoff on crash/failure
-      crashRestart.restart()
+    onExited: function(code) {
+      if (code !== 0) crashRestart.restart()
     }
   }
 
@@ -33,7 +32,7 @@ Item {
     repeat: false
     onTriggered: {
       root.backoffMs = Math.min(root.backoffMs * 2, 30000)
-      proc.running = true
+      if (!proc.running) proc.running = true
     }
   }
 

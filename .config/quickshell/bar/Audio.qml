@@ -15,6 +15,10 @@ BarModule {
   property bool isMuted: false
   property var mediaPopupRef: null
 
+  // Cached mic state for popup sync
+  property int micVol: 100
+  property bool micMuted: false
+
     DataModule {
     id: audioData
     path: Theme.bin("get_audio_status")
@@ -22,13 +26,15 @@ BarModule {
     onDataReceived: function(j) {
       root.vol = j.volume ?? 0
       root.isMuted = j.muted ?? false
+      if (j.default_source) {
+        root.micVol = j.default_source.volume ?? 100
+        root.micMuted = j.default_source.muted ?? false
+      }
       if (root.mediaPopupRef && root.mediaPopupRef.showPopup) {
         root.mediaPopupRef.sysVol = root.vol
         root.mediaPopupRef.sysMuted = root.isMuted
-        if (j.default_source) {
-          root.mediaPopupRef.micVol = j.default_source.volume ?? 100
-          root.mediaPopupRef.micMuted = j.default_source.muted ?? false
-        }
+        root.mediaPopupRef.micVol = root.micVol
+        root.mediaPopupRef.micMuted = root.micMuted
       }
     }
   }
@@ -57,6 +63,8 @@ BarModule {
       } else if (root.mediaPopupRef) {
         root.mediaPopupRef.sysVol = root.vol
         root.mediaPopupRef.sysMuted = root.isMuted
+        root.mediaPopupRef.micVol = root.micVol
+        root.mediaPopupRef.micMuted = root.micMuted
         root.mediaPopupRef.showPopup = !root.mediaPopupRef.showPopup
       }
     }
