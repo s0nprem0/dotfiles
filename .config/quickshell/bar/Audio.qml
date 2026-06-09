@@ -13,14 +13,23 @@ BarModule {
 
   property int vol: 0
   property bool isMuted: false
+  property var mediaPopupRef: null
 
-  DataModule {
+    DataModule {
     id: audioData
     path: Theme.bin("get_audio_status")
     interval: 1000
     onDataReceived: function(j) {
       root.vol = j.volume ?? 0
       root.isMuted = j.muted ?? false
+      if (root.mediaPopupRef && root.mediaPopupRef.showPopup) {
+        root.mediaPopupRef.sysVol = root.vol
+        root.mediaPopupRef.sysMuted = root.isMuted
+        if (j.default_source) {
+          root.mediaPopupRef.micVol = j.default_source.volume ?? 100
+          root.mediaPopupRef.micMuted = j.default_source.muted ?? false
+        }
+      }
     }
   }
 
@@ -45,9 +54,10 @@ BarModule {
       if (mouse.button === Qt.RightButton) {
         audioGui.command = ["pavucontrol"]
         audioGui.running = true
-      } else {
-        audioAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]
-        audioAction.running = true
+      } else if (root.mediaPopupRef) {
+        root.mediaPopupRef.sysVol = root.vol
+        root.mediaPopupRef.sysMuted = root.isMuted
+        root.mediaPopupRef.showPopup = !root.mediaPopupRef.showPopup
       }
     }
   }

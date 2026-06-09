@@ -53,10 +53,9 @@ Bar {
             Notifications { notifService: notifService }
             Tray {}
             Clipboard { clipboardPopupRef: clipboardPopup }
-            Audio {}
+            Audio { mediaPopupRef: mediaPopup }
             Battery {}
             Network {}
-            Media { mediaPopupRef: mediaPopup }
             Settings { settingsPopupRef: settingsPopup }
         }
     }

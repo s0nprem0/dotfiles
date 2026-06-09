@@ -57,9 +57,9 @@ Rectangle {
                 property var ws: root.wsMap[wsId] || null
 
                 readonly property bool exists: ws !== null
-                readonly property bool isFocused: exists && ws.id === Hyprland.activeWorkspace.id
+                readonly property bool isFocused: exists && ws.id === Hyprland.focusedWorkspace.id
                 readonly property bool isActive: exists && ws.windows > 0
-                readonly property bool isUrgent: exists && Hyprland.urgentWorkspaces != null && Hyprland.urgentWorkspaces.contains(ws)
+                readonly property bool isUrgent: exists && ws.urgent
 
                 implicitWidth: 24
                 implicitHeight: 24
