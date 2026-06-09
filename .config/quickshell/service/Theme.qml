@@ -14,15 +14,15 @@ QtObject {
     Behavior on fg { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
     property color surface:       "#271d1c"
     Behavior on surface { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
-    property color surfaceLighter: "#3D2826"
+    property color surfaceLighter: "#322826"
     Behavior on surfaceLighter { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
     property color primary:       "#ffb4a7"
     Behavior on primary { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
     property color muted:         "#66f1dfdb"
     Behavior on muted { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
-    property color error:         "#f38ba8"
+    property color error:         "#ffb4ab"
     Behavior on error { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
-    property color warning:       "#f9e2af"
+    property color warning:       "#ddc48c"
     Behavior on warning { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
     property color green:         "#A6DA95"
     Behavior on green { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }

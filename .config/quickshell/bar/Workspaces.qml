@@ -27,7 +27,7 @@ Rectangle {
     color: Qt.alpha(Theme.surface, 0.3)
     border.color: Qt.alpha(Theme.primary, 0.1)
     border.width: 1
-    radius: 10
+    radius: 0
 
     height: 28
     implicitWidth: wsRow.implicitWidth + 8
@@ -64,7 +64,7 @@ Rectangle {
                 implicitWidth: 24
                 implicitHeight: 24
 
-                radius: 8
+                radius: 0
 
                 color: {
                     if (isFocused)
@@ -124,7 +124,7 @@ Rectangle {
 
                     width: 4
                     height: 4
-                    radius: 2
+                    radius: 0
 
                     visible: exists && !isFocused
 

@@ -14,7 +14,7 @@ Rectangle {
   property bool tooltipBelow: true
 
   height: 28
-  radius: 10
+  radius: 0
 
   color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
   border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)

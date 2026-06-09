@@ -23,3 +23,7 @@ output_path = "~/.config/gtk-3.0/gtk.css"
 [templates.gtk4]
 input_path = "~/.config/matugen/templates/gtk/gtk4.css"
 output_path = "~/.config/gtk-4.0/gtk.css"
+
+[templates.quickshell]
+input_path = "~/.config/matugen/templates/quickshell/colors.json"
+output_path = "~/.cache/quickshell/colors.json"
