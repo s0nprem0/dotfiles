@@ -35,12 +35,12 @@ BarModule {
     path: Theme.bin("get_battery_status")
     interval: 10000
     onDataReceived: function(j) {
-      root.pct = j.capacity
-      root.charging = String(j.status).toLowerCase() === "charging"
-        || String(j.status).toLowerCase() === "full"
-      root.healthStr = "Health: " + j.health + "%"
-      root.powerStr = "Power: " + j.power_draw_w + "W"
-      root.timeStr = j.time_remaining || ""
+      root.pct = j.capacity ?? 0
+      var status = (j.status ?? "").toString().toLowerCase()
+      root.charging = status === "charging" || status === "full"
+      root.healthStr = j.health != null ? "Health: " + j.health + "%" : ""
+      root.powerStr = j.power_draw_w != null ? "Power: " + j.power_draw_w + "W" : ""
+      root.timeStr = j.time_remaining ?? ""
       root.batteryDevice = j
     }
   }

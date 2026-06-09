@@ -81,9 +81,9 @@ BarModule {
                 return
             }
             var parts = out.split("|")
-            root.artist = parts[0] || ""
-            root.title = parts[1] || ""
-            root.album = parts[2] || ""
+            root.artist = parts.length > 0 ? parts[0] : ""
+            root.title = parts.length > 1 ? parts[1] : ""
+            root.album = parts.length > 2 ? parts[2] : ""
         }
     }
 

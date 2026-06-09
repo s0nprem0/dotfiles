@@ -38,7 +38,7 @@ BarModule {
         running: false
         stdout: StdioCollector {}
         onExited: {
-            root.hasItems = stdout.text.trim() === "1"
+            root.hasItems = (stdout.text ?? "").trim() === "1"
         }
     }
 

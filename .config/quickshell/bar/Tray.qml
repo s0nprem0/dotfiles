@@ -4,18 +4,14 @@ import QtQuick.Layouts
 import QtQuick.Controls // Required for ToolTip
 
 import "../service"
+import "../components"
 
-Rectangle {
+BarModule {
   id: root
 
-  height: 28
   // Let the Layout calculate the width automatically based on its children + margins
   implicitWidth: trayLayout.implicitWidth + 12
 
-  radius: 10
-  color: Qt.alpha(Theme.surface, 0.4)
-  border.color: Qt.alpha(Theme.primary, 0.1)
-  border.width: 1
   visible: trayRepeater.count > 0
 
   RowLayout {

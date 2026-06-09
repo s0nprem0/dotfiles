@@ -8,8 +8,8 @@ BarModule {
 
   implicitWidth: notifText.implicitWidth + 12 + (badge.visible ? badge.width + 2 : 0)
 
-  required property var notifService
-  property int notifCount: notifService.trackedCount
+  property var notifService: null
+  property int notifCount: notifService ? notifService.trackedCount : 0
 
   acceptedButtons: Qt.LeftButton | Qt.RightButton
 

@@ -20,16 +20,18 @@ BarModule {
     path: Theme.bin("get_bluetooth_status")
     interval: 5000
     onDataReceived: function(j) {
-      root.btEnabled = j.enabled
+      root.btEnabled = j.enabled ?? false
       root.hasConnected = false
       var names = []
-      for (var i = 0; i < j.devices.length; i++) {
-        if (j.devices[i].connected) {
+      var devices = j.devices ?? []
+      for (var i = 0; i < devices.length; i++) {
+        var dev = devices[i]
+        if (dev && dev.connected) {
           root.hasConnected = true
-          names.push(j.devices[i].name)
+          names.push(dev.name)
         }
       }
-      root.btTooltip = root.hasConnected ? names.join(", ") : (j.enabled ? "No devices" : "Bluetooth off")
+      root.btTooltip = root.hasConnected ? names.join(", ") : (root.btEnabled ? "No devices" : "Bluetooth off")
     }
   }
 

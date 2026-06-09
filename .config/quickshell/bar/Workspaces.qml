@@ -7,6 +7,8 @@ import "../service"
 Rectangle {
     id: root
 
+    readonly property int maxWorkspaces: 20
+
     // Hyprland.workspaces is isPropertyConstant, so we mirror the count into
     // a regular property that the Repeater model can react to.
     property int workspaceCount: 0
@@ -40,21 +42,24 @@ Rectangle {
         spacing: 2
 
         Repeater {
-            model: Math.min(20, root.workspaceCount)
+            model: Math.min(root.maxWorkspaces, root.workspaceCount)
 
             delegate: Rectangle {
                 id: wsBtn
 
                 required property int index
 
-                readonly property int wsId: index + 1
+                readonly property int wsId: {
+                    var keys = Object.keys(root.wsMap).map(k => parseInt(k)).sort((a, b) => a - b)
+                    return index < keys.length ? keys[index] : index + 1
+                }
 
                 property var ws: root.wsMap[wsId] || null
 
                 readonly property bool exists: ws !== null
-                readonly property bool isFocused: exists && ws.focused
-                readonly property bool isActive: exists && ws.active
-                readonly property bool isUrgent: exists && ws.urgent
+                readonly property bool isFocused: exists && ws.id === Hyprland.activeWorkspace.id
+                readonly property bool isActive: exists && ws.windows > 0
+                readonly property bool isUrgent: exists && Hyprland.urgentWorkspaces != null && Hyprland.urgentWorkspaces.contains(ws)
 
                 implicitWidth: 24
                 implicitHeight: 24
@@ -157,14 +162,22 @@ Rectangle {
         }
     }
 
+    Timer {
+        id: refreshTimer
+        interval: 50
+        onTriggered: {
+            root.workspaceCount = Hyprland.workspaces.values.length
+            root.refreshMap()
+        }
+    }
+
     Connections {
         target: Hyprland
 
         function onRawEvent(event) {
             if (event.name === "workspacev2" || event.name === "destroyworkspacev2") {
                 Hyprland.refreshWorkspaces()
-                root.workspaceCount = Hyprland.workspaces.values.length
-                root.refreshMap()
+                refreshTimer.restart()
             }
         }
     }
