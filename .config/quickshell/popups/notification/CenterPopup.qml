@@ -142,7 +142,7 @@ Item {
                 visible: false
 
                 property bool isClosing: false
-                property real animLeftMargin: -360
+                property real animTopMargin: -500
                 property real animOpacity: 0
                 property bool showPopup: root.showPopup
                 property bool winVisible: false
@@ -193,7 +193,7 @@ Item {
                     if (root.showPopup) {
                         exitAnim.stop()
                         isClosing = false
-                        animLeftMargin = -360
+                        animTopMargin = -500
                         animOpacity = 0
                         win.visible = true
                         introAnim.start()
@@ -219,18 +219,18 @@ Item {
                 implicitWidth: 380
                 implicitHeight: Math.min(mainLayout.implicitHeight + 32, 720)
 
-                anchors { left: true }
-                margins { left: win.animLeftMargin }
+                anchors { top: true }
+                margins { top: win.animTopMargin }
 
                 ParallelAnimation {
                     id: introAnim
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: -360; to: 48; duration: 140; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: win; property: "animTopMargin"; from: -500; to: 48; duration: 140; easing.type: Easing.OutCubic }
                     NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 140; easing.type: Easing.OutCubic }
                 }
                 ParallelAnimation {
                     id: exitAnim
                     onStopped: win.visible = false
-                    NumberAnimation { target: win; property: "animLeftMargin"; from: 48; to: -360; duration: 120; easing.type: Easing.InCubic }
+                    NumberAnimation { target: win; property: "animTopMargin"; from: 48; to: -500; duration: 120; easing.type: Easing.InCubic }
                     NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
                 }
 

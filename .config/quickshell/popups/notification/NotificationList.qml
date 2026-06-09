@@ -156,8 +156,8 @@ ColumnLayout {
 
     ScrollView {
         Layout.fillWidth: true
-        Layout.fillHeight: true
-        Layout.minimumHeight: 100
+        Layout.fillHeight: root.notificationItems.length > 0
+        Layout.minimumHeight: root.notificationItems.length > 0 ? 100 : 0
         clip: true
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
@@ -351,18 +351,19 @@ ColumnLayout {
                 }
             }
         }
+    }
 
-        Item {
-            anchors.fill: parent
-            visible: root.notificationItems.length === 0
-            Text {
-                anchors.centerIn: parent
-                text: root.showHistory ? "No history" : "No notifications"
-                color: Theme.primary
-                font.family: Theme.fontFamily
-                font.pixelSize: 9
-                opacity: 0.4
-            }
+    Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: root.notificationItems.length === 0
+        visible: root.notificationItems.length === 0
+        Text {
+            anchors.centerIn: parent
+            text: root.showHistory ? "No history" : "No notifications"
+            color: Theme.primary
+            font.family: Theme.fontFamily
+            font.pixelSize: 9
+            opacity: 0.4
         }
     }
 }
