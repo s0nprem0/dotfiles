@@ -113,6 +113,11 @@ for _, dir in ipairs({ "left", "right", "up", "down" }) do
 	hl.bind(mainMod .. " + " .. dir, hl.dsp.focus({ direction = dir }), { description = "Focus " .. dir })
 end
 
+-- Move Windows
+for _, dir in ipairs({ "left", "right", "up", "down" }) do
+	hl.bind(mainMod .. " + SHIFT + " .. dir, hl.dsp.window.move({ direction = dir }), { description = "Move window " .. dir })
+end
+
 -- Window Cycling
 hl.bind(mainMod .. " + bracketleft", hl.dsp.exec_cmd("hyprctl dispatch cyclenext prev"), { description = "Cycle windows: prev" })
 

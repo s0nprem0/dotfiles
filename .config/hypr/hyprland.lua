@@ -53,18 +53,6 @@ hl.config({
 			render_power = 2,
 		},
 
-		blur = {
-			enabled = false,
-			size = 3,
-			passes = 2,
-			vibrancy_darkness = 1.3,
-			new_optimizations = true,
-			ignore_opacity = true,
-			xray = true,
-			noise = 0.05,
-			brightness = 1,
-		},
-
 		-- dim
 		dim_inactive = true,
 		dim_strength = 0.05,
@@ -101,10 +89,9 @@ hl.config({
 
 	-- Miscellaneous
 	misc = {
-		force_default_wallpaper = 1,
 		disable_hyprland_logo = true,
 		disable_splash_rendering = true,
-		vrr = 0,
+		vrr = 2,
 		enable_swallow = true,
 		swallow_regex = "^(btop|htop|top|nvim|less|man|magic|kitty)$",
 		on_focus_under_fullscreen = 2,

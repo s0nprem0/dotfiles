@@ -5,11 +5,13 @@ echo "Reloading Hyprland, Quickshell, and Hyprpaper..."
 
 hyprctl reload
 
-pkill hyprpaper 2>/dev/null || true
-
-sleep 0.5
-
-hyprpaper &>/dev/null &
+grep -A1 '^wallpaper {' ~/.config/hypr/hyprpaper.conf | awk '
+  /monitor/ { m=$3 }
+  /path/    { p=$3; gsub(/^["\x27]|["\x27]$/,"",p); print m, p; m=""; p="" }
+' | while read -r monitor path; do
+  hyprctl hyprpaper preload "$path" 2>/dev/null || true
+  hyprctl hyprpaper wallpaper "$monitor,$path" 2>/dev/null || true
+done
 qs --reload &>/dev/null || true
 
 # Wait for notification service to register on D-Bus (up to 10s)

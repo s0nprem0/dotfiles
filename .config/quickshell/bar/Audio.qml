@@ -15,11 +15,18 @@ BarModule {
   property bool isMuted: false
   property var mediaPopupRef: null
 
-  // Cached mic state for popup sync
   property int micVol: 100
   property bool micMuted: false
 
-    DataModule {
+  property string playerName: ""
+  property string playerStatus: ""
+  property string artist: ""
+  property string title: ""
+  property string artUrl: ""
+  property double trackLength: 0
+  property bool hasPlayer: false
+
+  DataModule {
     id: audioData
     path: Theme.bin("get_audio_status")
     interval: 1000
@@ -35,6 +42,91 @@ BarModule {
         root.mediaPopupRef.sysMuted = root.isMuted
         root.mediaPopupRef.micVol = root.micVol
         root.mediaPopupRef.micMuted = root.micMuted
+      }
+    }
+  }
+
+  Timer {
+    id: pollTimer
+    interval: 3000
+    repeat: true
+    running: root.hasPlayer
+    onTriggered: fetchPlayerInfo()
+  }
+
+  Timer {
+    id: checkTimer
+    interval: 10000
+    repeat: true
+    running: !root.hasPlayer
+    triggeredOnStart: true
+    onTriggered: playerListProc.running = true
+  }
+
+  function refresh() {
+    playerListProc.running = true
+  }
+
+  function fetchPlayerInfo() {
+    if (!root.playerName) return
+    metaProc.command = ["playerctl", "-p", root.playerName, "metadata", "--format", "{{artist}}|{{title}}|{{mpris:artUrl}}|{{mpris:length}}"]
+    metaProc.running = true
+    statusProc.running = true
+  }
+
+  Process {
+    id: playerListProc
+    command: ["playerctl", "-l"]
+    running: false
+    stdout: StdioCollector {}
+    onExited: {
+      var out = stdout.text.trim()
+      if (!out) {
+        root.hasPlayer = false
+        return
+      }
+      var list = out.split("\n")
+      var p = list.length > 0 ? list[0].trim() : ""
+      if (p) {
+        root.hasPlayer = true
+        root.playerName = p
+        fetchPlayerInfo()
+      } else {
+        root.hasPlayer = false
+      }
+    }
+  }
+
+  Process {
+    id: metaProc
+    running: false
+    stdout: StdioCollector {}
+    onExited: {
+      var out = stdout.text.trim()
+      if (!out) return
+      var parts = out.split("|")
+      root.artist = parts.length > 0 ? parts[0] : ""
+      root.title = parts.length > 1 ? parts[1] : ""
+      root.artUrl = parts.length > 2 ? parts[2] : ""
+      if (parts.length > 3) {
+        var len = parseInt(parts[3])
+        root.trackLength = isNaN(len) ? 0 : len
+      } else {
+        root.trackLength = 0
+      }
+    }
+  }
+
+  Process {
+    id: statusProc
+    running: false
+    stdout: StdioCollector {}
+    onExited: {
+      var s = stdout.text.trim()
+      if (s === "Playing" || s === "Paused") {
+        root.playerStatus = s
+      } else {
+        root.hasPlayer = false
       }
     }
   }
@@ -58,8 +150,12 @@ BarModule {
     target: mA
     function onClicked(mouse) {
       if (mouse.button === Qt.RightButton) {
-        audioGui.command = ["pavucontrol"]
-        audioGui.running = true
+        if (root.hasPlayer) {
+          Quickshell.execDetached(["playerctl", "-p", root.playerName, "play-pause"])
+        } else {
+          audioGui.command = ["pavucontrol"]
+          audioGui.running = true
+        }
       } else if (root.mediaPopupRef) {
         root.mediaPopupRef.sysVol = root.vol
         root.mediaPopupRef.sysMuted = root.isMuted
@@ -88,6 +184,10 @@ BarModule {
     }
   }
 
+  tooltipText: root.hasPlayer
+    ? (root.artist ? root.artist + " - " + root.title : root.title || root.playerName)
+    : root.isMuted ? "Muted" : root.vol + "%"
+
   RowLayout {
     id: contentRow
     anchors.centerIn: parent
@@ -106,6 +206,16 @@ BarModule {
       color: root.isMuted ? Theme.muted : Qt.alpha(Theme.fg, 0.7)
       font.family: Theme.fontFamily
       font.pixelSize: 11
+    }
+
+    Text {
+      visible: root.hasPlayer
+      text: root.playerStatus === "Playing" ? "" : ""
+      color: root.playerStatus === "Playing" ? Theme.green : Qt.alpha(Theme.fg, 0.5)
+      font.family: Theme.fontFamily
+      font.pixelSize: 9
+      Layout.bottomMargin: 1
+      Layout.leftMargin: 2
     }
   }
 }
