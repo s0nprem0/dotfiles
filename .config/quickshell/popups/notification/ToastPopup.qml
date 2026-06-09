@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../../service"
+import "."
 
 Item {
     Variants {
@@ -203,18 +204,7 @@ Item {
 
                                                 Text {
                                                     visible: !model.appIcon || model.appIcon.length === 0
-                                                    text: {
-                                                        var name = (model.appName || "").toLowerCase()
-                                                        if (model.urgency === 2) return "󰀦"
-                                                        if (name.includes("discord")) return "󰙯"
-                                                        if (name.includes("firefox")) return "󰈹"
-                                                        if (name.includes("spotify")) return "󰓇"
-                                                        if (name.includes("telegram")) return ""
-                                                        if (name.includes("whatsapp")) return "󰖣"
-                                                        if (name.includes("signal")) return "󰋽"
-                                                        if (name.includes("slack")) return "󰒱"
-                                                        return "󰂚"
-                                                    }
+                                                    text: model.urgency === 2 ? "󰀦" : IconResolver.nerdFontGlyph(model.appName)
                                                     color: toastPopup.urgencyColor(model.urgency)
                                                     font.family: Theme.fontFamily
                                                     font.pixelSize: 14
@@ -302,7 +292,6 @@ Item {
                                             onLinkActivated: (link) => Qt.openUrlExternally(link)
                                         }
 
-                                        // ── Action buttons ─────────────────────────
                                         RowLayout {
                                             Layout.fillWidth: true
                                             spacing: 6
@@ -310,36 +299,11 @@ Item {
 
                                             Repeater {
                                                 model: model.notifData && model.notifData.actions || []
-                                                delegate: Rectangle {
-                                                    required property var modelData
-                                                    implicitHeight: 22
-                                                    implicitWidth: actLabel.implicitWidth + 10
-                                                    color: actMa.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Theme.surfaceLighter
-                                                    radius: 4
-                                                    border.width: 1
-                                                    border.color: actMa.containsMouse ? Qt.alpha(Theme.primary, 0.4) : Qt.alpha(Theme.primary, 0.15)
-
-                                                    Text {
-                                                        id: actLabel
-                                                        anchors.centerIn: parent
-                                                        text: modelData.label || "unknown"
-                                                        color: Theme.fg
-                                                        font.family: Theme.fontFamily
-                                                        font.pixelSize: 9
-                                                    }
-
-                                                    MouseArea {
-                                                        id: actMa
-                                                        anchors.fill: parent
-                                                        cursorShape: Qt.PointingHandCursor
-                                                        hoverEnabled: true
-                                                        onClicked: {
-                                                            modelData.invoke()
-                                                            close()
-                                                        }
-                                                    }
+                                                delegate: NotificationActionButton {
+                                                    action: modelData
+                                                    onInvoked: close()
                                                 }
-                                        }
+                                            }
 
                                         Item { Layout.fillWidth: true }
 

@@ -24,13 +24,6 @@ Item {
     property var actions: []
     property var hints: ({})
 
-    Timer {
-        running: !root.closed
-        repeat: true
-        interval: 5000
-        onTriggered: root.updateTimeStr()
-    }
-
     function updateTimeStr() {
         var diff = Date.now() - root.time.getTime()
         var m = Math.floor(diff / 60000)

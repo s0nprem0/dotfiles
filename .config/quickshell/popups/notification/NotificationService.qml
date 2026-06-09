@@ -11,6 +11,7 @@ Item {
     property bool dnd: false
     property var toastModel: ListModel { id: toastModel }
     property int maxToasts: 5
+    property int maxTotal: 200
     property var notifList: []
     property int trackedCount: 0
 
@@ -37,8 +38,7 @@ Item {
             list.unshift(data)
 
             // Enforce total limit (active + history)
-            var maxTotal = 200
-            while (list.length > maxTotal) {
+            while (list.length > service.maxTotal) {
               var stale = list.pop()
               stale.destroy()
             }
@@ -164,13 +164,6 @@ Item {
         }
     }
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: service.recalcTrackedCount()
-    }
-
     function recalcTrackedCount() {
         var count = 0
         for (var i = 0; i < service.notifList.length; i++) {
@@ -178,6 +171,16 @@ Item {
                 count++
         }
         service.trackedCount = count
+    }
+
+    Timer {
+        interval: 5000
+        repeat: true
+        running: true
+        onTriggered: {
+            for (var i = 0; i < service.notifList.length; i++)
+                service.notifList[i].updateTimeStr()
+        }
     }
 
     onNotifListChanged: service.recalcTrackedCount()

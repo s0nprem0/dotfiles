@@ -4,10 +4,13 @@ import Quickshell
 import Quickshell.Io
 import "../service"
 
-Item {
+PopupPanel {
     id: root
 
-    property bool showPopup: false
+    anchorSide: "none"
+    panelWidth: 340
+    panelMaxHeight: 600
+    contentMargin: 16
 
     property string hostname: ""
     property string kernel: ""
@@ -18,7 +21,7 @@ Item {
     property string pendingLabel: ""
     property bool confirmVisible: false
 
-    onShowPopupChanged: { if (showPopup) refresh() }
+    onBeforeOpen: refresh()
 
     function refresh() {
         sysInfoProc.running = true
@@ -32,7 +35,7 @@ Item {
     }
 
     function closeWin() {
-        showPopup = false
+        root.closePopup()
         confirmVisible = false
     }
 
@@ -63,7 +66,7 @@ Item {
 
     Process {
         id: actionProc
-        onExited: { if (root.showPopup) root.showPopup = false }
+        onExited: { if (root.showPopup) root.closePopup() }
     }
 
     // ── Data ─────────────────────────────────────────────────────────────
@@ -84,328 +87,298 @@ Item {
 
     // ══════════════════════════════════════════════════════════════════════
 
-    Variants {
-        model: Quickshell.screens
-        delegate: Component {
-            PanelWindow {
-                id: win
-                required property var modelData
-                visible: root.showPopup
+    contentComponent: Component {
+        ColumnLayout {
+            id: mainColumn
+            anchors.fill: parent
+            spacing: 14
 
-                screen: modelData
-                color: "transparent"
-                exclusionMode: PanelWindow.ExclusionMode.Ignore
-                focusable: true
-                implicitWidth: 340
-                implicitHeight: Math.min(mainColumn.implicitHeight + 28, 600)
+            // ── Header ─────────────────────────────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
 
-                Rectangle {
-                    anchors.fill: parent
-                    color: Theme.bg
-                    focus: true
-                    border.width: 1
-                    border.color: Theme.primary
-                    radius: 8
+                Text {
+                    text: "󰒓"
+                    color: Theme.primary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 16
+                }
 
-                    Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Escape) root.closeWin()
-                    }
+                Text {
+                    text: "Settings"
+                    color: Theme.fg
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 14
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
 
-                    ColumnLayout {
-                        id: mainColumn
+                Text {
+                    text: "✕"
+                    color: Theme.muted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 12
+
+                    MouseArea {
                         anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 14
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+                        onEntered: parent.color = Theme.error
+                        onExited: parent.color = Theme.muted
+                        onClicked: root.closeWin()
+                    }
+                }
+            }
 
-                        // ── Header ─────────────────────────────────────────
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: Theme.primary
+                opacity: 0.15
+            }
 
-                            Text {
-                                text: "󰒓"
-                                color: Theme.primary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 16
-                            }
+            // ── Section: System ────────────────────────────────────────
+            Text {
+                text: "System"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+                font.bold: true
+                opacity: 0.6
+            }
 
-                            Text {
-                                text: "Settings"
-                                color: Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 14
-                                font.bold: true
-                                Layout.fillWidth: true
-                            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
 
-                            Text {
-                                text: "✕"
-                                color: Theme.muted
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 12
+                Repeater {
+                    model: root.sysActions
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: parent.color = Theme.error
-                                    onExited: parent.color = Theme.muted
-                                    onClicked: root.closeWin()
-                                }
-                            }
-                        }
+                    delegate: Rectangle {
+                        required property var modelData
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
-                        }
+                        implicitWidth: 48
+                        implicitHeight: 52
+                        radius: 8
+                        color: mouseArea.containsMouse ? Theme.surfaceLighter : Theme.surface
+                        border.width: 1
+                        border.color: Theme.surfaceLighter
 
-                        // ── Section: System ────────────────────────────────
-                        Text {
-                            text: "System"
-                            color: Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 10
-                            font.bold: true
-                            opacity: 0.6
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            Repeater {
-                                model: root.sysActions
-
-                                delegate: Rectangle {
-                                    required property var modelData
-
-                                    implicitWidth: 48
-                                    implicitHeight: 52
-                                    radius: 8
-                                    color: mouseArea.containsMouse ? Theme.surfaceLighter : Theme.surface
-                                    border.width: 1
-                                    border.color: Theme.surfaceLighter
-
-                                    property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
-
-                                    ColumnLayout {
-                                        anchors.centerIn: parent
-                                        spacing: 2
-
-                                        Text {
-                                            text: modelData.icon
-                                            color: parent.parent.destructive ? Theme.error : Theme.fg
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 16
-                                            Layout.alignment: Qt.AlignHCenter
-                                        }
-
-                                        Text {
-                                            text: modelData.label
-                                            color: parent.parent.destructive ? Theme.error : Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 8
-                                            Layout.alignment: Qt.AlignHCenter
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: mouseArea
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-
-                                        onClicked: {
-                                            if (modelData.confirm)
-                                                root.confirmAction(modelData.cmd.join(" "), modelData.label)
-                                            else
-                                                Quickshell.execDetached(modelData.cmd)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // ── Confirm dialog ──────────────────────────────────
-                        Rectangle {
-                            Layout.fillWidth: true
-                            visible: root.confirmVisible
-                            height: 36
-                            radius: 6
-                            color: Theme.surface
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                spacing: 8
-
-                                Text {
-                                    text: "Confirm " + root.pendingLabel + "?"
-                                    color: Theme.fg
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                    Layout.fillWidth: true
-                                }
-
-                                Text {
-                                    text: "Cancel"
-                                    color: Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.confirmVisible = false
-                                    }
-                                }
-
-                                Rectangle {
-                                    width: 48
-                                    height: 22
-                                    radius: 4
-                                    color: Theme.error
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Yes"
-                                        color: Theme.bg
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            actionProc.command = ["sh", "-c", root.pendingAction]
-                                            actionProc.running = true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
-                        }
-
-                        // ── Section: Network ────────────────────────────────
-                        Text {
-                            text: "Network"
-                            color: Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 10
-                            font.bold: true
-                            opacity: 0.6
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 36
-                            radius: 6
-                            color: ma.containsMouse ? Theme.surfaceLighter : Theme.surface
-                            border.width: 1
-                            border.color: Theme.surfaceLighter
-
-                            property alias ma: ma
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                spacing: 8
-
-                                Text {
-                                    text: "󰤨"
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 14
-                                }
-
-                                Text {
-                                    text: "WiFi Manager (impala)"
-                                    color: Theme.fg
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                    Layout.fillWidth: true
-                                }
-
-                                Text {
-                                    text: "Launch"
-                                    color: Theme.primary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                }
-                            }
-
-                            MouseArea {
-                                id: ma
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                hoverEnabled: true
-
-                                onClicked: {
-                                    Quickshell.execDetached(Config.impalaCmd)
-                                    root.closeWin()
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
-                        }
-
-                        // ── Section: About ──────────────────────────────────
-                        Text {
-                            text: "About"
-                            color: Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 10
-                            font.bold: true
-                            opacity: 0.6
-                        }
+                        property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
 
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 6
+                            anchors.centerIn: parent
+                            spacing: 2
 
-                            Repeater {
-                                model: root.aboutRows
-
-                                delegate: RowLayout {
-                                    required property var modelData
-
-                                    Layout.fillWidth: true
-                                    spacing: 8
-
-                                    Text {
-                                        text: modelData.label
-                                        color: Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 10
-                                    }
-
-                                    Text {
-                                        text: modelData.value
-                                        color: Theme.fg
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 10
-                                        elide: Text.ElideRight
-                                        Layout.fillWidth: true
-                                    }
-                                }
+                            Text {
+                                text: modelData.icon
+                                color: parent.parent.destructive ? Theme.error : Theme.fg
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 16
+                                Layout.alignment: Qt.AlignHCenter
                             }
+
+                            Text {
+                                text: modelData.label
+                                color: parent.parent.destructive ? Theme.error : Theme.muted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 8
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+                        }
+
+                        MouseArea {
+                            id: mouseArea
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+
+                            onClicked: {
+                                if (modelData.confirm)
+                                    root.confirmAction(modelData.cmd.join(" "), modelData.label)
+                                else
+                                    Quickshell.execDetached(modelData.cmd)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Confirm dialog ─────────────────────────────────────────
+            Rectangle {
+                Layout.fillWidth: true
+                visible: root.confirmVisible
+                height: 36
+                radius: 6
+                color: Theme.surface
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 8
+
+                    Text {
+                        text: "Confirm " + root.pendingLabel + "?"
+                        color: Theme.fg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: "Cancel"
+                        color: Theme.muted
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.confirmVisible = false
+                        }
+                    }
+
+                    Rectangle {
+                        width: 48
+                        height: 22
+                        radius: 4
+                        color: Theme.error
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Yes"
+                            color: Theme.bg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                actionProc.command = ["sh", "-c", root.pendingAction]
+                                actionProc.running = true
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: Theme.primary
+                opacity: 0.15
+            }
+
+            // ── Section: Network ────────────────────────────────────────
+            Text {
+                text: "Network"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+                font.bold: true
+                opacity: 0.6
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 36
+                radius: 6
+                color: ma.containsMouse ? Theme.surfaceLighter : Theme.surface
+                border.width: 1
+                border.color: Theme.surfaceLighter
+
+                property alias ma: ma
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 8
+
+                    Text {
+                        text: "󰤨"
+                        color: Theme.primary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 14
+                    }
+
+                    Text {
+                        text: "WiFi Manager (impala)"
+                        color: Theme.fg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: "Launch"
+                        color: Theme.primary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        font.bold: true
+                    }
+                }
+
+                MouseArea {
+                    id: ma
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+
+                    onClicked: {
+                        Quickshell.execDetached(Config.impalaCmd)
+                        root.closeWin()
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: Theme.primary
+                opacity: 0.15
+            }
+
+            // ── Section: About ─────────────────────────────────────────
+            Text {
+                text: "About"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+                font.bold: true
+                opacity: 0.6
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+
+                Repeater {
+                    model: root.aboutRows
+
+                    delegate: RowLayout {
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            text: modelData.label
+                            color: Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                        }
+
+                        Text {
+                            text: modelData.value
+                            color: Theme.fg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
                         }
                     }
                 }

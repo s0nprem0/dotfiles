@@ -97,7 +97,7 @@ BarModule {
         if (root.pct >= 10) return "󰁻"
         return "󰁺"
       }
-      color: root.battCritical ? Theme.error : root.battWarning ? Theme.warning : (root.charging ? "#a6e3a1" : Theme.fg)
+      color: root.battCritical ? Theme.error : root.battWarning ? Theme.warning : (root.charging ? Theme.green : Theme.fg)
       font.family: Theme.fontFamily
       font.pixelSize: 11
     }

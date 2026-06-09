@@ -11,6 +11,17 @@ Rectangle {
     // a regular property that the Repeater model can react to.
     property int workspaceCount: 0
 
+    // Lookup map to avoid O(N*M) linear scans per delegate
+    property var wsMap: ({})
+
+    function refreshMap() {
+        var map = {}
+        for (const w of Hyprland.workspaces.values) {
+            map[w.id] = w
+        }
+        root.wsMap = map
+    }
+
     color: Qt.alpha(Theme.surface, 0.3)
     border.color: Qt.alpha(Theme.primary, 0.1)
     border.width: 1
@@ -38,13 +49,7 @@ Rectangle {
 
                 readonly property int wsId: index + 1
 
-                property var ws: {
-                    for (const w of Hyprland.workspaces.values) {
-                        if (w.id === wsId)
-                            return w
-                    }
-                    return null
-                }
+                property var ws: root.wsMap[wsId] || null
 
                 readonly property bool exists: ws !== null
                 readonly property bool isFocused: exists && ws.focused
@@ -159,11 +164,13 @@ Rectangle {
             if (event.name === "workspacev2" || event.name === "destroyworkspacev2") {
                 Hyprland.refreshWorkspaces()
                 root.workspaceCount = Hyprland.workspaces.values.length
+                root.refreshMap()
             }
         }
     }
 
     Component.onCompleted: {
         root.workspaceCount = Hyprland.workspaces.values.length
+        root.refreshMap()
     }
 }

@@ -25,12 +25,19 @@ Item {
     }
   }
 
+  property int backoffMs: 1000
+
   Timer {
     id: crashRestart
-    interval: 1000
+    interval: root.backoffMs
     repeat: false
-    onTriggered: { proc.running = true }
+    onTriggered: {
+      root.backoffMs = Math.min(root.backoffMs * 2, 30000)
+      proc.running = true
+    }
   }
+
+  onDataReceived: root.backoffMs = 1000
 
   Timer {
     interval: root.interval

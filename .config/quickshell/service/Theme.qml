@@ -63,7 +63,7 @@ QtObject {
                 if (data.warning)         theme.warning = data.warning
                 if (data.green)           theme.green = data.green
                 if (data.blue)            theme.blue = data.blue
-            } catch (e) {}
+            } catch (e) { console.warn("Theme: failed to parse colors.json:", e) }
         }
         onFileChanged: reload()
     }
