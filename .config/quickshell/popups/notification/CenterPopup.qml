@@ -3,7 +3,6 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 
 import "../../service"
 
@@ -64,6 +63,9 @@ Item {
                 if (this.text) root.uptimeStr = this.text.trim().replace(/^up /i, "")
             }
         }
+        onExited: function(code) {
+            if (code !== 0) console.warn("uptimeProc exited with code", code)
+        }
     }
 
     Process {
@@ -77,6 +79,9 @@ Item {
                 } catch(e) {}
             }
         }
+        onExited: function(code) {
+            if (code !== 0) console.warn("audioProc exited with code", code)
+        }
     }
 
     Process {
@@ -89,6 +94,9 @@ Item {
                     root.btEnabled = json.enabled || false
                 } catch(e) {}
             }
+        }
+        onExited: function(code) {
+            if (code !== 0) console.warn("btProc exited with code", code)
         }
     }
 

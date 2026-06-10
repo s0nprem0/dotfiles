@@ -181,24 +181,25 @@ PopupPanel {
                     continue
                 }
 
-                // Group 3 lines per sink: Sink #, Name:, Description:
+                // Group lines per sink: Sink #, Name:, Description:
                 if (line.indexOf("Sink #") === 0) {
                     var sinkId = line.replace(/.*#/, "").replace(/:$/, "").trim()
                     var sinkName = ""
                     var sinkDesc = ""
+                    var skip = 0
 
-                    // Next line: Name:
                     if (i + 1 < lines.length) {
                         var nameLine = lines[i + 1].trim()
                         if (nameLine.indexOf("Name:") === 0) {
                             sinkName = nameLine.substring(5).trim()
+                            skip = 1
                         }
                     }
-                    // Next next line: Description:
                     if (i + 2 < lines.length) {
                         var descLine = lines[i + 2].trim()
                         if (descLine.indexOf("Description:") === 0) {
                             sinkDesc = descLine.substring(12).trim()
+                            skip = 2
                         }
                     }
 
@@ -206,7 +207,7 @@ PopupPanel {
                     var isActive = sinkName === defaultSink
                     newList.push(sinkId + "||" + displayName)
                     if (isActive) newActive = sinkId
-                    i += 2
+                    i += skip
                 }
             }
 
@@ -1083,7 +1084,10 @@ PopupPanel {
                                 anchors.fill: parent
                                 preventStealing: true
                                 onPressed: root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
-                                onPositionChanged: if (pressed) root.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
+                                onPositionChanged: if (pressed) {
+                                    var v = Math.max(0.01, Math.min(1, mouse.x / width))
+                                    if (Math.abs(v - root.volume) > 0.02) root.playerCtl(["volume", v.toFixed(2)])
+                                }
                             }
 
                             WheelHandler {
@@ -1180,7 +1184,10 @@ PopupPanel {
                             anchors.fill: parent
                             preventStealing: true
                             onPressed: root.setSysVol(mouse.x / width)
-                            onPositionChanged: if (pressed) root.setSysVol(mouse.x / width)
+                            onPositionChanged: if (pressed) {
+                                var v = Math.min(1, Math.max(0, mouse.x / width))
+                                if (Math.abs(v - root.sysVol / 100) > 0.02) root.setSysVol(v)
+                            }
                         }
 
                         WheelHandler {

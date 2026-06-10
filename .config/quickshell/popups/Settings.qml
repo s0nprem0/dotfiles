@@ -21,10 +21,6 @@ PopupPanel {
     property string batteryPercent: "--"
     property bool charging: false
 
-    property string powerProfile: "balanced"
-    property int chargeLimit: 80
-
-
     property string pendingAction: ""
     property string pendingLabel: ""
     property bool confirmVisible: false

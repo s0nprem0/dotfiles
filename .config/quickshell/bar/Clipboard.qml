@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
 import "../components"
 import "../service"
@@ -24,21 +23,11 @@ BarModule {
         }
     }
 
-    Timer {
+    DataModule {
+        path: Theme.bin("get_clipboard_status.sh")
         interval: 10000
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: checkProc.running = true
-    }
-
-    Process {
-        id: checkProc
-        command: ["sh", "-c", "cliphist list | head -n 1 | grep -q . && echo 1 || echo 0"]
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            root.hasItems = (stdout.text ?? "").trim() === "1"
+        onDataReceived: function(j) {
+            root.hasItems = j.hasItems === true
         }
     }
 

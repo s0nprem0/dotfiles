@@ -7,10 +7,14 @@ import "../service"
 Rectangle {
     id: root
 
-    readonly property int maxWorkspaces: 10
-
     property var wsMap: ({})
     property var workspaceIds: ([])
+
+    Timer {
+        id: debounceTimer
+        interval: 80
+        onTriggered: root.refreshWorkspaces()
+    }
 
     function refreshWorkspaces() {
         let map = {}
@@ -47,14 +51,14 @@ Rectangle {
         spacing: 2
 
         Repeater {
-            model: root.maxWorkspaces
+            model: root.workspaceIds
 
             delegate: Rectangle {
                 id: wsBtn
 
-                required property int index
+                required property int modelData
 
-                readonly property int wsId: index + 1
+                readonly property int wsId: modelData
 
                 readonly property var ws: root.wsMap[wsId]
 
@@ -183,8 +187,7 @@ Rectangle {
             ]
 
             if (refreshEvents.includes(event.name)) {
-                Hyprland.refreshWorkspaces()
-                Qt.callLater(root.refreshWorkspaces)
+                debounceTimer.restart()
             }
         }
     }

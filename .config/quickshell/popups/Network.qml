@@ -530,19 +530,20 @@ PopupPanel {
                                     }
                                 }
 
-                                Text {
+                                Row {
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    textFormat: Text.RichText
-                                    text: {
-                                        var bars = Math.round(modelData.signal / 20)
-                                        var on  = Theme.fg, off = Theme.surface, s = ""
-                                        for (var i = 0; i < 5; i++)
-                                            s += "<font color='" + (i < bars ? on : off) + "'>█</font>"
-                                        return s
+                                    spacing: 2
+                                    Repeater {
+                                        model: 5
+                                        delegate: Rectangle {
+                                            width: 4
+                                            height: 4 + index * 3
+                                            radius: 1
+                                            color: index < Math.round(modelData.signal / 20) ? Theme.fg : Theme.surface
+                                            anchors.verticalCenter: parent.verticalCenter
+                                        }
                                     }
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 14
                                 }
 
                                 MouseArea {
