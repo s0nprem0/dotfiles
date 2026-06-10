@@ -146,6 +146,7 @@ target/
 
 # =============================================================================
 # Local / Experimental
+# =============================================================================
 samples/
 scratch/
 tmp/
@@ -153,17 +154,15 @@ tmp/
 # Personal scripts - track them
 !.local/bin/
 
+
 # =============================================================================
 # Matugen-generated colour configs (regenerated on wallpaper change)
 # =============================================================================
 .config/hypr/colors.lua
 .config/hypr/colors-hyprlock.conf
 .config/waybar/colors.css
+.config/rofi/colors.rasi
 .config/gtk-3.0/gtk.css
 .config/gtk-4.0/gtk.css
-.config/rofi/colors.rasi
-
-# Do NOT add runtime/user config dirs to the repo
-.config/mozilla/
-.config/matugen/output/
-
+.config/fuzzel/fuzzel.ini
+.config/mako/config

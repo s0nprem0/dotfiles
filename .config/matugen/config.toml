@@ -2,19 +2,19 @@
 
 [templates.rofi]
 input_path = "~/.config/matugen/templates/rofi/colors.rasi"
-output_path = "~/.config/matugen/output/rofi-colors.rasi"
+output_path = "~/.config/rofi/colors.rasi"
 
 [templates.waybar]
-input_path = '~/.config/matugen/templates/waybar/colors.css'
-output_path = '~/.config/matugen/output/waybar-colors.css'
+input_path = "~/.config/matugen/templates/waybar/colors.css"
+output_path = "~/.config/waybar/colors.css"
 
-[templates.gen_lua]
+[templates.hyprland]
 input_path = "~/.config/matugen/templates/hypr/hyprland-colors.lua"
-output_path = "~/.config/matugen/output/hypr-colors.lua"
+output_path = "~/.config/hypr/colors.lua"
 
-[templates.gen_lock]
+[templates.hyprlock]
 input_path = "~/.config/matugen/templates/hypr/hyprlock-colors.conf"
-output_path = "~/.config/matugen/output/hyprlock-colors.conf"
+output_path = "~/.config/hypr/colors-hyprlock.conf"
 
 [templates.gtk3]
 input_path = "~/.config/matugen/templates/gtk/gtk3.css"
@@ -27,3 +27,11 @@ output_path = "~/.config/gtk-4.0/gtk.css"
 [templates.quickshell]
 input_path = "~/.config/matugen/templates/quickshell/colors.json"
 output_path = "~/.cache/quickshell/colors.json"
+
+[templates.fuzzel]
+input_path = "~/.config/matugen/templates/fuzzel/fuzzel.ini"
+output_path = "~/.config/fuzzel/fuzzel.ini"
+
+[templates.mako]
+input_path = "~/.config/matugen/templates/mako/config"
+output_path = "~/.config/mako/config"
