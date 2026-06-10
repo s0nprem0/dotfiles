@@ -1,4 +1,4 @@
-@import url("colors.css");
+@import url("../matugen/output/waybar-colors.css");
 
 @define-color warning #f9e2af;
 @define-color error #f38ba8;

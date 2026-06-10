@@ -966,7 +966,6 @@ PopupPanel {
                             }
                         }
     
-                        Item { width: parent.width - childrenRect.width; height: 1 }
                     }
     
                     // ── Section 4: Seek Bar ──
@@ -977,6 +976,7 @@ PopupPanel {
                         height: 14
 
                         Text {
+                            id: seekTimeStart
                             text: root.formatTime(root.position)
                             color: Theme.primary
                             opacity: 0.5
@@ -987,7 +987,7 @@ PopupPanel {
                         }
 
                         Item {
-                            width: parent.width - childrenRect.width - seekTimeEnd.width
+                            width: parent.width - seekTimeStart.implicitWidth - seekTimeEnd.implicitWidth - parent.spacing * 2
                             height: parent.height
                             clip: true
 

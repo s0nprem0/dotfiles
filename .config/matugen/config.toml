@@ -2,19 +2,19 @@
 
 [templates.rofi]
 input_path = "~/.config/matugen/templates/rofi/colors.rasi"
-output_path = "~/.config/rofi/colors.rasi"
+output_path = "~/.config/matugen/output/rofi-colors.rasi"
 
 [templates.waybar]
 input_path = '~/.config/matugen/templates/waybar/colors.css'
-output_path = '~/.config/waybar/colors.css'
+output_path = '~/.config/matugen/output/waybar-colors.css'
 
 [templates.gen_lua]
 input_path = "~/.config/matugen/templates/hypr/hyprland-colors.lua"
-output_path = "~/.config/hypr/colors.lua"
+output_path = "~/.config/matugen/output/hypr-colors.lua"
 
 [templates.gen_lock]
 input_path = "~/.config/matugen/templates/hypr/hyprlock-colors.conf"
-output_path = "~/.config/hypr/colors-hyprlock.conf"
+output_path = "~/.config/matugen/output/hyprlock-colors.conf"
 
 [templates.gtk3]
 input_path = "~/.config/matugen/templates/gtk/gtk3.css"

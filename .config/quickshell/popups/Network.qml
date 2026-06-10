@@ -340,6 +340,13 @@ PopupPanel {
                         width: parent.width
                         spacing: 2
                         visible: root.detailsExpanded && root.connected
+                        clip: true
+
+                        height: (root.detailsExpanded && root.connected) ? implicitHeight : 0
+                        opacity: (root.detailsExpanded && root.connected) ? 1 : 0
+
+                        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
 
                         Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
                         Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }

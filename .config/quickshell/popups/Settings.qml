@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import "../service"
+import "../components/settings"
 
 PopupPanel {
     id: root
@@ -17,6 +18,13 @@ PopupPanel {
     property string uptime: ""
     property string os: ""
 
+    property string batteryPercent: "--"
+    property bool charging: false
+
+    property string powerProfile: "balanced"
+    property int chargeLimit: 80
+
+
     property string pendingAction: ""
     property string pendingLabel: ""
     property bool confirmVisible: false
@@ -26,6 +34,7 @@ PopupPanel {
     function refresh() {
         sysInfoProc.running = true
         uptimeProc.running = true
+        batteryProc.running = true
     }
 
     function confirmAction(action, label) {
@@ -65,6 +74,27 @@ PopupPanel {
     }
 
     Process {
+        id: batteryProc
+
+        command: [
+            "sh",
+            "-c",
+            "cat /sys/class/power_supply/BAT0/capacity && cat /sys/class/power_supply/BAT0/status"
+        ]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = (this.text || "").trim.split("\n")
+
+                if (lines.length >=2) {
+                    root.batteryPercent = lines[0]
+                    root.charging = lines[1] === "Charging"
+                }
+            }
+        }
+    }
+
+    Process {
         id: actionProc
         onExited: { if (root.showPopup) root.closePopup() }
     }
@@ -94,48 +124,13 @@ PopupPanel {
             spacing: 14
 
             // ── Header ─────────────────────────────────────────────────
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
+            HeaderCard {
+                hostname: root.hostname
+                os: root.os
+                uptime: root.uptime
 
-                Text {
-                    text: "󰒓"
-                    color: Theme.primary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 16
-                }
-
-                Text {
-                    text: "Settings"
-                    color: Theme.fg
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 14
-                    font.bold: true
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    text: "✕"
-                    color: Theme.muted
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 12
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onEntered: parent.color = Theme.error
-                        onExited: parent.color = Theme.muted
-                        onClicked: root.closeWin()
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: Theme.primary
-                opacity: 0.15
+                batteryPercent: root.batteryPercent
+                charging: root.charging
             }
 
             // ── Section: System ────────────────────────────────────────

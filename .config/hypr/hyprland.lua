@@ -4,7 +4,7 @@
 require("monitors")
 require("defaultPrograms")
 
-require("colors")
+dofile(os.getenv("HOME") .. "/.config/matugen/output/hypr-colors.lua")
 
 -- Environment should be set before we start any long-running processes.
 require("env")

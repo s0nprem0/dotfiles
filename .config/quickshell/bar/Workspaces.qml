@@ -7,21 +7,24 @@ import "../service"
 Rectangle {
     id: root
 
-    readonly property int maxWorkspaces: 20
+    readonly property int maxWorkspaces: 10
 
-    // Hyprland.workspaces is isPropertyConstant, so we mirror the count into
-    // a regular property that the Repeater model can react to.
-    property int workspaceCount: 0
-
-    // Lookup map to avoid O(N*M) linear scans per delegate
     property var wsMap: ({})
+    property var workspaceIds: ([])
 
-    function refreshMap() {
-        var map = {}
-        for (const w of Hyprland.workspaces.values) {
-            map[w.id] = w
+    function refreshWorkspaces() {
+        let map = {}
+        let ids = []
+
+        for (const ws of Hyprland.workspaces.values) {
+            map[ws.id] = ws
+            ids.push(ws.id)
         }
-        root.wsMap = map
+
+        ids.sort((a, b) => a - b)
+
+        wsMap = map
+        workspaceIds = ids
     }
 
     color: Qt.alpha(Theme.surface, 0.3)
@@ -30,6 +33,8 @@ Rectangle {
     radius: 0
 
     height: 28
+    clip: true
+
     implicitWidth: wsRow.implicitWidth + 8
 
     RowLayout {
@@ -42,24 +47,30 @@ Rectangle {
         spacing: 2
 
         Repeater {
-            model: Math.min(root.maxWorkspaces, root.workspaceCount)
+            model: root.maxWorkspaces
 
             delegate: Rectangle {
                 id: wsBtn
 
                 required property int index
 
-                readonly property int wsId: {
-                    var keys = Object.keys(root.wsMap).map(k => parseInt(k)).sort((a, b) => a - b)
-                    return index < keys.length ? keys[index] : index + 1
-                }
+                readonly property int wsId: index + 1
 
-                property var ws: root.wsMap[wsId] || null
+                readonly property var ws: root.wsMap[wsId]
 
-                readonly property bool exists: ws !== null
-                readonly property bool isFocused: exists && ws.id === Hyprland.focusedWorkspace.id
-                readonly property bool isActive: exists && ws.windows > 0
-                readonly property bool isUrgent: exists && ws.urgent
+                readonly property bool exists:
+                    ws != null
+
+                readonly property bool isFocused:
+                    exists &&
+                    Hyprland.focusedWorkspace &&
+                    ws.id === Hyprland.focusedWorkspace.id
+
+                readonly property bool isActive:
+                    exists && ws.windows > 0
+
+                readonly property bool isUrgent:
+                    exists && ws.urgent
 
                 implicitWidth: 24
                 implicitHeight: 24
@@ -119,18 +130,17 @@ Rectangle {
                 }
 
                 Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
 
-                    width: 4
-                    height: 4
-                    radius: 0
+                    height: 2
 
                     visible: exists && !isFocused
 
                     color: isActive
                         ? Theme.primary
-                        : Qt.alpha(Theme.fg, 0.45)
+                        : Qt.alpha(Theme.fg, 0.35)
                 }
 
                 MouseArea {
@@ -138,7 +148,6 @@ Rectangle {
 
                     anchors.fill: parent
                     hoverEnabled: true
-                    propagateComposedEvents: false
 
                     onClicked: {
                         Hyprland.dispatch(
@@ -162,28 +171,25 @@ Rectangle {
         }
     }
 
-    Timer {
-        id: refreshTimer
-        interval: 50
-        onTriggered: {
-            root.workspaceCount = Hyprland.workspaces.values.length
-            root.refreshMap()
-        }
-    }
-
     Connections {
         target: Hyprland
 
         function onRawEvent(event) {
-            if (event.name === "workspacev2" || event.name === "destroyworkspacev2") {
+            const refreshEvents = [
+                "workspacev2",
+                "createworkspacev2",
+                "destroyworkspacev2",
+                "moveworkspacev2"
+            ]
+
+            if (refreshEvents.includes(event.name)) {
                 Hyprland.refreshWorkspaces()
-                refreshTimer.restart()
+                Qt.callLater(root.refreshWorkspaces)
             }
         }
     }
 
     Component.onCompleted: {
-        root.workspaceCount = Hyprland.workspaces.values.length
-        root.refreshMap()
+        root.refreshWorkspaces()
     }
 }
