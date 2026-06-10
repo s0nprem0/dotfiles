@@ -31,8 +31,8 @@ for dir in "$DOTFILES/.config"/*/; do
   echo "  link    $name/"
 done
 
-# Symlink root-level files (.zshenv, etc.)
-for file in .zshenv .zshrc .zprofile; do
+# Symlink root-level dotfiles
+for file in .zshenv; do
   src="$DOTFILES/$file"
   dst="$HOME/$file"
   [ -f "$src" ] || continue
@@ -50,8 +50,15 @@ for file in .zshenv .zshrc .zprofile; do
   echo "  link    $file"
 done
 
+# Build quickshell Rust helpers
+if [ -f "$DOTFILES/.config/quickshell/helpers_rs/Makefile" ]; then
+  echo ""
+  echo "  build   quickshell/helpers_rs/"
+  make -C "$DOTFILES/.config/quickshell/helpers_rs" 2>/dev/null && echo "  done" || echo "  (build skipped)"
+fi
+
 echo ""
 echo "Done. Only directories in $DOTFILES/.config/ were touched."
 echo ""
 echo "To regenerate colours from wallpaper, run:  matugen image ~/wallpaper.jpg"
-echo "To reload quickshell, run:  quickshell --reload  (or pkill -SIGUSR1 quickshell)"
+echo "To reload quickshell, run:  quickshell --reload  or  pkill -SIGUSR1 quickshell"

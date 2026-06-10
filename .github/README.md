@@ -19,7 +19,6 @@ Personal dotfiles managed with GNU Stow.
 | `gtk-4.0/`      | GTK4 theme/settings                 |
 | `matugen/`      | Material color generator            |
 | `ranger/`       | Ranger file manager                 |
-| `lazygit/`      | Lazygit UI config                   |
 | `helpers_rs/`   | Rust source for quickshell helpers  |
 
 ## Usage

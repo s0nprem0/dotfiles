@@ -1,7 +1,7 @@
 -- ==========================================
 -- 1. Load Pre-requisite Modules
 -- ==========================================
-require("monitors")
+pcall(require, "monitors")
 require("defaultPrograms")
 
 dofile(os.getenv("HOME") .. "/.config/hypr/colors.lua")

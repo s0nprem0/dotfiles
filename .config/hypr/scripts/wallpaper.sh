@@ -21,7 +21,7 @@ for MONITOR in $(hyprctl -j monitors | jq -r '.[].name'); do
 done
 
 # Persist wallpaper path in configs
-sed -i "s|^path = .*|path = $WALLPAPER|" "$HOME/.config/hypr/hyprpaper.conf"
+sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprpaper.conf"
 sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprlock.conf"
 
 # Step 3: Reload services (if any needed)

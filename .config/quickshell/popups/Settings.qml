@@ -84,7 +84,7 @@ PopupPanel {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const lines = (this.text || "").trim.split("\n")
+                const lines = (this.text || "").trim().split("\n")
 
                 if (lines.length >=2) {
                     root.batteryPercent = lines[0]

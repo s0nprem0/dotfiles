@@ -47,7 +47,8 @@ logs/
 *.aux
 
 # Compiled Rust helpers (built from helpers_rs/)
-.config/quickshell/helpers/
+.config/quickshell/helpers/*
+!.config/quickshell/helpers/*.sh
 
 # =============================================================================
 # Tags / Indexes
@@ -158,6 +159,7 @@ tmp/
 # =============================================================================
 # Matugen-generated colour configs (regenerated on wallpaper change)
 # =============================================================================
+.config/hypr/monitors.lua
 .config/hypr/colors.lua
 .config/hypr/colors-hyprlock.conf
 .config/waybar/colors.css
