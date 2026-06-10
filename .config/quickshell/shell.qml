@@ -65,6 +65,9 @@ Bar {
         anchors.centerIn: parent
     }
 
+    // ── On-Screen Display (OSD) ────────────────────────────
+    OsdWindow {}
+
     // ── Notification System ─────────────────────────────────
     Notif.NotificationService { id: notifService }
 

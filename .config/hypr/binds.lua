@@ -148,19 +148,19 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:mag
 -- Audio
 hl.bind(
 	"XF86AudioRaiseVolume",
-	hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl volume up"),
 	{ repeating = true, locked = true, description = "Volume up" }
 )
 
 hl.bind(
 	"XF86AudioLowerVolume",
-	hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl volume down"),
 	{ repeating = true, locked = true, description = "Volume down" }
 )
 
 hl.bind(
 	"XF86AudioMute",
-	hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl volume mute"),
 	{ locked = true, description = "Mute toggle" }
 )
 

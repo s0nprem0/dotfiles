@@ -15,4 +15,5 @@ install: build
 	cp target/release/battery_daemon ../helpers/battery_daemon
 	cp target/release/log_battery ../helpers/log_battery
 	cp target/release/osd ../helpers/osd
+	cp target/release/osdctl ../helpers/osdctl
 	cp target/release/screenshot ../helpers/screenshot
