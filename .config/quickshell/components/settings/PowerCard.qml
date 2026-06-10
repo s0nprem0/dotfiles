@@ -9,8 +9,6 @@ Rectangle {
     property string activeProfile: "balanced"
     property int chargeLimit: 80
 
-    signal profileSelected(string profile)
-
     Layout.fillWidth: true
 
     radius: 0
@@ -109,10 +107,6 @@ Rectangle {
                         onClicked: {
                             root.activeProfile =
                                 modelData.profile
-
-                            root.profileSelected(
-                                modelData.profile
-                            )
                         }
                     }
                 }

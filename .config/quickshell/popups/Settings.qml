@@ -50,7 +50,7 @@ PopupPanel {
 
     Process {
         id: sysInfoProc
-        command: [Config.helperDir + "/get_sysinfo.sh"]
+        command: [Theme.bin("get_sysinfo.sh")]
         stdout: StdioCollector {
             onStreamFinished: {
                 var lines = (this.text || "").trim().split("\n")

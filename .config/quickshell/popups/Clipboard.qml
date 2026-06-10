@@ -57,7 +57,7 @@ PopupPanel {
     // ── Decode images to temp files ───────────────────────────
     Process {
         id: decodeScript
-        command: [Config.helperDir + "/decode_clipboard_images.sh"]
+        command: [Theme.bin("decode_clipboard_images.sh")]
         running: false
         onExited: { cliphistListProc.running = true }
     }

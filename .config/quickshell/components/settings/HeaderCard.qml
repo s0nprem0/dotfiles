@@ -132,7 +132,7 @@ Rectangle {
                     : "Discharging"
 
                 color: root.charging
-                    ? Theme.success
+                    ? Theme.green
                     : Theme.muted
 
                 font.family: Theme.fontFamily

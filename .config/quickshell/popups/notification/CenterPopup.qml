@@ -68,7 +68,7 @@ Item {
 
     Process {
         id: audioProc
-        command: [Theme.helperDir + "/get_audio_status"]
+        command: [Theme.bin("get_audio_status")]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -81,7 +81,7 @@ Item {
 
     Process {
         id: btProc
-        command: [Theme.helperDir + "/get_bluetooth_status"]
+        command: [Theme.bin("get_bluetooth_status")]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

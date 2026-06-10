@@ -34,19 +34,6 @@ PopupPanel {
 
     Component.onCompleted: refreshSinks()
 
-    function syncFrom(module) {
-        root.playerName = module.playerName
-        root.playerStatus = module.playerStatus
-        root.artist = module.artist
-        root.title = module.title
-        root.album = module.album
-        root.artUrl = module.artUrl || ""
-        root.trackLength = module.trackLength || 0
-        root.volume = module.volume || 0
-        root.position = module.position || 0
-        root.hasPlayer = module.hasPlayer
-    }
-
     function refresh() {
         listPlayersProc.running = true
     }
