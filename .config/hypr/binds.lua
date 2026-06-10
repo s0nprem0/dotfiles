@@ -167,31 +167,31 @@ hl.bind(
 -- Brightness
 hl.bind(
 	"XF86MonBrightnessUp",
-	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd screen up"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl brightness up"),
 	{ repeating = true, locked = true, description = "Brightness up" }
 )
 
 hl.bind(
 	"XF86MonBrightnessDown",
-	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd screen down"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl brightness down"),
 	{ repeating = true, locked = true, description = "Brightness down" }
 )
 
 -- Keyboard Backlight
 hl.bind(
 	"XF86KbdBrightnessUp",
-	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd up"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl kbdbrightness up"),
 	{ repeating = true, locked = true, description = "Kbd backlight up" }
 )
 
 hl.bind(
 	"XF86KbdBrightnessDown",
-	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd down"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl kbdbrightness down"),
 	{ repeating = true, locked = true, description = "Kbd backlight down" }
 )
 
-hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd cycle"), { description = "Kbd backlight cycle up" })
-hl.bind(mainMod .. " + " .. altMod .. " + SHIFT + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd cycle-rev"), { description = "Kbd backlight cycle down" })
+hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl kbdbrightness cycle"), { description = "Kbd backlight cycle up" })
+hl.bind(mainMod .. " + " .. altMod .. " + SHIFT + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl kbdbrightness cycle-rev"), { description = "Kbd backlight cycle down" })
 
 -- Media
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true, description = "Media: next" })

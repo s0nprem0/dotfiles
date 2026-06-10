@@ -83,10 +83,29 @@ fn set_kbd_brightness(dir: &str) {
             return;
         }
     };
-    let _ = run_cmd(
-        "brightnessctl",
-        &["-d", &dev, "set", if dir == "up" { "1+" } else { "1-" }],
-    );
+    match dir {
+        "up" | "down" => {
+            let _ = run_cmd(
+                "brightnessctl",
+                &["-d", &dev, "set", if dir == "up" { "1+" } else { "1-" }],
+            );
+        }
+        "cycle" | "cycle-rev" => {
+            let max = run_cmd("brightnessctl", &["-d", &dev, "max"])
+                .and_then(|s| s.trim().parse::<i32>().ok())
+                .unwrap_or(1);
+            let cur = run_cmd("brightnessctl", &["-d", &dev, "get"])
+                .and_then(|s| s.trim().parse::<i32>().ok())
+                .unwrap_or(0);
+            let new = if dir == "cycle" {
+                if cur >= max { 0 } else { cur + 1 }
+            } else {
+                if cur <= 0 { max } else { cur - 1 }
+            };
+            let _ = run_cmd("brightnessctl", &["-d", &dev, "set", &new.to_string()]);
+        }
+        _ => {}
+    }
     write_state(&format!("kbd brightness {}", kbd_brightness_value()), "info", 1200);
 }
 
