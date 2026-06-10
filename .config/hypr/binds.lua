@@ -167,30 +167,30 @@ hl.bind(
 -- Brightness
 hl.bind(
 	"XF86MonBrightnessUp",
-	hl.dsp.exec_cmd("~/.config/hypr/scripts/brightnessctl.sh up"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd screen up"),
 	{ repeating = true, locked = true, description = "Brightness up" }
 )
 
 hl.bind(
 	"XF86MonBrightnessDown",
-	hl.dsp.exec_cmd("~/.config/hypr/scripts/brightnessctl.sh down"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd screen down"),
 	{ repeating = true, locked = true, description = "Brightness down" }
 )
 
 -- Keyboard Backlight
 hl.bind(
 	"XF86KbdBrightnessUp",
-	hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd_brightnessctl.sh up"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd up"),
 	{ repeating = true, locked = true, description = "Kbd backlight up" }
 )
 
 hl.bind(
 	"XF86KbdBrightnessDown",
-	hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd_brightnessctl.sh down"),
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd down"),
 	{ repeating = true, locked = true, description = "Kbd backlight down" }
 )
 
-hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd_brightnessctl.sh up"), { description = "Kbd backlight up (alt)" })
+hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd up"), { description = "Kbd backlight up (alt)" })
 
 -- Media
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true, description = "Media: next" })
@@ -199,9 +199,9 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tru
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Media: pause" })
 
 -- Screenshots
-hl.bind("Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh full"), { description = "Screenshot: full" })
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh region"), { description = "Screenshot: region" })
-hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh active"), { description = "Screenshot: active" })
+hl.bind("Print", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot full"), { description = "Screenshot: full" })
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot region"), { description = "Screenshot: region" })
+hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot active"), { description = "Screenshot: active" })
 
 -- Mouse
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: drag" })
