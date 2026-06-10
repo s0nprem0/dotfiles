@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import "../service"
 
@@ -121,7 +120,7 @@ PopupPanel {
             return
         }
         Quickshell.execDetached(cmdArray)
-        root.triggerRefresh()
+        refreshTimer.start()
     }
 
     // ── Generic Action Processes ──
@@ -195,6 +194,12 @@ PopupPanel {
     }
 
     Timer {
+        id: refreshTimer
+        interval: 2000
+        onTriggered: root.triggerRefresh()
+    }
+
+    Timer {
         id: errorTimer
         interval: 4000
         repeat: false
@@ -249,7 +254,7 @@ PopupPanel {
                             text: "SSID: " + root.activeSsid
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 11
                             elide: Text.ElideRight
                         }
 
@@ -258,7 +263,7 @@ PopupPanel {
                             color: Theme.fg
                             opacity: 0.6
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 11
                         }
                     }
                 }
@@ -279,7 +284,7 @@ PopupPanel {
                         text: "Wi-Fi: " + (root.wifiEnabled ? "On" : "Off")
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 12
                         font.bold: true
 
                         MouseArea {
@@ -293,7 +298,7 @@ PopupPanel {
                         text: "Airplane: " + (root.airplaneMode ? "On" : "Off")
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 12
                         font.bold: true
 
                         MouseArea {
@@ -325,7 +330,7 @@ PopupPanel {
                             text: "Details " + (root.detailsExpanded ? "▲" : "▼")
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 13
                             font.bold: true
                         }
 
@@ -339,7 +344,6 @@ PopupPanel {
                     Column {
                         width: parent.width
                         spacing: 2
-                        visible: root.detailsExpanded && root.connected
                         clip: true
 
                         height: (root.detailsExpanded && root.connected) ? implicitHeight : 0
@@ -348,19 +352,19 @@ PopupPanel {
                         Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                         Behavior on opacity { NumberAnimation { duration: 150 } }
 
-                        Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
-                        Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
-                        Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
-                        Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
-                        Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
-                        Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 14 }
+                        Text { text: "  IP: " + root.details.ip_address; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  Gateway: " + root.details.gateway; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
                     }
 
                     Text {
                         text: "  No connection active"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
                         visible: root.detailsExpanded && !root.connected
                     }
                 }
@@ -374,7 +378,7 @@ PopupPanel {
                         text: "VPN"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 13
                         font.bold: true
                     }
 
@@ -390,7 +394,7 @@ PopupPanel {
                             text: "WARP: " + (root.warpConnected ? "Connected" : "Disconnected")
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 11
                         }
 
                         Text {
@@ -399,7 +403,7 @@ PopupPanel {
                             text: root.warpConnected ? "disconnect" : "connect"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 11
 
                             MouseArea {
                                 anchors.fill: parent
@@ -427,7 +431,7 @@ PopupPanel {
                                     text: modelData.name + " (" + modelData.vpn_type + ")"
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 14
+                                    font.pixelSize: 11
                                 }
 
                                 Text {
@@ -436,7 +440,7 @@ PopupPanel {
                                     text: modelData.active ? "disconnect" : "connect"
                                     color: Theme.primary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 14
+                                    font.pixelSize: 11
 
                                     MouseArea {
                                         anchors.fill: parent
@@ -456,7 +460,7 @@ PopupPanel {
                         text: "  Disabled"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
                         visible: root.vpns.length === 0 && !(root.warpAvailable && root.warpConnected)
                     }
                 }
@@ -470,7 +474,7 @@ PopupPanel {
                         text: "WiFi Networks"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 13
                         font.bold: true
                     }
 
@@ -479,7 +483,7 @@ PopupPanel {
                         text: "Scanning…"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
                     }
 
                     Text {
@@ -487,7 +491,7 @@ PopupPanel {
                         text: "No networks found"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
                     }
 
                     Text {
@@ -495,7 +499,7 @@ PopupPanel {
                         text: "Wi-Fi is off"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
                     }
 
                     ListView {
@@ -523,26 +527,23 @@ PopupPanel {
                                         text: (modelData.active ? "* " : "  ") + modelData.ssid
                                         color: Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 14
+                                        font.pixelSize: 11
                                         font.bold: modelData.active
                                         elide: Text.ElideRight
                                         width: 240
                                     }
                                 }
 
-                                Row {
+                                Text {
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 2
-                                    Repeater {
-                                        model: 5
-                                        delegate: Rectangle {
-                                            width: 4
-                                            height: 4 + index * 3
-                                            radius: 1
-                                            color: index < Math.round(modelData.signal / 20) ? Theme.fg : Theme.surface
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
+                                    textFormat: Text.RichText
+                                    text: {
+                                        var bars = Math.round(modelData.signal / 20)
+                                        var on  = Theme.fg, off = Theme.surface, s = ""
+                                        for (var i = 0; i < 5; i++)
+                                            s += "<font color='" + (i < bars ? on : off) + "'>█</font>"
+                                        return s
                                     }
                                 }
 
@@ -569,7 +570,7 @@ PopupPanel {
                                         text: modelData.active ? "Disconnect" : "Connect"
                                         color: Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 14
+                                        font.pixelSize: 11
 
                                         MouseArea {
                                             anchors.fill: parent
@@ -588,7 +589,7 @@ PopupPanel {
                                         text: "Forget"
                                         color: Theme.error
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 14
+                                        font.pixelSize: 11
 
                                         MouseArea {
                                             anchors.fill: parent
@@ -604,7 +605,7 @@ PopupPanel {
                                         text: "Auto: " + (modelData.autoconnect ? "On" : "Off")
                                         color: Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 14
+                                        font.pixelSize: 11
 
                                         MouseArea {
                                             anchors.fill: parent
@@ -639,7 +640,7 @@ PopupPanel {
                         text: "Settings"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
 
                         MouseArea {
                             anchors.fill: parent
@@ -655,7 +656,7 @@ PopupPanel {
                         text: "Restart Wi-Fi"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: 11
 
                         MouseArea {
                             anchors.fill: parent
@@ -676,7 +677,7 @@ PopupPanel {
                 height: Math.max(28, errText.implicitHeight + 10)
                 color: Theme.error
                 radius: 6
-                visible: root.errorMessage !== ""
+                visible: opacity > 0
                 opacity: root.errorMessage !== "" ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -710,7 +711,7 @@ PopupPanel {
                             text: "Password for " + root.pendingSsid
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: 11
                             font.bold: true
                             elide: Text.ElideRight
                             width: parent.width
@@ -728,7 +729,7 @@ PopupPanel {
                                 anchors.fill: parent; anchors.margins: 8
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: 11
                                 echoMode: TextInput.Password
                                 focus: root.pendingSsid !== ""
                                 onVisibleChanged: if (visible) forceActiveFocus()
@@ -745,7 +746,7 @@ PopupPanel {
                                 text: "Cancel"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: 11
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 MouseArea {
@@ -763,7 +764,7 @@ PopupPanel {
                                     text: "Connect"
                                     color: Theme.bg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 14
+                                    font.pixelSize: 11
                                     font.bold: true
                                 }
                                 MouseArea {

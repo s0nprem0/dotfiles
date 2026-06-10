@@ -236,6 +236,12 @@ for _, match in ipairs(specific_floats) do
 	})
 end
 
+-- Impala WiFi manager: float centered at 50%
+float_centered(
+	{ class = "^(kitty|foot|Alacritty)$", initial_title = "^(impala)$" },
+	{ size = { "monitor_w*0.50", "monitor_h*0.50" } }
+)
+
 -- ======================
 -- Picture-in-Picture
 -- ======================
