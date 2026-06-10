@@ -23,6 +23,11 @@ PopupPanel {
     property string activeProfile: "balanced"
     property var availableProfiles: []
 
+    // ── Charge limit ──
+    property int chargeLimit: 100
+    property bool chargeLimitSupported: false
+    property string chargeLimitPath: ""
+
     // ── Automation settings ──
     property bool automationEnabled: true
     property int lowThreshold: 25
@@ -76,6 +81,7 @@ PopupPanel {
     function refresh() {
         statusProc.running = true
         profileProc.running = true
+        chargeLimitProc.running = true
         loadSettings()
     }
 
@@ -86,6 +92,7 @@ PopupPanel {
             var j = JSON.parse(raw)
             if (!j) return
             root.automationEnabled = j.automation_enabled !== undefined ? j.automation_enabled : true
+            root.chargeLimit = j.charge_limit ?? 100
             root.lowThreshold = j.low_battery_threshold ?? 25
             root.acProfile = j.ac_profile ?? "performance"
             root.batProfile = j.bat_profile ?? "balanced"
@@ -114,6 +121,7 @@ PopupPanel {
     function saveSettings() {
         var j = JSON.stringify({
             automation_enabled: root.automationEnabled,
+            charge_limit: root.chargeLimit,
             low_battery_threshold: root.lowThreshold,
             ac_profile: root.acProfile,
             bat_profile: root.batProfile,
@@ -187,6 +195,30 @@ PopupPanel {
             }
         }
     }
+
+    // ── Charge limit Process ──
+    Process {
+        id: chargeLimitProc
+        command: ["sh", "-c", "for p in /sys/class/power_supply/BAT*/charge_control_end_threshold; do [ -f \"$p\" ] && { echo \"$p\"; cat \"$p\"; break; }; done 2>/dev/null || true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var lines = this.text.trim().split("\n")
+                    if (lines.length >= 2) {
+                        root.chargeLimitPath = lines[0]
+                        root.chargeLimitSupported = true
+                        var val = parseInt(lines[1])
+                        if (!isNaN(val)) root.chargeLimit = val
+                    } else {
+                        root.chargeLimitSupported = false
+                    }
+                } catch (e) { root.chargeLimitSupported = false }
+            }
+        }
+    }
+
+    // ── Set charge limit Process ──
+    Process { id: setLimitProc }
 
     // ── Set profile Process ──
     Process { id: setProc }
@@ -442,6 +474,56 @@ PopupPanel {
                 currentBrightness: root.lowBrightness
                 onProfileChanged: function(p) { root.lowProfile = p; root.saveSettings() }
                 onBrightnessChanged: function(p) { root.lowBrightness = p; root.saveSettings(); root.setBrightness(p) }
+            }
+
+            // ── Charge Limit ──
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                visible: root.chargeLimitSupported
+
+                Text {
+                    text: "\uf0e7"
+                    color: Theme.muted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 10
+                }
+
+                Text {
+                    text: "Charge Limit"
+                    color: Theme.fg
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 10
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    Layout.preferredWidth: 50
+                    Layout.preferredHeight: 22
+                    radius: 4
+                    color: root.chargeLimit < 100 ? Theme.warning : Theme.surfaceLighter
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: root.chargeLimit < 100 ? root.chargeLimit + "%" : "Full"
+                        color: root.chargeLimit < 100 ? Theme.bg : Theme.muted
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        font.bold: root.chargeLimit < 100
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            var newVal = root.chargeLimit < 100 ? 100 : 80
+                            root.chargeLimit = newVal
+                            setLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(newVal)]
+                            setLimitProc.running = true
+                            root.saveSettings()
+                        }
+                    }
+                }
             }
 
             Rectangle {

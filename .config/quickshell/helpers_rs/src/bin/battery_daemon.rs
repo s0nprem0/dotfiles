@@ -44,6 +44,11 @@ fn settings_path() -> PathBuf {
   home.join(".cache/quickshell/battery_settings.json")
 }
 
+fn history_path() -> PathBuf {
+  let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+  home.join(".cache/quickshell/battery_history.json")
+}
+
 fn load_settings() -> Settings {
   let path = settings_path();
   fs::read_to_string(&path)
@@ -71,6 +76,27 @@ fn set_brightness(pct: i32, kbd_pct: i32) {
   }
 }
 
+fn log_history(power_w: f64) {
+  let path = history_path();
+  if let Some(parent) = path.parent() {
+    let _ = fs::create_dir_all(parent);
+  }
+
+  let mut history: Vec<f64> = fs::read_to_string(&path)
+    .ok()
+    .and_then(|s| serde_json::from_str(&s).ok())
+    .unwrap_or_default();
+
+  history.push(power_w);
+  if history.len() > 24 {
+    history = history[history.len() - 24..].to_vec();
+  }
+
+  if let Ok(json) = serde_json::to_string(&history) {
+    let _ = fs::write(&path, &json);
+  }
+}
+
 fn send_notification(summary: &str, body: &str) {
   let _ = run_cmd("notify-send", &["--app-name=Battery", summary, body]);
 }
@@ -85,6 +111,7 @@ fn main() {
   let mut last_state: Option<PowerState> = None;
   let mut last_modified = SystemTime::UNIX_EPOCH;
   let mut settings = Settings::default();
+  let mut log_counter: u32 = 0;
   loop {
     if let Ok(meta) = fs::metadata(settings_path()) {
       if let Ok(modified) = meta.modified() {
@@ -96,6 +123,16 @@ fn main() {
     }
 
     let battery = battery_snapshot();
+
+    // Throttled history logging: every ~60s (20 iterations * 3s)
+    log_counter += 1;
+    if log_counter >= 20 {
+      log_counter = 0;
+      if battery.power_w > 0.0 {
+        log_history(battery.power_w);
+      }
+    }
+
     let current_state = if !settings.automation_enabled.unwrap_or(true) {
       None
     } else if battery.status == "Charging" || battery.status == "Full" {

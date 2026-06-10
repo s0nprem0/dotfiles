@@ -3,6 +3,9 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("uwsm app -- qs")
 	hl.exec_cmd("uwsm app -- hyprpaper")
 
+	-- battery automations (profile + brightness on AC/Battery/low)
+	hl.exec_cmd("uwsm app -- ~/.config/quickshell/helpers/battery_daemon")
+
 	-- core components (auth, lockscreen)
 	hl.exec_cmd("dbus-update-activation-environment --all")
 	hl.exec_cmd("uwsm app -- /usr/lib/hyprpolkitagent/hyprpolkitagent")

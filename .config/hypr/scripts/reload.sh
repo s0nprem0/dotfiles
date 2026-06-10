@@ -25,8 +25,9 @@ grep -A1 '^wallpaper {' ~/.config/hypr/hyprpaper.conf | awk '
   hyprctl hyprpaper wallpaper "$monitor,$path" 2>/dev/null || true
 done
 
-# Restart Quickshell
+# Restart Quickshell and battery daemon
 pkill -x qs 2>/dev/null || true
+pkill -x battery_daemon 2>/dev/null || true
 
 # Wait for old process to exit
 for _ in {1..50}; do
@@ -36,6 +37,9 @@ done
 
 # Start Quickshell again
 nohup qs >/dev/null 2>&1 &
+
+# Start battery daemon
+nohup ~/.config/quickshell/helpers/battery_daemon >/dev/null 2>&1 &
 
 # Wait for Quickshell to initialize
 for _ in {1..50}; do
