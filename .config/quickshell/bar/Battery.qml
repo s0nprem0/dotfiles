@@ -27,6 +27,7 @@ BarModule {
   property string timeStr: ""
   property bool battWarning: !charging && pct <= 20
   property bool battCritical: !charging && pct <= 10
+  property var batteryPopupRef: null
 
   property int animFrame: 0
   readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝"]
@@ -55,13 +56,11 @@ BarModule {
 
   acceptedButtons: Qt.LeftButton
 
-  Process { id: runner }
-
   Connections {
     target: mA
     function onClicked(mouse) {
-      runner.command = ["acpi", "-V"]
-      runner.running = true
+      if (root.batteryPopupRef)
+        root.batteryPopupRef.showPopup = !root.batteryPopupRef.showPopup
     }
   }
 

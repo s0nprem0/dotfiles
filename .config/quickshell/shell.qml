@@ -54,7 +54,7 @@ Bar {
             Tray {}
             Clipboard { clipboardPopupRef: clipboardPopup }
             Audio { id: audioModule; mediaPopupRef: mediaPopup }
-            Battery {}
+            Battery { batteryPopupRef: batteryPopup }
             Network {}
             Settings { settingsPopupRef: settingsPopup }
         }
@@ -85,6 +85,10 @@ Bar {
     Popups.Media {
         id: mediaPopup
         audioBarRef: audioModule
+    }
+
+    Popups.Battery {
+        id: batteryPopup
     }
 
     Popups.Settings {

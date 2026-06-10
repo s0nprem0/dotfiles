@@ -9,6 +9,8 @@ Rectangle {
     property string activeProfile: "balanced"
     property int chargeLimit: 80
 
+    signal profileSelected(string profile)
+
     Layout.fillWidth: true
 
     radius: 0
@@ -104,10 +106,7 @@ Rectangle {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
 
-                        onClicked: {
-                            root.activeProfile =
-                                modelData.profile
-                        }
+                        onClicked: root.profileSelected(modelData.profile)
                     }
                 }
             }

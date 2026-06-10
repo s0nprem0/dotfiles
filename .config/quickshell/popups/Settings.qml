@@ -25,12 +25,25 @@ PopupPanel {
     property string pendingLabel: ""
     property bool confirmVisible: false
 
+    property string activeProfile: "balanced"
+    property var availableProfiles: ["balanced", "power-saver", "performance"]
+
     onBeforeOpen: refresh()
 
     function refresh() {
         sysInfoProc.running = true
         uptimeProc.running = true
         batteryProc.running = true
+        profileProc.running = true
+    }
+
+    function setProfile(profile) {
+        root.activeProfile = profile
+        setProfileProc.command = [
+            Theme.bin("set_power_profile.sh"),
+            profile,
+        ]
+        setProfileProc.running = true
     }
 
     function confirmAction(action, label) {
@@ -88,6 +101,25 @@ PopupPanel {
                 }
             }
         }
+    }
+
+    Process {
+        id: profileProc
+        command: [Theme.bin("get_power_profile")]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var j = JSON.parse(this.text.trim())
+                    root.activeProfile = j.active ?? "balanced"
+                    root.availableProfiles = j.available ?? [root.activeProfile]
+                } catch (e) {}
+            }
+        }
+    }
+
+    Process {
+        id: setProfileProc
+        onExited: profileProc.running = true
     }
 
     Process {
@@ -323,6 +355,30 @@ PopupPanel {
                         Quickshell.execDetached(Config.impalaCmd)
                         root.closeWin()
                     }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: Theme.primary
+                opacity: 0.15
+            }
+
+            // ── Section: Power Profile ─────────────────────────────────
+            Text {
+                text: "Power Profile"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+                font.bold: true
+                opacity: 0.6
+            }
+
+            PowerCard {
+                activeProfile: root.activeProfile
+                onProfileSelected: function(profile) {
+                    root.setProfile(profile)
                 }
             }
 

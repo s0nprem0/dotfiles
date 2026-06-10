@@ -1,0 +1,155 @@
+import QtQuick
+import QtQuick.Layouts
+import "../../service"
+
+Rectangle {
+    id: root
+
+    property string cardTitle: ""
+    property bool active: false
+    property string currentProfile: "balanced"
+    property int currentBrightness: 80
+    property int currentKbd: 50
+
+    signal profileChanged(string profile)
+    signal brightnessChanged(int pct)
+    signal kbdChanged(int pct)
+
+    Layout.fillWidth: true
+    implicitHeight: content.implicitHeight + 16
+    radius: 6
+    color: root.active ? Qt.alpha(Theme.primary, 0.08) : Theme.surface
+    border.width: 1
+    border.color: root.active ? Qt.alpha(Theme.primary, 0.3) : Theme.surfaceLighter
+
+    readonly property var profileButtons: [
+        {label: "Saver", val: "power-saver"},
+        {label: "Bal", val: "balanced"},
+        {label: "Perf", val: "performance"},
+    ]
+
+    ColumnLayout {
+        id: content
+        anchors.fill: parent
+        anchors.margins: 8
+        spacing: 6
+
+        RowLayout {
+            Layout.fillWidth: true
+
+            Text {
+                text: root.cardTitle
+                color: root.active ? Theme.primary : Theme.fg
+                font.family: Theme.fontFamily
+                font.pixelSize: 10
+                font.bold: true
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Text {
+                text: root.active ? "\u25cf Active" : ""
+                color: Theme.green
+                font.family: Theme.fontFamily
+                font.pixelSize: 8
+                visible: root.active
+            }
+        }
+
+        // ── Profile selector row ──
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 4
+
+            Text {
+                text: "Profile:"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 9
+                Layout.minimumWidth: 36
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Repeater {
+                model: root.profileButtons
+
+                delegate: Rectangle {
+                    required property var modelData
+
+                    Layout.preferredWidth: 40
+                    height: 22
+                    radius: 4
+                    color: modelData.val === root.currentProfile ? Theme.primary : Theme.surfaceLighter
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData.label
+                        color: modelData.val === root.currentProfile ? Theme.bg : Theme.muted
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 8
+                        font.bold: modelData.val === root.currentProfile
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.profileChanged(modelData.val)
+                    }
+                }
+            }
+        }
+
+        // ── Screen brightness slider ──
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 4
+
+            Text {
+                text: "\u263e"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 9
+            }
+
+            Item {
+                Layout.fillWidth: true
+                height: 20
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: 4
+                    radius: 2
+                    color: Theme.surfaceLighter
+
+                    Rectangle {
+                        width: parent.width * (root.currentBrightness / 100)
+                        height: parent.height
+                        radius: 2
+                        color: root.active ? Theme.primary : Theme.muted
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var pct = Math.round((mouseX / width) * 100)
+                        pct = Math.max(0, Math.min(100, pct))
+                        root.brightnessChanged(pct)
+                    }
+                }
+            }
+
+            Text {
+                text: root.currentBrightness + "%"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 9
+                Layout.minimumWidth: 28
+                horizontalAlignment: Text.AlignRight
+            }
+        }
+    }
+}

@@ -139,6 +139,7 @@ pub fn battery_snapshot() -> BatterySnapshot {
         full: total_full,
         now: total_now,
         power_w: total_power / 1e6,
+        rate: total_power,
         ..BatterySnapshot::default()
     }
 }
