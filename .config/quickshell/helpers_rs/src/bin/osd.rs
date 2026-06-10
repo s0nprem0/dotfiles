@@ -98,7 +98,20 @@ fn main() {
           let pct = if max > 0 { (new as f64 / max as f64 * 100.0).round() as i32 } else { 0 };
           notify(pct, "Keyboard Backlight");
         }
-        _ => { eprintln!("Usage: osd kbd [up|down]"); std::process::exit(1); }
+        "cycle" | "cycle-rev" => {
+          let cur = run_cmd("brightnessctl", &["-d", &device, "get"])
+            .and_then(|s| s.trim().parse::<i32>().ok())
+            .unwrap_or(0);
+          let new = if action == "cycle" {
+            if cur >= max { 0 } else { cur + 1 }
+          } else {
+            if cur <= 0 { max } else { cur - 1 }
+          };
+          let _ = run_cmd("brightnessctl", &["-d", &device, "set", &format!("{}", new)]);
+          let pct = if max > 0 { (new as f64 / max as f64 * 100.0).round() as i32 } else { 0 };
+          notify(pct, "Keyboard Backlight");
+        }
+        _ => { eprintln!("Usage: osd kbd [up|down|cycle|cycle-rev]"); std::process::exit(1); }
       }
     }
     _ => {

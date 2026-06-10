@@ -190,7 +190,8 @@ hl.bind(
 	{ repeating = true, locked = true, description = "Kbd backlight down" }
 )
 
-hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd up"), { description = "Kbd backlight up (alt)" })
+hl.bind(mainMod .. " + " .. altMod .. " + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd cycle"), { description = "Kbd backlight cycle up" })
+hl.bind(mainMod .. " + " .. altMod .. " + SHIFT + K", hl.dsp.exec_cmd("~/.config/quickshell/helpers/osd kbd cycle-rev"), { description = "Kbd backlight cycle down" })
 
 -- Media
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true, description = "Media: next" })
