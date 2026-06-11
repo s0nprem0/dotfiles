@@ -129,7 +129,7 @@ Item {
 
     Timer {
         interval: 2000
-        running: true
+        running: root.showPopup
         repeat: true
         onTriggered: {
             if (NotificationState.service)

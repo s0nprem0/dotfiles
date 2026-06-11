@@ -26,10 +26,12 @@ BarModule {
   property double trackLength: 0
   property bool hasPlayer: false
 
+  // Event-driven audio monitoring via pactl subscribe
+  // Falls back to polling every 30s in case events are missed
   DataModule {
     id: audioData
     path: Theme.bin("get_audio_status")
-    interval: 1000
+    interval: 30000
     onDataReceived: function(j) {
       root.vol = j.volume ?? 0
       root.isMuted = j.muted ?? false
@@ -44,6 +46,25 @@ BarModule {
         root.mediaPopupRef.micMuted = root.micMuted
       }
     }
+  }
+
+  Process {
+    id: pactlSub
+    command: ["pactl", "subscribe"]
+    running: true
+    stdout: SplitParser {
+      onRead: function(data) {
+        var line = data.trim()
+        // pactl subscribe outputs lines like "Event 'change' on sink #43"
+        if (line.includes("'change'")) audioDebounce.restart()
+      }
+    }
+  }
+
+  Timer {
+    id: audioDebounce
+    interval: 200
+    onTriggered: audioData.refresh()
   }
 
   Timer {

@@ -154,7 +154,7 @@ fn main() {
                 "wifi",
                 "list",
                 "--rescan",
-                "auto",
+                "no",
             ],
         )
         .unwrap_or_default();

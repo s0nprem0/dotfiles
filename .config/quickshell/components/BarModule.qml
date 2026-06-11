@@ -20,13 +20,6 @@ Rectangle {
   border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)
   border.width: 1
 
-  // NEW: Smoothly animate the color changes over 150 milliseconds
-  Behavior on color {
-      ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
-  }
-  Behavior on border.color {
-      ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
-  }
 
   Rectangle {
     id: tooltip

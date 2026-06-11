@@ -106,6 +106,7 @@ PopupPanel {
         repeat: true
         running: root.pendingOutVol !== -1 || root.pendingInVol !== -1 || Object.keys(root.pendingAppVols).length > 0
         onTriggered: {
+            var needsRefresh = false
             if (root.pendingOutVol !== -1) {
                 var pct = Math.round(root.pendingOutVol * 100)
                 sysVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", pct + "%"]
@@ -114,15 +115,15 @@ PopupPanel {
                     root.audioBarRef.vol = Math.round(root.pendingOutVol * 100)
                     root.audioBarRef.isMuted = false
                 }
-                refreshSinks()
                 root.pendingOutVol = -1
+                needsRefresh = true
             }
             if (root.pendingInVol !== -1) {
                 var pct2 = Math.round(root.pendingInVol * 100)
                 micVolAction.command = ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SOURCE@", pct2 + "%"]
                 micVolAction.running = true
-                refreshSinks()
                 root.pendingInVol = -1
+                needsRefresh = true
             }
             var appKeys = Object.keys(root.pendingAppVols)
             if (appKeys.length > 0) {
@@ -135,8 +136,9 @@ PopupPanel {
                 }
                 setAppVolProc.command = ["sh", "-c", cmds.join("; ")]
                 setAppVolProc.running = true
-                refreshSinks()
+                needsRefresh = true
             }
+            if (needsRefresh) refreshSinks()
         }
     }
 

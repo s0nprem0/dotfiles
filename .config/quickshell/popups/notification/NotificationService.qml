@@ -176,7 +176,7 @@ Item {
     Timer {
         interval: 5000
         repeat: true
-        running: true
+        running: service.notifList.length > 0
         onTriggered: {
             for (var i = 0; i < service.notifList.length; i++)
                 service.notifList[i].updateTimeStr()
