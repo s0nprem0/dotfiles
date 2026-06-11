@@ -85,7 +85,7 @@ PopupPanel {
     Process {
         id: copyProc
         property string entryLine: ""
-        command: ["sh", "-c", "echo \"$1\" | cliphist decode | wl-copy", "_", entryLine]
+        command: ["sh", "-c", "d=$(echo \"$1\" | cliphist decode); echo -n \"$d\" | wl-copy && notify-send -t 1000 -h string:x-canonical-private-synchronous:clip-notify -a clipboard -i edit-copy \"copied\" \"$(echo -n \"$d\" | head -c 50)\"", "_", entryLine]
         running: false
         onExited: { root.showPopup = false }
     }
@@ -233,7 +233,7 @@ PopupPanel {
 
                     delegate: Rectangle {
                         width: entryList.width
-                        height: root.isImageEntry(modelData) ? 48 : 24
+                        height: root.isImageEntry(modelData) ? 40 : 24
                         color: root.selectedIndex === index ? Qt.alpha(Theme.primary, 0.15) : "transparent"
                         radius: 3
 
