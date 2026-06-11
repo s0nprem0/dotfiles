@@ -236,8 +236,8 @@ Item {
                         clockTimer.running = true
                     } else {
                         var anyVisible = false
-                        for (var i = 0; i < variantRepeater.count; i++) {
-                            var w = variantRepeater.itemAt(i)
+                        for (var i = 0; i < variantRepeater.instances.length; i++) {
+                            var w = variantRepeater.instances[i]
                             if (w && w !== win && w.visible) anyVisible = true
                         }
                         if (!anyVisible) {
@@ -337,7 +337,7 @@ Item {
 
                                         Image {
                                             anchors.fill: parent
-                                            source: root.mediaData && root.mediaData.art_url ? "file://" + root.mediaData.art_url : ""
+                                            source: root.mediaData && root.mediaData.art_url ? (root.mediaData.art_url.indexOf("://") !== -1 ? root.mediaData.art_url : "file://" + root.mediaData.art_url) : ""
                                             fillMode: Image.PreserveAspectCrop
                                             asynchronous: true
                                         }
@@ -371,8 +371,8 @@ Item {
                                     }
 
                                     Text {
-                                        text: root.mediaData && root.mediaData.state === "Playing" ? "" : ""
-                                        color: root.mediaData && root.mediaData.state === "Playing" ? Theme.green : Theme.muted
+                                        text: root.mediaData && root.mediaData.status === "Playing" ? "" : ""
+                                        color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 10
                                     }

@@ -1420,7 +1420,7 @@ PopupPanel {
                     Column {
                         width: parent.width
                         spacing: 4
-                        visible: root.diagnostics && (root.diagnostics.pipewire_version || root.diagnostics.sample_rate)
+                        visible: root.diagnostics ? !!(root.diagnostics.pipewire_version || root.diagnostics.sample_rate) : false
 
                         Rectangle {
                             width: parent.width
@@ -1469,7 +1469,7 @@ PopupPanel {
                                 font.pixelSize: 8
                                 elide: Text.ElideRight
                                 renderType: Text.NativeRendering
-                                visible: root.diagnostics.output_desc
+                                visible: root.diagnostics ? !!root.diagnostics.output_desc : false
                             }
                         }
                     }
