@@ -13,8 +13,8 @@ Item {
     property bool showPopup: false
     onShowPopupChanged: {
         if (showPopup) {
-            for (var i = 0; i < variantRepeater.count; i++) {
-                var w = variantRepeater.itemAt(i)
+            for (var i = 0; i < variantRepeater.instances.length; i++) {
+                var w = variantRepeater.instances[i]
                 if (w) w.visible = true
             }
             for (var i = 0; i < root.notificationItems.length; i++)
@@ -38,6 +38,10 @@ Item {
     property var notificationItems: []
     property bool showHistory: false
     property var selectedIds: ({})
+    property var mediaData: null
+    property string diagCpu: ""
+    property string diagMem: ""
+    property string diagDisk: ""
 
     function refreshNotifications() {
         if (!NotificationState.service) return
@@ -91,11 +95,32 @@ Item {
                 try {
                     var json = JSON.parse(this.text)
                     root.audioMuted = json.muted || false
+                    root.mediaData = json.media || null
                 } catch(e) {}
             }
         }
         onExited: function(code) {
             if (code !== 0) console.warn("audioProc exited with code", code)
+        }
+    }
+
+    Process {
+        id: diagProc
+        command: [Theme.bin("get_sys_diagnostics")]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var json = JSON.parse(this.text)
+                    root.diagCpu = json.cpu && json.cpu.temp != null ? json.cpu.temp.toFixed(0) + "°C" : ""
+                    root.diagMem = json.memory && json.memory.used_gb != null ? json.memory.used_gb.toFixed(1) + "/" + json.memory.total_gb.toFixed(1) + " GB" : ""
+                    root.diagDisk = json.disk && json.disk.used != null ? json.disk.used + "/" + json.disk.total : ""
+                } catch(e) {
+                    console.warn("diag parse error:", e)
+                }
+            }
+        }
+        onExited: function(code) {
+            if (code !== 0) console.warn("diagProc exited with code", code)
         }
     }
 
@@ -132,6 +157,7 @@ Item {
             if (!uptimeProc.running) uptimeProc.running = true
             if (!audioProc.running) audioProc.running = true
             if (!btProc.running) btProc.running = true
+            if (!diagProc.running) diagProc.running = true
         }
     }
 
@@ -140,6 +166,7 @@ Item {
         uptimeProc.running = true
         audioProc.running = true
         btProc.running = true
+        diagProc.running = true
     }
 
     Timer {
@@ -161,8 +188,8 @@ Item {
         introDuration: 140
         exitDuration: 120
         onExitCompleted: {
-            for (var i = 0; i < variantRepeater.count; i++) {
-                var w = variantRepeater.itemAt(i)
+            for (var i = 0; i < variantRepeater.instances.length; i++) {
+                var w = variantRepeater.instances[i]
                 if (w) w.visible = false
             }
         }
@@ -286,11 +313,71 @@ Item {
                             onShowCalendarChanged: win.showCalendar = calendarWidget.showCalendar
                         }
 
-                        Rectangle {
+                        // ─── Now Playing ──────────────────────────
+                        Item {
                             Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
+                            Layout.preferredHeight: root.mediaData ? 48 : 0
+                            visible: root.mediaData !== null
+                            clip: true
+
+                            Rectangle {
+                                anchors.fill: parent
+                                color: Qt.alpha(Theme.primary, 0.05)
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 6
+                                    spacing: 8
+
+                                    Rectangle {
+                                        Layout.preferredWidth: 36; Layout.preferredHeight: 36
+                                        color: Theme.surface
+                                        border.width: 1
+                                        border.color: Qt.alpha(Theme.primary, 0.2)
+
+                                        Image {
+                                            anchors.fill: parent
+                                            source: root.mediaData && root.mediaData.art_url ? "file://" + root.mediaData.art_url : ""
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        spacing: 1
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: root.mediaData ? root.mediaData.title || "Unknown" : ""
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                        }
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: root.mediaData ? root.mediaData.artist || "" : ""
+                                            color: Theme.muted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                        }
+                                    }
+
+                                    Text {
+                                        text: root.mediaData && root.mediaData.state === "Playing" ? "" : ""
+                                        color: root.mediaData && root.mediaData.state === "Playing" ? Theme.green : Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                    }
+                                }
+                            }
                         }
 
                         NotificationList {
@@ -324,19 +411,15 @@ Item {
                             }
                         }
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
-                        }
-
                         QuickActions {
                             id: quickActions
                             Layout.fillWidth: true
                             audioMuted: root.audioMuted
                             wifiEnabled: root.wifiEnabled
                             btEnabled: root.btEnabled
+                            diagCpu: root.diagCpu
+                            diagMem: root.diagMem
+                            diagDisk: root.diagDisk
                             onToggleNetworkPopup: {
                                 if (NetworkState.popup)
                                     NetworkState.popup.showPopup = !NetworkState.popup.showPopup

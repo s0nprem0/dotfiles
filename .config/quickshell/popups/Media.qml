@@ -30,28 +30,9 @@ PopupPanel {
     property double position: 0
     property double trackLength: 0
 
-    onBeforeOpen: { refresh(); refreshSinks() }
+    onBeforeOpen: { refreshSinks() }
 
     Component.onCompleted: refreshSinks()
-
-    function refresh() {
-        listPlayersProc.running = true
-    }
-
-    function fetchMetadata() {
-        if (!root.playerName) return
-        fetchProc.command = ["sh", "-c",
-            "p=\"$1\"\n" +
-            "playerctl -p \"$p\" metadata --format '{{artist}}|{{title}}|{{album}}|{{mpris:artUrl}}|{{mpris:length}}' 2>/dev/null\n" +
-            "echo \"---\"\n" +
-            "playerctl -p \"$p\" status 2>/dev/null",
-            "_", root.playerName]
-        fetchProc.running = true
-        volProc.command = ["playerctl", "-p", root.playerName, "volume"]
-        volProc.running = true
-        posProc.command = ["playerctl", "-p", root.playerName, "position"]
-        posProc.running = true
-    }
 
     function formatTime(seconds) {
         if (typeof seconds !== "number" || seconds < 0) return "0:00"
@@ -154,69 +135,110 @@ PopupPanel {
         root.micVol = Math.round(frac * 100)
     }
 
-    // ── Audio Sinks (devices) ──
+    // ── Unified audio status via Rust helper ──
     property var sinkList: []
     property string activeSinkId: ""
+    property var sourceList: []
+    property string activeSourceId: ""
+    property var appList: []
+    property var diagnostics: ({})
 
     Process {
-        id: listSinksProc
-        command: ["sh", "-c",
-            "echo \"DEFAULT:$(pactl get-default-sink 2>/dev/null)\" && " +
-            "pactl list sinks | grep -E \"Sink #|Description:|Name:\" | sed 's/^[[:space:]]*//'"]
+        id: statusProc
+        command: [Theme.bin("get_audio_status")]
         running: false
         stdout: StdioCollector {}
         onExited: {
             var out = stdout.text.trim()
             if (!out) return
-            var lines = out.split("\n")
-            var defaultSink = ""
-            var newList = []
-            var newActive = root.activeSinkId
+            try {
+                var d = JSON.parse(out)
+                if (!d) return
 
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].trim()
-                if (!line) continue
+                // Sinks
+                var newSinks = []
+                var newActiveSink = ""
+                for (var si = 0; si < d.sinks.length; si++) {
+                    var s = d.sinks[si]
+                    newSinks.push(s.index + "||" + (s.description || s.name))
+                }
+                if (d.default_sink) {
+                    newActiveSink = String(d.default_sink.index)
+                    root.sysVol = d.default_sink.volume
+                    root.sysMuted = d.default_sink.muted
+                    root.isBtSink = d.default_sink.is_bluetooth
+                }
+                root.sinkList = newSinks
+                root.activeSinkId = newActiveSink
 
-                // First line: DEFAULT:<name>
-                if (line.indexOf("DEFAULT:") === 0) {
-                    defaultSink = line.substring(8).trim()
-                    continue
+                // Sources
+                var newSources = []
+                var newActiveSource = ""
+                for (var si2 = 0; si2 < d.sources.length; si2++) {
+                    var src = d.sources[si2]
+                    newSources.push(src.index + "||" + (src.description || src.name))
+                }
+                if (d.default_source) {
+                    newActiveSource = String(d.default_source.index)
+                    root.micVol = d.default_source.volume
+                    root.micMuted = d.default_source.muted
+                }
+                root.sourceList = newSources
+                root.activeSourceId = newActiveSource
+
+                // Apps
+                var newApps = []
+                for (var ai = 0; ai < d.apps.length; ai++) {
+                    var a = d.apps[ai]
+                    newApps.push(a.index + "||" + a.name + "||" + a.volume + "||" + a.muted)
+                }
+                root.appList = newApps
+
+                // Diagnostics
+                root.diagnostics = d.diagnostics || {}
+
+                // Media
+                if (d.media) {
+                    var m = d.media
+                    root.hasPlayer = true
+                    root.playerName = m.player || ""
+                    root.playerStatus = m.status || ""
+                    root.artist = m.artist || ""
+                    root.title = m.title || ""
+                    root.trackLength = (m.length || 0) * 1000000
+                    root.position = m.position || 0
+                    root.volume = 0
+                    var newArt = m.art_url || ""
+                    if (newArt !== root.artUrl) {
+                        root.artUrl = newArt
+                        ensureArtCache(newArt)
+                    }
+                } else {
+                    root.hasPlayer = false
+                    root.playerName = ""
+                    root.playerStatus = ""
+                    root.artist = ""
+                    root.title = ""
+                    root.artUrl = ""
+                    root.trackLength = 0
+                    root.position = 0
                 }
 
-                // Group lines per sink: Sink #, Name:, Description:
-                if (line.indexOf("Sink #") === 0) {
-                    var sinkId = line.replace(/.*#/, "").replace(/:$/, "").trim()
-                    var sinkName = ""
-                    var sinkDesc = ""
-                    var skip = 0
-
-                    if (i + 1 < lines.length) {
-                        var nameLine = lines[i + 1].trim()
-                        if (nameLine.indexOf("Name:") === 0) {
-                            sinkName = nameLine.substring(5).trim()
-                            skip = 1
-                        }
-                    }
-                    if (i + 2 < lines.length) {
-                        var descLine = lines[i + 2].trim()
-                        if (descLine.indexOf("Description:") === 0) {
-                            sinkDesc = descLine.substring(12).trim()
-                            skip = 2
-                        }
-                    }
-
-                    var displayName = sinkDesc || sinkName || ("Sink " + sinkId)
-                    var isActive = sinkName === defaultSink
-                    newList.push(sinkId + "||" + displayName)
-                    if (isActive) newActive = sinkId
-                    i += skip
+                // Available media players
+                var players = []
+                for (var pi = 0; pi < d.media_sources.length; pi++) {
+                    players.push(d.media_sources[pi].name)
                 }
+                root.availablePlayers = players
+
+                // Restore player name if current one is missing
+                if (root.hasPlayer && players.length > 0
+                    && players.indexOf(root.playerName) === -1) {
+                    root.playerName = players[0]
+                }
+            } catch (e) {
+                console.warn("Media: failed to parse audio status:", e)
             }
-
-            root.sinkList = newList
-            root.activeSinkId = newActive || (newList.length > 0 ? newList[0].split("||")[0].trim() : "")
-            root.isBtSink = defaultSink.toLowerCase().indexOf("bluez") >= 0
-            refreshApps()
         }
     }
 
@@ -226,12 +248,15 @@ PopupPanel {
     }
 
     function refreshSinks() {
-        listSinksProc.running = true
-        listSourcesProc.running = true
+        statusProc.running = true
     }
 
     function refreshSources() {
-        listSourcesProc.running = true
+        statusProc.running = true
+    }
+
+    function refresh() {
+        statusProc.running = true
     }
 
     function setDefaultSink(id) {
@@ -244,63 +269,6 @@ PopupPanel {
         id: resetSinkTimer
         interval: 150
         onTriggered: refreshSinks()
-    }
-
-    // ── Audio Sources (input devices) ──
-    property var sourceList: []
-    property string activeSourceId: ""
-
-    Process {
-        id: listSourcesProc
-        command: ["sh", "-c",
-            "echo \"DEFAULT:$(pactl get-default-source 2>/dev/null)\" && " +
-            "pactl list sources | grep -E \"Source #|Description:|Name:\" | sed 's/^[[:space:]]*//'"]
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var out = stdout.text.trim()
-            if (!out) return
-            var lines = out.split("\n")
-            var defaultSource = ""
-            var newList = []
-            var newActive = root.activeSourceId
-
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].trim()
-                if (!line) continue
-
-                if (line.indexOf("DEFAULT:") === 0) {
-                    defaultSource = line.substring(8).trim()
-                    continue
-                }
-
-                if (line.indexOf("Source #") === 0) {
-                    var srcId = line.replace(/.*#/, "").replace(/:$/, "").trim()
-                    var srcName = ""
-                    var srcDesc = ""
-
-                    if (i + 1 < lines.length) {
-                        var nameLine = lines[i + 1].trim()
-                        if (nameLine.indexOf("Name:") === 0)
-                            srcName = nameLine.substring(5).trim()
-                    }
-                    if (i + 2 < lines.length) {
-                        var descLine = lines[i + 2].trim()
-                        if (descLine.indexOf("Description:") === 0)
-                            srcDesc = descLine.substring(12).trim()
-                    }
-
-                    var displayName = srcDesc || srcName || ("Source " + srcId)
-                    var isActive = srcName === defaultSource
-                    newList.push(srcId + "||" + displayName)
-                    if (isActive) newActive = srcId
-                    i += 2
-                }
-            }
-
-            root.sourceList = newList
-            root.activeSourceId = newActive || (newList.length > 0 ? newList[0].split("||")[0].trim() : "")
-        }
     }
 
     Process {
@@ -326,7 +294,7 @@ PopupPanel {
         interval: 2000
         repeat: true
         running: root.showPopup && root.hasPlayer
-        onTriggered: { fetchMetadata(); refreshSinks() }
+        onTriggered: refreshSinks()
     }
 
     Timer {
@@ -350,49 +318,11 @@ PopupPanel {
     Timer {
         id: subDebounce
         interval: 200
-        onTriggered: { refreshSinks(); refreshApps() }
-    }
-
-    // ── App Volumes ──
-    property var appList: []
-
-    Process {
-        id: listAppsProc
-        command: ["pactl", "-f", "json", "list", "sink-inputs"]
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var out = stdout.text.trim()
-            if (!out) { root.appList = []; return }
-            try {
-                var data = JSON.parse(out)
-                var newList = []
-                for (var i = 0; i < data.length; i++) {
-                    var app = data[i]
-                    var props = app.properties || {}
-                    var name = props["application.name"] || "Unknown"
-                    var volObj = app.volume || {}
-                    var volKeys = Object.keys(volObj)
-                    var vol = 0
-                    if (volKeys.length > 0) {
-                        var firstVol = volObj[volKeys[0]]
-                        var pctStr = (firstVol ? firstVol["value_percent"] : null) || "0%"
-                        vol = parseInt(pctStr) || 0
-                    }
-                    var muted = app.mute || false
-                    newList.push(app.index + "||" + name + "||" + vol + "||" + muted)
-                }
-                root.appList = newList
-            } catch (e) { root.appList = [] }
-        }
+        onTriggered: refreshSinks()
     }
 
     Process { id: setAppVolProc }
     Process { id: setAppMuteProc }
-
-    function refreshApps() {
-        listAppsProc.running = true
-    }
 
     function setAppVol(id, frac) {
         frac = Math.max(0, Math.min(1, frac))
@@ -436,8 +366,14 @@ PopupPanel {
         var idx = list.indexOf(root.playerName)
         var nextIdx = (idx + 1) % list.length
         root.playerName = list[nextIdx]
-        root.fetchMetadata()
+        // Persist selection for next read
+        persistPlayerProc.command = ["sh", "-c",
+            "printf '%s' \"" + root.playerName.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"]
+        persistPlayerProc.running = true
+        refreshSinks()
     }
+
+    Process { id: persistPlayerProc }
 
     SequentialAnimation {
         id: switchAnim
@@ -457,81 +393,6 @@ PopupPanel {
     // ── Bluetooth detection ──
     property bool isBtSink: false
 
-    // ── Combined metadata/status fetch ──
-    Process {
-        id: fetchProc
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var out = stdout.text.trim()
-            if (!out) return
-            var sections = out.split("---")
-            if (sections.length >= 1) {
-                var meta = (sections[0] || "").trim()
-                if (meta) {
-                    var fields = meta.split("|")
-                    root.artist = fields[0] || ""
-                    root.title = fields[1] || ""
-                    root.album = fields[2] || ""
-                    var newArtUrl = fields[3] || ""
-                    root.trackLength = parseFloat(fields[4]) || 0
-                    if (newArtUrl !== root.artUrl) {
-                        root.artUrl = newArtUrl
-                        ensureArtCache(newArtUrl)
-                    }
-                }
-            }
-            if (sections.length >= 2) root.playerStatus = (sections[1] || "").trim()
-        }
-    }
-
-    // ── Volume fetch ──
-    Process {
-        id: volProc
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            root.volume = parseFloat(stdout.text.trim()) || 0
-        }
-    }
-
-    // ── Position fetch ──
-    Process {
-        id: posProc
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            root.position = parseFloat(stdout.text.trim()) || 0
-        }
-    }
-
-    // ── List players ──
-    Process {
-        id: listPlayersProc
-        command: ["playerctl", "-l"]
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var out = stdout.text.trim()
-            if (!out) {
-                root.hasPlayer = false
-                root.availablePlayers = []
-                return
-            }
-            var list = out.split("\n").filter(function(s) { return s.trim() !== "" })
-            root.availablePlayers = list
-            if (list.length > 0) {
-                if (!root.playerName || list.indexOf(root.playerName) === -1) {
-                    root.playerName = list[0].trim()
-                }
-                root.hasPlayer = true
-                fetchMetadata()
-            } else {
-                root.hasPlayer = false
-            }
-        }
-    }
-
     // ── Art cache download ──
     Process {
         id: artCacheProc
@@ -549,7 +410,7 @@ PopupPanel {
     Process {
         id: ctlProc
         running: false
-        onExited: { fetchMetadata() }
+        onExited: { refreshSinks() }
     }
 
     function playerCtl(args) {
@@ -678,10 +539,13 @@ PopupPanel {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        root.playerName = modelData
-                                        root.fetchMetadata()
-                                    }
+                                        onClicked: {
+                                            root.playerName = modelData
+                                            persistPlayerProc.command = ["sh", "-c",
+                                                "printf '%s' \"" + modelData.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"]
+                                            persistPlayerProc.running = true
+                                            root.refreshSinks()
+                                        }
                                 }
                             }
                         }
@@ -1551,6 +1415,64 @@ PopupPanel {
                         }
                     }
                 }
+
+                // ── Diagnostics ──
+                    Column {
+                        width: parent.width
+                        spacing: 4
+                        visible: root.diagnostics && (root.diagnostics.pipewire_version || root.diagnostics.sample_rate)
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Theme.primary
+                            opacity: 0.25
+                        }
+
+                        Text {
+                            text: "󰻀 Diagnostics"
+                            color: Theme.primary
+                            opacity: 0.5
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            font.bold: true
+                            renderType: Text.NativeRendering
+                        }
+
+                        Row {
+                            width: parent.width
+                            spacing: 6
+
+                            Text {
+                                text: "PW: " + (root.diagnostics.pipewire_version || "?")
+                                color: Theme.primary
+                                opacity: 0.6
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                            }
+
+                            Text {
+                                text: "SR: " + (root.diagnostics.sample_rate || "?")
+                                color: Theme.primary
+                                opacity: 0.6
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 8
+                                renderType: Text.NativeRendering
+                            }
+
+                            Text {
+                                text: root.diagnostics.output_desc || ""
+                                color: Theme.primary
+                                opacity: 0.4
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 8
+                                elide: Text.ElideRight
+                                renderType: Text.NativeRendering
+                                visible: root.diagnostics.output_desc
+                            }
+                        }
+                    }
 
                 // ── Bluetooth Media Controls ──
                     Column {
