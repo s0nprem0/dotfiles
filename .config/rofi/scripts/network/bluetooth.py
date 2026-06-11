@@ -232,7 +232,7 @@ def switch_audio_sink(mac: str, connect: bool) -> None:
 def rename_device(mac: str) -> None:
     name = get_device_name(mac)
     chosen = subprocess.run(
-        ["rofi", "-dmenu", "-p", "New name", "-theme", str(CONFIG_DIR / "rofi" / "password.rasi")],
+        ["rofi", "-dmenu", "-p", "New name", "-theme", str(CONFIG_DIR / "rofi" / "input.rasi")],
         input=name, text=True, capture_output=True
     ).stdout.strip()
     if not chosen or chosen == name:

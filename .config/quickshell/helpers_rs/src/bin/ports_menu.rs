@@ -21,6 +21,9 @@ fn main() {
         input.push('\n');
     }
 
+    let home = std::env::var("HOME").unwrap_or_default();
+    let theme = format!("{}/.config/rofi/ports.rasi", home);
+
     let mut child = match Command::new("rofi")
         .args([
             "-dmenu",
@@ -31,7 +34,7 @@ fn main() {
             "-mesg",
             "Select a port to kill the process",
             "-theme",
-            "~/.config/rofi/base.rasi",
+            &theme,
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
