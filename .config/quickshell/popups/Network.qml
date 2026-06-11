@@ -100,12 +100,6 @@ PopupPanel {
         root.pendingSsid = ""
         root.lastConnectSsid = network.ssid
 
-        var sec = (network.security || "").toLowerCase().trim()
-        if (sec !== "" && sec !== "--" && sec !== "open" && sec !== "none") {
-            root.pendingSsid = network.ssid
-            return
-        }
-
         root.connecting = true
         connectProc.usePassword = false
         connectProc.command = ["nmcli", "dev", "wifi", "connect", network.ssid]
