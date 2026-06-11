@@ -28,10 +28,8 @@ Bar {
                 id: windowTitle
                 text: {
                     var win = Hyprland.focusedWindow
-                    if (!win) return ""
-                    var title = win.title
-                    if (!title || title === "") return ""
-                    return title
+                    if (!win?.title) return ""
+                    return win.title
                 }
                 color: Theme.fg
                 font.family: Theme.fontFamily
