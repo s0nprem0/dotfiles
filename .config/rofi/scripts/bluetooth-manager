@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from network.bluetooth import main_menu, print_status
+from bluetooth import main_menu, print_status
 
 if __name__ == "__main__":
     import sys

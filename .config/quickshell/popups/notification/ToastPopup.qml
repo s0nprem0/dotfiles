@@ -130,6 +130,7 @@ Item {
 
                             Rectangle {
                                 id: toastCard
+                                z: 1
                                 width: parent.width
                                 height: mainLayout.implicitHeight + 20
                                 radius: 0
