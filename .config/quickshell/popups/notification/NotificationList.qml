@@ -273,7 +273,6 @@ ColumnLayout {
                             width: 20; height: 20
                             radius: 10
                             color: closeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
-                            visible: !notif.closed
 
                             Text {
                                 anchors.centerIn: parent

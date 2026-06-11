@@ -92,6 +92,18 @@ Item {
             service.dismissToastById(id)
             service.notifList = service.notifList.slice()
             service.recalcTrackedCount()
+            return
+        }
+        // Already closed — remove from history
+        for (var i = service.notifList.length - 1; i >= 0; i--) {
+            var h = service.notifList[i]
+            if (h.closed && h.notification && h.notification.id === id) {
+                h.destroy()
+                service.notifList.splice(i, 1)
+                service.notifList = service.notifList.slice()
+                service.recalcTrackedCount()
+                return
+            }
         }
     }
 
