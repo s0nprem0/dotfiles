@@ -235,15 +235,5 @@ BarModule {
       font.family: Theme.fontFamily
       font.pixelSize: 11
     }
-
-    Text {
-      visible: root.hasPlayer
-      text: root.playerStatus === "Playing" ? "" : ""
-      color: root.playerStatus === "Playing" ? Theme.green : Qt.alpha(Theme.fg, 0.5)
-      font.family: Theme.fontFamily
-      font.pixelSize: 9
-      Layout.bottomMargin: 1
-      Layout.leftMargin: 2
-    }
   }
 }
