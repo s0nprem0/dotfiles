@@ -6,7 +6,7 @@
 
 /*****----- Configuration -----*****/
 configuration {
-	modi:                      "drun";
+	modi:                      "drun,ports:~/.config/rofi/scripts/ports_menu";
     show-icons:                 true;
     display-drun:               " Apps";
     drun-display-format:        "{name}";
