@@ -24,12 +24,15 @@ BarModule {
     }
 
     DataModule {
+        id: clipData
         path: Theme.bin("get_clipboard_status.sh")
         interval: 10000
         onDataReceived: function(j) {
             root.hasItems = j.hasItems === true
         }
     }
+    Binding { target: root; property: "error"; value: clipData.hasError }
+    Binding { target: root; property: "loading"; value: clipData.loading }
 
     tooltipText: root.hasItems ? "Clipboard Manager" : "Clipboard (empty)"
 

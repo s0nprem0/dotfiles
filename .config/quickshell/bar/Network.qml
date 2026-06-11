@@ -26,6 +26,8 @@ BarModule {
             NetworkState.networkData = j;
         }
     }
+    Binding { target: root; property: "error"; value: netData.hasError }
+    Binding { target: root; property: "loading"; value: netData.loading }
 
     Connections {
         target: NetworkState

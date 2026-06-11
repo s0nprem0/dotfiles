@@ -9,7 +9,7 @@ PopupPanel {
     // ── PopupPanel Configuration ──
     anchorSide: "right"
     panelWidth: 360
-    initialOffset: -260
+    initialOffset: -360
     finalInset: 32
     introDuration: 120
     exitDuration: 100

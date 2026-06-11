@@ -132,7 +132,7 @@ Item {
                                 id: toastCard
                                 width: parent.width
                                 height: mainLayout.implicitHeight + 20
-                                radius: 8
+                                radius: 0
                                 color: Theme.surface
                                 border.color: borderColor
                                 border.width: 1
@@ -227,7 +227,7 @@ Item {
                                                 visible: (model.groupCount || 1) > 1
                                                 height: 16
                                                 width: groupLabel.implicitWidth + 8
-                                                radius: 8
+                                                radius: 0
                                                 color: Qt.alpha(Theme.primary, 0.2)
                                                 Layout.alignment: Qt.AlignRight
 

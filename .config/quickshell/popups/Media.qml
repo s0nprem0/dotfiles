@@ -11,7 +11,6 @@ PopupPanel {
     anchorSide: "right"
     panelWidth: 340
     panelMaxHeight: 0
-    initialOffset: -340
     finalInset: 32
     introDuration: 120
     exitDuration: 100

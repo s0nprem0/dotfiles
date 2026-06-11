@@ -30,6 +30,8 @@ BarModule {
             if (root.profileIndex < 0) root.profileIndex = 0
         }
     }
+    Binding { target: root; property: "error"; value: powerData.hasError }
+    Binding { target: root; property: "loading"; value: powerData.loading }
 
     Process { id: setProfileProc }
 

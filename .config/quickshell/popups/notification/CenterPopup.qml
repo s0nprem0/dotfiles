@@ -178,6 +178,11 @@ Item {
     }
 
     Process {
+        id: ctlProc
+        running: false
+    }
+
+    Process {
         id: btProc
         command: [Theme.bin("get_bluetooth_status")]
         stdout: StdioCollector {
@@ -238,7 +243,7 @@ Item {
 
     SlideAnimator {
         id: slide
-        slideFrom: -500
+        slideFrom: -360
         slideTo: 48
         introDuration: 140
         exitDuration: 120
@@ -306,7 +311,7 @@ Item {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
-                implicitWidth: 380
+                implicitWidth: 360
                 implicitHeight: Math.min(mainLayout.implicitHeight + 32, 720)
 
                 anchors { top: true }
@@ -434,10 +439,63 @@ Item {
                                     }
 
                                     Text {
-                                        text: root.mediaData && root.mediaData.status === "Playing" ? "" : ""
+                                        text: "prev"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        visible: root.mediaData && root.mediaData.status === "Playing"
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            hoverEnabled: true
+                                            onClicked: {
+                                                if (root.mediaData && root.mediaData.player) {
+                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "previous"]
+                                                    ctlProc.running = true
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: root.mediaData && root.mediaData.status === "Playing" ? "pause" : "play"
                                         color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: 9
+                                        font.bold: true
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            hoverEnabled: true
+                                            onClicked: {
+                                                if (root.mediaData && root.mediaData.player) {
+                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "play-pause"]
+                                                    ctlProc.running = true
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: "next"
+                                        color: Theme.primary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        visible: root.mediaData && root.mediaData.status === "Playing"
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            hoverEnabled: true
+                                            onClicked: {
+                                                if (root.mediaData && root.mediaData.player) {
+                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "next"]
+                                                    ctlProc.running = true
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

@@ -33,6 +33,7 @@ BarModule {
   readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝"]
 
   DataModule {
+    id: battData
     path: Theme.bin("get_battery_status")
     interval: 10000
     onDataReceived: function(j) {
@@ -45,6 +46,8 @@ BarModule {
       root.batteryDevice = j
     }
   }
+  Binding { target: root; property: "error"; value: battData.hasError }
+  Binding { target: root; property: "loading"; value: battData.loading }
 
   Timer {
     id: batteryAnim

@@ -8,6 +8,8 @@ Item {
 
   property string path: ""
   property int interval: 5000
+  property bool hasError: false
+  property bool loading: false
 
   Process {
     id: proc
@@ -15,12 +17,24 @@ Item {
     stdout: StdioCollector {
       onStreamFinished: {
         try {
+          root.loading = false
           root.dataReceived(JSON.parse(this.text))
-        } catch (e) { console.warn("DataModule JSON parse error:", e) }
+        } catch (e) {
+          root.hasError = true
+          root.loading = false
+          console.warn("DataModule JSON parse error:", e)
+        }
       }
     }
+    onRunningChanged: {
+      if (proc.running) { root.loading = true; root.hasError = false }
+    }
     onExited: function(code) {
-      if (code !== 0) crashRestart.restart()
+      root.loading = false
+      if (code !== 0) {
+        root.hasError = true
+        crashRestart.restart()
+      }
     }
   }
 

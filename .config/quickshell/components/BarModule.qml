@@ -12,14 +12,21 @@ Rectangle {
 
   // NEW: Allow changing tooltip direction based on bar placement (top vs bottom)
   property bool tooltipBelow: true
+  property bool loading: false
+  property bool error: false
 
   height: 28
-  radius: 0
 
-  color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
+  Behavior on color { ColorAnimation { duration: 80 } }
+  Behavior on border.color { ColorAnimation { duration: 80 } }
+
+  color: root.error
+    ? Qt.alpha("#e06c75", 0.3)
+    : root.loading
+      ? Qt.alpha("#e5c07b", 0.25)
+      : mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
   border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)
   border.width: 1
-
 
   Rectangle {
     id: tooltip

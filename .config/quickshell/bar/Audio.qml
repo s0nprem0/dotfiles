@@ -47,6 +47,8 @@ BarModule {
       }
     }
   }
+  Binding { target: root; property: "error"; value: audioData.hasError }
+  Binding { target: root; property: "loading"; value: audioData.loading }
 
   Process {
     id: pactlSub

@@ -13,7 +13,7 @@ BarModule {
         text: "󰒓"
         color: Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: 14
+        font.pixelSize: 11
     }
 
     mA.onClicked: {

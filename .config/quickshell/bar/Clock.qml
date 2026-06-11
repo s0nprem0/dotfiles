@@ -34,7 +34,7 @@ Item {
     cursorShape: Qt.PointingHandCursor
     onClicked: {
       if (NotificationState.centerPopup)
-        NotificationState.centerPopup.showPopup = !NotificationState.centerPopup.showPopup
+        NotificationState.centerPopup.showPopup = true
     }
   }
 

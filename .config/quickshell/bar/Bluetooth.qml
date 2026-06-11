@@ -34,6 +34,8 @@ BarModule {
       root.btTooltip = root.hasConnected ? names.join(", ") : (root.btEnabled ? "No devices" : "Bluetooth off")
     }
   }
+  Binding { target: root; property: "error"; value: btData.hasError }
+  Binding { target: root; property: "loading"; value: btData.loading }
 
   Process { id: btToggle }
   Process { id: btLauncher }
@@ -54,8 +56,11 @@ BarModule {
         btLauncher.command = [Theme.config("rofi/scripts/bluetooth-manager")]
         btLauncher.running = true
       } else {
-        btToggle.command = ["bluetoothctl", "power", root.btEnabled ? "off" : "on"]
+        var nextPower = !root.btEnabled
+        btToggle.command = ["bluetoothctl", "power", nextPower ? "on" : "off"]
         btToggle.running = true
+        root.btEnabled = nextPower
+        Quickshell.execDetached([Theme.bin("osdctl"), "show", nextPower ? "Bluetooth on" : "Bluetooth off", "warn", "1500"])
       }
     }
   }

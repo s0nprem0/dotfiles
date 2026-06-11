@@ -20,7 +20,7 @@ BarModule {
         if (NotificationState.service) NotificationState.service.toggleDnd()
       } else {
         if (NotificationState.centerPopup) {
-          NotificationState.centerPopup.showPopup = !NotificationState.centerPopup.showPopup
+          NotificationState.centerPopup.showPopup = true
         }
       }
     }
