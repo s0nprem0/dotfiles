@@ -39,6 +39,8 @@ Item {
     property bool showHistory: false
     property var selectedIds: ({})
     property var mediaData: null
+    property var mediaSources: []
+    property string currentMediaSource: ""
     property string localArtUrl: ""
     property string pendingCacheUrl: ""
     property string diagCpu: ""
@@ -69,6 +71,20 @@ Item {
             "echo \"$url|$path\"",
             "_", url]
         artCacheProc.running = true
+    }
+
+    function switchPlayer() {
+        var list = root.mediaSources
+        if (!root.currentMediaSource || list.length < 2) return
+        var idx = 0
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].name === root.currentMediaSource) { idx = i; break }
+        }
+        var next = list[(idx + 1) % list.length].name
+        persistPlayerProc.command = ["sh", "-c",
+            "printf '%s' \"" + next.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"]
+        persistPlayerProc.running = true
+        if (!audioProc.running) audioProc.running = true
     }
 
     Connections {
@@ -116,6 +132,8 @@ Item {
                 try {
                     var json = JSON.parse(this.text)
                     root.audioMuted = json.muted || false
+                    root.mediaSources = json.media_sources || []
+                    root.currentMediaSource = json.current_media_source || ""
                     var newMedia = json.media || null
                     root.mediaData = newMedia
                     if (newMedia && newMedia.art_url) {
@@ -179,6 +197,11 @@ Item {
 
     Process {
         id: ctlProc
+        running: false
+    }
+
+    Process {
+        id: persistPlayerProc
         running: false
     }
 
@@ -376,7 +399,7 @@ Item {
                         // ─── Now Playing ──────────────────────────
                         Item {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: root.mediaData ? 48 : 0
+                            Layout.preferredHeight: root.mediaData ? 56 : 0
                             visible: root.mediaData !== null
                             clip: true
 
@@ -438,62 +461,88 @@ Item {
                                         }
                                     }
 
-                                    Text {
-                                        text: "prev"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
-                                        visible: root.mediaData && root.mediaData.status === "Playing"
+                                    ColumnLayout {
+                                        spacing: 4
 
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            hoverEnabled: true
-                                            onClicked: {
-                                                if (root.mediaData && root.mediaData.player) {
-                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "previous"]
-                                                    ctlProc.running = true
+                                        RowLayout {
+                                            spacing: 6
+                                            Layout.alignment: Qt.AlignCenter
+
+                                            Text {
+                                                text: "prev"
+                                                color: Theme.primary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 9
+                                                visible: root.mediaData && root.mediaData.status === "Playing"
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    hoverEnabled: true
+                                                    onClicked: {
+                                                        if (root.mediaData && root.mediaData.player) {
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "previous"]
+                                                            ctlProc.running = true
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                text: root.mediaData && root.mediaData.status === "Playing" ? "pause" : "play"
+                                                color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 9
+                                                font.bold: true
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    hoverEnabled: true
+                                                    onClicked: {
+                                                        if (root.mediaData && root.mediaData.player) {
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "play-pause"]
+                                                            ctlProc.running = true
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            Text {
+                                                text: "next"
+                                                color: Theme.primary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 9
+                                                visible: root.mediaData && root.mediaData.status === "Playing"
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    hoverEnabled: true
+                                                    onClicked: {
+                                                        if (root.mediaData && root.mediaData.player) {
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "next"]
+                                                            ctlProc.running = true
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
 
-                                    Text {
-                                        text: root.mediaData && root.mediaData.status === "Playing" ? "pause" : "play"
-                                        color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
-                                        font.bold: true
+                                        Text {
+                                            Layout.alignment: Qt.AlignHCenter
+                                            text: root.currentMediaSource || ""
+                                            color: root.mediaSources.length > 1 ? Theme.primary : Theme.muted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 7
+                                            visible: root.currentMediaSource.length > 0
 
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            hoverEnabled: true
-                                            onClicked: {
-                                                if (root.mediaData && root.mediaData.player) {
-                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "play-pause"]
-                                                    ctlProc.running = true
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    Text {
-                                        text: "next"
-                                        color: Theme.primary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
-                                        visible: root.mediaData && root.mediaData.status === "Playing"
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            hoverEnabled: true
-                                            onClicked: {
-                                                if (root.mediaData && root.mediaData.player) {
-                                                    ctlProc.command = ["playerctl", "-p", root.mediaData.player, "next"]
-                                                    ctlProc.running = true
-                                                }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                hoverEnabled: true
+                                                visible: root.mediaSources.length > 1
+                                                onClicked: root.switchPlayer()
                                             }
                                         }
                                     }
