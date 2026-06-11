@@ -46,6 +46,7 @@ PopupPanel {
     function ensureArtCache(url) {
         if (!url || url.indexOf("://") === -1) return
         if (url.indexOf("file://") === 0) return
+        if (url === root.pendingMediaArtUrl) return
         root.pendingMediaArtUrl = url
         artCacheProc.command = ["sh", "-c",
             "url=\"$1\"\n" +

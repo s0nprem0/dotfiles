@@ -94,11 +94,12 @@ Scope {
     FileView {
         id: stateFile
         path: root.statePath
-        blockLoading: true
         watchChanges: true
         onFileChanged: reload()
         onLoaded: root.refreshState()
     }
+
+    Component.onCompleted: stateFile.reload()
 
     SlideAnimator {
         id: slide
