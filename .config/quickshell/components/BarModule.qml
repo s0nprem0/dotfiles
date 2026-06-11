@@ -22,9 +22,7 @@ Rectangle {
 
   color: root.error
     ? Qt.alpha("#e06c75", 0.3)
-    : root.loading
-      ? Qt.alpha("#e5c07b", 0.25)
-      : mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
+    : mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
   border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)
   border.width: 1
 
