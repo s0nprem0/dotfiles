@@ -5,11 +5,26 @@ import QtQuick
 import QtQuick.Layouts
 
 import "../../service"
+import "../../components"
 
 Item {
     id: root
 
     property bool showPopup: false
+    onShowPopupChanged: {
+        if (showPopup) {
+            for (var i = 0; i < variantRepeater.count; i++) {
+                var w = variantRepeater.itemAt(i)
+                if (w) w.visible = true
+            }
+            for (var i = 0; i < root.notificationItems.length; i++)
+                root.notificationItems[i].unread = false
+            slide.show = true
+        } else if (!slide.closing) {
+            slide.closeAnim()
+        }
+    }
+
     property string hourStr: ""
     property string minStr: ""
     property string secStr: ""
@@ -139,6 +154,20 @@ Item {
 
     function closePopup() { root.showPopup = false }
 
+    SlideAnimator {
+        id: slide
+        slideFrom: -500
+        slideTo: 48
+        introDuration: 140
+        exitDuration: 120
+        onExitCompleted: {
+            for (var i = 0; i < variantRepeater.count; i++) {
+                var w = variantRepeater.itemAt(i)
+                if (w) w.visible = false
+            }
+        }
+    }
+
     // ─── Popup Windows (per‑screen) ───────────────────────────────
     Variants {
         id: variantRepeater
@@ -149,11 +178,6 @@ Item {
                 required property var modelData
                 visible: false
 
-                property bool isClosing: false
-                property real animTopMargin: -500
-                property real animOpacity: 0
-                property bool showPopup: root.showPopup
-                property bool winVisible: false
                 property int calendarMonthOffset: 0
                 property bool showCalendar: true
                 property int selectedNotifIndex: -1
@@ -179,7 +203,6 @@ Item {
                 }
 
                 onVisibleChanged: {
-                    winVisible = visible
                     if (visible) {
                         refreshNotifications()
                         pollTimer.running = true
@@ -197,29 +220,6 @@ Item {
                     }
                 }
 
-                onShowPopupChanged: {
-                    if (root.showPopup) {
-                        exitAnim.stop()
-                        isClosing = false
-                        animTopMargin = -500
-                        animOpacity = 0
-                        win.visible = true
-                        introAnim.start()
-                        refreshNotifications()
-                        win.markAllRead()
-                    } else if (!isClosing) {
-                        introAnim.stop()
-                        closeAnim()
-                    }
-                }
-
-                function closeAnim() {
-                    if (isClosing) return
-                    isClosing = true
-                    root.showPopup = false
-                    exitAnim.start()
-                }
-
                 screen: modelData
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
@@ -228,32 +228,20 @@ Item {
                 implicitHeight: Math.min(mainLayout.implicitHeight + 32, 720)
 
                 anchors { top: true }
-                margins { top: win.animTopMargin }
-
-                ParallelAnimation {
-                    id: introAnim
-                    NumberAnimation { target: win; property: "animTopMargin"; from: -500; to: 48; duration: 140; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 0; to: 1; duration: 140; easing.type: Easing.OutCubic }
-                }
-                ParallelAnimation {
-                    id: exitAnim
-                    onStopped: win.visible = false
-                    NumberAnimation { target: win; property: "animTopMargin"; from: 48; to: -500; duration: 120; easing.type: Easing.InCubic }
-                    NumberAnimation { target: win; property: "animOpacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
-                }
+                margins { top: slide.animSlide }
 
                 HyprlandFocusGrab {
-                    active: !win.isClosing && win.visible
+                    active: win.visible
                     windows: [win]
                     onCleared: {
-                        if (root.showPopup) win.closeAnim()
+                        if (root.showPopup) root.closePopup()
                     }
                 }
 
                 Rectangle {
                     id: panel
                     anchors.fill: parent
-                    opacity: win.animOpacity
+                    opacity: slide.animOpacity
                     color: Theme.bg
                     border.width: 1
                     border.color: Theme.primary
@@ -261,7 +249,7 @@ Item {
                     focus: true
 
                     Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Escape) win.closeAnim()
+                        if (event.key === Qt.Key_Escape) root.closePopup()
                         else if (event.key === Qt.Key_Down) { win.selectNext(); event.accepted = true }
                         else if (event.key === Qt.Key_Up) { win.selectPrev(); event.accepted = true }
                         else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {

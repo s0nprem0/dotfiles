@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Wayland
 
 import "../service"
+import "../components"
 
 Item {
     id: root
@@ -21,9 +22,6 @@ Item {
 
     // ── State ──
     property bool showPopup: false
-    property bool isClosing: false
-    property real animOffset: root.initialOffset
-    property real animOpacity: 0
 
     // ── Content (set by popup file) ──
     property Component contentComponent
@@ -36,31 +34,20 @@ Item {
     // ── Show / Hide ──
     onShowPopupChanged: {
         if (root.showPopup) {
-            exitAnim.stop()
-            isClosing = false
-            animOffset = root.initialOffset
-            animOpacity = 0
-            doShow()
+            for (var key in screenWins) {
+                var w = screenWins[key]
+                if (w) w.visible = true
+            }
             root.beforeOpen()
-        } else if (!isClosing) {
-            introAnim.stop()
-            closePopup()
+            slide.show = true
+        } else if (!slide.closing) {
+            root.beforeClose()
+            slide.closeAnim()
         }
-    }
-
-    function doShow() {
-        for (var key in screenWins) {
-            var w = screenWins[key]
-            if (w) w.visible = true
-        }
-        introAnim.start()
     }
 
     function closePopup() {
-        if (isClosing) return
-        isClosing = true
-        root.beforeClose()
-        exitAnim.start()
+        root.showPopup = false
     }
 
     // ── Per-screen Windows ──
@@ -95,14 +82,14 @@ Item {
 
                 margins {
                     top: root.anchorSide !== "none" ? 40 : 0
-                    left: root.anchorSide === "left" ? root.animOffset : 0
-                    right: root.anchorSide === "right" ? root.animOffset : 0
+                    left: root.anchorSide === "left" ? slide.animSlide : 0
+                    right: root.anchorSide === "right" ? slide.animSlide : 0
                 }
 
                 Rectangle {
                     id: contentRect
                     anchors.fill: parent
-                    opacity: root.animOpacity
+                    opacity: slide.animOpacity
                     color: Theme.bg
                     border.width: 1
                     border.color: Theme.primary
@@ -134,55 +121,14 @@ Item {
         }
     }
 
-    // ── Animations ──
-    ParallelAnimation {
-        id: introAnim
-
-        onStopped: {
-            if (!root.isClosing) root.afterOpen()
-        }
-
-        NumberAnimation {
-            target: root
-            property: "animOffset"
-            from: root.initialOffset
-            to: root.finalInset
-            duration: root.introDuration
-            easing.type: Easing.OutCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "animOpacity"
-            from: 0
-            to: 1
-            duration: root.introDuration
-            easing.type: Easing.OutCubic
-        }
-    }
-
-    ParallelAnimation {
-        id: exitAnim
-
-        NumberAnimation {
-            target: root
-            property: "animOffset"
-            from: root.finalInset
-            to: root.initialOffset
-            duration: root.exitDuration
-            easing.type: Easing.InCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "animOpacity"
-            from: 1
-            to: 0
-            duration: root.exitDuration
-            easing.type: Easing.InCubic
-        }
-
-        onStopped: {
+    SlideAnimator {
+        id: slide
+        slideFrom: root.initialOffset
+        slideTo: root.finalInset
+        introDuration: root.introDuration
+        exitDuration: root.exitDuration
+        onIntroCompleted: root.afterOpen()
+        onExitCompleted: {
             for (var key in root.screenWins) {
                 var w = root.screenWins[key]
                 if (w) w.visible = false
