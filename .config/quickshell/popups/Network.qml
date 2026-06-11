@@ -116,8 +116,7 @@ PopupPanel {
         if (!pwd || pwd.trim() === "" || !root.pendingSsid) return
         root.connecting = true
         connectProc.usePassword = true
-        connectProc.command = ["nmcli", "--ask", "dev", "wifi", "connect", root.pendingSsid]
-        connectProc.pendingPassword = pwd
+        connectProc.command = ["nmcli", "dev", "wifi", "connect", root.pendingSsid, "password", pwd]
         connectProc.running = true
         root.pendingSsid = ""
     }
@@ -168,9 +167,6 @@ PopupPanel {
     Process {
         id: connectProc
         property bool usePassword: false
-        property string pendingPassword: ""
-        stdinEnabled: true
-        onStarted: { if (connectProc.pendingPassword) write(connectProc.pendingPassword + "\n"); connectProc.pendingPassword = "" }
         environment: ({ LANG: "C", LC_ALL: "C" })
         stderr: StdioCollector {}
         onExited: function(exitCode) {
