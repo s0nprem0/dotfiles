@@ -16,3 +16,4 @@ install: build
 	cp target/release/log_battery ../helpers/log_battery
 	cp target/release/osdctl ../helpers/osdctl
 	cp target/release/screenshot ../helpers/screenshot
+	cp target/release/ports_menu ../helpers/ports_menu

@@ -12,7 +12,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File m
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/cliphist.sh menu"), { description = "Clipboard history" })
 
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("rofi -show ports -theme ~/.config/rofi/base.rasi"), { description = "Ports menu" })
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("~/.config/quickshell/helpers/ports_menu"), { description = "Ports menu" })
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("rofi -show bt -theme ~/.config/rofi/bluetooth.rasi"), { description = "Bluetooth menu" })
 
 -- Windows
