@@ -102,7 +102,11 @@ PopupPanel {
 
         root.connecting = true
         connectProc.usePassword = false
-        connectProc.command = ["nmcli", "dev", "wifi", "connect", network.ssid]
+        if (network.autoconnect) {
+            connectProc.command = ["nmcli", "connection", "up", network.ssid]
+        } else {
+            connectProc.command = ["nmcli", "dev", "wifi", "connect", network.ssid]
+        }
         connectProc.running = true
     }
 
