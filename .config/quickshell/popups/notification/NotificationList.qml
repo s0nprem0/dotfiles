@@ -179,7 +179,7 @@ ColumnLayout {
                 color: mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.08) : Theme.surface
                 border.width: ListView.isCurrentItem ? 2 : 1
                 border.color: ListView.isCurrentItem ? Theme.primary : (modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter)
-                radius: 0
+                radius: 6
                 opacity: notif.closed ? 0.5 : 1
                 property var notif: modelData
 
@@ -269,18 +269,25 @@ ColumnLayout {
                                 font.pixelSize: 8
                             }
                         }
-                        Text {
-                            text: notif.closed ? "" : "\u2715"
-                            color: Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                        Rectangle {
+                            width: 20; height: 20
+                            radius: 10
+                            color: closeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
                             visible: !notif.closed
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✕"
+                                color: closeMa.containsMouse ? Theme.error : Theme.muted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                            }
+
                             MouseArea {
+                                id: closeMa
                                 anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: parent.color = Theme.error
-                                onExited: parent.color = Theme.muted
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: root.dismissNotification(notif.id)
                             }
                         }
