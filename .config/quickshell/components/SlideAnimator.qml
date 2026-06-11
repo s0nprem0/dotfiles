@@ -37,8 +37,10 @@ Item {
     function closeAnim() {
         if (closing) return
         closing = true
+        show = false
         exitAnim.start()
     }
+
 
     function forceFinish() {
         introAnim.stop()
