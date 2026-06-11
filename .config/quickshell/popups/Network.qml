@@ -27,6 +27,8 @@ PopupPanel {
     property bool connected:      false
     property string activeSsid:   ""
     property int activeSignal:    0
+    property string activeBand:   ""
+    property string activeSpeed:  ""
     property bool warpConnected:  false
     property bool warpAvailable:  false
     property var details: ({
@@ -41,6 +43,7 @@ PopupPanel {
     property string pendingSsid: ""
     property bool connecting: false
     property string errorMessage: ""
+    property bool scanTimedOut: false
 
     // ── Listen to NetworkState changes ──
     Connections {
@@ -49,17 +52,28 @@ PopupPanel {
             var data = NetworkState.networkData
             if (!data) return
             root.dataLoaded    = true
+            root.scanTimedOut  = false
+            scanTimeoutTimer.stop()
             root.wifiEnabled   = data.wifi_enabled
             root.airplaneMode  = data.airplane_mode
             root.connected     = data.connected
             root.activeSsid    = data.active_ssid  || ""
             root.activeSignal  = data.active_signal || 0
+            root.activeBand    = data.active_band || ""
+            root.activeSpeed   = data.active_speed || ""
             root.warpConnected = data.warp_connected || false
             root.warpAvailable = data.warp_available || false
             root.details       = data.details  || { ip_address:"", gateway:"", dns:"", subnet:"", security:"", bssid:"" }
             root.networks      = data.networks || []
             root.vpns          = data.vpns     || []
         }
+    }
+
+    // ── Scan Timeout ──
+    Timer {
+        id: scanTimeoutTimer
+        interval: 15000
+        onTriggered: root.scanTimedOut = true
     }
 
     // ── Helpers ──
@@ -211,9 +225,13 @@ PopupPanel {
         root.detailsExpanded = false
         root.expandedNetworkSsid = ""
         root.errorMessage = ""
+        root.scanTimedOut = false
+        scanTimeoutTimer.stop()
     }
 
     onBeforeOpen: {
+        root.scanTimedOut = false
+        scanTimeoutTimer.restart()
         root.triggerRefresh()
     }
 
@@ -264,6 +282,24 @@ PopupPanel {
                             opacity: 0.6
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
+                        }
+
+                        Text {
+                            text: root.activeBand
+                            color: Theme.fg
+                            opacity: 0.6
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            visible: root.activeBand.length > 0
+                        }
+
+                        Text {
+                            text: root.activeSpeed
+                            color: Theme.fg
+                            opacity: 0.6
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            visible: root.activeSpeed.length > 0
                         }
                     }
                 }
@@ -357,6 +393,7 @@ PopupPanel {
                         Text { text: "  Subnet: " + root.details.subnet; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
                         Text { text: "  DNS: " + root.details.dns; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
                         Text { text: "  BSSID: " + root.details.bssid; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                        Text { text: "  Band: " + root.activeBand; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11; visible: root.activeBand.length > 0 }
                         Text { text: "  Security: " + root.details.security; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 11 }
                     }
 
@@ -480,7 +517,7 @@ PopupPanel {
 
                     Text {
                         visible: !root.dataLoaded
-                        text: "Scanning…"
+                        text: root.scanTimedOut ? "Timed out — close & reopen" : "Scanning…"
                         color: Theme.muted
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -540,7 +577,7 @@ PopupPanel {
                                     textFormat: Text.RichText
                                     text: {
                                         var bars = Math.round(modelData.signal / 20)
-                                        var on  = Theme.fg, off = Theme.surface, s = ""
+                                        var on  = Theme.fg, off = Qt.alpha(Theme.fg, 0.2), s = ""
                                         for (var i = 0; i < 5; i++)
                                             s += "<font color='" + (i < bars ? on : off) + "'>█</font>"
                                         return s
