@@ -77,6 +77,15 @@ Item {
                                 opacityValue = 0
                                 scaleValue = 0.8
                                 dismissTimer.stop()
+                                softCloseTimer.start()
+                            }
+
+                            function hardClose() {
+                                if (closing) return
+                                closing = true
+                                opacityValue = 0
+                                scaleValue = 0.8
+                                dismissTimer.stop()
                                 closeTimer.start()
                             }
 
@@ -98,7 +107,7 @@ Item {
                                     else if (nd.actions && nd.actions.length > 0)
                                         nd.actions[0].invoke()
                                 }
-                                close()
+                                hardClose()
                             }
 
                             Timer {
@@ -302,7 +311,7 @@ Item {
                                                 model: model.notifData && model.notifData.actions || []
                                                 delegate: NotificationActionButton {
                                                     action: modelData
-                                                    onInvoked: close()
+                                                    onInvoked: hardClose()
                                                 }
                                             }
 

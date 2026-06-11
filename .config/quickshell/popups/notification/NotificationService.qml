@@ -40,6 +40,10 @@ Item {
             // Enforce total limit (active + history)
             while (list.length > service.maxTotal) {
               var stale = list.pop()
+              for (var t = toastModel.count - 1; t >= 0; t--) {
+                  if (toastModel.get(t).notifData === stale)
+                      toastModel.remove(t, 1)
+              }
               stale.destroy()
             }
 
@@ -52,7 +56,6 @@ Item {
                     var item = toastModel.get(i)
                     if (item.appName === notification.appName) {
                         groupCount = (item.groupCount || 1) + 1
-                        if (item.notifData) item.notifData.close()
                         toastModel.remove(i, 1)
                         break
                     }
@@ -91,7 +94,6 @@ Item {
             n.close()
             service.dismissToastById(id)
             service.notifList = service.notifList.slice()
-            service.recalcTrackedCount()
             return
         }
         // Already closed — remove from history
@@ -101,7 +103,6 @@ Item {
                 h.destroy()
                 service.notifList.splice(i, 1)
                 service.notifList = service.notifList.slice()
-                service.recalcTrackedCount()
                 return
             }
         }
@@ -114,7 +115,6 @@ Item {
             service.dismissToastById(ids[i])
         }
         service.notifList = service.notifList.slice()
-        service.recalcTrackedCount()
     }
 
     function clearAll() {
@@ -124,7 +124,6 @@ Item {
         }
         toastModel.clear()
         service.notifList = service.notifList.slice()
-        service.recalcTrackedCount()
     }
 
     function clearHistory() {
@@ -135,7 +134,6 @@ Item {
             }
         }
         service.notifList = service.notifList.slice()
-        service.recalcTrackedCount()
     }
 
     function toggleDnd() {
@@ -148,7 +146,6 @@ Item {
             item.notifData.close()
         toastModel.remove(index, 1)
         service.notifList = service.notifList.slice()
-        service.recalcTrackedCount()
     }
 
     function dismissToastById(id) {
@@ -158,7 +155,6 @@ Item {
                 if (item.notifData) item.notifData.close()
                 toastModel.remove(i, 1)
                 service.notifList = service.notifList.slice()
-                service.recalcTrackedCount()
                 return
             }
         }
@@ -170,7 +166,6 @@ Item {
             if (item.notifId === id) {
                 toastModel.remove(i, 1)
                 service.notifList = service.notifList.slice()
-                service.recalcTrackedCount()
                 return
             }
         }
@@ -205,9 +200,7 @@ Item {
     Component.onCompleted: {
         if (typeof NotificationState !== "undefined") {
             NotificationState.service = service
-            NotificationState.server = notifServer
             NotificationState.toastModel = toastModel
-            NotificationState.notifList = notifList
             NotificationState.dnd = dnd
         }
     }
