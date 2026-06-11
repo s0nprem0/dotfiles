@@ -41,16 +41,19 @@ PopupPanel {
         return m + ":" + (s < 10 ? "0" : "") + s
     }
 
+    property string pendingMediaArtUrl: ""
+
     function ensureArtCache(url) {
         if (!url || url.indexOf("://") === -1) return
         if (url.indexOf("file://") === 0) return
+        root.pendingMediaArtUrl = url
         artCacheProc.command = ["sh", "-c",
             "url=\"$1\"\n" +
             "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" +
             "path=\"/tmp/media_art_$hash\"\n" +
             "find /tmp/media_art_* -mmin +60 -delete 2>/dev/null\n" +
             "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" +
-            "echo \"$path\"",
+            "echo \"$url|$path\"",
             "_", url]
         artCacheProc.running = true
     }
@@ -210,8 +213,11 @@ PopupPanel {
                     root.volume = 0
                     var newArt = m.art_url || ""
                     if (newArt !== root.artUrl) {
-                        root.artUrl = newArt
-                        ensureArtCache(newArt)
+                        if (newArt.indexOf("http") === 0) {
+                            ensureArtCache(newArt)
+                        } else {
+                            root.artUrl = newArt
+                        }
                     }
                 } else {
                     root.hasPlayer = false
@@ -399,9 +405,12 @@ PopupPanel {
         running: false
         stdout: StdioCollector {}
         onExited: {
-            var path = stdout.text.trim()
-            if (path) {
-                root.artUrl = "file://" + path
+            var output = stdout.text.trim()
+            if (output) {
+                var parts = output.split("|")
+                if (parts.length === 2 && parts[0] === root.pendingMediaArtUrl) {
+                    root.artUrl = "file://" + parts[1]
+                }
             }
         }
     }

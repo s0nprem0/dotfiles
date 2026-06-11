@@ -2,7 +2,7 @@ use helpers_rs::parse_percent;
 use serde::Serialize;
 use std::process::Command;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct SinkInfo {
   index: u32,
   name: String,
@@ -10,6 +10,8 @@ struct SinkInfo {
   volume: i64,
   muted: bool,
   is_bluetooth: bool,
+  sample_rate: String,
+  icon: String,
 }
 
 #[derive(Serialize)]
@@ -43,6 +45,9 @@ struct MediaInfo {
 #[derive(Serialize)]
 struct MediaSource {
   name: String,
+  status: String,
+  title: String,
+  artist: String,
 }
 
 #[derive(Serialize)]
@@ -61,6 +66,7 @@ struct AudioStatus {
   apps: Vec<AppInfo>,
   media: Option<MediaInfo>,
   media_sources: Vec<MediaSource>,
+  current_media_source: Option<String>,
   diagnostics: Diagnostics,
   volume: i64,
   muted: bool,
@@ -100,6 +106,29 @@ fn parse_volume(vol_obj: &serde_json::Value) -> i64 {
   0
 }
 
+fn parse_sample_rate(s: &serde_json::Value) -> String {
+  let spec = s.get("sample_specification").and_then(|v| v.as_str()).unwrap_or("");
+  if let Some(hz_pos) = spec.find("Hz") {
+    let prefix = &spec[..hz_pos];
+    let digits: String = prefix.chars().rev().take_while(|c| c.is_ascii_digit()).collect();
+    let digits: String = digits.chars().rev().collect();
+    if let Ok(hz) = digits.parse::<i64>() {
+      return format!("{}kHz", hz / 1000);
+    }
+  }
+  "48kHz".to_string()
+}
+
+fn sink_icon(_name: &str, active_port: &str, is_bt: bool) -> String {
+  if is_bt {
+    return "audio-headphones-bluetooth".to_string();
+  }
+  if active_port.to_lowercase().contains("headphone") {
+    return "audio-headphones".to_string();
+  }
+  "audio-speakers".to_string()
+}
+
 fn parse_sinks(sinks_json: &serde_json::Value, default_name: &str) -> (Vec<SinkInfo>, Option<SinkInfo>) {
   let mut sinks = Vec::new();
   let mut default_sink = None;
@@ -112,10 +141,17 @@ fn parse_sinks(sinks_json: &serde_json::Value, default_name: &str) -> (Vec<SinkI
       let vol = parse_volume(s.get("volume").unwrap_or(&serde_json::Value::Null));
       let muted = s.get("mute").and_then(|v| v.as_bool()).unwrap_or(false);
       let is_bt = name.to_lowercase().contains("bluez") || name.to_lowercase().contains("bluetooth");
+      let sample_rate = parse_sample_rate(s);
+      let active_port = s.get("active_port").and_then(|v| v.as_str()).unwrap_or("");
+      let icon = sink_icon(&name, active_port, is_bt);
 
-      let sink = SinkInfo { index, name: name.clone(), description, volume: vol, muted, is_bluetooth: is_bt };
+      let sink = SinkInfo { index, name: name.clone(), description, volume: vol, muted, is_bluetooth: is_bt, sample_rate, icon };
       if name == default_name {
-        default_sink = Some(SinkInfo { index: sink.index, name: sink.name.clone(), description: sink.description.clone(), volume: sink.volume, muted: sink.muted, is_bluetooth: sink.is_bluetooth });
+        default_sink = Some(SinkInfo {
+          index: sink.index, name: sink.name.clone(), description: sink.description.clone(),
+          volume: sink.volume, muted: sink.muted, is_bluetooth: sink.is_bluetooth,
+          sample_rate: sink.sample_rate.clone(), icon: sink.icon.clone(),
+        });
       }
       sinks.push(sink);
     }
@@ -216,106 +252,93 @@ fn get_diagnostics() -> Diagnostics {
   Diagnostics { pipewire_version: pw_version, sample_rate, output_desc }
 }
 
-fn get_media_info() -> (Vec<MediaSource>, Option<MediaInfo>) {
-  // Read persisted media source selection
-  let current_source = std::fs::read_to_string("/tmp/quickshell_current_media_player")
-    .ok()
-    .map(|s| s.trim().to_string())
-    .unwrap_or_default();
+fn playerctl_metadata(player: &str, format: &str) -> Option<String> {
+  let output = Command::new("playerctl")
+    .args(["--player", player, "metadata", "--format", format])
+    .output()
+    .ok()?;
+  output.status.success().then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
 
-  // List players
-  let players_output = Command::new("playerctl")
-    .args(["-l"])
+fn playerctl_status(player: &str) -> String {
+  Command::new("playerctl")
+    .args(["--player", player, "status"])
     .output()
     .ok()
-    .and_then(|o| {
-      if o.status.success() {
-        let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-        if s.is_empty() { None } else { Some(s) }
-      } else {
-        None
-      }
-    });
+    .filter(|o| o.status.success())
+    .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+    .filter(|s| s == "Playing" || s == "Paused")
+    .unwrap_or_else(|| "Stopped".to_string())
+}
 
-  let media_sources: Vec<MediaSource> = match &players_output {
-    Some(out) => out.lines().map(|l| MediaSource { name: l.trim().to_string() }).collect(),
-    None => Vec::new(),
+fn get_media_info() -> (Vec<MediaSource>, Option<String>, Option<MediaInfo>) {
+  let stored_player = std::fs::read_to_string("/tmp/quickshell_current_media_player")
+    .ok()
+    .map(|s| s.trim().to_string())
+    .filter(|s| !s.is_empty());
+
+  let players_out = Command::new("playerctl").args(["-l"]).output().ok().and_then(|o| {
+    if o.status.success() {
+      let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+      if s.is_empty() { None } else { Some(s) }
+    } else {
+      None
+    }
+  });
+
+  let Some(player_list) = players_out else {
+    return (Vec::new(), None, None);
   };
 
-  // Determine which player to query
-  let active_player = if media_sources.iter().any(|s| s.name == current_source) {
-    current_source.clone()
-  } else {
-    media_sources.first().map(|s| s.name.clone()).unwrap_or_default()
-  };
+  // Build rich media sources with per-player status/title/artist
+  let mut sources: Vec<MediaSource> = Vec::new();
+  for line in player_list.lines() {
+    let player = line.trim();
+    if player.is_empty() { continue; }
+    let status = playerctl_status(player);
+    let title = playerctl_metadata(player, "{{title}}").unwrap_or_default();
+    let artist = playerctl_metadata(player, "{{artist}}").unwrap_or_default();
+    sources.push(MediaSource { name: player.to_string(), status, title, artist });
+  }
 
-  let media = if !active_player.is_empty() {
-    // Fetch metadata: title|artist|artUrl|length
-    let metadata = Command::new("playerctl")
-      .args(["-p", &active_player, "metadata", "--format", "{{artist}}|{{title}}|{{mpris:artUrl}}|{{mpris:length}}"])
-      .output()
-      .ok()
-      .and_then(|o| {
-        if o.status.success() {
-          let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-          if s.is_empty() { None } else { Some(s) }
-        } else {
-          None
-        }
-      });
+  // Player resolution: stored > Playing > Paused > first
+  let active_player = stored_player.as_ref()
+    .filter(|p| sources.iter().any(|s| &s.name == *p))
+    .cloned()
+    .or_else(|| sources.iter().find(|s| s.status == "Playing").map(|s| s.name.clone()))
+    .or_else(|| sources.iter().find(|s| s.status == "Paused").map(|s| s.name.clone()))
+    .or_else(|| sources.first().map(|s| s.name.clone()));
 
-    let status = Command::new("playerctl")
-      .args(["-p", &active_player, "status"])
-      .output()
-      .ok()
-      .and_then(|o| {
-        if o.status.success() {
-          let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-          if s == "Playing" || s == "Paused" { Some(s) } else { None }
-        } else {
-          None
-        }
-      });
-
+  let media = active_player.as_ref().and_then(|player| {
+    let status = playerctl_status(player);
+    if status == "Stopped" { return None; }
+    let player_name = playerctl_metadata(player, "{{playerName}}").unwrap_or_else(|| player.clone());
+    let title = playerctl_metadata(player, "{{title}}").unwrap_or_default();
+    let artist = playerctl_metadata(player, "{{artist}}").unwrap_or_default();
+    let art_url = playerctl_metadata(player, "{{mpris:artUrl}}").unwrap_or_default();
+    let length_us = playerctl_metadata(player, "{{mpris:length}}")
+      .and_then(|s| s.parse::<f64>().ok())
+      .unwrap_or(0.0);
     let position = Command::new("playerctl")
-      .args(["-p", &active_player, "position"])
+      .args(["--player", player, "position"])
       .output()
       .ok()
-      .and_then(|o| {
-        if o.status.success() {
-          String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok()
-        } else {
-          None
-        }
-      });
-
-    let (artist, title, art_url, length_us) = match &metadata {
-      Some(m) => {
-        let parts: Vec<&str> = m.split('|').collect();
-        (
-          parts.first().unwrap_or(&"").to_string(),
-          parts.get(1).unwrap_or(&"").to_string(),
-          parts.get(2).unwrap_or(&"").to_string(),
-          parts.get(3).unwrap_or(&"0").parse::<f64>().unwrap_or(0.0),
-        )
-      }
-      None => (String::new(), String::new(), String::new(), 0.0),
-    };
+      .filter(|o| o.status.success())
+      .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok())
+      .unwrap_or(0.0);
 
     Some(MediaInfo {
-      player: active_player,
+      player: player_name,
       title,
       artist,
       art_url,
-      status: status.unwrap_or_else(|| "Stopped".to_string()),
-      position: position.unwrap_or(0.0),
+      status,
+      position,
       length: length_us / 1_000_000.0,
     })
-  } else {
-    None
-  };
+  });
 
-  (media_sources, media)
+  (sources, active_player, media)
 }
 
 fn main() {
@@ -343,7 +366,7 @@ fn main() {
   let (sources, default_source) = parse_sources(&sources_json, &default_source_name);
   let apps = parse_apps(&apps_json);
   let diagnostics = get_diagnostics();
-  let (media_sources, media) = get_media_info();
+  let (media_sources, current_media_source, media) = get_media_info();
 
   let vol = sinks.first().map(|s| s.volume).unwrap_or(0);
   let muted = sinks.first().map(|s| s.muted).unwrap_or(false);
@@ -356,6 +379,7 @@ fn main() {
     apps,
     media,
     media_sources,
+    current_media_source,
     diagnostics,
     volume: vol,
     muted,

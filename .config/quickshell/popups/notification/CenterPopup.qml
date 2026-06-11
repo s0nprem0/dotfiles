@@ -39,6 +39,8 @@ Item {
     property bool showHistory: false
     property var selectedIds: ({})
     property var mediaData: null
+    property string localArtUrl: ""
+    property string pendingCacheUrl: ""
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
@@ -49,6 +51,23 @@ Item {
             notificationItems = NotificationState.service.notifList.filter(n => n.closed)
         else
             notificationItems = NotificationState.service.notifList.filter(n => !n.closed)
+    }
+
+    function ensureArtCache(url) {
+        if (!url || url.indexOf("://") === -1) return
+        if (url.indexOf("file://") === 0) return
+        if (url === root.pendingCacheUrl) return
+        root.pendingCacheUrl = url
+        root.localArtUrl = ""
+        artCacheProc.command = ["sh", "-c",
+            "url=\"$1\"\n" +
+            "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" +
+            "path=\"/tmp/cpopup_art_$hash\"\n" +
+            "find /tmp/cpopup_art_* -mmin +60 -delete 2>/dev/null\n" +
+            "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" +
+            "echo \"$url|$path\"",
+            "_", url]
+        artCacheProc.running = true
     }
 
     Connections {
@@ -95,7 +114,17 @@ Item {
                 try {
                     var json = JSON.parse(this.text)
                     root.audioMuted = json.muted || false
-                    root.mediaData = json.media || null
+                    var newMedia = json.media || null
+                    root.mediaData = newMedia
+                    if (newMedia && newMedia.art_url) {
+                        if (newMedia.art_url.indexOf("http") === 0) {
+                            root.ensureArtCache(newMedia.art_url)
+                        } else {
+                            root.localArtUrl = newMedia.art_url.indexOf("://") !== -1 ? newMedia.art_url : "file://" + newMedia.art_url
+                        }
+                    } else {
+                        root.localArtUrl = ""
+                    }
                 } catch(e) {}
             }
         }
@@ -121,6 +150,21 @@ Item {
         }
         onExited: function(code) {
             if (code !== 0) console.warn("diagProc exited with code", code)
+        }
+    }
+
+    Process {
+        id: artCacheProc
+        running: false
+        stdout: StdioCollector {}
+        onExited: {
+            var output = stdout.text.trim()
+            if (output) {
+                var parts = output.split("|")
+                if (parts.length === 2 && parts[0] === root.pendingCacheUrl) {
+                    root.localArtUrl = "file://" + parts[1]
+                }
+            }
         }
     }
 
@@ -336,10 +380,18 @@ Item {
                                         border.color: Qt.alpha(Theme.primary, 0.2)
 
                                         Image {
+                                            id: artImage
                                             anchors.fill: parent
-                                            source: root.mediaData && root.mediaData.art_url ? (root.mediaData.art_url.indexOf("://") !== -1 ? root.mediaData.art_url : "file://" + root.mediaData.art_url) : ""
+                                            source: root.localArtUrl || ""
                                             fillMode: Image.PreserveAspectCrop
                                             asynchronous: true
+                                        }
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "♫"
+                                            color: Theme.muted
+                                            font.pixelSize: 14
+                                            visible: !root.localArtUrl || artImage.status === Image.Error
                                         }
                                     }
 
