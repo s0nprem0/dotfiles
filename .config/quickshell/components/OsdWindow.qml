@@ -12,7 +12,6 @@ Scope {
 
     property string message: ""
     property string kind: "info"
-    property bool visibleNow: false
 
     function getPercentage(msg) {
         var match = msg.match(/(\d+)%/)
@@ -75,11 +74,12 @@ Scope {
         var state = readState()
         message = state.text
         kind = state.kind
-        visibleNow = state.visible && state.text.length > 0
-        if (visibleNow) {
+        if (state.visible && state.text.length > 0) {
+            slide.show = true
             hideTimer.interval = state.timeout_ms || 1200
             hideTimer.restart()
         } else {
+            slide.closeAnim()
             hideTimer.stop()
         }
     }
@@ -88,7 +88,7 @@ Scope {
         id: hideTimer
         interval: 1200
         repeat: false
-        onTriggered: { root.visibleNow = false }
+        onTriggered: { slide.closeAnim() }
     }
 
     FileView {
@@ -103,7 +103,6 @@ Scope {
 
     SlideAnimator {
         id: slide
-        show: root.visibleNow
         slideFrom: -50
         slideTo: 5
         introDuration: 120
@@ -123,7 +122,7 @@ Scope {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 WlrLayershell.namespace: "osd"
-                visible: root.visibleNow || slide.active
+                visible: slide.show || slide.active
 
                 implicitWidth: {
                     if (root.getPercentage(root.message) !== -1)
