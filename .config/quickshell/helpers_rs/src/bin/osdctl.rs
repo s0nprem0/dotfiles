@@ -23,15 +23,7 @@ fn write_state(text: &str, kind: &str, timeout_ms: u64) {
         kind: kind.to_string(),
         timeout_ms,
     };
-    let path = state_file();
-    if let Some(parent) = path.parent() {
-        let _ = fs::create_dir_all(parent);
-    }
-    if let Ok(json) = serde_json::to_string(&state) {
-        let tmp = path.with_extension("json.tmp");
-        let _ = fs::write(&tmp, json);
-        let _ = fs::rename(&tmp, path);
-    }
+    persist_state(&state);
 }
 
 fn clear_state() {
@@ -41,11 +33,16 @@ fn clear_state() {
         kind: "info".to_string(),
         timeout_ms: 1200,
     };
+    persist_state(&state);
+}
+
+fn persist_state(state: &State) {
     let path = state_file();
-    if let Ok(json) = serde_json::to_string(&state) {
-        let tmp = path.with_extension("json.tmp");
-        let _ = fs::write(&tmp, json);
-        let _ = fs::rename(&tmp, path);
+    if let Some(parent) = path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    if let Ok(json) = serde_json::to_string(state) {
+        let _ = fs::write(&path, json);
     }
 }
 

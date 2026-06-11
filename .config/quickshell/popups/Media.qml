@@ -339,6 +339,7 @@ PopupPanel {
     function toggleAppMute(id) {
         setAppMuteProc.command = ["pactl", "set-sink-input-mute", String(id), "toggle"]
         setAppMuteProc.running = true
+        refreshSinks()
     }
 
     // ── Position advancement: smooth seek bar while playing ──
@@ -1026,6 +1027,7 @@ PopupPanel {
                                         root.audioBarRef.isMuted = !root.sysMuted
                                     }
                                     root.sysMuted = !root.sysMuted
+                                    refreshSinks()
                                 }
                             }
                         }
@@ -1252,6 +1254,7 @@ PopupPanel {
                                     micVolAction.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
                                     micVolAction.running = true
                                     root.micMuted = !root.micMuted
+                                    refreshSinks()
                                 }
                                 }
                             }

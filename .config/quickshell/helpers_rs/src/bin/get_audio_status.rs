@@ -368,8 +368,8 @@ fn main() {
   let diagnostics = get_diagnostics();
   let (media_sources, current_media_source, media) = get_media_info();
 
-  let vol = sinks.first().map(|s| s.volume).unwrap_or(0);
-  let muted = sinks.first().map(|s| s.muted).unwrap_or(false);
+  let vol = default_sink.as_ref().map(|s| s.volume).or_else(|| sinks.first().map(|s| s.volume)).unwrap_or(0);
+  let muted = default_sink.as_ref().map(|s| s.muted).or_else(|| sinks.first().map(|s| s.muted)).unwrap_or(false);
 
   let status = AudioStatus {
     default_sink,

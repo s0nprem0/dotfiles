@@ -33,8 +33,8 @@ BarModule {
     path: Theme.bin("get_audio_status")
     interval: 30000
     onDataReceived: function(j) {
-      root.vol = j.volume ?? 0
-      root.isMuted = j.muted ?? false
+      root.vol = j.default_sink ? (j.default_sink.volume ?? 0) : (j.volume ?? 0)
+      root.isMuted = j.default_sink ? (j.default_sink.muted ?? false) : (j.muted ?? false)
       if (j.default_source) {
         root.micVol = j.default_source.volume ?? 100
         root.micMuted = j.default_source.muted ?? false
@@ -65,6 +65,11 @@ BarModule {
     id: audioDebounce
     interval: 200
     onTriggered: audioData.refresh()
+  }
+
+  FileView {
+    path: Theme.homeDir + "/.cache/quickshell/osd_state.json"
+    onDataChanged: audioDebounce.restart()
   }
 
   Timer {
