@@ -210,7 +210,7 @@ PopupPanel {
                     root.title = m.title || ""
                     root.trackLength = (m.length || 0) * 1000000
                     root.position = m.position || 0
-                    root.volume = 0
+                    root.volume = m.volume || 0
                     var newArt = m.art_url || ""
                     if (newArt !== root.artUrl) {
                         if (newArt.indexOf("http") === 0) {

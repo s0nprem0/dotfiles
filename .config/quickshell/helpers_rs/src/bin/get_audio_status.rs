@@ -40,6 +40,7 @@ struct MediaInfo {
   status: String,
   position: f64,
   length: f64,
+  volume: f64,
 }
 
 #[derive(Serialize)]
@@ -327,6 +328,14 @@ fn get_media_info() -> (Vec<MediaSource>, Option<String>, Option<MediaInfo>) {
       .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok())
       .unwrap_or(0.0);
 
+    let volume = Command::new("playerctl")
+      .args(["--player", player, "volume"])
+      .output()
+      .ok()
+      .filter(|o| o.status.success())
+      .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<f64>().ok())
+      .unwrap_or(0.0);
+
     Some(MediaInfo {
       player: player_name,
       title,
@@ -335,6 +344,7 @@ fn get_media_info() -> (Vec<MediaSource>, Option<String>, Option<MediaInfo>) {
       status,
       position,
       length: length_us / 1_000_000.0,
+      volume,
     })
   });
 
