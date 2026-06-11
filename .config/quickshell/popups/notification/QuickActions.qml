@@ -13,8 +13,10 @@ ColumnLayout {
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
+    property string timeShort24h: ""
 
     signal toggleNetworkPopup()
+    signal muteToggled()
 
     Layout.fillWidth: true
     spacing: 4
@@ -77,6 +79,7 @@ ColumnLayout {
                 onExited: parent.children[0].color = Theme.muted
                 onClicked: {
                     Quickshell.execDetached(["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"])
+                    root.muteToggled()
                 }
             }
         }
@@ -153,12 +156,7 @@ ColumnLayout {
         Item { Layout.fillWidth: true }
 
         Text {
-            text: {
-                var now = new Date()
-                var h = now.getHours().toString().padStart(2, "0")
-                var m = now.getMinutes().toString().padStart(2, "0")
-                return h + ":" + m
-            }
+            text: root.timeShort24h
             color: Theme.primary
             font.family: Theme.fontFamily
             font.pixelSize: 13

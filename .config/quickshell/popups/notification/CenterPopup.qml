@@ -44,6 +44,7 @@ Item {
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
+    property string timeShort24h: ""
 
     function refreshNotifications() {
         if (!NotificationState.service) return
@@ -90,6 +91,7 @@ Item {
             root.minStr = now.getMinutes().toString().padStart(2, "0")
             root.secStr = now.getSeconds().toString().padStart(2, "0")
             root.ampmStr = ampm
+            root.timeShort24h = now.getHours().toString().padStart(2, "0") + ":" + root.minStr
         }
     }
 
@@ -125,12 +127,19 @@ Item {
                     } else {
                         root.localArtUrl = ""
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.warn("audioProc parse error:", e)
+                }
             }
         }
         onExited: function(code) {
             if (code !== 0) console.warn("audioProc exited with code", code)
         }
+    }
+
+    FileView {
+        path: Theme.homeDir + "/.cache/quickshell/osd_state.json"
+        onDataChanged: { if (!audioProc.running) audioProc.running = true }
     }
 
     Process {
@@ -176,7 +185,9 @@ Item {
                 try {
                     var json = JSON.parse(this.text)
                     root.btEnabled = json.enabled || false
-                } catch(e) {}
+                } catch(e) {
+                    console.warn("btProc parse error:", e)
+                }
             }
         }
         onExited: function(code) {
@@ -472,10 +483,12 @@ Item {
                             diagCpu: root.diagCpu
                             diagMem: root.diagMem
                             diagDisk: root.diagDisk
+                            timeShort24h: root.timeShort24h
                             onToggleNetworkPopup: {
                                 if (NetworkState.popup)
                                     NetworkState.popup.showPopup = !NetworkState.popup.showPopup
                             }
+                            onMuteToggled: root.audioMuted = !root.audioMuted
                         }
                     }
                 }
