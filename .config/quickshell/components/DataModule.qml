@@ -53,9 +53,10 @@ Item {
   onDataReceived: root.backoffMs = 1000
 
   Timer {
+    id: pollTimer
     interval: root.interval
-    running: true
     repeat: true
+    running: false
     onTriggered: { if (!proc.running) proc.running = true }
   }
 
@@ -63,7 +64,19 @@ Item {
     proc.running = true
   }
 
-  Component.onCompleted: proc.running = true
+  Component.onCompleted: {
+    startTimer.interval = 1000 + Math.random() * 2000
+    startTimer.restart()
+  }
+
+  Timer {
+    id: startTimer
+    repeat: false
+    onTriggered: {
+      proc.running = true
+      pollTimer.start()
+    }
+  }
 
   signal dataReceived(var json)
 }

@@ -66,10 +66,10 @@ PopupPanel {
 
     Process { id: micVolAction }
 
-    // ── Volume batch timer: applies pending changes every 50ms ──
+    // ── Volume batch timer: applies pending changes every 150ms ──
     Timer {
         id: volumeApplyTimer
-        interval: 50
+        interval: 150
         repeat: true
         running: root.pendingOutVol !== -1 || root.pendingInVol !== -1 || Object.keys(root.pendingAppVols).length > 0
         onTriggered: {

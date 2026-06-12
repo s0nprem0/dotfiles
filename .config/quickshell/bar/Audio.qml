@@ -75,14 +75,6 @@ BarModule {
   }
 
   Timer {
-    id: pollTimer
-    interval: 3000
-    repeat: true
-    running: root.hasPlayer
-    onTriggered: fetchPlayerInfo()
-  }
-
-  Timer {
     id: checkTimer
     interval: 10000
     repeat: true
@@ -97,9 +89,26 @@ BarModule {
 
   function fetchPlayerInfo() {
     if (!root.playerName) return
-    metaProc.command = ["playerctl", "-p", root.playerName, "metadata", "--format", "{{artist}}|{{title}}|{{mpris:artUrl}}|{{mpris:length}}"]
-    metaProc.running = true
-    statusProc.running = true
+    if (playerFollowProc.running) {
+      playerFollowProc.running = false
+      restartFollow.restart()
+    } else {
+      doStartFollow()
+    }
+  }
+
+  function doStartFollow() {
+    playerFollowProc.command = [
+      "playerctl", "-p", root.playerName, "--follow",
+      "--format", "{{artist}}|{{title}}|{{mpris:artUrl}}|{{mpris:length}}|{{mpris:playback-status}}"
+    ]
+    playerFollowProc.running = true
+  }
+
+  Timer {
+    id: restartFollow
+    interval: 50
+    onTriggered: doStartFollow()
   }
 
   Process {
@@ -126,36 +135,26 @@ BarModule {
   }
 
   Process {
-    id: metaProc
+    id: playerFollowProc
     running: false
-    stdout: StdioCollector {}
-    onExited: {
-      var out = stdout.text.trim()
-      if (!out) return
-      var parts = out.split("|")
-      root.artist = parts.length > 0 ? parts[0] : ""
-      root.title = parts.length > 1 ? parts[1] : ""
-      root.artUrl = parts.length > 2 ? parts[2] : ""
-      if (parts.length > 3) {
-        var len = parseInt(parts[3])
-        root.trackLength = isNaN(len) ? 0 : len
-      } else {
-        root.trackLength = 0
+    stdout: SplitParser {
+      onRead: function(data) {
+        var parts = data.trim().split("|")
+        if (parts.length >= 4) {
+          root.artist = parts[0] || ""
+          root.title = parts[1] || ""
+          root.artUrl = parts[2] || ""
+          var len = parseInt(parts[3])
+          root.trackLength = isNaN(len) ? 0 : len
+        }
+        if (parts.length >= 5) {
+          root.playerStatus = parts[4] || ""
+        }
       }
     }
-  }
-
-  Process {
-    id: statusProc
-    running: false
-    stdout: StdioCollector {}
     onExited: {
-      var s = stdout.text.trim()
-      if (s === "Playing" || s === "Paused") {
-        root.playerStatus = s
-      } else {
-        root.hasPlayer = false
-      }
+      root.playerName = ""
+      root.hasPlayer = false
     }
   }
 

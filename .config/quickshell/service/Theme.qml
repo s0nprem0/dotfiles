@@ -9,25 +9,25 @@ QtObject {
     readonly property string fontFamily: "GohuFont 11 Nerd Font"
 
     property color bg:            "#1a1110"
-    Behavior on bg { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on bg { SequentialAnimation { PauseAnimation { duration: 0 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color fg:            "#f1dfdb"
-    Behavior on fg { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on fg { SequentialAnimation { PauseAnimation { duration: 30 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color surface:       "#271d1c"
-    Behavior on surface { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on surface { SequentialAnimation { PauseAnimation { duration: 60 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color surfaceLighter: "#322826"
-    Behavior on surfaceLighter { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on surfaceLighter { SequentialAnimation { PauseAnimation { duration: 90 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color primary:       "#ffb4a7"
-    Behavior on primary { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on primary { SequentialAnimation { PauseAnimation { duration: 120 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color muted:         "#66f1dfdb"
-    Behavior on muted { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on muted { SequentialAnimation { PauseAnimation { duration: 150 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color error:         "#ffb4ab"
-    Behavior on error { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on error { SequentialAnimation { PauseAnimation { duration: 180 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color warning:       "#ddc48c"
-    Behavior on warning { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on warning { SequentialAnimation { PauseAnimation { duration: 210 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color green:         "#A6DA95"
-    Behavior on green { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on green { SequentialAnimation { PauseAnimation { duration: 240 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
     property color blue:          "#8AADF4"
-    Behavior on blue { ColorAnimation { duration: 350; easing.type: Easing.InOutQuad } }
+    Behavior on blue { SequentialAnimation { PauseAnimation { duration: 270 } ColorAnimation { duration: 200; easing.type: Easing.InOutQuad } } }
 
     readonly property real barOpacity: 0.65
     readonly property int barHeight: 38

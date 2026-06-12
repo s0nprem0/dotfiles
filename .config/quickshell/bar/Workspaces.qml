@@ -12,7 +12,7 @@ Rectangle {
 
     Timer {
         id: debounceTimer
-        interval: 80
+        interval: 150
         onTriggered: root.refreshWorkspaces()
     }
 
