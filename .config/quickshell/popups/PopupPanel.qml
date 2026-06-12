@@ -1,10 +1,9 @@
+import "../components"
+import "../service"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-
-import "../components"
-import "../service"
 
 Item {
     id: root
@@ -19,45 +18,47 @@ Item {
     property int introDuration: 120
     property int exitDuration: 100
     property int contentMargin: 10
-
     // ── State ──
     property bool showPopup: false
-
     // ── Content (set by popup file) ──
     property Component contentComponent
+    // ── Per-screen Windows ──
+    property var screenWins: ({
+    })
 
     // ── Signals ──
     signal beforeOpen()
     signal afterOpen()
     signal beforeClose()
 
+    function closePopup() {
+        root.showPopup = false;
+    }
+
     // ── Show / Hide ──
     onShowPopupChanged: {
         if (root.showPopup) {
             for (var key in screenWins) {
-                var w = screenWins[key]
-                if (w) w.visible = true
+                var w = screenWins[key];
+                if (w)
+                    w.visible = true;
+
             }
-            root.beforeOpen()
-            slide.show = true
+            root.beforeOpen();
+            slide.show = true;
         } else if (!slide.closing) {
-            root.beforeClose()
-            slide.closeAnim()
+            root.beforeClose();
+            slide.closeAnim();
         }
     }
 
-    function closePopup() {
-        root.showPopup = false
-    }
-
-    // ── Per-screen Windows ──
-    property var screenWins: ({})
-
     Variants {
         model: Quickshell.screens
+
         delegate: Component {
             PanelWindow {
                 id: win
+
                 required property var modelData
 
                 screen: modelData
@@ -65,13 +66,19 @@ Item {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
-
                 implicitWidth: root.panelWidth
                 implicitHeight: {
-                    var h = contentLoader.implicitHeight + root.contentMargin * 2
-                    if (root.panelMinHeight > 0) h = Math.max(h, root.panelMinHeight)
-                    if (root.panelMaxHeight > 0) h = Math.min(h, root.panelMaxHeight)
-                    return h
+                    var h = contentLoader.implicitHeight + root.contentMargin * 2;
+                    if (root.panelMinHeight > 0)
+                        h = Math.max(h, root.panelMinHeight);
+
+                    if (root.panelMaxHeight > 0)
+                        h = Math.min(h, root.panelMaxHeight);
+
+                    return h;
+                }
+                Component.onCompleted: {
+                    root.screenWins[modelData] = win;
                 }
 
                 anchors {
@@ -88,6 +95,7 @@ Item {
 
                 Rectangle {
                     id: contentRect
+
                     anchors.fill: parent
                     opacity: slide.animOpacity
                     color: Theme.bg
@@ -95,34 +103,37 @@ Item {
                     border.color: Theme.primary
                     radius: root.anchorSide === "none" ? 8 : 0
                     focus: true
-
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Escape) {
-                            root.closePopup()
-                            event.accepted = true
+                            root.closePopup();
+                            event.accepted = true;
                         }
                     }
 
                     Loader {
                         id: contentLoader
+
                         anchors.fill: parent
                         anchors.margins: root.contentMargin
                         sourceComponent: root.contentComponent
                         onItemChanged: {
-                            if (item) item.forceActiveFocus()
+                            if (item)
+                                item.forceActiveFocus();
+
                         }
                     }
+
                 }
 
-                Component.onCompleted: {
-                    root.screenWins[modelData] = win
-                }
             }
+
         }
+
     }
 
     SlideAnimator {
         id: slide
+
         slideFrom: root.initialOffset
         slideTo: root.finalInset
         introDuration: root.introDuration
@@ -130,10 +141,13 @@ Item {
         onIntroCompleted: root.afterOpen()
         onExitCompleted: {
             for (var key in root.screenWins) {
-                var w = root.screenWins[key]
-                if (w) w.visible = false
+                var w = root.screenWins[key];
+                if (w)
+                    w.visible = false;
+
             }
-            root.showPopup = false
+            root.showPopup = false;
         }
     }
+
 }

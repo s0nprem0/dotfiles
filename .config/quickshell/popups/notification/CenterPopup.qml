@@ -1,43 +1,29 @@
+import "../../components"
+import "../../service"
+import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import QtQuick
-import QtQuick.Layouts
-
-import "../../components"
-import "../../service"
 
 Item {
     id: root
 
     property bool showPopup: false
-    onShowPopupChanged: {
-        if (showPopup) {
-            for (var i = 0; i < variantRepeater.instances.length; i++) {
-                var w = variantRepeater.instances[i]
-                if (w) w.visible = true
-            }
-            for (var i = 0; i < root.notificationItems.length; i++)
-                root.notificationItems[i].unread = false
-            slide.show = true
-        } else if (!slide.closing) {
-            slide.closeAnim()
-        }
-    }
-
     property string hourStr: ""
     property string minStr: ""
     property string secStr: ""
     property string ampmStr: ""
     property string uptimeStr: ""
-    property var expandedNotifIds: ({})
+    property var expandedNotifIds: ({
+    })
     property bool btEnabled: false
     property bool wifiEnabled: false
     property bool audioMuted: false
-
     property var notificationItems: []
     property bool showHistory: false
-    property var selectedIds: ({})
+    property var selectedIds: ({
+    })
     property var mediaData: null
     property var mediaSources: []
     property string currentMediaSource: ""
@@ -48,193 +34,271 @@ Item {
     property string timeShort24h: ""
 
     function refreshNotifications() {
-        if (!NotificationState.service) return
+        if (!NotificationState.service)
+            return ;
+
         if (root.showHistory)
-            notificationItems = NotificationState.service.notifList.filter(n => n.closed)
+            notificationItems = NotificationState.service.notifList.filter((n) => {
+            return n.closed;
+        });
         else
-            notificationItems = NotificationState.service.notifList.filter(n => !n.closed)
+            notificationItems = NotificationState.service.notifList.filter((n) => {
+            return !n.closed;
+        });
     }
 
     function ensureArtCache(url) {
-        if (!url || url.indexOf("://") === -1) return
-        if (url.indexOf("file://") === 0) return
-        root.localArtUrl = ""
-        artCache.ensureCached(url)
+        if (!url || url.indexOf("://") === -1)
+            return ;
+
+        if (url.indexOf("file://") === 0)
+            return ;
+
+        root.localArtUrl = "";
+        artCache.ensureCached(url);
     }
 
     function switchPlayer() {
-        var list = root.mediaSources
-        if (!root.currentMediaSource || list.length < 2) return
-        var idx = 0
+        var list = root.mediaSources;
+        if (!root.currentMediaSource || list.length < 2)
+            return ;
+
+        var idx = 0;
         for (var i = 0; i < list.length; i++) {
-            if (list[i].name === root.currentMediaSource) { idx = i; break }
+            if (list[i].name === root.currentMediaSource) {
+                idx = i;
+                break;
+            }
         }
-        var next = list[(idx + 1) % list.length].name
-        persistPlayerProc.command = ["sh", "-c",
-            "printf '%s' \"" + next.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"]
-        persistPlayerProc.running = true
-        if (!audioProc.running) audioProc.running = true
+        var next = list[(idx + 1) % list.length].name;
+        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + next.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"];
+        persistPlayerProc.running = true;
+        if (!audioProc.running)
+            audioProc.running = true;
+
+    }
+
+    function closePopup() {
+        root.showPopup = false;
+    }
+
+    onShowPopupChanged: {
+        if (showPopup) {
+            for (var i = 0; i < variantRepeater.instances.length; i++) {
+                var w = variantRepeater.instances[i];
+                if (w)
+                    w.visible = true;
+
+            }
+            for (var i = 0; i < root.notificationItems.length; i++) root.notificationItems[i].unread = false
+            slide.show = true;
+        } else if (!slide.closing) {
+            slide.closeAnim();
+        }
+    }
+    Component.onCompleted: {
+        refreshNotifications();
+        uptimeProc.running = true;
+        audioProc.running = true;
+        btProc.running = true;
+        diagProc.running = true;
     }
 
     Connections {
+        function onNotifListChanged() {
+            refreshNotifications();
+        }
+
         target: NotificationState.service
         enabled: NotificationState.service !== null
-        function onNotifListChanged() { refreshNotifications() }
     }
 
     Timer {
         id: clockTimer
+
         interval: 1000
         repeat: true
         running: false
         onTriggered: {
-            var now = new Date()
-            var hours = now.getHours()
-            var ampm = hours >= 12 ? "PM" : "AM"
-            hours = hours % 12 || 12
-            root.hourStr = hours.toString().padStart(2, " ")
-            root.minStr = now.getMinutes().toString().padStart(2, "0")
-            root.secStr = now.getSeconds().toString().padStart(2, "0")
-            root.ampmStr = ampm
-            root.timeShort24h = now.getHours().toString().padStart(2, "0") + ":" + root.minStr
+            var now = new Date();
+            var hours = now.getHours();
+            var ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12 || 12;
+            root.hourStr = hours.toString().padStart(2, " ");
+            root.minStr = now.getMinutes().toString().padStart(2, "0");
+            root.secStr = now.getSeconds().toString().padStart(2, "0");
+            root.ampmStr = ampm;
+            root.timeShort24h = now.getHours().toString().padStart(2, "0") + ":" + root.minStr;
         }
     }
 
     Process {
         id: uptimeProc
+
         command: ["uptime", "-p"]
+        onExited: function(code) {
+            if (code !== 0)
+                console.warn("uptimeProc exited with code", code);
+
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
-                if (this.text) root.uptimeStr = this.text.trim().replace(/^up /i, "")
+                if (this.text)
+                    root.uptimeStr = this.text.trim().replace(/^up /i, "");
+
             }
         }
-        onExited: function(code) {
-            if (code !== 0) console.warn("uptimeProc exited with code", code)
-        }
+
     }
 
     Process {
         id: audioProc
+
         command: [Theme.bin("get_audio_status")]
+        onExited: function(code) {
+            if (code !== 0)
+                console.warn("audioProc exited with code", code);
+
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var json = JSON.parse(this.text)
-                    root.audioMuted = json.muted || false
-                    root.mediaSources = json.media_sources || []
-                    root.currentMediaSource = json.current_media_source || ""
-                    var newMedia = json.media || null
-                    root.mediaData = newMedia
+                    var json = JSON.parse(this.text);
+                    root.audioMuted = json.muted || false;
+                    root.mediaSources = json.media_sources || [];
+                    root.currentMediaSource = json.current_media_source || "";
+                    var newMedia = json.media || null;
+                    root.mediaData = newMedia;
                     if (newMedia && newMedia.art_url) {
-                        if (newMedia.art_url.indexOf("http") === 0) {
-                            root.ensureArtCache(newMedia.art_url)
-                        } else {
-                            root.localArtUrl = newMedia.art_url.indexOf("://") !== -1 ? newMedia.art_url : "file://" + newMedia.art_url
-                        }
+                        if (newMedia.art_url.indexOf("http") === 0)
+                            root.ensureArtCache(newMedia.art_url);
+                        else
+                            root.localArtUrl = newMedia.art_url.indexOf("://") !== -1 ? newMedia.art_url : "file://" + newMedia.art_url;
                     } else {
-                        root.localArtUrl = ""
+                        root.localArtUrl = "";
                     }
-                } catch(e) {
-                    console.warn("audioProc parse error:", e)
+                } catch (e) {
+                    console.warn("audioProc parse error:", e);
                 }
             }
         }
-        onExited: function(code) {
-            if (code !== 0) console.warn("audioProc exited with code", code)
-        }
+
     }
 
     FileView {
         path: Theme.home + "/.cache/quickshell/osd_state.json"
-        onDataChanged: { if (!audioProc.running) audioProc.running = true }
+        onDataChanged: {
+            if (!audioProc.running)
+                audioProc.running = true;
+
+        }
     }
 
     Process {
         id: diagProc
+
         command: [Theme.bin("get_sys_diagnostics")]
+        onExited: function(code) {
+            if (code !== 0)
+                console.warn("diagProc exited with code", code);
+
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var json = JSON.parse(this.text)
-                    root.diagCpu = json.cpu && json.cpu.temp != null ? json.cpu.temp.toFixed(0) + "°C" : ""
-                    root.diagMem = json.memory && json.memory.used_gb != null ? json.memory.used_gb.toFixed(1) + "/" + json.memory.total_gb.toFixed(1) + " GB" : ""
-                    root.diagDisk = json.disk && json.disk.used != null ? json.disk.used + "/" + json.disk.total : ""
-                } catch(e) {
-                    console.warn("diag parse error:", e)
+                    var json = JSON.parse(this.text);
+                    root.diagCpu = json.cpu && json.cpu.temp != null ? json.cpu.temp.toFixed(0) + "°C" : "";
+                    root.diagMem = json.memory && json.memory.used_gb != null ? json.memory.used_gb.toFixed(1) + "/" + json.memory.total_gb.toFixed(1) + " GB" : "";
+                    root.diagDisk = json.disk && json.disk.used != null ? json.disk.used + "/" + json.disk.total : "";
+                } catch (e) {
+                    console.warn("diag parse error:", e);
                 }
             }
         }
-        onExited: function(code) {
-            if (code !== 0) console.warn("diagProc exited with code", code)
-        }
+
     }
 
     // ── Art cache download ──
     ArtCache {
         id: artCache
+
         cachePrefix: "cpopup_art_"
         onCacheReady: function(url, localPath) {
             if (url === artCache.pendingUrl)
-                root.localArtUrl = localPath
+                root.localArtUrl = localPath;
+
         }
     }
 
-
     Process {
         id: ctlProc
+
         running: false
     }
 
     Process {
         id: persistPlayerProc
+
         running: false
     }
 
     Process {
         id: btProc
+
         command: [Theme.bin("get_bluetooth_status")]
+        onExited: function(code) {
+            if (code !== 0)
+                console.warn("btProc exited with code", code);
+
+        }
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var json = JSON.parse(this.text)
-                    root.btEnabled = json.enabled || false
-                } catch(e) {
-                    console.warn("btProc parse error:", e)
+                    var json = JSON.parse(this.text);
+                    root.btEnabled = json.enabled || false;
+                } catch (e) {
+                    console.warn("btProc parse error:", e);
                 }
             }
         }
-        onExited: function(code) {
-            if (code !== 0) console.warn("btProc exited with code", code)
-        }
+
     }
 
     Connections {
-        target: NetworkState
         function onNetworkDataChanged() {
-            var data = NetworkState.networkData
-            if (data) root.wifiEnabled = data.wifi_enabled
+            var data = NetworkState.networkData;
+            if (data)
+                root.wifiEnabled = data.wifi_enabled;
+
         }
+
+        target: NetworkState
     }
 
     Timer {
         id: pollTimer
+
         interval: 5000
         repeat: true
         running: false
         onTriggered: {
-            if (!uptimeProc.running) uptimeProc.running = true
-            if (!audioProc.running) audioProc.running = true
-            if (!btProc.running) btProc.running = true
-            if (!diagProc.running) diagProc.running = true
-        }
-    }
+            if (!uptimeProc.running)
+                uptimeProc.running = true;
 
-    Component.onCompleted: {
-        refreshNotifications()
-        uptimeProc.running = true
-        audioProc.running = true
-        btProc.running = true
-        diagProc.running = true
+            if (!audioProc.running)
+                audioProc.running = true;
+
+            if (!btProc.running)
+                btProc.running = true;
+
+            if (!diagProc.running)
+                diagProc.running = true;
+
+        }
     }
 
     Timer {
@@ -243,22 +307,26 @@ Item {
         repeat: true
         onTriggered: {
             if (NotificationState.service)
-                notificationItems = NotificationState.service.notifList.filter(n => root.showHistory ? n.closed : !n.closed)
+                notificationItems = NotificationState.service.notifList.filter((n) => {
+                return root.showHistory ? n.closed : !n.closed;
+            });
+
         }
     }
 
-    function closePopup() { root.showPopup = false }
-
     SlideAnimator {
         id: slide
+
         slideFrom: -360
         slideTo: 48
         introDuration: 140
         exitDuration: 120
         onExitCompleted: {
             for (var i = 0; i < variantRepeater.instances.length; i++) {
-                var w = variantRepeater.instances[i]
-                if (w) w.visible = false
+                var w = variantRepeater.instances[i];
+                if (w)
+                    w.visible = false;
+
             }
         }
     }
@@ -266,55 +334,61 @@ Item {
     // ─── Popup Windows (per‑screen) ───────────────────────────────
     Variants {
         id: variantRepeater
+
         model: Quickshell.screens
+
         delegate: Component {
             PanelWindow {
                 id: win
-                required property var modelData
-                visible: false
 
+                required property var modelData
                 property int calendarMonthOffset: 0
                 property bool showCalendar: true
                 property int selectedNotifIndex: -1
 
                 function selectNext() {
-                    var len = root.notificationItems.length
-                    if (len === 0) return
-                    selectedNotifIndex = Math.min(selectedNotifIndex + 1, len - 1)
-                    notifListComp.listView.currentIndex = selectedNotifIndex
-                    notifListComp.listView.positionViewAtIndex(selectedNotifIndex, ListView.Contain)
+                    var len = root.notificationItems.length;
+                    if (len === 0)
+                        return ;
+
+                    selectedNotifIndex = Math.min(selectedNotifIndex + 1, len - 1);
+                    notifListComp.listView.currentIndex = selectedNotifIndex;
+                    notifListComp.listView.positionViewAtIndex(selectedNotifIndex, ListView.Contain);
                 }
 
                 function selectPrev() {
-                    if (root.notificationItems.length === 0) return
-                    selectedNotifIndex = Math.max(selectedNotifIndex - 1, 0)
-                    notifListComp.listView.currentIndex = selectedNotifIndex
-                    notifListComp.listView.positionViewAtIndex(selectedNotifIndex, ListView.Contain)
+                    if (root.notificationItems.length === 0)
+                        return ;
+
+                    selectedNotifIndex = Math.max(selectedNotifIndex - 1, 0);
+                    notifListComp.listView.currentIndex = selectedNotifIndex;
+                    notifListComp.listView.positionViewAtIndex(selectedNotifIndex, ListView.Contain);
                 }
 
                 function markAllRead() {
-                    for (var i = 0; i < root.notificationItems.length; i++)
-                        root.notificationItems[i].unread = false
+                    for (var i = 0; i < root.notificationItems.length; i++) root.notificationItems[i].unread = false
                 }
 
+                visible: false
                 onVisibleChanged: {
                     if (visible) {
-                        refreshNotifications()
-                        pollTimer.running = true
-                        clockTimer.running = true
+                        refreshNotifications();
+                        pollTimer.running = true;
+                        clockTimer.running = true;
                     } else {
-                        var anyVisible = false
+                        var anyVisible = false;
                         for (var i = 0; i < variantRepeater.instances.length; i++) {
-                            var w = variantRepeater.instances[i]
-                            if (w && w !== win && w.visible) anyVisible = true
+                            var w = variantRepeater.instances[i];
+                            if (w && w !== win && w.visible)
+                                anyVisible = true;
+
                         }
                         if (!anyVisible) {
-                            pollTimer.running = false
-                            clockTimer.running = false
+                            pollTimer.running = false;
+                            clockTimer.running = false;
                         }
                     }
                 }
-
                 screen: modelData
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
@@ -322,19 +396,27 @@ Item {
                 implicitWidth: 360
                 implicitHeight: Math.min(mainLayout.implicitHeight + 32, 720)
 
-                anchors { top: true }
-                margins { top: slide.animSlide }
+                anchors {
+                    top: true
+                }
+
+                margins {
+                    top: slide.animSlide
+                }
 
                 HyprlandFocusGrab {
                     active: win.visible
                     windows: [win]
                     onCleared: {
-                        if (root.showPopup) root.closePopup()
+                        if (root.showPopup)
+                            root.closePopup();
+
                     }
                 }
 
                 Rectangle {
                     id: panel
+
                     anchors.fill: parent
                     opacity: slide.animOpacity
                     color: Theme.bg
@@ -342,33 +424,39 @@ Item {
                     border.color: Theme.primary
                     radius: 0
                     focus: true
-
                     Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Escape) root.closePopup()
-                        else if (event.key === Qt.Key_Down) { win.selectNext(); event.accepted = true }
-                        else if (event.key === Qt.Key_Up) { win.selectPrev(); event.accepted = true }
-                        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
+                        if (event.key === Qt.Key_Escape) {
+                            root.closePopup();
+                        } else if (event.key === Qt.Key_Down) {
+                            win.selectNext();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Up) {
+                            win.selectPrev();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
                             if (win.selectedNotifIndex >= 0 && win.selectedNotifIndex < root.notificationItems.length) {
-                                var n = root.notificationItems[win.selectedNotifIndex]
+                                var n = root.notificationItems[win.selectedNotifIndex];
                                 if (n && n.notification) {
                                     if (n.notification.defaultAction)
-                                        n.notification.defaultAction.invoke()
+                                        n.notification.defaultAction.invoke();
                                     else if (n.actions && n.actions.length > 0)
-                                        n.actions[0].invoke()
+                                        n.actions[0].invoke();
                                 }
                             }
-                            event.accepted = true
+                            event.accepted = true;
                         }
                     }
 
                     ColumnLayout {
                         id: mainLayout
+
                         anchors.fill: parent
                         anchors.margins: 16
                         spacing: 16
 
                         CalendarWidget {
                             id: calendarWidget
+
                             Layout.fillWidth: true
                             calendarMonthOffset: win.calendarMonthOffset
                             showCalendar: win.showCalendar
@@ -398,18 +486,21 @@ Item {
                                     spacing: 8
 
                                     Rectangle {
-                                        Layout.preferredWidth: 36; Layout.preferredHeight: 36
+                                        Layout.preferredWidth: 36
+                                        Layout.preferredHeight: 36
                                         color: Theme.surface
                                         border.width: 1
                                         border.color: Qt.alpha(Theme.primary, 0.2)
 
                                         Image {
                                             id: artImage
+
                                             anchors.fill: parent
                                             source: root.localArtUrl || ""
                                             fillMode: Image.PreserveAspectCrop
                                             asynchronous: true
                                         }
+
                                         Text {
                                             anchors.centerIn: parent
                                             text: "♫"
@@ -417,6 +508,7 @@ Item {
                                             font.pixelSize: 14
                                             visible: !root.localArtUrl || artImage.status === Image.Error
                                         }
+
                                     }
 
                                     ColumnLayout {
@@ -444,6 +536,7 @@ Item {
                                             elide: Text.ElideRight
                                             maximumLineCount: 1
                                         }
+
                                     }
 
                                     ColumnLayout {
@@ -466,11 +559,12 @@ Item {
                                                     hoverEnabled: true
                                                     onClicked: {
                                                         if (root.mediaData && root.mediaData.player) {
-                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "previous"]
-                                                            ctlProc.running = true
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "previous"];
+                                                            ctlProc.running = true;
                                                         }
                                                     }
                                                 }
+
                                             }
 
                                             Text {
@@ -486,11 +580,12 @@ Item {
                                                     hoverEnabled: true
                                                     onClicked: {
                                                         if (root.mediaData && root.mediaData.player) {
-                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "play-pause"]
-                                                            ctlProc.running = true
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "play-pause"];
+                                                            ctlProc.running = true;
                                                         }
                                                     }
                                                 }
+
                                             }
 
                                             Text {
@@ -506,12 +601,14 @@ Item {
                                                     hoverEnabled: true
                                                     onClicked: {
                                                         if (root.mediaData && root.mediaData.player) {
-                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "next"]
-                                                            ctlProc.running = true
+                                                            ctlProc.command = ["playerctl", "-p", root.mediaData.player, "next"];
+                                                            ctlProc.running = true;
                                                         }
                                                     }
                                                 }
+
                                             }
+
                                         }
 
                                         Text {
@@ -529,45 +626,66 @@ Item {
                                                 visible: root.mediaSources.length > 1
                                                 onClicked: root.switchPlayer()
                                             }
+
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
 
                         NotificationList {
                             id: notifListComp
+
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             notificationItems: root.notificationItems
                             showHistory: root.showHistory
                             selectedIds: root.selectedIds
                             expandedNotifIds: root.expandedNotifIds
-
                             onShowHistoryChanged: {
-                                root.showHistory = notifListComp.showHistory
-                                root.selectedIds = ({})
-                                root.refreshNotifications()
+                                root.showHistory = notifListComp.showHistory;
+                                root.selectedIds = ({
+                                });
+                                root.refreshNotifications();
                             }
                             onSelectedIdsChanged: root.selectedIds = notifListComp.selectedIds
                             onExpandedNotifIdsChanged: root.expandedNotifIds = notifListComp.expandedNotifIds
-
                             onDismissSelected: (ids) => {
                                 if (NotificationState.service) {
-                                    NotificationState.service.dismissSelected(ids)
-                                    root.selectedIds = ({})
+                                    NotificationState.service.dismissSelected(ids);
+                                    root.selectedIds = ({
+                                    });
                                 }
                             }
-                            onClearAll: { if (NotificationState.service) NotificationState.service.clearAll() }
-                            onClearHistory: { if (NotificationState.service) NotificationState.service.clearHistory() }
-                            onToggleDnd: { if (NotificationState.service) NotificationState.service.toggleDnd() }
+                            onClearAll: {
+                                if (NotificationState.service)
+                                    NotificationState.service.clearAll();
+
+                            }
+                            onClearHistory: {
+                                if (NotificationState.service)
+                                    NotificationState.service.clearHistory();
+
+                            }
+                            onToggleDnd: {
+                                if (NotificationState.service)
+                                    NotificationState.service.toggleDnd();
+
+                            }
                             onDismissNotification: (id) => {
-                                if (NotificationState.service) NotificationState.service.dismissNotification(id)
+                                if (NotificationState.service)
+                                    NotificationState.service.dismissNotification(id);
+
                             }
                         }
 
                         QuickActions {
                             id: quickActions
+
                             Layout.fillWidth: true
                             audioMuted: root.audioMuted
                             wifiEnabled: root.wifiEnabled
@@ -578,13 +696,20 @@ Item {
                             timeShort24h: root.timeShort24h
                             onToggleNetworkPopup: {
                                 if (NetworkState.popup)
-                                    NetworkState.popup.showPopup = !NetworkState.popup.showPopup
+                                    NetworkState.popup.showPopup = !NetworkState.popup.showPopup;
+
                             }
                             onMuteToggled: root.audioMuted = !root.audioMuted
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

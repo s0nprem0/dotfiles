@@ -1,45 +1,47 @@
-import Quickshell.Hyprland
+import "../service"
 import QtQuick
 import QtQuick.Layouts
-
-import "../service"
+import Quickshell.Hyprland
 
 Rectangle {
     id: root
 
-    property var wsMap: ({})
+    property var wsMap: ({
+    })
     property var workspaceIds: ([])
 
-    Timer {
-        id: debounceTimer
-        interval: 150
-        onTriggered: root.refreshWorkspaces()
-    }
-
     function refreshWorkspaces() {
-        let map = {}
-        let ids = []
-
+        let map = {
+        };
+        let ids = [];
         for (const ws of Hyprland.workspaces.values) {
-            map[ws.id] = ws
-            ids.push(ws.id)
+            map[ws.id] = ws;
+            ids.push(ws.id);
         }
-
-        ids.sort((a, b) => a - b)
-
-        wsMap = map
-        workspaceIds = ids
+        ids.sort((a, b) => {
+            return a - b;
+        });
+        wsMap = map;
+        workspaceIds = ids;
     }
 
     color: Qt.alpha(Theme.surface, 0.3)
     border.color: Qt.alpha(Theme.primary, 0.1)
     border.width: 1
     radius: 0
-
     height: 28
     clip: true
-
     implicitWidth: wsRow.implicitWidth + 8
+    Component.onCompleted: {
+        root.refreshWorkspaces();
+    }
+
+    Timer {
+        id: debounceTimer
+
+        interval: 150
+        onTriggered: root.refreshWorkspaces()
+    }
 
     RowLayout {
         id: wsRow
@@ -47,7 +49,6 @@ Rectangle {
         anchors.fill: parent
         anchors.leftMargin: 4
         anchors.rightMargin: 4
-
         spacing: 2
 
         Repeater {
@@ -57,77 +58,45 @@ Rectangle {
                 id: wsBtn
 
                 required property int modelData
-
                 readonly property int wsId: modelData
-
                 readonly property var ws: root.wsMap[wsId]
-
-                readonly property bool exists:
-                    ws != null
-
-                readonly property bool isFocused:
-                    exists &&
-                    Hyprland.focusedWorkspace &&
-                    ws.id === Hyprland.focusedWorkspace.id
-
-                readonly property bool isActive:
-                    exists && ws.windows > 0
-
-                readonly property bool isUrgent:
-                    exists && ws.urgent
+                readonly property bool exists: ws != null
+                readonly property bool isFocused: exists && Hyprland.focusedWorkspace && ws.id === Hyprland.focusedWorkspace.id
+                readonly property bool isActive: exists && ws.windows > 0
+                readonly property bool isUrgent: exists && ws.urgent
 
                 implicitWidth: 24
                 implicitHeight: 24
-
                 radius: 0
-
                 color: {
                     if (isFocused)
-                        return Theme.primary
+                        return Theme.primary;
 
                     if (isUrgent)
-                        return Qt.alpha(Theme.warning, 0.25)
+                        return Qt.alpha(Theme.warning, 0.25);
 
                     if (isActive)
-                        return Qt.alpha(Theme.primary, 0.12)
+                        return Qt.alpha(Theme.primary, 0.12);
 
                     if (mouseArea.containsMouse)
-                        return Qt.alpha(Theme.fg, 0.08)
+                        return Qt.alpha(Theme.fg, 0.08);
 
-                    return "transparent"
+                    return "transparent";
                 }
-
-                scale: mouseArea.pressed
-                    ? 0.92
-                    : (isFocused ? 1.05 : 1.0)
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                    }
-                }
+                scale: mouseArea.pressed ? 0.92 : (isFocused ? 1.05 : 1)
 
                 Text {
                     anchors.centerIn: parent
-
                     text: wsId
-
                     color: {
                         if (isFocused)
-                            return Theme.bg
+                            return Theme.bg;
 
                         if (exists)
-                            return Theme.fg
+                            return Theme.fg;
 
-                        return Qt.alpha(Theme.fg, 0.4)
+                        return Qt.alpha(Theme.fg, 0.4);
                     }
-
                     font.family: Theme.fontFamily
                     font.pixelSize: 11
                     font.bold: isFocused
@@ -137,14 +106,9 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
-
                     height: 2
-
                     visible: exists && !isFocused
-
-                    color: isActive
-                        ? Theme.primary
-                        : Qt.alpha(Theme.fg, 0.35)
+                    color: isActive ? Theme.primary : Qt.alpha(Theme.fg, 0.35)
                 }
 
                 MouseArea {
@@ -152,47 +116,50 @@ Rectangle {
 
                     anchors.fill: parent
                     hoverEnabled: true
-
                     onClicked: {
-                        Hyprland.dispatch(
-                            "workspace",
-                            String(wsId)
-                        )
+                        Hyprland.dispatch("workspace", String(wsId));
                     }
                 }
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+
+                }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                    }
+
+                }
+
             }
+
         }
+
     }
 
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse
-
-        onWheel: event => {
+        onWheel: (event) => {
             if (event.angleDelta.y > 0)
-                Hyprland.dispatch("workspace", "e-1")
+                Hyprland.dispatch("workspace", "e-1");
             else if (event.angleDelta.y < 0)
-                Hyprland.dispatch("workspace", "e+1")
+                Hyprland.dispatch("workspace", "e+1");
         }
     }
 
     Connections {
-        target: Hyprland
-
         function onRawEvent(event) {
-            const refreshEvents = [
-                "workspacev2",
-                "createworkspacev2",
-                "destroyworkspacev2",
-                "moveworkspacev2"
-            ]
+            const refreshEvents = ["workspacev2", "createworkspacev2", "destroyworkspacev2", "moveworkspacev2"];
+            if (refreshEvents.includes(event.name))
+                debounceTimer.restart();
 
-            if (refreshEvents.includes(event.name)) {
-                debounceTimer.restart()
-            }
         }
+
+        target: Hyprland
     }
 
-    Component.onCompleted: {
-        root.refreshWorkspaces()
-    }
 }

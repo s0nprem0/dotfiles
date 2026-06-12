@@ -1,13 +1,11 @@
-import Quickshell
-import QtQuick
-
 import "../service"
+import QtQuick
+import Quickshell
 
 PanelWindow {
     id: root
 
     default property alias content: contentArea.data
-
     property int barHeight: Theme.barHeight
 
     anchors.top: true
@@ -27,10 +25,13 @@ PanelWindow {
             height: 2
             color: Qt.alpha(Theme.primary, 0.35)
         }
+
     }
 
     Item {
         id: contentArea
+
         anchors.fill: parent
     }
+
 }

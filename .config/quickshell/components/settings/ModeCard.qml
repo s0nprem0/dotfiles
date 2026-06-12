@@ -1,6 +1,6 @@
+import "../../service"
 import QtQuick
 import QtQuick.Layouts
-import "../../service"
 
 Rectangle {
     id: root
@@ -10,6 +10,16 @@ Rectangle {
     property string currentProfile: "balanced"
     property int currentBrightness: 80
     property int currentKbd: 50
+    readonly property var profileButtons: [{
+        "label": "Saver",
+        "val": "power-saver"
+    }, {
+        "label": "Bal",
+        "val": "balanced"
+    }, {
+        "label": "Perf",
+        "val": "performance"
+    }]
 
     signal profileChanged(string profile)
     signal brightnessChanged(int pct)
@@ -22,14 +32,9 @@ Rectangle {
     border.width: 1
     border.color: root.active ? Qt.alpha(Theme.primary, 0.3) : Theme.surfaceLighter
 
-    readonly property var profileButtons: [
-        {label: "Saver", val: "power-saver"},
-        {label: "Bal", val: "balanced"},
-        {label: "Perf", val: "performance"},
-    ]
-
     ColumnLayout {
         id: content
+
         anchors.fill: parent
         anchors.margins: 8
         spacing: 6
@@ -45,7 +50,9 @@ Rectangle {
                 font.bold: true
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Text {
                 text: root.active ? "\u25cf Active" : ""
@@ -54,6 +61,7 @@ Rectangle {
                 font.pixelSize: 8
                 visible: root.active
             }
+
         }
 
         // ── Profile selector row ──
@@ -69,7 +77,9 @@ Rectangle {
                 Layout.minimumWidth: 36
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Repeater {
                 model: root.profileButtons
@@ -96,8 +106,11 @@ Rectangle {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.profileChanged(modelData.val)
                     }
+
                 }
+
             }
+
         }
 
         // ── Screen brightness slider ──
@@ -129,17 +142,19 @@ Rectangle {
                         radius: 2
                         color: root.active ? Theme.primary : Theme.muted
                     }
+
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        var pct = Math.round((mouseX / width) * 100)
-                        pct = Math.max(0, Math.min(100, pct))
-                        root.brightnessChanged(pct)
+                        var pct = Math.round((mouseX / width) * 100);
+                        pct = Math.max(0, Math.min(100, pct));
+                        root.brightnessChanged(pct);
                     }
                 }
+
             }
 
             Text {
@@ -150,6 +165,9 @@ Rectangle {
                 Layout.minimumWidth: 28
                 horizontalAlignment: Text.AlignRight
             }
+
         }
+
     }
+
 }

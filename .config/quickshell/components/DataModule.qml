@@ -1,82 +1,97 @@
+import QtQuick
 import Quickshell
 import Quickshell.Io
-import QtQuick
 
 Item {
-  id: root
-  visible: false
+    id: root
 
-  property string path: ""
-  property int interval: 5000
-  property bool hasError: false
-  property bool loading: false
+    property string path: ""
+    property int interval: 5000
+    property bool hasError: false
+    property bool loading: false
+    property int backoffMs: 1000
 
-  Process {
-    id: proc
-    command: [root.path]
-    stdout: StdioCollector {
-      onStreamFinished: {
-        try {
-          root.loading = false
-          root.dataReceived(JSON.parse(this.text))
-        } catch (e) {
-          root.hasError = true
-          root.loading = false
-          console.warn("DataModule JSON parse error:", e)
+    signal dataReceived(var json)
+
+    function refresh() {
+        proc.running = true;
+    }
+
+    visible: false
+    onDataReceived: root.backoffMs = 1000
+    Component.onCompleted: {
+        startTimer.interval = 1000 + Math.random() * 2000;
+        startTimer.restart();
+    }
+
+    Process {
+        id: proc
+
+        command: [root.path]
+        onRunningChanged: {
+            if (proc.running) {
+                root.loading = true;
+                root.hasError = false;
+                root.backoffMs = 1000;
+            }
         }
-      }
+        onExited: function(code) {
+            root.loading = false;
+            if (code !== 0) {
+                root.hasError = true;
+                crashRestart.restart();
+            }
+        }
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.loading = false;
+                    root.dataReceived(JSON.parse(this.text));
+                } catch (e) {
+                    root.hasError = true;
+                    root.loading = false;
+                    console.warn("DataModule JSON parse error:", e);
+                }
+            }
+        }
+
     }
-    onRunningChanged: {
-      if (proc.running) { root.loading = true; root.hasError = false; root.backoffMs = 1000 }
+
+    Timer {
+        id: crashRestart
+
+        interval: root.backoffMs
+        repeat: false
+        onTriggered: {
+            root.backoffMs = Math.min(root.backoffMs * 2, 30000);
+            if (!proc.running)
+                proc.running = true;
+
+        }
     }
-    onExited: function(code) {
-      root.loading = false
-      if (code !== 0) {
-        root.hasError = true
-        crashRestart.restart()
-      }
+
+    Timer {
+        id: pollTimer
+
+        interval: root.interval
+        repeat: true
+        running: false
+        onTriggered: {
+            if (!proc.running)
+                proc.running = true;
+
+        }
     }
-  }
 
-  property int backoffMs: 1000
+    Timer {
+        id: startTimer
 
-  Timer {
-    id: crashRestart
-    interval: root.backoffMs
-    repeat: false
-    onTriggered: {
-      root.backoffMs = Math.min(root.backoffMs * 2, 30000)
-      if (!proc.running) proc.running = true
+        repeat: false
+        onTriggered: {
+            proc.running = true;
+            pollTimer.start();
+        }
     }
-  }
 
-  onDataReceived: root.backoffMs = 1000
-
-  Timer {
-    id: pollTimer
-    interval: root.interval
-    repeat: true
-    running: false
-    onTriggered: { if (!proc.running) proc.running = true }
-  }
-
-  function refresh() {
-    proc.running = true
-  }
-
-  Component.onCompleted: {
-    startTimer.interval = 1000 + Math.random() * 2000
-    startTimer.restart()
-  }
-
-  Timer {
-    id: startTimer
-    repeat: false
-    onTriggered: {
-      proc.running = true
-      pollTimer.start()
-    }
-  }
-
-  signal dataReceived(var json)
 }

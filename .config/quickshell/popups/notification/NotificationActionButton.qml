@@ -1,7 +1,6 @@
+import "../../service"
 import QtQuick
 import QtQuick.Layouts
-
-import "../../service"
 
 Rectangle {
     id: root
@@ -9,6 +8,7 @@ Rectangle {
     required property var action
     property int btnHeight: 22
     property int btnRadius: 4
+
     signal invoked()
 
     implicitHeight: root.btnHeight
@@ -20,6 +20,7 @@ Rectangle {
 
     Text {
         id: label
+
         anchors.centerIn: parent
         text: root.action.label || "unknown"
         color: Theme.fg
@@ -29,12 +30,14 @@ Rectangle {
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
         onClicked: {
-            root.action.invoke()
-            root.invoked()
+            root.action.invoke();
+            root.invoked();
         }
     }
+
 }

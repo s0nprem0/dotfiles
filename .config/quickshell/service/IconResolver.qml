@@ -1,10 +1,11 @@
-pragma Singleton
-import Quickshell
 import QtQuick
+import Quickshell
+pragma Singleton
 
 QtObject {
     function resolveDesktopIcon(name) {
-        if (!name) return ""
+        if (!name)
+            return "";
 
         var substitutions = {
             "code": "visual-studio-code",
@@ -17,34 +18,36 @@ QtObject {
             "vesktop": "vesktop",
             "wezterm": "org.wezfurlong.wezterm",
             "zen": "zen-browser"
-        }
-
-        var lower = name.toLowerCase()
+        };
+        var lower = name.toLowerCase();
         if (substitutions[name] && Quickshell.iconPath(substitutions[name], true))
-            return substitutions[name]
+            return substitutions[name];
+
         if (substitutions[lower] && Quickshell.iconPath(substitutions[lower], true))
-            return substitutions[lower]
+            return substitutions[lower];
+
         if (Quickshell.iconPath(name, true))
-            return name
+            return name;
+
         if (Quickshell.iconPath(lower, true))
-            return lower
+            return lower;
 
-        var lastDomainPart = name.split(".").pop()
+        var lastDomainPart = name.split(".").pop();
         if (lastDomainPart && Quickshell.iconPath(lastDomainPart, true))
-            return lastDomainPart
+            return lastDomainPart;
+
         if (lastDomainPart && Quickshell.iconPath(lastDomainPart.toLowerCase(), true))
-            return lastDomainPart.toLowerCase()
+            return lastDomainPart.toLowerCase();
 
-        var kebab = lower.replace(/\s+/g, "-").replace(/_/g, "-")
+        var kebab = lower.replace(/\s+/g, "-").replace(/_/g, "-");
         if (Quickshell.iconPath(kebab, true))
-            return kebab
+            return kebab;
 
-        return ""
+        return "";
     }
 
     function nerdFontGlyph(appName) {
-        var name = (appName || "").toLowerCase()
-
+        var name = (appName || "").toLowerCase();
         var glyphs = {
             "discord": "󰙯",
             "firefox": "󰈹",
@@ -52,12 +55,14 @@ QtObject {
             "telegram": "",
             "whatsapp": "󰖣",
             "signal": "󰋽",
-            "slack": "󰒱",
-        }
-
+            "slack": "󰒱"
+        };
         for (var key in glyphs) {
-            if (name.includes(key)) return glyphs[key]
+            if (name.includes(key))
+                return glyphs[key];
+
         }
-        return "󰂚"
+        return "󰂚";
     }
+
 }

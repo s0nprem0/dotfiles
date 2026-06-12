@@ -1,6 +1,5 @@
-import QtQuick
-
 import "../service"
+import QtQuick
 
 Row {
     property double currentVal: 0
@@ -22,5 +21,7 @@ Row {
             radius: 0
             color: index < Math.round(parent.currentVal * parent.totalBlocks) ? parent.fillColor : parent.emptyColor
         }
+
     }
+
 }

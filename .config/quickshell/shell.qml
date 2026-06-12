@@ -1,21 +1,24 @@
-import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
-
-import "service"
-import "components"
+import Quickshell.Hyprland
 import "bar"
+import "components"
 import "popups" as Popups
 import "popups/notification" as Notif
+import "service"
 
 Bar {
+    Component.onCompleted: {
+        NotificationState.centerPopup = centerPopup;
+    }
+
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 8
         anchors.rightMargin: 8
         spacing: 0
 
-        // LEFT
+        // LEFT SECTION
         RowLayout {
             spacing: 0
             Layout.alignment: Qt.AlignVCenter
@@ -24,58 +27,78 @@ Bar {
                 Layout.rightMargin: 8
             }
 
-            Text {
-                id: windowTitle
-                text: {
-                    var win = Hyprland.focusedWindow
-                    if (!win?.title) return ""
-                    return win.title
-                }
-                color: Theme.fg
-                font.family: Theme.fontFamily
-                font.pixelSize: 11
-                elide: Text.ElideRight
-                visible: text.length > 0
-                Layout.leftMargin: 8
-                Layout.maximumWidth: 350
-            }
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
-        // RIGHT
+        // RIGHT SECTION
         RowLayout {
             spacing: 3
             Layout.alignment: Qt.AlignVCenter
-            Bluetooth {}
-            Notifications { notifService: notifService }
-            Tray {}
-            Emoji { emojiPopupRef: emojiPopup }
-            Clipboard { clipboardPopupRef: clipboardPopup }
-            Audio { id: audioModule; mediaPopupRef: mediaPopup }
-            Battery { batteryPopupRef: batteryPopup }
-            Network {}
-            Settings { settingsPopupRef: settingsPopup }
+
+            Bluetooth {
+            }
+
+            Notifications {
+                notifService: notifService
+            }
+
+            Tray {
+            }
+
+            Emoji {
+                emojiPopupRef: emojiPopup
+            }
+
+            Clipboard {
+                clipboardPopupRef: clipboardPopup
+            }
+
+            Audio {
+                id: audioModule
+
+                mediaPopupRef: mediaPopup
+            }
+
+            Battery {
+                batteryPopupRef: batteryPopup
+            }
+
+            Network {
+            }
+
+            Settings {
+                settingsPopupRef: settingsPopup
+            }
+
         }
+
     }
 
-    // ── Centered clock overlay ──────────────────────────────
+    // Centered Clock
     Clock {
         anchors.centerIn: parent
     }
 
-    // ── On-Screen Display (OSD) ────────────────────────────
-    OsdWindow {}
+    // OSD
+    OsdWindow {
+    }
 
-    // ── Notification System ─────────────────────────────────
-    Notif.NotificationService { id: notifService }
+    // Notification System
+    Notif.NotificationService {
+        id: notifService
+    }
 
-    Notif.ToastPopup { }
+    Notif.ToastPopup {
+    }
 
     Notif.CenterPopup {
         id: centerPopup
     }
 
+    // Popups
     Popups.Network {
         id: networkPopup
     }
@@ -86,6 +109,7 @@ Bar {
 
     Popups.Media {
         id: mediaPopup
+
         audioBarRef: audioModule
     }
 
@@ -101,7 +125,4 @@ Bar {
         id: settingsPopup
     }
 
-    Component.onCompleted: {
-        NotificationState.centerPopup = centerPopup
-    }
 }

@@ -1,12 +1,19 @@
-import QtQuick
 import "../components"
 import "../service"
+import QtQuick
 
 BarModule {
     id: root
+
+    property var settingsPopupRef: null
+
     implicitWidth: 28
     tooltipText: "Settings"
-    property var settingsPopupRef: null
+    mA.onClicked: {
+        if (root.settingsPopupRef)
+            root.settingsPopupRef.showPopup = !root.settingsPopupRef.showPopup;
+
+    }
 
     Text {
         anchors.centerIn: parent
@@ -16,8 +23,4 @@ BarModule {
         font.pixelSize: 11
     }
 
-    mA.onClicked: {
-        if (root.settingsPopupRef)
-            root.settingsPopupRef.showPopup = !root.settingsPopupRef.showPopup
-    }
 }

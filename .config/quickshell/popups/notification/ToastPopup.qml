@@ -1,24 +1,34 @@
-import Quickshell
+import "."
+import "../../service"
 import QtQuick
 import QtQuick.Layouts
-
-import "../../service"
-import "."
+import Quickshell
 
 Item {
     Variants {
         model: Quickshell.screens
+
         delegate: Component {
             PanelWindow {
                 id: toastPopup
-                required property var modelData
-                visible: toastRepeater.count > 0
 
+                required property var modelData
+
+                function urgencyColor(urgency) {
+                    if (urgency === 2)
+                        return Theme.error;
+
+                    if (urgency === 1)
+                        return Theme.primary;
+
+                    return Theme.muted;
+                }
+
+                visible: toastRepeater.count > 0
                 screen: modelData
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: false
-
                 implicitWidth: 380
                 implicitHeight: Math.min(toastColumn.implicitHeight + 16, 400)
 
@@ -32,113 +42,117 @@ Item {
                     right: 8
                 }
 
-                function urgencyColor(urgency) {
-                    if (urgency === 2) return Theme.error;
-                    if (urgency === 1) return Theme.primary;
-                    return Theme.muted;
-                }
-
                 Column {
                     id: toastColumn
+
                     anchors.fill: parent
                     anchors.margins: 4
                     spacing: 6
 
                     Repeater {
                         id: toastRepeater
+
                         model: NotificationState.toastModel
 
                         delegate: Item {
                             id: toastDelegate
-                            width: toastColumn.width - 8
-                            height: toastCard.height
-                            anchors.horizontalCenter: parent.horizontalCenter
 
                             property real opacityValue: 0
                             property real scaleValue: 0.8
                             property bool closing: false
                             property bool hovered: false
 
-                            Component.onCompleted: {
-                                opacityValue = 1
-                                scaleValue = 1
-                            }
-
-                            Behavior on opacityValue {
-                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                            }
-                            Behavior on scaleValue {
-                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                            }
-
                             function close() {
-                                if (closing) return
-                                closing = true
-                                opacityValue = 0
-                                scaleValue = 0.8
-                                dismissTimer.stop()
-                                softCloseTimer.start()
+                                if (closing)
+                                    return ;
+
+                                closing = true;
+                                opacityValue = 0;
+                                scaleValue = 0.8;
+                                dismissTimer.stop();
+                                softCloseTimer.start();
                             }
 
                             function hardClose() {
-                                if (closing) return
-                                closing = true
-                                opacityValue = 0
-                                scaleValue = 0.8
-                                dismissTimer.stop()
-                                closeTimer.start()
+                                if (closing)
+                                    return ;
+
+                                closing = true;
+                                opacityValue = 0;
+                                scaleValue = 0.8;
+                                dismissTimer.stop();
+                                closeTimer.start();
                             }
 
                             function autoClose() {
-                                if (closing) return
-                                closing = true
-                                opacityValue = 0
-                                scaleValue = 0.8
-                                dismissTimer.stop()
-                                softCloseTimer.start()
+                                if (closing)
+                                    return ;
+
+                                closing = true;
+                                opacityValue = 0;
+                                scaleValue = 0.8;
+                                dismissTimer.stop();
+                                softCloseTimer.start();
                             }
 
                             function invokeDefault() {
-                                if (closing) return
-                                var nd = model.notifData
+                                if (closing)
+                                    return ;
+
+                                var nd = model.notifData;
                                 if (nd && nd.notification) {
                                     if (nd.notification.defaultAction)
-                                        nd.notification.defaultAction.invoke()
+                                        nd.notification.defaultAction.invoke();
                                     else if (nd.actions && nd.actions.length > 0)
-                                        nd.actions[0].invoke()
+                                        nd.actions[0].invoke();
                                 }
-                                hardClose()
+                                hardClose();
+                            }
+
+                            width: toastColumn.width - 8
+                            height: toastCard.height
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Component.onCompleted: {
+                                opacityValue = 1;
+                                scaleValue = 1;
                             }
 
                             Timer {
                                 id: closeTimer
+
                                 interval: 200
                                 onTriggered: {
                                     if (NotificationState.service)
-                                        NotificationState.service.dismissToastById(model.notifId)
+                                        NotificationState.service.dismissToastById(model.notifId);
+
                                 }
                             }
 
                             Timer {
                                 id: softCloseTimer
+
                                 interval: 200
                                 onTriggered: {
                                     if (NotificationState.service)
-                                        NotificationState.service.softDismissToastById(model.notifId)
+                                        NotificationState.service.softDismissToastById(model.notifId);
+
                                 }
                             }
 
                             Timer {
                                 id: dismissTimer
-                                interval: model.expireTimeout > 0
-                                    ? Math.min(model.expireTimeout, 8000)
-                                    : model.urgency === 2 ? 8000 : 6000
+
+                                interval: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : model.urgency === 2 ? 8000 : 6000
                                 running: !toastDelegate.hovered
                                 onTriggered: autoClose()
                             }
 
                             Rectangle {
                                 id: toastCard
+
+                                readonly property int urg: model.urgency
+                                readonly property color borderColor: Qt.alpha(urgencyColor(toastCard.urg), 0.4)
+
                                 z: 1
                                 width: parent.width
                                 height: mainLayout.implicitHeight + 20
@@ -150,9 +164,6 @@ Item {
                                 opacity: toastDelegate.opacityValue
                                 scale: toastDelegate.scaleValue
                                 transformOrigin: Item.Right
-
-                                readonly property int urg: model.urgency
-                                readonly property color borderColor: Qt.alpha(urgencyColor(toastCard.urg), 0.4)
 
                                 HoverHandler {
                                     onHoveredChanged: toastDelegate.hovered = hovered
@@ -172,6 +183,7 @@ Item {
 
                                 RowLayout {
                                     id: mainLayout
+
                                     anchors.fill: parent
                                     anchors.margins: 10
                                     spacing: 10
@@ -181,9 +193,7 @@ Item {
                                         Layout.preferredHeight: 80
                                         fillMode: Image.PreserveAspectCrop
                                         clip: true
-                                        source: model.notifData && model.notifData.image
-                                            ? (model.notifData.image.startsWith("/") ? ("file://" + model.notifData.image) : model.notifData.image)
-                                            : ""
+                                        source: model.notifData && model.notifData.image ? (model.notifData.image.startsWith("/") ? ("file://" + model.notifData.image) : model.notifData.image) : ""
                                         visible: model.notifData && model.notifData.image && model.notifData.image.length > 0
                                     }
 
@@ -201,15 +211,18 @@ Item {
                                                 spacing: 6
 
                                                 Rectangle {
-                                                    width: 16; height: 16
+                                                    width: 16
+                                                    height: 16
                                                     radius: 3
                                                     color: "transparent"
                                                     visible: model.appIcon && model.appIcon.length > 0
+
                                                     Image {
                                                         anchors.fill: parent
                                                         source: model.appIcon ? "image://icon/" + model.appIcon : ""
                                                         fillMode: Image.PreserveAspectFit
                                                     }
+
                                                 }
 
                                                 Text {
@@ -231,6 +244,7 @@ Item {
                                                     Layout.fillWidth: true
                                                     Layout.alignment: Qt.AlignVCenter
                                                 }
+
                                             }
 
                                             Rectangle {
@@ -243,6 +257,7 @@ Item {
 
                                                 Text {
                                                     id: groupLabel
+
                                                     anchors.centerIn: parent
                                                     text: "+" + ((model.groupCount || 1) - 1)
                                                     color: Theme.primary
@@ -250,6 +265,7 @@ Item {
                                                     font.pixelSize: 8
                                                     font.bold: true
                                                 }
+
                                             }
 
                                             Rectangle {
@@ -268,12 +284,15 @@ Item {
 
                                                 MouseArea {
                                                     id: closeMa
+
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     cursorShape: Qt.PointingHandCursor
                                                     onClicked: close()
                                                 }
+
                                             }
+
                                         }
 
                                         Text {
@@ -299,7 +318,9 @@ Item {
                                             maximumLineCount: 2
                                             visible: text.length > 0
                                             Layout.fillWidth: true
-                                            onLinkActivated: (link) => Qt.openUrlExternally(link)
+                                            onLinkActivated: (link) => {
+                                                return Qt.openUrlExternally(link);
+                                            }
                                         }
 
                                         RowLayout {
@@ -309,62 +330,78 @@ Item {
 
                                             Repeater {
                                                 model: model.notifData && model.notifData.actions || []
+
                                                 delegate: NotificationActionButton {
                                                     action: modelData
                                                     onInvoked: hardClose()
                                                 }
+
                                             }
 
-                                        Item { Layout.fillWidth: true }
-
-                                        Text {
-                                            text: "Dismiss"
-                                            color: Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 9
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: autoClose()
+                                            Item {
+                                                Layout.fillWidth: true
                                             }
+
+                                            Text {
+                                                text: "Dismiss"
+                                                color: Theme.muted
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 9
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: autoClose()
+                                                }
+
+                                            }
+
                                         }
-                                    }
-
-                                    Rectangle {
-                                        Layout.fillWidth: true
-                                        height: 2
-                                        radius: 1
-                                        color: Theme.surfaceLighter
-                                        Layout.topMargin: 4
-                                        visible: model.urgency !== 2
 
                                         Rectangle {
-                                            id: progressBar
-                                            height: parent.height
-                                            width: parent.width
+                                            Layout.fillWidth: true
+                                            height: 2
                                             radius: 1
-                                            color: toastPopup.urgencyColor(model.urgency)
-                                            opacity: 0.6
+                                            color: Theme.surfaceLighter
+                                            Layout.topMargin: 4
+                                            visible: model.urgency !== 2
 
-                                            SequentialAnimation {
-                                                running: model.urgency !== 2
-                                                PauseAnimation { duration: 50 }
-                                                NumberAnimation {
-                                                    target: progressBar
-                                                    property: "width"
-                                                    to: 0
-                                                    duration: model.expireTimeout > 0
-                                                        ? Math.min(model.expireTimeout, 8000)
-                                                        : model.urgency === 2 ? 8000 : 6000
+                                            Rectangle {
+                                                id: progressBar
+
+                                                height: parent.height
+                                                width: parent.width
+                                                radius: 1
+                                                color: toastPopup.urgencyColor(model.urgency)
+                                                opacity: 0.6
+
+                                                SequentialAnimation {
+                                                    running: model.urgency !== 2
+
+                                                    PauseAnimation {
+                                                        duration: 50
+                                                    }
+
+                                                    NumberAnimation {
+                                                        target: progressBar
+                                                        property: "width"
+                                                        to: 0
+                                                        duration: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : model.urgency === 2 ? 8000 : 6000
+                                                    }
+
                                                 }
+
                                             }
+
                                         }
+
                                     }
+
                                 }
-                            }
 
                                 MouseArea {
                                     id: toastMa
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
@@ -373,16 +410,40 @@ Item {
                                     onExited: toastCard.color = Theme.surface
                                     onClicked: (mouse) => {
                                         if (mouse.button === Qt.LeftButton && !closing)
-                                            invokeDefault()
+                                            invokeDefault();
                                         else if (mouse.button === Qt.RightButton)
-                                            close()
+                                            close();
                                     }
                                 }
+
                             }
+
+                            Behavior on opacityValue {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+
+                            }
+
+                            Behavior on scaleValue {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+
+                            }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

@@ -5,14 +5,12 @@ Item {
     id: root
 
     required property var notification
-
     property bool closed: false
     property bool popup: false
     property bool unread: true
     property date time: new Date()
     property real timestamp: time.getTime()
     property string timeStr: "now"
-
     property string id
     property string summary
     property string body
@@ -22,102 +20,111 @@ Item {
     property int urgency: NotificationUrgency.Normal
     property real expireTimeout: 0
     property var actions: []
-    property var hints: ({})
+    property var hints: ({
+    })
 
     function updateTimeStr() {
-        var diff = Date.now() - root.time.getTime()
-        var m = Math.floor(diff / 60000)
+        var diff = Date.now() - root.time.getTime();
+        var m = Math.floor(diff / 60000);
         if (m < 1) {
-            root.timeStr = "now"
+            root.timeStr = "now";
         } else if (m < 60) {
-            root.timeStr = m + "m"
+            root.timeStr = m + "m";
         } else {
-            var h = Math.floor(m / 60)
-            if (h < 24) {
-                root.timeStr = h + "h"
-            } else {
-                root.timeStr = Math.floor(h / 24) + "d"
-            }
+            var h = Math.floor(m / 60);
+            if (h < 24)
+                root.timeStr = h + "h";
+            else
+                root.timeStr = Math.floor(h / 24) + "d";
         }
     }
 
     function close() {
-        if (root.closed) return
-        root.closed = true
+        if (root.closed)
+            return ;
+
+        root.closed = true;
         if (root.notification)
-            root.notification.dismiss()
+            root.notification.dismiss();
+
     }
 
     function invokeAction(actionId) {
         if (root.notification && !root.closed)
-            root.notification.invoke(actionId)
-    }
+            root.notification.invoke(actionId);
 
-    Connections {
-        target: root.notification
-
-        function onClosed() {
-            root.closed = true
-        }
-
-        function onSummaryChanged() {
-            root.summary = root.notification.summary
-        }
-
-        function onBodyChanged() {
-            root.body = root.notification.body
-        }
-
-        function onAppIconChanged() {
-            root.appIcon = root.notification.appIcon
-        }
-
-        function onAppNameChanged() {
-            root.appName = root.notification.appName
-        }
-
-        function onUrgencyChanged() {
-            root.urgency = root.notification.urgency
-        }
-
-        function onExpireTimeoutChanged() {
-            root.expireTimeout = root.notification.expireTimeout
-        }
-
-        function onActionsChanged() {
-            root.actions = mapActions(root.notification.actions)
-        }
     }
 
     function mapActions(actionList) {
-        var acts = []
+        var acts = [];
         for (var i = 0; i < actionList.length; i++) {
-            var a = actionList[i]
+            var a = actionList[i];
             var invokeFn = (function(act) {
-                return function() { act.invoke() }
-            })(a)
+                return function() {
+                    act.invoke();
+                };
+            })(a);
             acts.push({
-                identifier: a.identifier,
-                label: a.label,
-                invoke: invokeFn
-            })
+                "identifier": a.identifier,
+                "label": a.label,
+                "invoke": invokeFn
+            });
         }
-        return acts
+        return acts;
     }
 
     Component.onCompleted: {
-        if (!root.notification) return
-        root.notification.tracked = true
-        root.id = root.notification.id
-        root.summary = root.notification.summary
-        root.body = root.notification.body
-        root.appIcon = root.notification.appIcon
-        root.appName = root.notification.appName
-        root.image = root.notification.image
-        root.urgency = root.notification.urgency
-        root.expireTimeout = root.notification.expireTimeout
-        root.hints = root.notification.hints
-        root.actions = mapActions(root.notification.actions)
-        root.timestamp = root.time.getTime()
+        if (!root.notification)
+            return ;
+
+        root.notification.tracked = true;
+        root.id = root.notification.id;
+        root.summary = root.notification.summary;
+        root.body = root.notification.body;
+        root.appIcon = root.notification.appIcon;
+        root.appName = root.notification.appName;
+        root.image = root.notification.image;
+        root.urgency = root.notification.urgency;
+        root.expireTimeout = root.notification.expireTimeout;
+        root.hints = root.notification.hints;
+        root.actions = mapActions(root.notification.actions);
+        root.timestamp = root.time.getTime();
     }
+
+    Connections {
+        function onClosed() {
+            root.closed = true;
+        }
+
+        function onSummaryChanged() {
+            root.summary = root.notification.summary;
+        }
+
+        function onBodyChanged() {
+            root.body = root.notification.body;
+        }
+
+        function onAppIconChanged() {
+            root.appIcon = root.notification.appIcon;
+        }
+
+        function onAppNameChanged() {
+            root.appName = root.notification.appName;
+        }
+
+        function onUrgencyChanged() {
+            root.urgency = root.notification.urgency;
+        }
+
+        function onExpireTimeoutChanged() {
+            root.expireTimeout = root.notification.expireTimeout;
+        }
+
+        function onActionsChanged() {
+            root.actions = mapActions(root.notification.actions);
+        }
+
+        target: root.notification
+    }
+
 }

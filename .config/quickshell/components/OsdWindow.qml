@@ -1,213 +1,329 @@
+import "../service"
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 
-import "../service"
-import "../service/OsdUtils.js" as OSD
-
 Scope {
     id: root
 
     readonly property string statePath: "file://" + Theme.home + "/.cache/quickshell/osd_state.json"
-
     property string message: ""
     property string kind: "info"
+    property bool visibleNow: false
 
-    function getPercentage(msg) { return OSD.getPercentage(msg) }
-    function getPrefix(msg) { return OSD.getPrefix(msg) }
-    function getPercentText(msg) { return OSD.getPercentText(msg) }
-    function getIcon(msg) { return OSD.getIcon(msg) }
+    function getPercentage(msg) {
+        var match = msg.match(/(\d+)%/);
+        return match ? parseInt(match[1]) : -1;
+    }
+
+    function getPrefix(msg) {
+        var match = msg.match(/^(.*?)\s+\d+%/);
+        return match ? match[1] : msg;
+    }
+
+    function getPercentText(msg) {
+        var match = msg.match(/(\d+%)/);
+        return match ? match[1] : "";
+    }
+
+    function getIcon(msg) {
+        var lower = msg.toLowerCase();
+        if (lower.includes("volume")) {
+            if (lower.includes("mute"))
+                return "󰖁";
+ // nf-md-volume_off
+            return "󰕾"; // nf-md-volume_high
+        }
+        if (lower.includes("mic")) {
+            if (lower.includes("mute"))
+                return "󰍭";
+ // nf-md-microphone_off
+            return "󰍬"; // nf-md-microphone
+        }
+        if (lower.includes("kbd brightness") || lower.includes("kbdbrightness"))
+            return "󰌌";
+ // nf-md-keyboard (or 󰛧 for nf-md-lightbulb if preferred)
+        if (lower.includes("brightness"))
+            return "󰃠";
+ // nf-md-brightness_6 (common choice)
+        return "";
+    }
 
     function getIconColor(msg) {
-        var lower = msg.toLowerCase()
-        if (lower.includes("mute")) return Theme.error
-        if (root.kind === "good") return Theme.green
-        if (root.kind === "warn") return Theme.warning
-        if (root.kind === "bad") return Theme.error
-        if (lower.includes("brightness") || lower.includes("volume")) return Theme.primary
-        return Theme.fg
+        var lower = msg.toLowerCase();
+        if (lower.includes("mute"))
+            return Theme.error;
+
+        if (lower.includes("brightness") || lower.includes("volume"))
+            return Theme.primary;
+
+        return Theme.fg;
     }
 
     function defaultState() {
-        return { visible: false, text: "", kind: "info", timeout_ms: 1200 }
+        return {
+            "visible": false,
+            "text": "",
+            "kind": "info",
+            "timeout_ms": 1200
+        };
     }
 
     function readState() {
         try {
-            var raw = stateFile.text()
-            if (!raw || raw.trim() === "") return defaultState()
-            var parsed = JSON.parse(raw)
+            var raw = stateFile.text();
+            if (!raw || raw.trim() === "")
+                return defaultState();
+
+            var parsed = JSON.parse(raw);
             return {
-                visible: parsed.visible !== false,
-                text: String(parsed.text ?? ""),
-                kind: String(parsed.kind ?? "info"),
-                timeout_ms: parsed.timeout_ms ?? 1200
-            }
+                "visible": parsed.visible !== false,
+                "text": String(parsed.text ?? ""),
+                "kind": String(parsed.kind ?? "info"),
+                "timeout_ms": parsed.timeout_ms ?? 1200
+            };
         } catch (e) {
-            return defaultState()
+            return defaultState();
         }
     }
 
     function refreshState() {
-        var state = readState()
-        message = state.text
-        kind = state.kind
-        if (state.visible && state.text.length > 0) {
-            slide.show = true
-            hideTimer.interval = state.timeout_ms || 1200
-            hideTimer.restart()
+        var state = readState();
+        message = state.text;
+        kind = state.kind;
+        visibleNow = state.visible && state.text.length > 0;
+        if (visibleNow) {
+            hideTimer.interval = state.timeout_ms || 1200;
+            hideTimer.restart();
         } else {
-            slide.closeAnim()
-            hideTimer.stop()
+            hideTimer.stop();
         }
     }
 
     Timer {
         id: hideTimer
+
         interval: 1200
         repeat: false
-        onTriggered: { slide.closeAnim() }
+        onTriggered: {
+            root.visibleNow = false;
+        }
     }
 
     FileView {
         id: stateFile
+
         path: root.statePath
+        blockLoading: true
         watchChanges: true
         onFileChanged: reload()
         onLoaded: root.refreshState()
     }
 
-    Component.onCompleted: stateFile.reload()
+    // Removed Variants model to prevent duplicate windows on multiple monitors
+    PanelWindow {
+        id: win
 
-    SlideAnimator {
-        id: slide
-        slideFrom: -50
-        slideTo: 5
-        introDuration: 120
-        exitDuration: 100
-    }
+        property bool isShown: root.visibleNow
+        property real animTopMargin: -50
+        property real animOpacity: 0
 
-    Variants {
-        model: Quickshell.screens
+        // Bind directly to the primary screen to ensure only ONE OSD exists
+        screen: Quickshell.primaryScreen
+        onIsShownChanged: {
+            if (isShown) {
+                exitAnim.stop();
+                introAnim.start();
+            } else {
+                introAnim.stop();
+                exitAnim.start();
+            }
+        }
+        color: "transparent"
+        exclusionMode: PanelWindow.ExclusionMode.Ignore
+        WlrLayershell.namespace: "osd"
+        visible: root.visibleNow || exitAnim.running
+        implicitWidth: {
+            if (root.getPercentage(root.message) !== -1)
+                return 200;
 
-        delegate: Component {
-            PanelWindow {
-                id: win
+            return fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
+        }
+        implicitHeight: mainLayout.implicitHeight + 12
+        Component.onCompleted: {
+            if (root.visibleNow) {
+                animTopMargin = 5;
+                animOpacity = 1;
+            }
+        }
 
-                required property var modelData
+        anchors {
+            top: true
+            left: true
+        }
 
-                screen: modelData
-                color: "transparent"
-                exclusionMode: PanelWindow.ExclusionMode.Ignore
-                WlrLayershell.namespace: "osd"
-                visible: slide.show || slide.active
+        margins {
+            top: win.animTopMargin
+            left: 30
+        }
 
-                implicitWidth: 280
-                implicitHeight: mainLayout.implicitHeight + 16
+        ParallelAnimation {
+            id: introAnim
 
-                anchors {
-                    top: true
-                }
+            NumberAnimation {
+                target: win
+                property: "animTopMargin"
+                from: -50
+                to: 5
+                duration: 120
+                easing.type: Easing.OutCubic
+            }
 
-                margins {
-                    top: slide.animSlide
-                }
+            NumberAnimation {
+                target: win
+                property: "animOpacity"
+                from: 0
+                to: 1
+                duration: 120
+                easing.type: Easing.OutCubic
+            }
 
-                Rectangle {
-                    anchors.fill: parent
-                    opacity: slide.animOpacity
-                    color: Qt.alpha(Theme.bg, 0.85)
-                    border.width: 1
-                    border.color: root.kind === "good" ? Theme.primary : root.kind === "bad" ? Theme.error : root.kind === "warn" ? Theme.warning : Theme.primary
-                    radius: 0
-                    antialiasing: true
+        }
 
-                    Column {
-                        id: mainLayout
-                        anchors.centerIn: parent
-                        spacing: 6
-                        width: parent.width - 20
+        ParallelAnimation {
+            id: exitAnim
 
-                        // Percentage mode: icon + label + percent, then full-width slider
-                        Column {
-                            spacing: 6
-                            width: parent.width
-                            visible: root.getPercentage(root.message) !== -1
+            NumberAnimation {
+                target: win
+                property: "animTopMargin"
+                from: 5
+                to: -50
+                duration: 100
+                easing.type: Easing.InCubic
+            }
 
-                            Row {
-                                spacing: 6
-                                anchors.horizontalCenter: parent.horizontalCenter
+            NumberAnimation {
+                target: win
+                property: "animOpacity"
+                from: 1
+                to: 0
+                duration: 100
+                easing.type: Easing.InCubic
+            }
 
-                                Text {
-                                    text: root.getIcon(root.message)
-                                    color: root.getIconColor(root.message)
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 14
-                                    renderType: Text.NativeRendering
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: text !== ""
-                                }
+        }
 
-                                Text {
-                                    text: root.getPrefix(root.message)
-                                    color: Theme.fg
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 14
-                                    renderType: Text.NativeRendering
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
+        Rectangle {
+            anchors.fill: parent
+            opacity: win.animOpacity
+            color: Qt.alpha(Theme.bg, 0.85)
+            border.width: 1
+            border.color: root.kind === "good" ? Theme.primary : root.kind === "bad" ? Theme.error : root.kind === "warn" ? Theme.warning : Theme.primary
+            radius: 0
+            antialiasing: false
 
-                                Text {
-                                    text: root.getPercentText(root.message)
-                                    color: root.getIconColor(root.message)
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 14
-                                    font.bold: true
-                                    renderType: Text.NativeRendering
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
+            Column {
+                id: mainLayout
+
+                anchors.centerIn: parent
+                spacing: 4
+                width: parent.width - 18
+
+                Row {
+                    id: osdStatusRow
+
+                    spacing: 6
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.getPercentage(root.message) !== -1
+
+                    Text {
+                        text: root.getIcon(root.message)
+                        color: root.getIconColor(root.message)
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        renderType: Text.NativeRendering
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: text !== ""
+                    }
+
+                    Text {
+                        text: root.getPrefix(root.message)
+                        color: Theme.fg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        renderType: Text.NativeRendering
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Row {
+                        id: blockSlider
+
+                        property int totalBlocks: 15
+                        property double currentVal: root.getPercentage(root.message) / 100
+
+                        spacing: 1
+                        height: 4
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Repeater {
+                            model: blockSlider.totalBlocks
+
+                            delegate: Rectangle {
+                                height: parent.height
+                                width: 5
+                                color: (index < Math.round(blockSlider.currentVal * blockSlider.totalBlocks)) ? Theme.primary : Theme.surfaceLighter
                             }
 
-                            BlockSlider {
-                                width: parent.width
-                                currentVal: root.getPercentage(root.message) / 100
-                                height: 6
-                                fillColor: root.getIconColor(root.message)
-                            }
                         }
 
-                        // Fallback text mode: icon + message
-                        Row {
-                            spacing: 6
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: root.getPercentage(root.message) === -1
+                    }
 
-                            Text {
-                                id: fallbackIcon
-                                text: root.getIcon(root.message)
-                                color: root.getIconColor(root.message)
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 14
-                                renderType: Text.NativeRendering
-                                visible: text !== ""
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            Text {
-                                id: fallbackLabel
-                                text: root.message
-                                color: Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 14
-                                renderType: Text.NativeRendering
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                        }
+                    Text {
+                        text: root.getPercentText(root.message)
+                        color: Theme.fg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        renderType: Text.NativeRendering
+                        anchors.verticalCenter: parent.verticalCenter
                     }
 
                 }
+
+                Row {
+                    spacing: 6
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.getPercentage(root.message) === -1
+
+                    Text {
+                        id: fallbackIcon
+
+                        text: root.getIcon(root.message)
+                        color: root.getIconColor(root.message)
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 10
+                        renderType: Text.NativeRendering
+                        visible: text !== ""
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        id: fallbackLabel
+
+                        text: root.message
+                        color: Theme.fg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        renderType: Text.NativeRendering
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                }
+
             }
+
         }
+
     }
+
 }

@@ -1,17 +1,14 @@
+import "../components/settings"
+import "../service"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import "../service"
-import "../components/settings"
 
 PopupPanel {
-    id: root
+    // ══════════════════════════════════════════════════════════════════════
 
-    anchorSide: "none"
-    panelWidth: 340
-    panelMaxHeight: 0
-    contentMargin: 12
+    id: root
 
     // ── Battery data ──
     property int capacity: 0
@@ -22,12 +19,10 @@ PopupPanel {
     property var sparkline: []
     property string activeProfile: "balanced"
     property var availableProfiles: []
-
     // ── Charge limit ──
     property int chargeLimit: 100
     property bool chargeLimitSupported: false
     property string chargeLimitPath: ""
-
     // ── Automation settings ──
     property bool automationEnabled: true
     property int lowThreshold: 25
@@ -40,209 +35,254 @@ PopupPanel {
     property int acKbd: 100
     property int batKbd: 33
     property int lowKbd: 0
-
     // ── Derived ──
     readonly property bool isCharging: root.status === "Charging" || root.status === "Full"
-
     readonly property string statusIcon: {
-        if (root.isCharging) return ""
-        if (root.capacity >= 90) return ""
-        if (root.capacity >= 60) return ""
-        if (root.capacity >= 40) return ""
-        if (root.capacity >= 20) return ""
-        return ""
-    }
+        if (root.isCharging)
+            return "";
 
+        if (root.capacity >= 90)
+            return "";
+
+        if (root.capacity >= 60)
+            return "";
+
+        if (root.capacity >= 40)
+            return "";
+
+        if (root.capacity >= 20)
+            return "";
+
+        return "";
+    }
     readonly property string modeLabel: {
-        if (root.isCharging) return "AC Mode"
-        if (root.capacity <= root.lowThreshold) return "Low Battery"
-        return "Battery Mode"
-    }
+        if (root.isCharging)
+            return "AC Mode";
 
+        if (root.capacity <= root.lowThreshold)
+            return "Low Battery";
+
+        return "Battery Mode";
+    }
     readonly property string modeProfile: {
-        if (root.isCharging) return root.acProfile
-        if (root.capacity <= root.lowThreshold) return root.lowProfile
-        return root.batProfile
-    }
+        if (root.isCharging)
+            return root.acProfile;
 
+        if (root.capacity <= root.lowThreshold)
+            return root.lowProfile;
+
+        return root.batProfile;
+    }
     readonly property int modeBrightness: {
-        if (root.isCharging) return root.acBrightness
-        if (root.capacity <= root.lowThreshold) return root.lowBrightness
-        return root.batBrightness
-    }
+        if (root.isCharging)
+            return root.acBrightness;
 
+        if (root.capacity <= root.lowThreshold)
+            return root.lowBrightness;
+
+        return root.batBrightness;
+    }
     // ── Settings file path ──
     readonly property string settingsFile: Theme.home + "/.cache/quickshell/battery_settings.json"
     readonly property string settingsDir: Theme.home + "/.cache/quickshell"
 
-    // ── Refresh ──
-    onBeforeOpen: refresh()
-
     function refresh() {
-        statusProc.running = true
-        profileProc.running = true
-        chargeLimitProc.running = true
-        loadSettings()
+        statusProc.running = true;
+        profileProc.running = true;
+        chargeLimitProc.running = true;
+        loadSettings();
     }
 
     // ── Settings persistence ──
     function applySettings(raw) {
-        if (!raw) return
+        if (!raw)
+            return ;
+
         try {
-            var j = JSON.parse(raw)
-            if (!j) return
-            root.automationEnabled = j.automation_enabled !== undefined ? j.automation_enabled : true
-            root.chargeLimit = j.charge_limit ?? 100
-            root.lowThreshold = j.low_battery_threshold ?? 25
-            root.acProfile = j.ac_profile ?? "performance"
-            root.batProfile = j.bat_profile ?? "balanced"
-            root.lowProfile = j.low_profile ?? "power-saver"
-            root.acBrightness = j.ac_screen_brightness ?? 100
-            root.batBrightness = j.bat_screen_brightness ?? 70
-            root.lowBrightness = j.low_screen_brightness ?? 30
-            root.acKbd = j.ac_kbd_brightness ?? 100
-            root.batKbd = j.bat_kbd_brightness ?? 33
-            root.lowKbd = j.low_kbd_brightness ?? 0
-        } catch (e) {}
+            var j = JSON.parse(raw);
+            if (!j)
+                return ;
+
+            root.automationEnabled = j.automation_enabled !== undefined ? j.automation_enabled : true;
+            root.chargeLimit = j.charge_limit ?? 100;
+            root.lowThreshold = j.low_battery_threshold ?? 25;
+            root.acProfile = j.ac_profile ?? "performance";
+            root.batProfile = j.bat_profile ?? "balanced";
+            root.lowProfile = j.low_profile ?? "power-saver";
+            root.acBrightness = j.ac_screen_brightness ?? 100;
+            root.batBrightness = j.bat_screen_brightness ?? 70;
+            root.lowBrightness = j.low_screen_brightness ?? 30;
+            root.acKbd = j.ac_kbd_brightness ?? 100;
+            root.batKbd = j.bat_kbd_brightness ?? 33;
+            root.lowKbd = j.low_kbd_brightness ?? 0;
+        } catch (e) {
+        }
     }
 
     function loadSettings() {
-        readFileCmd.running = true
-    }
-
-    Process {
-        id: readFileCmd
-        command: ["sh", "-c", "cat \"" + root.settingsFile + "\" 2>/dev/null || true"]
-        stdout: StdioCollector {
-            onStreamFinished: root.applySettings(this.text.trim())
-        }
+        readFileCmd.running = true;
     }
 
     function saveSettings() {
         var j = JSON.stringify({
-            automation_enabled: root.automationEnabled,
-            charge_limit: root.chargeLimit,
-            low_battery_threshold: root.lowThreshold,
-            ac_profile: root.acProfile,
-            bat_profile: root.batProfile,
-            low_profile: root.lowProfile,
-            ac_screen_brightness: root.acBrightness,
-            bat_screen_brightness: root.batBrightness,
-            low_screen_brightness: root.lowBrightness,
-            ac_kbd_brightness: root.acKbd,
-            bat_kbd_brightness: root.batKbd,
-            low_kbd_brightness: root.lowKbd,
-        })
-        writeFileCmd.command = ["sh", "-c",
-            "mkdir -p \"$2\" && printf '%s' \"$1\" > \"$2/battery_settings.json\"",
-            "_", j, root.settingsDir]
-        writeFileCmd.running = true
+            "automation_enabled": root.automationEnabled,
+            "charge_limit": root.chargeLimit,
+            "low_battery_threshold": root.lowThreshold,
+            "ac_profile": root.acProfile,
+            "bat_profile": root.batProfile,
+            "low_profile": root.lowProfile,
+            "ac_screen_brightness": root.acBrightness,
+            "bat_screen_brightness": root.batBrightness,
+            "low_screen_brightness": root.lowBrightness,
+            "ac_kbd_brightness": root.acKbd,
+            "bat_kbd_brightness": root.batKbd,
+            "low_kbd_brightness": root.lowKbd
+        });
+        writeFileCmd.command = ["sh", "-c", "mkdir -p \"$2\" && printf '%s' \"$1\" > \"$2/battery_settings.json\"", "_", j, root.settingsDir];
+        writeFileCmd.running = true;
     }
-
-    Process { id: writeFileCmd }
-
-    Component.onCompleted: loadSettings()
 
     // ── Set profile ──
     function setProfile(profile) {
-        root.activeProfile = profile
-        setProc.command = [
-            "busctl", "set-property",
-            "net.hadess.PowerProfiles",
-            "/net/hadess/PowerProfiles",
-            "net.hadess.PowerProfiles",
-            "ActiveProfile", "s", profile,
-        ]
-        setProc.running = true
+        root.activeProfile = profile;
+        setProc.command = ["busctl", "set-property", "net.hadess.PowerProfiles", "/net/hadess/PowerProfiles", "net.hadess.PowerProfiles", "ActiveProfile", "s", profile];
+        setProc.running = true;
     }
 
     // ── Set brightness ──
     function setBrightness(pct) {
-        brightProc.command = [Theme.bin("osdctl"), "brightness", "set", String(pct)]
-        brightProc.running = true
+        brightProc.command = [Theme.bin("osdctl"), "brightness", "set", String(pct)];
+        brightProc.running = true;
+    }
+
+    anchorSide: "none"
+    panelWidth: 340
+    panelMaxHeight: 0
+    contentMargin: 12
+    // ── Refresh ──
+    onBeforeOpen: refresh()
+    Component.onCompleted: loadSettings()
+
+    Process {
+        id: readFileCmd
+
+        command: ["sh", "-c", "cat \"" + root.settingsFile + "\" 2>/dev/null || true"]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.applySettings(this.text.trim())
+        }
+
+    }
+
+    Process {
+        id: writeFileCmd
     }
 
     // ── Battery status Process ──
     Process {
         id: statusProc
+
         command: [Theme.bin("get_battery_status")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var j = JSON.parse(this.text.trim())
-                    root.capacity = j.capacity ?? 0
-                    root.status = j.status ?? "Unknown"
-                    root.health = j.health ?? 100
-                    root.powerDraw = j.power_draw_w ?? 0
-                    root.timeRemaining = j.time_remaining ?? "N/A"
-                    root.sparkline = j.sparkline ?? []
-                } catch (e) { console.warn("Battery: parse error", e) }
+                    var j = JSON.parse(this.text.trim());
+                    root.capacity = j.capacity ?? 0;
+                    root.status = j.status ?? "Unknown";
+                    root.health = j.health ?? 100;
+                    root.powerDraw = j.power_draw_w ?? 0;
+                    root.timeRemaining = j.time_remaining ?? "N/A";
+                    root.sparkline = j.sparkline ?? [];
+                } catch (e) {
+                    console.warn("Battery: parse error", e);
+                }
             }
         }
+
     }
 
     // ── Power profile Process ──
     Process {
         id: profileProc
+
         command: [Theme.bin("get_power_profile")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var j = JSON.parse(this.text.trim())
-                    root.activeProfile = j.active ?? "balanced"
-                    root.availableProfiles = j.available ?? []
-                } catch (e) {}
+                    var j = JSON.parse(this.text.trim());
+                    root.activeProfile = j.active ?? "balanced";
+                    root.availableProfiles = j.available ?? [];
+                } catch (e) {
+                }
             }
         }
+
     }
 
     // ── Charge limit Process ──
     Process {
         id: chargeLimitProc
+
         command: ["sh", "-c", "for p in /sys/class/power_supply/BAT*/charge_control_end_threshold; do [ -f \"$p\" ] && { echo \"$p\"; cat \"$p\"; break; }; done 2>/dev/null || true"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var lines = this.text.trim().split("\n")
+                    var lines = this.text.trim().split("\n");
                     if (lines.length >= 2) {
-                        root.chargeLimitPath = lines[0]
-                        root.chargeLimitSupported = true
-                        var val = parseInt(lines[1])
-                        if (!isNaN(val)) root.chargeLimit = val
+                        root.chargeLimitPath = lines[0];
+                        root.chargeLimitSupported = true;
+                        var val = parseInt(lines[1]);
+                        if (!isNaN(val))
+                            root.chargeLimit = val;
+
                     } else {
-                        root.chargeLimitSupported = false
+                        root.chargeLimitSupported = false;
                     }
-                } catch (e) { root.chargeLimitSupported = false }
+                } catch (e) {
+                    root.chargeLimitSupported = false;
+                }
             }
         }
+
     }
 
     // ── Set charge limit Process ──
-    Process { id: setLimitProc }
+    Process {
+        id: setLimitProc
+    }
 
     // ── Set profile Process ──
-    Process { id: setProc }
+    Process {
+        id: setProc
+    }
 
     // ── Set brightness Process ──
-    Process { id: brightProc }
+    Process {
+        id: brightProc
+    }
 
     // ── Action Process ──
-    Process { id: actionProc }
+    Process {
+        id: actionProc
+    }
 
     // ── Refresh timer ──
     Timer {
         id: refreshTimer
+
         interval: 5000
         running: root.showPopup
         repeat: true
         onTriggered: refresh()
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-
     contentComponent: Component {
         ColumnLayout {
             id: mainColumn
+
             anchors.fill: parent
             spacing: 12
 
@@ -283,19 +323,26 @@ PopupPanel {
                             Layout.alignment: Qt.AlignBottom
                             anchors.bottomMargin: 4
                         }
+
                     }
 
                     Text {
                         text: {
-                            if (root.isCharging && root.capacity >= 100) return "Fully charged"
-                            if (root.isCharging) return "Charging \u00b7 " + root.timeRemaining + " until full"
-                            return "Discharging \u00b7 " + root.timeRemaining + " remaining"
+                            if (root.isCharging && root.capacity >= 100)
+                                return "Fully charged";
+
+                            if (root.isCharging)
+                                return "Charging \u00b7 " + root.timeRemaining + " until full";
+
+                            return "Discharging \u00b7 " + root.timeRemaining + " remaining";
                         }
                         color: Theme.muted
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
                     }
+
                 }
+
             }
 
             // ═══════════════════════════════════════════════════════════
@@ -323,6 +370,7 @@ PopupPanel {
                             font.bold: true
                             Layout.alignment: Qt.AlignHCenter
                         }
+
                         Text {
                             text: "Health"
                             color: Theme.muted
@@ -330,7 +378,9 @@ PopupPanel {
                             font.pixelSize: 8
                             Layout.alignment: Qt.AlignHCenter
                         }
+
                     }
+
                 }
 
                 Rectangle {
@@ -351,6 +401,7 @@ PopupPanel {
                             font.bold: true
                             Layout.alignment: Qt.AlignHCenter
                         }
+
                         Text {
                             text: root.isCharging ? "Until Full" : "Remaining"
                             color: Theme.muted
@@ -358,8 +409,11 @@ PopupPanel {
                             font.pixelSize: 8
                             Layout.alignment: Qt.AlignHCenter
                         }
+
                     }
+
                 }
+
             }
 
             // ── Sparkline ──
@@ -384,23 +438,28 @@ PopupPanel {
 
                             Layout.fillHeight: true
                             Layout.preferredWidth: 4
-
                             color: {
-                                var v = modelData
-                                if (v > 20) return Theme.error
-                                if (v > 10) return Theme.warning
-                                return Theme.green
+                                var v = modelData;
+                                if (v > 20)
+                                    return Theme.error;
+
+                                if (v > 10)
+                                    return Theme.warning;
+
+                                return Theme.green;
                             }
                             radius: 1
-
                             Layout.maximumHeight: {
-                                var maxVal = Math.max.apply(null, root.sparkline)
-                                return maxVal > 0 ? (modelData / maxVal) * parent.height : 2
+                                var maxVal = Math.max.apply(null, root.sparkline);
+                                return maxVal > 0 ? (modelData / maxVal) * parent.height : 2;
                             }
                             Layout.alignment: Qt.AlignBottom
                         }
+
                     }
+
                 }
+
             }
 
             // ═══════════════════════════════════════════════════════════
@@ -432,18 +491,26 @@ PopupPanel {
                         radius: 7
                         color: Theme.bg
 
-                        Behavior on x { NumberAnimation { duration: 120 } }
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: 120
+                            }
+
+                        }
+
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.automationEnabled = !root.automationEnabled
-                            root.saveSettings()
+                            root.automationEnabled = !root.automationEnabled;
+                            root.saveSettings();
                         }
                     }
+
                 }
+
             }
 
             // ── AC Mode card ──
@@ -452,8 +519,15 @@ PopupPanel {
                 active: root.isCharging
                 currentProfile: root.acProfile
                 currentBrightness: root.acBrightness
-                onProfileChanged: function(p) { root.acProfile = p; root.saveSettings() }
-                onBrightnessChanged: function(p) { root.acBrightness = p; root.saveSettings(); root.setBrightness(p) }
+                onProfileChanged: function(p) {
+                    root.acProfile = p;
+                    root.saveSettings();
+                }
+                onBrightnessChanged: function(p) {
+                    root.acBrightness = p;
+                    root.saveSettings();
+                    root.setBrightness(p);
+                }
             }
 
             // ── Battery Mode card ──
@@ -462,8 +536,15 @@ PopupPanel {
                 active: !root.isCharging && root.capacity > root.lowThreshold
                 currentProfile: root.batProfile
                 currentBrightness: root.batBrightness
-                onProfileChanged: function(p) { root.batProfile = p; root.saveSettings() }
-                onBrightnessChanged: function(p) { root.batBrightness = p; root.saveSettings(); root.setBrightness(p) }
+                onProfileChanged: function(p) {
+                    root.batProfile = p;
+                    root.saveSettings();
+                }
+                onBrightnessChanged: function(p) {
+                    root.batBrightness = p;
+                    root.saveSettings();
+                    root.setBrightness(p);
+                }
             }
 
             // ── Low Battery card ──
@@ -472,8 +553,15 @@ PopupPanel {
                 active: !root.isCharging && root.capacity <= root.lowThreshold
                 currentProfile: root.lowProfile
                 currentBrightness: root.lowBrightness
-                onProfileChanged: function(p) { root.lowProfile = p; root.saveSettings() }
-                onBrightnessChanged: function(p) { root.lowBrightness = p; root.saveSettings(); root.setBrightness(p) }
+                onProfileChanged: function(p) {
+                    root.lowProfile = p;
+                    root.saveSettings();
+                }
+                onBrightnessChanged: function(p) {
+                    root.lowBrightness = p;
+                    root.saveSettings();
+                    root.setBrightness(p);
+                }
             }
 
             // ── Charge Limit ──
@@ -516,14 +604,16 @@ PopupPanel {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            var newVal = root.chargeLimit < 100 ? 100 : 80
-                            root.chargeLimit = newVal
-                            setLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(newVal)]
-                            setLimitProc.running = true
-                            root.saveSettings()
+                            var newVal = root.chargeLimit < 100 ? 100 : 80;
+                            root.chargeLimit = newVal;
+                            setLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(newVal)];
+                            setLimitProc.running = true;
+                            root.saveSettings();
                         }
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -550,11 +640,19 @@ PopupPanel {
                 spacing: 6
 
                 Repeater {
-                    model: [
-                        {label: "Saver", val: "power-saver", icon: "\uf0ae"},
-                        {label: "Balanced", val: "balanced", icon: "\uf0e7"},
-                        {label: "Performance", val: "performance", icon: "\uf0e7"},
-                    ]
+                    model: [{
+                        "label": "Saver",
+                        "val": "power-saver",
+                        "icon": "\uf0ae"
+                    }, {
+                        "label": "Balanced",
+                        "val": "balanced",
+                        "icon": "\uf0e7"
+                    }, {
+                        "label": "Performance",
+                        "val": "performance",
+                        "icon": "\uf0e7"
+                    }]
 
                     delegate: Rectangle {
                         required property var modelData
@@ -585,6 +683,7 @@ PopupPanel {
                                 font.pixelSize: 8
                                 Layout.alignment: Qt.AlignHCenter
                             }
+
                         }
 
                         MouseArea {
@@ -593,8 +692,11 @@ PopupPanel {
                             hoverEnabled: true
                             onClicked: root.setProfile(modelData.val)
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -621,14 +723,23 @@ PopupPanel {
                 spacing: 6
 
                 Repeater {
-                    model: [
-                        {icon: "\uf186", label: "Sleep", cmd: "systemctl suspend"},
-                        {icon: "\uf021", label: "Reboot", cmd: "systemctl reboot"},
-                        {icon: "\uf011", label: "Shutdown", cmd: "systemctl poweroff"},
-                    ]
+                    model: [{
+                        "icon": "\uf186",
+                        "label": "Sleep",
+                        "cmd": "systemctl suspend"
+                    }, {
+                        "icon": "\uf021",
+                        "label": "Reboot",
+                        "cmd": "systemctl reboot"
+                    }, {
+                        "icon": "\uf011",
+                        "label": "Shutdown",
+                        "cmd": "systemctl poweroff"
+                    }]
 
                     delegate: Rectangle {
                         required property var modelData
+                        property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
 
                         Layout.fillWidth: true
                         height: 44
@@ -636,8 +747,6 @@ PopupPanel {
                         color: mouseArea.containsMouse ? Theme.surfaceLighter : Theme.surface
                         border.width: 1
                         border.color: Theme.surfaceLighter
-
-                        property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
 
                         ColumnLayout {
                             anchors.centerIn: parent
@@ -658,21 +767,29 @@ PopupPanel {
                                 font.pixelSize: 8
                                 Layout.alignment: Qt.AlignHCenter
                             }
+
                         }
 
                         MouseArea {
                             id: mouseArea
+
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
                             onClicked: {
-                                actionProc.command = ["sh", "-c", modelData.cmd]
-                                actionProc.running = true
+                                actionProc.command = ["sh", "-c", modelData.cmd];
+                                actionProc.running = true;
                             }
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

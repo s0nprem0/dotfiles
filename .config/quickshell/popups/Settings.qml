@@ -1,153 +1,183 @@
+import "../components/settings"
+import "../service"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import "../service"
-import "../components/settings"
 
 PopupPanel {
-    id: root
+    // ══════════════════════════════════════════════════════════════════════
 
-    anchorSide: "none"
-    panelWidth: 340
-    panelMaxHeight: 600
-    contentMargin: 16
+    id: root
 
     property string hostname: ""
     property string kernel: ""
     property string uptime: ""
     property string os: ""
-
     property string batteryPercent: "--"
     property bool charging: false
-
     property string pendingAction: ""
     property string pendingLabel: ""
     property bool confirmVisible: false
-
     property string activeProfile: "balanced"
     property var availableProfiles: ["balanced", "power-saver", "performance"]
-
-    onBeforeOpen: refresh()
+    // ── Data ─────────────────────────────────────────────────────────────
+    property var sysActions: [{
+        "icon": "󰌾",
+        "label": "Lock",
+        "cmd": ["hyprlock"],
+        "confirm": false
+    }, {
+        "icon": "󰍃",
+        "label": "Logout",
+        "cmd": ["hyprctl", "dispatch", "exit"],
+        "confirm": true
+    }, {
+        "icon": "󰤄",
+        "label": "Sleep",
+        "cmd": ["systemctl", "suspend"],
+        "confirm": true
+    }, {
+        "icon": "󰜉",
+        "label": "Reboot",
+        "cmd": ["systemctl", "reboot"],
+        "confirm": true
+    }, {
+        "icon": "󰐥",
+        "label": "Shutdown",
+        "cmd": ["systemctl", "poweroff"],
+        "confirm": true
+    }]
+    property var aboutRows: [{
+        "label": "Host",
+        "value": root.hostname
+    }, {
+        "label": "OS",
+        "value": root.os
+    }, {
+        "label": "Kernel",
+        "value": root.kernel
+    }, {
+        "label": "Uptime",
+        "value": root.uptime
+    }]
 
     function refresh() {
-        sysInfoProc.running = true
-        uptimeProc.running = true
-        batteryProc.running = true
-        profileProc.running = true
+        sysInfoProc.running = true;
+        uptimeProc.running = true;
+        batteryProc.running = true;
+        profileProc.running = true;
     }
 
     function setProfile(profile) {
-        root.activeProfile = profile
-        setProfileProc.command = [
-            Theme.bin("set_power_profile.sh"),
-            profile,
-        ]
-        setProfileProc.running = true
+        root.activeProfile = profile;
+        setProfileProc.command = [Theme.bin("set_power_profile.sh"), profile];
+        setProfileProc.running = true;
     }
 
     function confirmAction(action, label) {
-        pendingAction = action
-        pendingLabel = label
-        confirmVisible = true
+        pendingAction = action;
+        pendingLabel = label;
+        confirmVisible = true;
     }
 
     function closeWin() {
-        root.closePopup()
-        confirmVisible = false
+        root.closePopup();
+        confirmVisible = false;
     }
+
+    anchorSide: "none"
+    panelWidth: 340
+    panelMaxHeight: 600
+    contentMargin: 16
+    onBeforeOpen: refresh()
 
     Process {
         id: sysInfoProc
+
         command: [Theme.bin("get_sysinfo.sh")]
+
         stdout: StdioCollector {
             onStreamFinished: {
-                var lines = (this.text || "").trim().split("\n")
+                var lines = (this.text || "").trim().split("\n");
                 if (lines.length >= 3) {
-                    root.hostname = lines[0].trim()
-                    root.kernel = lines[1].trim()
-                    root.os = lines.slice(2).join("\n").trim()
+                    root.hostname = lines[0].trim();
+                    root.kernel = lines[1].trim();
+                    root.os = lines.slice(2).join("\n").trim();
                 }
             }
         }
+
     }
 
     Process {
         id: uptimeProc
+
         command: ["uptime", "-p"]
+
         stdout: StdioCollector {
             onStreamFinished: {
-                root.uptime = (this.text || "").trim().replace(/^up /i, "")
+                root.uptime = (this.text || "").trim().replace(/^up /i, "");
             }
         }
+
     }
 
     Process {
         id: batteryProc
 
-        command: [
-            "sh",
-            "-c",
-            "cat /sys/class/power_supply/BAT0/capacity && cat /sys/class/power_supply/BAT0/status"
-        ]
+        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity && cat /sys/class/power_supply/BAT0/status"]
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const lines = (this.text || "").trim().split("\n")
-
-                if (lines.length >=2) {
-                    root.batteryPercent = lines[0]
-                    root.charging = lines[1] === "Charging"
+                const lines = (this.text || "").trim().split("\n");
+                if (lines.length >= 2) {
+                    root.batteryPercent = lines[0];
+                    root.charging = lines[1] === "Charging";
                 }
             }
         }
+
     }
 
     Process {
         id: profileProc
+
         command: [Theme.bin("get_power_profile")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    var j = JSON.parse(this.text.trim())
-                    root.activeProfile = j.active ?? "balanced"
-                    root.availableProfiles = j.available ?? [root.activeProfile]
-                } catch (e) {}
+                    var j = JSON.parse(this.text.trim());
+                    root.activeProfile = j.active ?? "balanced";
+                    root.availableProfiles = j.available ?? [root.activeProfile];
+                } catch (e) {
+                }
             }
         }
+
     }
 
     Process {
         id: setProfileProc
+
         onExited: profileProc.running = true
     }
 
     Process {
         id: actionProc
-        onExited: { if (root.showPopup) root.closePopup() }
+
+        onExited: {
+            if (root.showPopup)
+                root.closePopup();
+
+        }
     }
-
-    // ── Data ─────────────────────────────────────────────────────────────
-    property var sysActions: [
-        { icon: "󰌾", label: "Lock",    cmd: ["hyprlock"],                     confirm: false },
-        { icon: "󰍃", label: "Logout",  cmd: ["hyprctl", "dispatch", "exit"],  confirm: true  },
-        { icon: "󰤄", label: "Sleep",   cmd: ["systemctl", "suspend"],         confirm: true  },
-        { icon: "󰜉", label: "Reboot",  cmd: ["systemctl", "reboot"],          confirm: true  },
-        { icon: "󰐥", label: "Shutdown",cmd: ["systemctl", "poweroff"],        confirm: true  },
-    ]
-
-    property var aboutRows: [
-        { label: "Host",   value: root.hostname },
-        { label: "OS",     value: root.os       },
-        { label: "Kernel", value: root.kernel   },
-        { label: "Uptime", value: root.uptime   },
-    ]
-
-    // ══════════════════════════════════════════════════════════════════════
 
     contentComponent: Component {
         ColumnLayout {
             id: mainColumn
+
             anchors.fill: parent
             spacing: 14
 
@@ -156,7 +186,6 @@ PopupPanel {
                 hostname: root.hostname
                 os: root.os
                 uptime: root.uptime
-
                 batteryPercent: root.batteryPercent
                 charging: root.charging
             }
@@ -180,6 +209,7 @@ PopupPanel {
 
                     delegate: Rectangle {
                         required property var modelData
+                        property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
 
                         implicitWidth: 48
                         implicitHeight: 52
@@ -187,8 +217,6 @@ PopupPanel {
                         color: mouseArea.containsMouse ? Theme.surfaceLighter : Theme.surface
                         border.width: 1
                         border.color: Theme.surfaceLighter
-
-                        property bool destructive: modelData.label === "Reboot" || modelData.label === "Shutdown"
 
                         ColumnLayout {
                             anchors.centerIn: parent
@@ -209,23 +237,27 @@ PopupPanel {
                                 font.pixelSize: 8
                                 Layout.alignment: Qt.AlignHCenter
                             }
+
                         }
 
                         MouseArea {
                             id: mouseArea
+
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-
                             onClicked: {
                                 if (modelData.confirm)
-                                    root.confirmAction(modelData.cmd.join(" "), modelData.label)
+                                    root.confirmAction(modelData.cmd.join(" "), modelData.label);
                                 else
-                                    Quickshell.execDetached(modelData.cmd)
+                                    Quickshell.execDetached(modelData.cmd);
                             }
                         }
+
                     }
+
                 }
+
             }
 
             // ── Confirm dialog ─────────────────────────────────────────
@@ -260,6 +292,7 @@ PopupPanel {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.confirmVisible = false
                         }
+
                     }
 
                     Rectangle {
@@ -281,12 +314,15 @@ PopupPanel {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                actionProc.command = ["sh", "-c", root.pendingAction]
-                                actionProc.running = true
+                                actionProc.command = ["sh", "-c", root.pendingAction];
+                                actionProc.running = true;
                             }
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -307,14 +343,14 @@ PopupPanel {
             }
 
             Rectangle {
+                property alias ma: ma
+
                 Layout.fillWidth: true
                 height: 36
                 radius: 6
                 color: ma.containsMouse ? Theme.surfaceLighter : Theme.surface
                 border.width: 1
                 border.color: Theme.surfaceLighter
-
-                property alias ma: ma
 
                 RowLayout {
                     anchors.fill: parent
@@ -343,19 +379,21 @@ PopupPanel {
                         font.pixelSize: 10
                         font.bold: true
                     }
+
                 }
 
                 MouseArea {
                     id: ma
+
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
-
                     onClicked: {
-                        Quickshell.execDetached(Config.impalaCmd)
-                        root.closeWin()
+                        Quickshell.execDetached(Config.impalaCmd);
+                        root.closeWin();
                     }
                 }
+
             }
 
             Rectangle {
@@ -378,7 +416,7 @@ PopupPanel {
             PowerCard {
                 activeProfile: root.activeProfile
                 onProfileSelected: function(profile) {
-                    root.setProfile(profile)
+                    root.setProfile(profile);
                 }
             }
 
@@ -427,9 +465,15 @@ PopupPanel {
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

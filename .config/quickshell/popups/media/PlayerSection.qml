@@ -1,9 +1,8 @@
+import "../../components"
+import "../../service"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-
-import "../../components"
-import "../../service"
 
 Item {
     id: playerSectionRoot
@@ -11,13 +10,13 @@ Item {
     required property var mediaRoot
 
     opacity: mediaRoot.mediaFade
-    transform: Translate { y: mediaRoot.mediaSlide }
     visible: mediaRoot.hasPlayer
     width: parent.width
     implicitHeight: mediaColumn.implicitHeight
 
     Column {
         id: mediaColumn
+
         width: parent.width
         spacing: 6
 
@@ -29,6 +28,7 @@ Item {
 
             Rectangle {
                 id: artFrame
+
                 width: 48
                 height: 48
                 color: Theme.surface
@@ -39,6 +39,7 @@ Item {
 
                 Image {
                     id: artImage
+
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectCrop
                     source: mediaRoot.artUrl || ""
@@ -55,6 +56,7 @@ Item {
                     visible: !mediaRoot.artUrl || artImage.status === Image.Error
                     renderType: Text.NativeRendering
                 }
+
             }
 
             Column {
@@ -79,6 +81,7 @@ Item {
 
                     Row {
                         id: sourceIndicatorRow
+
                         spacing: 3
                         anchors.verticalCenter: parent.verticalCenter
                         visible: mediaRoot.availablePlayers.length > 1
@@ -86,8 +89,10 @@ Item {
 
                         Repeater {
                             model: mediaRoot.availablePlayers
+
                             delegate: Rectangle {
-                                width: 5; height: 5
+                                width: 5
+                                height: 5
                                 radius: 0
                                 anchors.verticalCenter: parent.verticalCenter
                                 color: modelData === mediaRoot.playerName ? Theme.primary : Theme.surface
@@ -95,8 +100,11 @@ Item {
                                 border.color: Theme.primary
                                 opacity: modelData === mediaRoot.playerName ? 1 : 0.55
                             }
+
                         }
+
                     }
+
                 }
 
                 Text {
@@ -115,26 +123,26 @@ Item {
                     visible: mediaRoot.playerStatus
 
                     Rectangle {
-                        height: 4; width: 4
+                        height: 4
+                        width: 4
                         radius: 2
                         anchors.verticalCenter: parent.verticalCenter
-                        color: mediaRoot.playerStatus === "Playing" ? Theme.green
-                             : mediaRoot.playerStatus === "Paused" ? Theme.warning
-                             : Theme.muted
+                        color: mediaRoot.playerStatus === "Playing" ? Theme.green : mediaRoot.playerStatus === "Paused" ? Theme.warning : Theme.muted
                     }
 
                     Text {
                         text: mediaRoot.playerStatus || ""
-                        color: mediaRoot.playerStatus === "Playing" ? Theme.green
-                             : mediaRoot.playerStatus === "Paused" ? Theme.warning
-                             : Theme.muted
+                        color: mediaRoot.playerStatus === "Playing" ? Theme.green : mediaRoot.playerStatus === "Paused" ? Theme.warning : Theme.muted
                         font.family: Theme.fontFamily
                         font.pixelSize: 8
                         font.bold: true
                         renderType: Text.NativeRendering
                     }
+
                 }
+
             }
+
         }
 
         // ── Section 3: Controls ──
@@ -145,6 +153,7 @@ Item {
 
             Text {
                 id: shuffleLabel
+
                 text: "󰒝"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -161,10 +170,12 @@ Item {
                     onExited: parent.opacity = 0.5
                     onClicked: mediaRoot.playerCtl(["shuffle", "toggle"])
                 }
+
             }
 
             Text {
                 id: prevLabel
+
                 text: "prev"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -178,10 +189,12 @@ Item {
                     hoverEnabled: true
                     onClicked: mediaRoot.playerCtl(["previous"])
                 }
+
             }
 
             Text {
                 id: playLabel
+
                 text: mediaRoot.playerStatus === "Playing" ? "pause" : "play"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -196,10 +209,12 @@ Item {
                     hoverEnabled: true
                     onClicked: mediaRoot.playerCtl(["play-pause"])
                 }
+
             }
 
             Text {
                 id: nextLabel
+
                 text: "next"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -213,10 +228,12 @@ Item {
                     hoverEnabled: true
                     onClicked: mediaRoot.playerCtl(["next"])
                 }
+
             }
 
             Text {
                 id: stopLabel
+
                 text: "stop"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -231,10 +248,12 @@ Item {
                     hoverEnabled: true
                     onClicked: mediaRoot.playerCtl(["stop"])
                 }
+
             }
 
             Text {
                 id: repeatLabel
+
                 text: "󰑘"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -251,10 +270,12 @@ Item {
                     onExited: parent.opacity = 0.5
                     onClicked: mediaRoot.playerCtl(["repeat", "toggle"])
                 }
+
             }
 
             Text {
                 id: sourceSwitchLabel
+
                 text: "󰑖"
                 color: Theme.primary
                 font.family: Theme.fontFamily
@@ -271,9 +292,10 @@ Item {
                     onEntered: parent.opacity = 1
                     onExited: parent.opacity = 0.5
                     onClicked: {
-                        mediaRoot.switchMediaSource()
+                        mediaRoot.switchMediaSource();
                     }
                 }
+
             }
 
         }
@@ -287,6 +309,7 @@ Item {
 
             Text {
                 id: seekTimeStart
+
                 text: mediaRoot.formatTime(mediaRoot.position)
                 color: Theme.primary
                 opacity: 0.5
@@ -309,26 +332,29 @@ Item {
                     color: Theme.surface
 
                     Rectangle {
-                        width: parent.width * Math.min(1, mediaRoot.position / (mediaRoot.trackLength / 1000000))
+                        width: parent.width * Math.min(1, mediaRoot.position / (mediaRoot.trackLength / 1e+06))
                         height: parent.height
                         color: Theme.primary
                     }
+
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        var frac = Math.max(0, Math.min(1, mouse.x / width))
-                        var secs = frac * (mediaRoot.trackLength / 1000000)
-                        mediaRoot.playerCtl(["position", secs.toFixed(1)])
+                        var frac = Math.max(0, Math.min(1, mouse.x / width));
+                        var secs = frac * (mediaRoot.trackLength / 1e+06);
+                        mediaRoot.playerCtl(["position", secs.toFixed(1)]);
                     }
                 }
+
             }
 
             Text {
                 id: seekTimeEnd
-                text: mediaRoot.formatTime(mediaRoot.trackLength / 1000000)
+
+                text: mediaRoot.formatTime(mediaRoot.trackLength / 1e+06)
                 color: Theme.primary
                 opacity: 0.5
                 font.family: Theme.fontFamily
@@ -336,6 +362,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
             }
+
         }
 
         // ── Section 5: Player Volume ──
@@ -357,10 +384,14 @@ Item {
                     renderType: Text.NativeRendering
                 }
 
-                Item { width: parent.width - childrenRect.width - mutePlayerText.width; height: 1 }
+                Item {
+                    width: parent.width - childrenRect.width - mutePlayerText.width
+                    height: 1
+                }
 
                 Text {
                     id: mutePlayerText
+
                     text: mediaRoot.volume === 0 ? "Unmute" : "Mute"
                     color: Theme.primary
                     font.family: Theme.fontFamily
@@ -374,7 +405,9 @@ Item {
                         hoverEnabled: true
                         onClicked: mediaRoot.playerCtl(["volume", mediaRoot.volume === 0 ? "1.0" : "0.0"])
                     }
+
                 }
+
             }
 
             Item {
@@ -393,21 +426,33 @@ Item {
                     anchors.fill: parent
                     preventStealing: true
                     onPressed: mediaRoot.playerCtl(["volume", Math.max(0.01, Math.min(1, mouse.x / width)).toFixed(2)])
-                    onPositionChanged: if (pressed) {
-                        var v = Math.max(0.01, Math.min(1, mouse.x / width))
-                        if (Math.abs(v - mediaRoot.volume) > 0.02) mediaRoot.playerCtl(["volume", v.toFixed(2)])
+                    onPositionChanged: {
+                        if (pressed) {
+                            var v = Math.max(0.01, Math.min(1, mouse.x / width));
+                            if (Math.abs(v - mediaRoot.volume) > 0.02)
+                                mediaRoot.playerCtl(["volume", v.toFixed(2)]);
+
+                        }
                     }
                 }
 
                 WheelHandler {
                     acceptedDevices: PointerDevice.Mouse
                     onWheel: function(event) {
-                        var delta = event.angleDelta.y / 120
-                        var newVol = Math.max(0, Math.min(1, mediaRoot.volume + delta * 0.05))
-                        mediaRoot.playerCtl(["volume", newVol.toFixed(2)])
+                        var delta = event.angleDelta.y / 120;
+                        var newVol = Math.max(0, Math.min(1, mediaRoot.volume + delta * 0.05));
+                        mediaRoot.playerCtl(["volume", newVol.toFixed(2)]);
                     }
                 }
+
             }
+
         }
+
     }
+
+    transform: Translate {
+        y: mediaRoot.mediaSlide
+    }
+
 }
