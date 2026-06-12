@@ -3,7 +3,7 @@
 /***** Window wider for network list *****/
 window {
   width: 620px;
-  padding: 6px 8px 8px;
+  padding: 4px 6px 6px;
 }
 
 /***** Show more rows for scanning convenience *****/
@@ -13,7 +13,7 @@ listview {
 
 /***** Tighter rows for denser info *****/
 element {
-  padding: 5px 14px;
+  padding: 8px 14px;
 }
 
 /***** Section headers (non-selectable headings) *****/

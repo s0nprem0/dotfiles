@@ -3,7 +3,8 @@
 /***** Window for text input dialogs *****/
 window {
   width: 460px;
-  padding: 10px 14px 16px;
+  padding: 8px 10px 12px;
+  border-radius: 0px;
 }
 
 /***** No listview in input dialogs *****/
@@ -11,8 +12,12 @@ mainbox {
   padding: 0;
 }
 
+/***** Input bar with blocky style *****/
 inputbar {
   margin: 0 2px;
+  padding: 8px;
+  border-radius: 0px;
+  background-color: @background-alt;
 }
 
 entry {

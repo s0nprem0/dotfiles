@@ -14,25 +14,25 @@ window {
   location: center;
   anchor: center;
   background-color: @background;
-  border: 1px;
+  border: 2px;
   border-color: @background-alt;
-  border-radius: 14px;
-  padding: 6px;
+  border-radius: 0px;
+  padding: 4px;
 }
 
 /***** Layout *****/
 mainbox {
   orientation: vertical;
-  spacing: 4px;
-  padding: 4px 0;
-  background-color: transparent;
+  spacing: 0px;
+  padding: 0px;
+  background-color: @background;
 }
 
 /***** Input Area *****/
 inputbar {
-  padding: 10px 14px;
-  margin: 2px 6px 4px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 2px 4px;
+  border-radius: 0px;
   background-color: @background-alt;
   children: [ prompt, entry ];
   spacing: 8px;
@@ -56,37 +56,37 @@ entry {
 /***** Listview *****/
 listview {
   columns: 1;
-  spacing: 2px;
+  spacing: 0px;
   dynamic: true;
   layout: vertical;
   fixed-height: true;
   scrollbar: true;
-  background-color: transparent;
+  background-color: @background;
   text-color: @foreground;
   scrollbar-width: 4px;
-  padding: 0 4px;
+  padding: 4px;
 }
 
 /***** Elements — base *****/
 element {
-  padding: 8px 14px;
-  margin: 1px 2px;
-  border-radius: 8px;
-  background-color: transparent;
+  padding: 8px 12px;
+  margin: 0px;
+  border-radius: 0px;
+  background-color: @background;
   text-color: @foreground;
   orientation: horizontal;
   cursor: pointer;
   border: 1px;
-  border-color: transparent;
+  border-color: @background-alt;
 }
 
 element normal.normal {
-  background-color: transparent;
+  background-color: @background;
   text-color: @foreground;
 }
 
 element normal.alternate {
-  background-color: @background-trans;
+  background-color: @background-alt;
   text-color: @foreground;
 }
 
@@ -121,9 +121,9 @@ element-text {
 scrollbar {
   handle-width: 4px;
   handle-color: @selected;
-  border-radius: 2px;
+  border-radius: 0px;
   background-color: @background-alt;
-  margin: 2px 0;
+  margin: 0px;
 }
 
 /***** Fallback/Error *****/

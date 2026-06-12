@@ -3,7 +3,8 @@
 /***** Window wider for port/process info *****/
 window {
   width: 580px;
-  padding: 6px 8px 8px;
+  padding: 4px 6px 6px;
+  border-radius: 0px;
 }
 
 /***** Show more rows for many ports *****/
@@ -13,7 +14,8 @@ listview {
 
 /***** Tighter rows for dense info *****/
 element {
-  padding: 5px 14px;
+  padding: 8px 14px;
+  border-radius: 0px;
 }
 
 /***** Urgent rows for well-known ports (<1024) *****/
