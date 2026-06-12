@@ -168,3 +168,4 @@ tmp/
 .config/gtk-4.0/gtk.css
 .config/fuzzel/fuzzel.ini
 .config/mako/config
+.config/kitty/themes/matugen.conf
