@@ -3,8 +3,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls // Required for ToolTip
 
-import "../service"
 import "../components"
+import "../service"
 
 BarModule {
   id: root

@@ -60,6 +60,10 @@ for _ in {1..20}; do
   sleep 0.5
 done
 
+# Check all daemons are alive (re-starts any that failed)
+echo "Checking daemons..."
+~/.config/quickshell/helpers/check_daemons
+
 # Send notification
 notify-send \
   "Reload Complete" \

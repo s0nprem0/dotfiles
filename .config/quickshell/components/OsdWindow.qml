@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 
 import "../service"
+import "../service/OsdUtils.js" as OSD
 
 Scope {
     id: root
@@ -13,35 +14,10 @@ Scope {
     property string message: ""
     property string kind: "info"
 
-    function getPercentage(msg) {
-        var match = msg.match(/(\d+)%/)
-        return match ? parseInt(match[1]) : -1
-    }
-
-    function getPrefix(msg) {
-        var match = msg.match(/^(.*?)\s+\d+%/)
-        return match ? match[1] : msg
-    }
-
-    function getPercentText(msg) {
-        var match = msg.match(/(\d+%)/)
-        return match ? match[1] : ""
-    }
-
-    function getIcon(msg) {
-        var lower = msg.toLowerCase()
-        if (lower.includes("volume")) {
-            if (lower.includes("mute")) return "󰝟"
-            return "󰕾"
-        }
-        if (lower.includes("mic")) {
-            if (lower.includes("mute")) return "󰍭"
-            return "󰍬"
-        }
-        if (lower.includes("kbd brightness") || lower.includes("kbdbrightness")) return "󰌶"
-        if (lower.includes("brightness")) return "󰃠"
-        return ""
-    }
+    function getPercentage(msg) { return OSD.getPercentage(msg) }
+    function getPrefix(msg) { return OSD.getPrefix(msg) }
+    function getPercentText(msg) { return OSD.getPercentText(msg) }
+    function getIcon(msg) { return OSD.getIcon(msg) }
 
     function getIconColor(msg) {
         var lower = msg.toLowerCase()

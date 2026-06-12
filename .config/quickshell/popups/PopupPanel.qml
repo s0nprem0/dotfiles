@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 
-import "../service"
 import "../components"
+import "../service"
 
 Item {
     id: root

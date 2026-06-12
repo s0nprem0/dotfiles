@@ -4,8 +4,8 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
-import "../../service"
 import "../../components"
+import "../../service"
 
 Item {
     id: root
