@@ -72,8 +72,8 @@ PopupPanel {
     }
 
     // ── Settings file path ──
-    readonly property string settingsFile: Quickshell.env("HOME") + "/.cache/quickshell/battery_settings.json"
-    readonly property string settingsDir: Quickshell.env("HOME") + "/.cache/quickshell"
+    readonly property string settingsFile: Theme.home + "/.cache/quickshell/battery_settings.json"
+    readonly property string settingsDir: Theme.home + "/.cache/quickshell"
 
     // ── Refresh ──
     onBeforeOpen: refresh()
