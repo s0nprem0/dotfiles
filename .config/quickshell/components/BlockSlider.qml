@@ -19,7 +19,7 @@ Row {
 
             height: parent.height
             width: (parent.width - (parent.spacing * (parent.totalBlocks - 1))) / parent.totalBlocks
-            radius: 1
+            radius: 0
             color: index < Math.round(parent.currentVal * parent.totalBlocks) ? parent.fillColor : parent.emptyColor
         }
     }

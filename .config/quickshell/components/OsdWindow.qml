@@ -127,21 +127,15 @@ Scope {
                 WlrLayershell.namespace: "osd"
                 visible: slide.show || slide.active
 
-                implicitWidth: {
-                    if (root.getPercentage(root.message) !== -1)
-                        return 200
-                    return fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18
-                }
-                implicitHeight: mainLayout.implicitHeight + 12
+                implicitWidth: 280
+                implicitHeight: mainLayout.implicitHeight + 16
 
                 anchors {
                     top: true
-                    left: true
                 }
 
                 margins {
                     top: slide.animSlide
-                    left: 30
                 }
 
                 Rectangle {
@@ -151,55 +145,63 @@ Scope {
                     border.width: 1
                     border.color: root.kind === "good" ? Theme.primary : root.kind === "bad" ? Theme.error : root.kind === "warn" ? Theme.warning : Theme.primary
                     radius: 0
-                    antialiasing: false
+                    antialiasing: true
 
                     Column {
                         id: mainLayout
                         anchors.centerIn: parent
-                        spacing: 4
-                        width: parent.width - 18
+                        spacing: 6
+                        width: parent.width - 20
 
-                        Row {
-                            id: osdStatusRow
+                        // Percentage mode: icon + label + percent, then full-width slider
+                        Column {
                             spacing: 6
-                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: parent.width
                             visible: root.getPercentage(root.message) !== -1
 
-                            Text {
-                                text: root.getIcon(root.message)
-                                color: root.getIconColor(root.message)
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 10
-                                renderType: Text.NativeRendering
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: text !== ""
-                            }
+                            Row {
+                                spacing: 6
+                                anchors.horizontalCenter: parent.horizontalCenter
 
-                            Text {
-                                text: root.getPrefix(root.message)
-                                color: Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 9
-                                renderType: Text.NativeRendering
-                                anchors.verticalCenter: parent.verticalCenter
+                                Text {
+                                    text: root.getIcon(root.message)
+                                    color: root.getIconColor(root.message)
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 14
+                                    renderType: Text.NativeRendering
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: text !== ""
+                                }
+
+                                Text {
+                                    text: root.getPrefix(root.message)
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 14
+                                    renderType: Text.NativeRendering
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: root.getPercentText(root.message)
+                                    color: root.getIconColor(root.message)
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    renderType: Text.NativeRendering
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
 
                             BlockSlider {
+                                width: parent.width
                                 currentVal: root.getPercentage(root.message) / 100
-                                height: 4
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            Text {
-                                text: root.getPercentText(root.message)
-                                color: Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 9
-                                renderType: Text.NativeRendering
-                                anchors.verticalCenter: parent.verticalCenter
+                                height: 6
+                                fillColor: root.getIconColor(root.message)
                             }
                         }
 
+                        // Fallback text mode: icon + message
                         Row {
                             spacing: 6
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -210,7 +212,7 @@ Scope {
                                 text: root.getIcon(root.message)
                                 color: root.getIconColor(root.message)
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                                 visible: text !== ""
                                 anchors.verticalCenter: parent.verticalCenter
@@ -221,12 +223,13 @@ Scope {
                                 text: root.message
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 14
                                 renderType: Text.NativeRendering
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
                     }
+
                 }
             }
         }
