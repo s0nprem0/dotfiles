@@ -158,7 +158,7 @@ PopupPanel {
 
     // ── Set brightness ──
     function setBrightness(pct) {
-        brightProc.command = ["brightnessctl", "set", pct + "%"]
+        brightProc.command = [Theme.bin("osdctl"), "brightness", "set", String(pct)]
         brightProc.running = true
     }
 

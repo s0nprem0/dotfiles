@@ -148,11 +148,11 @@ ColumnLayout {
                 onExited: brightnessIcon.color = Theme.muted
                 onClicked: (mouse) => {
                     if (mouse.button === Qt.LeftButton)
-                        Quickshell.execDetached(["brightnessctl", "set", "5%+"])
+                        Quickshell.execDetached([Theme.bin("osdctl"), "brightness", "up"])
                     else if (mouse.button === Qt.RightButton)
-                        Quickshell.execDetached(["brightnessctl", "set", "5%-"])
+                        Quickshell.execDetached([Theme.bin("osdctl"), "brightness", "down"])
                     else if (mouse.button === Qt.MiddleButton)
-                        Quickshell.execDetached(["brightnessctl", "set", "50%"])
+                        Quickshell.execDetached([Theme.bin("osdctl"), "brightness", "set", "50"])
                 }
             }
         }

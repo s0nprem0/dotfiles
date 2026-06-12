@@ -164,6 +164,12 @@ hl.bind(
 	{ locked = true, description = "Mute toggle" }
 )
 
+hl.bind(
+	"XF86AudioMicMute",
+	hl.dsp.exec_cmd("~/.config/quickshell/helpers/osdctl volume mic-mute"),
+	{ locked = true, description = "Mic mute toggle" }
+)
+
 -- Brightness
 hl.bind(
 	"XF86MonBrightnessUp",

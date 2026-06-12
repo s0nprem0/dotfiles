@@ -51,6 +51,11 @@ fn brightness_value() -> String {
     out.split(',').nth(3).unwrap_or("0%").trim().to_string()
 }
 
+fn set_brightness_abs(pct: &str) {
+    let _ = run_cmd("brightnessctl", &["-e4", "-n2", "set", &format!("{}%", pct)]);
+    write_state(&format!("brightness {}%", pct), "info", 1200);
+}
+
 fn set_brightness(dir: &str) {
     let _ = run_cmd(
         "brightnessctl",
@@ -193,6 +198,7 @@ fn main() {
     }
     let cmd = &args[1];
     match cmd.as_str() {
+        "brightness" if args.len() >= 4 && args[2] == "set" => set_brightness_abs(&args[3]),
         "brightness" if args.len() >= 3 => set_brightness(&args[2]),
         "kbdbrightness" if args.len() >= 3 => set_kbd_brightness(&args[2]),
         "volume" if args.len() >= 3 => set_volume(&args[2]),

@@ -199,8 +199,8 @@ BarModule {
     onWheel: event => {
       wheelDebounce.stop()
       wheelDebounce.privCommand = event.angleDelta.y > 0
-        ? ["wpctl", "set-volume", "-l", "1.5", "@DEFAULT_AUDIO_SINK@", "5%+"]
-        : ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"]
+        ? [Theme.bin("osdctl"), "volume", "up"]
+        : [Theme.bin("osdctl"), "volume", "down"]
       wheelDebounce.start()
     }
   }

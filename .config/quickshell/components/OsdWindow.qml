@@ -46,6 +46,9 @@ Scope {
     function getIconColor(msg) {
         var lower = msg.toLowerCase()
         if (lower.includes("mute")) return Theme.error
+        if (root.kind === "good") return Theme.green
+        if (root.kind === "warn") return Theme.warning
+        if (root.kind === "bad") return Theme.error
         if (lower.includes("brightness") || lower.includes("volume")) return Theme.primary
         return Theme.fg
     }
