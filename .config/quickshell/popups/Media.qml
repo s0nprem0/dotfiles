@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import "../service"
+import "../components"
 
 PopupPanel {
     id: root
@@ -38,24 +39,6 @@ PopupPanel {
         var m = Math.floor(seconds / 60)
         var s = Math.floor(seconds % 60)
         return m + ":" + (s < 10 ? "0" : "") + s
-    }
-
-    property string pendingMediaArtUrl: ""
-
-    function ensureArtCache(url) {
-        if (!url || url.indexOf("://") === -1) return
-        if (url.indexOf("file://") === 0) return
-        if (url === root.pendingMediaArtUrl) return
-        root.pendingMediaArtUrl = url
-        artCacheProc.command = ["sh", "-c",
-            "url=\"$1\"\n" +
-            "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" +
-            "path=\"/tmp/media_art_$hash\"\n" +
-            "find /tmp/media_art_* -mmin +60 -delete 2>/dev/null\n" +
-            "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" +
-            "echo \"$url|$path\"",
-            "_", url]
-        artCacheProc.running = true
     }
 
     // ── System Volume (state pushed from Audio bar module) ──
@@ -214,7 +197,7 @@ PopupPanel {
                     var newArt = m.art_url || ""
                     if (newArt !== root.artUrl) {
                         if (newArt.indexOf("http") === 0) {
-                            ensureArtCache(newArt)
+                            artCache.ensureCached(newArt)
                         } else {
                             root.artUrl = newArt
                         }
@@ -311,22 +294,6 @@ PopupPanel {
         onTriggered: refreshSinks()
     }
 
-    // ── pactl subscribe for real-time updates ──
-    Process {
-        id: pactlSubscribe
-        command: ["pactl", "subscribe"]
-        running: true
-        stdout: SplitParser {
-            onRead: function(data) { subDebounce.restart() }
-        }
-    }
-
-    Timer {
-        id: subDebounce
-        interval: 200
-        onTriggered: refreshSinks()
-    }
-
     Process { id: setAppVolProc }
     Process { id: setAppMuteProc }
 
@@ -401,18 +368,12 @@ PopupPanel {
     property bool isBtSink: false
 
     // ── Art cache download ──
-    Process {
-        id: artCacheProc
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var output = stdout.text.trim()
-            if (output) {
-                var parts = output.split("|")
-                if (parts.length === 2 && parts[0] === root.pendingMediaArtUrl) {
-                    root.artUrl = "file://" + parts[1]
-                }
-            }
+    ArtCache {
+        id: artCache
+        cachePrefix: "media_art_"
+        onCacheReady: function(url, localPath) {
+            if (url === artCache.pendingUrl)
+                root.artUrl = localPath
         }
     }
 
@@ -935,25 +896,12 @@ PopupPanel {
                             width: parent.width
                             height: 8
 
-                            Row {
-                                id: playerVolBlocks
-                                property double currentVal: Math.min(1, root.volume)
-
+                            BlockSlider {
+                                currentVal: Math.min(1, root.volume)
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                height: 5
-                                spacing: 1
-
-                                Repeater {
-                                    model: 15
-                                    delegate: Rectangle {
-                                        height: parent.height
-                                        width: (playerVolBlocks.width - (playerVolBlocks.spacing * 14)) / 15
-                                        radius: 0
-                                        color: index < Math.round(playerVolBlocks.currentVal * 15) ? Theme.primary : Theme.surface
-                                    }
-                                }
+                                emptyColor: Theme.surface
                             }
 
                             MouseArea {
@@ -1036,25 +984,12 @@ PopupPanel {
                         width: parent.width
                         height: 8
 
-                        Row {
-                            id: sysBlocks
-                            property double currentVal: root.sysMuted ? 0 : Math.min(1, root.sysVol / 100)
-
+                        BlockSlider {
+                            currentVal: root.sysMuted ? 0 : Math.min(1, root.sysVol / 100)
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            height: 5
-                            spacing: 1
-
-                            Repeater {
-                                model: 15
-                                delegate: Rectangle {
-                                    height: parent.height
-                                    width: (sysBlocks.width - (sysBlocks.spacing * 14)) / 15
-                                    radius: 0
-                                    color: index < Math.round(sysBlocks.currentVal * 15) ? Theme.primary : Theme.surface
-                                }
-                            }
+                            emptyColor: Theme.surface
                         }
 
                         MouseArea {

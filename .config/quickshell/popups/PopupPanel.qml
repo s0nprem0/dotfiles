@@ -75,14 +75,14 @@ Item {
                 }
 
                 anchors {
-                    top: root.anchorSide !== "none" ? true : false
-                    left: root.anchorSide === "left" ? true : false
+                    top: root.anchorSide !== "none" ? true : true
+                    left: root.anchorSide === "left" ? true : root.anchorSide === "none" ? true : false
                     right: root.anchorSide === "right" ? true : false
                 }
 
                 margins {
-                    top: root.anchorSide !== "none" ? 40 : 0
-                    left: root.anchorSide === "left" ? slide.animSlide : 0
+                    top: 40
+                    left: root.anchorSide === "left" ? slide.animSlide : root.anchorSide === "none" ? slide.animSlide : 0
                     right: root.anchorSide === "right" ? slide.animSlide : 0
                 }
 

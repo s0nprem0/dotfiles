@@ -7,7 +7,7 @@ if ! [[ "$LIMIT" =~ ^[0-9]+$ ]] || [ "$LIMIT" -lt 1 ] || [ "$LIMIT" -gt 100 ]; t
   exit 1
 fi
 
-BAT=$(find -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
+BAT=$(find /sys/class/power_supply -name 'BAT*' -type d 2>/dev/null | head -1)
 if [[ -z "$BAT" || ! -f "$BAT/charge_control_end_threshold" ]]; then
   echo "No charge control endpoint found for battery" >&2
   exit 1

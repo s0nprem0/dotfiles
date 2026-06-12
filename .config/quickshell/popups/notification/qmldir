@@ -1,0 +1,8 @@
+CalendarWidget 1.0 CalendarWidget.qml
+CenterPopup 1.0 CenterPopup.qml
+NotifData 1.0 NotifData.qml
+NotificationActionButton 1.0 NotificationActionButton.qml
+NotificationList 1.0 NotificationList.qml
+NotificationService 1.0 NotificationService.qml
+QuickActions 1.0 QuickActions.qml
+ToastPopup 1.0 ToastPopup.qml

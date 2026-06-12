@@ -27,7 +27,7 @@ Item {
       }
     }
     onRunningChanged: {
-      if (proc.running) { root.loading = true; root.hasError = false }
+      if (proc.running) { root.loading = true; root.hasError = false; root.backoffMs = 1000 }
     }
     onExited: function(code) {
       root.loading = false

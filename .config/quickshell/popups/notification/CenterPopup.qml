@@ -42,7 +42,6 @@ Item {
     property var mediaSources: []
     property string currentMediaSource: ""
     property string localArtUrl: ""
-    property string pendingCacheUrl: ""
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
@@ -59,18 +58,8 @@ Item {
     function ensureArtCache(url) {
         if (!url || url.indexOf("://") === -1) return
         if (url.indexOf("file://") === 0) return
-        if (url === root.pendingCacheUrl) return
-        root.pendingCacheUrl = url
         root.localArtUrl = ""
-        artCacheProc.command = ["sh", "-c",
-            "url=\"$1\"\n" +
-            "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" +
-            "path=\"/tmp/cpopup_art_$hash\"\n" +
-            "find /tmp/cpopup_art_* -mmin +60 -delete 2>/dev/null\n" +
-            "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" +
-            "echo \"$url|$path\"",
-            "_", url]
-        artCacheProc.running = true
+        artCache.ensureCached(url)
     }
 
     function switchPlayer() {
@@ -156,7 +145,7 @@ Item {
     }
 
     FileView {
-        path: Theme.homeDir + "/.cache/quickshell/osd_state.json"
+        path: Theme.home + "/.cache/quickshell/osd_state.json"
         onDataChanged: { if (!audioProc.running) audioProc.running = true }
     }
 
@@ -180,20 +169,16 @@ Item {
         }
     }
 
-    Process {
-        id: artCacheProc
-        running: false
-        stdout: StdioCollector {}
-        onExited: {
-            var output = stdout.text.trim()
-            if (output) {
-                var parts = output.split("|")
-                if (parts.length === 2 && parts[0] === root.pendingCacheUrl) {
-                    root.localArtUrl = "file://" + parts[1]
-                }
-            }
+    // ── Art cache download ──
+    ArtCache {
+        id: artCache
+        cachePrefix: "cpopup_art_"
+        onCacheReady: function(url, localPath) {
+            if (url === artCache.pendingUrl)
+                root.localArtUrl = localPath
         }
     }
+
 
     Process {
         id: ctlProc

@@ -181,22 +181,10 @@ Scope {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
-                            Row {
-                                id: blockSlider
-                                property int totalBlocks: 15
-                                property double currentVal: root.getPercentage(root.message) / 100
-                                spacing: 1
+                            BlockSlider {
+                                currentVal: root.getPercentage(root.message) / 100
                                 height: 4
                                 anchors.verticalCenter: parent.verticalCenter
-
-                                Repeater {
-                                    model: blockSlider.totalBlocks
-                                    delegate: Rectangle {
-                                        height: parent.height
-                                        width: 5
-                                        color: (index < Math.round(blockSlider.currentVal * blockSlider.totalBlocks)) ? Theme.primary : Theme.surfaceLighter
-                                    }
-                                }
                             }
 
                             Text {

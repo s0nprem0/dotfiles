@@ -65,6 +65,7 @@ ColumnLayout {
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28
             Text {
+                id: audioIcon
                 anchors.centerIn: parent
                 text: root.audioMuted ? "󰝟" : "󰕾"
                 color: Theme.muted
@@ -75,8 +76,8 @@ ColumnLayout {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
-                onEntered: parent.children[0].color = Theme.primary
-                onExited: parent.children[0].color = Theme.muted
+                onEntered: audioIcon.color = Theme.primary
+                onExited: audioIcon.color = Theme.muted
                 onClicked: {
                     Quickshell.execDetached(["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"])
                     root.muteToggled()
@@ -88,6 +89,7 @@ ColumnLayout {
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28
             Text {
+                id: wifiIcon
                 anchors.centerIn: parent
                 text: root.wifiEnabled ? "󰖩" : "󰖪"
                 color: Theme.muted
@@ -98,8 +100,8 @@ ColumnLayout {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
-                onEntered: parent.children[0].color = Theme.primary
-                onExited: parent.children[0].color = Theme.muted
+                onEntered: wifiIcon.color = Theme.primary
+                onExited: wifiIcon.color = Theme.muted
                 onClicked: root.toggleNetworkPopup()
             }
         }
@@ -108,6 +110,7 @@ ColumnLayout {
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28
             Text {
+                id: btIcon
                 anchors.centerIn: parent
                 text: root.btEnabled ? "󰂯" : "󰂲"
                 color: Theme.muted
@@ -118,8 +121,8 @@ ColumnLayout {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
-                onEntered: parent.children[0].color = Theme.primary
-                onExited: parent.children[0].color = Theme.muted
+                onEntered: btIcon.color = Theme.primary
+                onExited: btIcon.color = Theme.muted
                 onClicked: {
                     Quickshell.execDetached(["bluetoothctl", "power", root.btEnabled ? "off" : "on"])
                 }
@@ -130,6 +133,7 @@ ColumnLayout {
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28
             Text {
+                id: brightnessIcon
                 anchors.centerIn: parent
                 text: "󰃠"
                 color: Theme.muted
@@ -140,8 +144,8 @@ ColumnLayout {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
-                onEntered: parent.children[0].color = Theme.primary
-                onExited: parent.children[0].color = Theme.muted
+                onEntered: brightnessIcon.color = Theme.primary
+                onExited: brightnessIcon.color = Theme.muted
                 onClicked: (mouse) => {
                     if (mouse.button === Qt.LeftButton)
                         Quickshell.execDetached(["brightnessctl", "set", "5%+"])

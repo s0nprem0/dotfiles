@@ -70,7 +70,7 @@ BarModule {
   }
 
   FileView {
-    path: Theme.homeDir + "/.cache/quickshell/osd_state.json"
+    path: Theme.home + "/.cache/quickshell/osd_state.json"
     onDataChanged: audioDebounce.restart()
   }
 

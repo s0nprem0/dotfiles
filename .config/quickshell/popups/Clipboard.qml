@@ -260,7 +260,7 @@ PopupPanel {
                             spacing: 6
 
                             Text {
-                                text: root.isImageEntry(modelData) ? "🖼" : "󰅈"
+                                text: root.isImageEntry(modelData) ? "󰉦" : "󰅈"
                                 color: root.selectedIndex === index ? Theme.primary : Theme.muted
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
