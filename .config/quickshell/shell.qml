@@ -50,6 +50,7 @@ Bar {
             Bluetooth {}
             Notifications { notifService: notifService }
             Tray {}
+            Emoji { emojiPopupRef: emojiPopup }
             Clipboard { clipboardPopupRef: clipboardPopup }
             Audio { id: audioModule; mediaPopupRef: mediaPopup }
             Battery { batteryPopupRef: batteryPopup }
@@ -90,6 +91,10 @@ Bar {
 
     Popups.Battery {
         id: batteryPopup
+    }
+
+    Popups.Emoji {
+        id: emojiPopup
     }
 
     Popups.Settings {
