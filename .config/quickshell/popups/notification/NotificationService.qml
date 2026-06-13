@@ -202,7 +202,7 @@ Item {
     }
 
     Timer {
-        interval: 5000
+        interval: 30000
         repeat: true
         running: service.notifList.length > 0
         onTriggered: {

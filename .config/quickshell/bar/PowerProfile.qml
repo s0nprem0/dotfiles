@@ -40,7 +40,7 @@ BarModule {
         id: powerData
 
         path: Theme.bin("get_power_profile")
-        interval: 5000
+        interval: 30000
         onDataReceived: function(j) {
             root.activeProfile = j.active ?? "balanced";
             root.availableProfiles = j.available ?? [root.activeProfile];

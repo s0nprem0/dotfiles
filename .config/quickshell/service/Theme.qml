@@ -48,7 +48,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -63,7 +63,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -78,7 +78,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -93,7 +93,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -108,7 +108,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -123,7 +123,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -138,7 +138,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -153,7 +153,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 
@@ -168,7 +168,7 @@ QtObject {
             }
 
             ColorAnimation {
-                duration: 200
+                duration: 100
                 easing.type: Easing.InOutQuad
             }
 

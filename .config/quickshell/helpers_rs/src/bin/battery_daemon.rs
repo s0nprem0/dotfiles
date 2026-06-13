@@ -193,6 +193,6 @@ fn main() {
       }
     }
 
-    thread::sleep(Duration::from_secs(3));
+    thread::sleep(Duration::from_secs(15));
   }
 }

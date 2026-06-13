@@ -17,7 +17,7 @@ BarModule {
     DataModule {
         id: netData
         path: Theme.bin("get_network_status")
-        interval: 3000
+        interval: 30000
 
         onDataReceived: function(j) {
             root.networkConnected = j.connected || false;

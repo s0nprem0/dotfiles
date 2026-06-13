@@ -20,7 +20,7 @@ BarModule {
         id: btData
 
         path: Theme.bin("get_bluetooth_status")
-        interval: 5000
+        interval: 30000
         onDataReceived: function(j) {
             root.btEnabled = j.enabled ?? false;
             root.hasConnected = false;
