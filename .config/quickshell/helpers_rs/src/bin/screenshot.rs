@@ -1,7 +1,14 @@
 use helpers_rs::run_cmd;
+use serde::Deserialize;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+
+#[derive(Deserialize)]
+struct HyprctlActiveWindow {
+    at: [i32; 2],
+    size: [i32; 2],
+}
 
 fn screenshot_dir() -> PathBuf {
   let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
@@ -45,7 +52,7 @@ fn main() {
 
   let dir = screenshot_dir();
   let _ = fs::create_dir_all(&dir);
-  let path = dir.join(timestamp());
+  let path = dir.join(format!("{}_{}.png", mode, timestamp()));
   let path_str = path.to_string_lossy().to_string();
 
   let geometry = match mode {
@@ -108,23 +115,6 @@ fn main() {
 }
 
 fn parse_active_window_geometry(json: &str) -> Option<String> {
-  // Parse hyprctl activewindow -j output with simple string search
-  // {"at": [x, y], "size": [w, h], ...}
-  let at_pos = json.find(r#""at":"#)?;
-  let after_at = json[at_pos + 5..].trim_start();
-  let x_end = after_at.find(',')?;
-  let x: i32 = after_at[1..x_end].trim().parse().ok()?;
-  let rest = &after_at[x_end + 1..];
-  let y_end = rest.find(']')?;
-  let y: i32 = rest[..y_end].trim().parse().ok()?;
-
-  let size_pos = json.find(r#""size":"#)?;
-  let after_size = json[size_pos + 7..].trim_start();
-  let w_end = after_size.find(',')?;
-  let w: i32 = after_size[1..w_end].trim().parse().ok()?;
-  let rest2 = &after_size[w_end + 1..];
-  let h_end = rest2.find(']')?;
-  let h: i32 = rest2[..h_end].trim().parse().ok()?;
-
-  Some(format!("{},{},{}x{}", x, y, w, h))
+  let win: HyprctlActiveWindow = serde_json::from_str(json).ok()?;
+  Some(format!("{},{},{}x{}", win.at[0], win.at[1], win.size[0], win.size[1]))
 }

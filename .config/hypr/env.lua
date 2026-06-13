@@ -22,6 +22,6 @@ hl.env("GDK_BACKEND", "wayland,x11")
 hl.env("CLUTTER_BACKEND", "wayland")
 
 -- System
-hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/ssh-agent.socket")
+hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/ssh-agent.socket")
 hl.env("KWAYLAND_TEARING", "1")
 hl.env("BROWSER", "firefox")

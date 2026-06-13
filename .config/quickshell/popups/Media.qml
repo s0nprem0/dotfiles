@@ -120,7 +120,7 @@ PopupPanel {
         var nextIdx = (idx + 1) % list.length;
         root.playerName = list[nextIdx];
         // Persist selection for next read
-        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + root.playerName.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"];
+        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + root.playerName.replace(/"/g, '\\"') + "\" > " + Theme.cacheDir + "/current_media_player"];
         persistPlayerProc.running = true;
         refreshSinks();
     }
@@ -591,7 +591,7 @@ PopupPanel {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         root.playerName = modelData;
-                                        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + modelData.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"];
+                                        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + modelData.replace(/"/g, '\\"') + "\" > " + Theme.cacheDir + "/current_media_player"];
                                         persistPlayerProc.running = true;
                                         root.refreshSinks();
                                     }

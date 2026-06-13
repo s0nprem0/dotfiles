@@ -189,4 +189,84 @@ ColumnLayout {
 
     }
 
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 12
+        visible: true
+        Layout.topMargin: 4
+
+        Item {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
+
+            Text {
+                id: fullIcon
+
+                anchors.centerIn: parent
+                text: "󰹑"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 14
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: fullIcon.color = Theme.primary
+                onExited: fullIcon.color = Theme.muted
+                onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "full"])
+            }
+        }
+
+        Item {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
+
+            Text {
+                id: regionIcon
+
+                anchors.centerIn: parent
+                text: "󰆟"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 14
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: regionIcon.color = Theme.primary
+                onExited: regionIcon.color = Theme.muted
+                onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "region"])
+            }
+        }
+
+        Item {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
+
+            Text {
+                id: activeIcon
+
+                anchors.centerIn: parent
+                text: "󰖲"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 14
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: activeIcon.color = Theme.primary
+                onExited: activeIcon.color = Theme.muted
+                onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "active"])
+            }
+        }
+
+    }
+
 }

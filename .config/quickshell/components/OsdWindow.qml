@@ -1,4 +1,5 @@
 import "../service"
+import "../service/OsdUtils.js" as OsdUtils
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -7,48 +8,10 @@ import Quickshell.Wayland
 Scope {
     id: root
 
-    readonly property string statePath: "file://" + Theme.home + "/.cache/quickshell/osd_state.json"
+    readonly property string statePath: "file://" + Theme.cacheDir + "/osd_state.json"
     property string message: ""
     property string kind: "info"
     property bool visibleNow: false
-
-    function getPercentage(msg) {
-        var match = msg.match(/(\d+)%/);
-        return match ? parseInt(match[1]) : -1;
-    }
-
-    function getPrefix(msg) {
-        var match = msg.match(/^(.*?)\s+\d+%/);
-        return match ? match[1] : msg;
-    }
-
-    function getPercentText(msg) {
-        var match = msg.match(/(\d+%)/);
-        return match ? match[1] : "";
-    }
-
-    function getIcon(msg) {
-        var lower = msg.toLowerCase();
-        if (lower.includes("volume")) {
-            if (lower.includes("mute"))
-                return "󰖁";
- // nf-md-volume_off
-            return "󰕾"; // nf-md-volume_high
-        }
-        if (lower.includes("mic")) {
-            if (lower.includes("mute"))
-                return "󰍭";
- // nf-md-microphone_off
-            return "󰍬"; // nf-md-microphone
-        }
-        if (lower.includes("kbd brightness") || lower.includes("kbdbrightness"))
-            return "󰌌";
- // nf-md-keyboard (or 󰛧 for nf-md-lightbulb if preferred)
-        if (lower.includes("brightness"))
-            return "󰃠";
- // nf-md-brightness_6 (common choice)
-        return "";
-    }
 
     function getIconColor(msg) {
         var lower = msg.toLowerCase();
@@ -145,7 +108,7 @@ Scope {
         WlrLayershell.namespace: "osd"
         visible: root.visibleNow || exitAnim.running
         implicitWidth: {
-            if (root.getPercentage(root.message) !== -1)
+            if (OsdUtils.getPercentage(root.message) !== -1)
                 return 200;
 
             return fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
@@ -235,10 +198,10 @@ Scope {
 
                     spacing: 6
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.getPercentage(root.message) !== -1
+                    visible: OsdUtils.getPercentage(root.message) !== -1
 
                     Text {
-                        text: root.getIcon(root.message)
+                        text: OsdUtils.getIcon(root.message)
                         color: root.getIconColor(root.message)
                         font.family: Theme.fontFamily
                         font.pixelSize: 10
@@ -248,7 +211,7 @@ Scope {
                     }
 
                     Text {
-                        text: root.getPrefix(root.message)
+                        text: OsdUtils.getPrefix(root.message)
                         color: Theme.fg
                         font.family: Theme.fontFamily
                         font.pixelSize: 9
@@ -260,7 +223,7 @@ Scope {
                         id: blockSlider
 
                         property int totalBlocks: 15
-                        property double currentVal: root.getPercentage(root.message) / 100
+                        property double currentVal: OsdUtils.getPercentage(root.message) / 100
 
                         spacing: 1
                         height: 4
@@ -280,7 +243,7 @@ Scope {
                     }
 
                     Text {
-                        text: root.getPercentText(root.message)
+                        text: OsdUtils.getPercentText(root.message)
                         color: Theme.fg
                         font.family: Theme.fontFamily
                         font.pixelSize: 9
@@ -293,12 +256,12 @@ Scope {
                 Row {
                     spacing: 6
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.getPercentage(root.message) === -1
+                    visible: OsdUtils.getPercentage(root.message) === -1
 
                     Text {
                         id: fallbackIcon
 
-                        text: root.getIcon(root.message)
+                        text: OsdUtils.getIcon(root.message)
                         color: root.getIconColor(root.message)
                         font.family: Theme.fontFamily
                         font.pixelSize: 10

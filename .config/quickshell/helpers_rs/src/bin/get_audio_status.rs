@@ -273,7 +273,7 @@ fn playerctl_status(player: &str) -> String {
 }
 
 fn get_media_info() -> (Vec<MediaSource>, Option<String>, Option<MediaInfo>) {
-  let stored_player = std::fs::read_to_string("/tmp/quickshell_current_media_player")
+  let stored_player = std::fs::read_to_string(helpers_rs::cache_dir().join("current_media_player"))
     .ok()
     .map(|s| s.trim().to_string())
     .filter(|s| !s.is_empty());

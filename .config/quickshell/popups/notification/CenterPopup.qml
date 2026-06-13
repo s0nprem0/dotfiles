@@ -71,7 +71,7 @@ Item {
             }
         }
         var next = list[(idx + 1) % list.length].name;
-        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + next.replace(/"/g, '\\"') + "\" > /tmp/quickshell_current_media_player"];
+        persistPlayerProc.command = ["sh", "-c", "printf '%s' \"" + next.replace(/"/g, '\\"') + "\" > " + Theme.cacheDir + "/current_media_player"];
         persistPlayerProc.running = true;
         if (!audioProc.running)
             audioProc.running = true;
@@ -188,7 +188,7 @@ Item {
     }
 
     FileView {
-        path: Theme.home + "/.cache/quickshell/osd_state.json"
+        path: Theme.cacheDir + "/osd_state.json"
         onDataChanged: {
             if (!audioProc.running)
                 audioProc.running = true;

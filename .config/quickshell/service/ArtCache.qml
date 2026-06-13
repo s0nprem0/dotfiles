@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import "."
 
 Item {
     id: root
@@ -20,7 +21,8 @@ Item {
             return ;
 
         root.pendingUrl = url;
-        cacheProc.command = ["sh", "-c", "url=\"$1\"\n" + "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" + "path=\"/tmp/" + root.cachePrefix + "$hash\"\n" + "find /tmp/" + root.cachePrefix + "* -mmin +60 -delete 2>/dev/null\n" + "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" + "echo \"$url|$path\"", "_", url];
+        var cacheBase = Theme.tmpDir + "/art";
+        cacheProc.command = ["sh", "-c", "url=\"$1\"\n" + "hash=$(echo \"$url\" | md5sum | cut -c1-16)\n" + "path=\"" + cacheBase + "/" + root.cachePrefix + "$hash\"\n" + "find " + cacheBase + "/" + root.cachePrefix + "* -mmin +60 -delete 2>/dev/null\n" + "mkdir -p " + cacheBase + "\n" + "[ -f \"$path\" ] || curl -sL -o \"$path\" \"$url\"\n" + "echo \"$url|$path\"", "_", url];
         cacheProc.running = true;
     }
 

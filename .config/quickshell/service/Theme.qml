@@ -21,6 +21,8 @@ QtObject {
     readonly property int barHeight: 38
     readonly property string home: Quickshell.env("HOME")
     readonly property string helperDir: home + "/.config/quickshell/helpers"
+    readonly property string cacheDir: home + "/.cache/quickshell"
+    readonly property string tmpDir: "/tmp/quickshell"
     property FileView colorsWatcher
 
     function bin(name) {
@@ -32,16 +34,9 @@ QtObject {
     }
 
     Behavior on bg {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 0
-            }
-
-            ColorAnimation {
-                duration: 200
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 200
+            easing.type: Easing.InOutQuad
         }
 
     }

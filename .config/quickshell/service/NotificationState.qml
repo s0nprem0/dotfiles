@@ -1,4 +1,3 @@
-import QtQml.Models
 import QtQuick
 pragma Singleton
 

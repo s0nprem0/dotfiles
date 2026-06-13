@@ -83,8 +83,8 @@ PopupPanel {
         return root.batBrightness;
     }
     // ── Settings file path ──
-    readonly property string settingsFile: Theme.home + "/.cache/quickshell/battery_settings.json"
-    readonly property string settingsDir: Theme.home + "/.cache/quickshell"
+    readonly property string settingsFile: Theme.cacheDir + "/battery_settings.json"
+    readonly property string settingsDir: Theme.cacheDir
 
     function refresh() {
         statusProc.running = true;

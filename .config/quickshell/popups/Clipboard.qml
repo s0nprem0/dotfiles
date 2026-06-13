@@ -112,7 +112,7 @@ PopupPanel {
 
         property string entryLine: ""
 
-        command: ["sh", "-c", "echo \"$1\" | cliphist delete", "_", entryLine]
+        command: ["sh", "-c", "echo \"$1\" | cliphist delete && id=$(echo \"$1\" | cut -f1) && rm -f \"" + Theme.tmpDir + "/clip_${id}.png\"", "_", entryLine]
         running: false
         onExited: {
             refreshClipboard();
@@ -123,7 +123,7 @@ PopupPanel {
     Process {
         id: wipeProc
 
-        command: ["cliphist", "wipe"]
+        command: ["sh", "-c", "cliphist wipe && rm -f \"" + Theme.tmpDir + "/clip_*.png\""]
         running: false
         onExited: {
             refreshClipboard();
@@ -238,6 +238,18 @@ PopupPanel {
                             root.filterEntries();
                         }
 
+                        Keys.onPressed: (event) => {
+                            var navKeys = [Qt.Key_Up, Qt.Key_Down, Qt.Key_Return, Qt.Key_Enter, Qt.Key_Delete, Qt.Key_K, Qt.Key_J];
+                            if (navKeys.indexOf(event.key) !== -1) {
+                                event.accepted = false;
+                                return;
+                            }
+                            if (event.key === Qt.Key_Backspace && searchInput.text === "") {
+                                event.accepted = false;
+                                return;
+                            }
+                        }
+
                         Text {
                             text: "Search clipboard..."
                             color: Theme.muted
@@ -321,7 +333,7 @@ PopupPanel {
                                         visible: root.isImageEntry(modelData)
                                         anchors.fill: parent
                                         fillMode: Image.PreserveAspectFit
-                                        source: root.isImageEntry(modelData) ? "file:///tmp/clip_" + root.getEntryId(modelData) + ".png" : ""
+                                        source: root.isImageEntry(modelData) ? "file://" + Theme.tmpDir + "/clip_" + root.getEntryId(modelData) + ".png" : ""
                                         cache: false
                                     }
 

@@ -1,5 +1,4 @@
 import "../../service"
-import QtQml.Models
 import QtQuick
 import Quickshell.Services.Notifications
 

@@ -16,14 +16,14 @@ function getPercentText(msg) {
 function getIcon(msg) {
     var lower = msg.toLowerCase()
     if (lower.includes("volume")) {
-        if (lower.includes("mute")) return "󰝟"
+        if (lower.includes("mute")) return "󰖁"
         return "󰕾"
     }
     if (lower.includes("mic")) {
         if (lower.includes("mute")) return "󰍭"
         return "󰍬"
     }
-    if (lower.includes("kbd brightness") || lower.includes("kbdbrightness")) return "󰌶"
+    if (lower.includes("kbd brightness") || lower.includes("kbdbrightness")) return "󰌌"
     if (lower.includes("brightness")) return "󰃠"
     return ""
 }

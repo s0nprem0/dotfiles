@@ -82,7 +82,7 @@ Item {
                 }
 
                 anchors {
-                    top: root.anchorSide !== "none" ? true : true
+                    top: true
                     left: root.anchorSide === "left" ? true : root.anchorSide === "none" ? true : false
                     right: root.anchorSide === "right" ? true : false
                 }
