@@ -23,74 +23,11 @@ hl.window_rule({
 	no_shadow = true,
 })
 
--- ======================
--- Opacity Rules
--- ======================
+
 
 local function rule_name(prefix, s)
 	return (prefix .. "_" .. s):gsub("[^%w]+", "_")
 end
-
-local opacity_rules = {
-	{
-		opacity = "0.90 0.90",
-		classes = {
-			"^(chromium)$", "^(Brave-browser)$", "^(zen-browser)$",
-			"^(Code)$", "^(code-url-handler)$", "^(code-insiders-url-handler)$",
-			"^(kitty)$",
-			"^(org.kde.dolphin)$",
-			"^(org.kde.ark)$", "^(nwg-look)$", "^(qt5ct)$", "^(qt6ct)$", "^(kvantummanager)$",
-			"^(com.github.rafostar.Clapper)$", "^(com.github.tchx84.Flatseal)$",
-			"^(hu.kramo.Cartridges)$", "^(com.obsproject.Studio)$", "^(gnome-boxes)$",
-			"^(discord)$", "^(WebCord)$", "^(ArmCord)$",
-			"^(app.drey.Warp)$", "^(net.davidotek.pupgui2)$", "^(yad)$",
-			"^(Signal)$", "^(io.github.alainm23.planify)$",
-			"^(io.gitlab.theevilskeleton.Upscaler)$",
-			"^(com.github.unrud.VideoDownloader)$",
-			"^(io.gitlab.adhami3310.Impression)$",
-			"^(io.missioncenter.MissionCenter)$",
-			"^(com.usebottles.bottles)$",
-			"^(io.github.flattool.Warehouse)$",
-		},
-	},
-	{
-		opacity = "0.95 0.95",
-		classes = {
-			"^(code-oss)$", "^(Spotify)$", "^(com\\.usebottles\\.bottles)$",
-		},
-	},
-	{
-		opacity = "0.90 0.70",
-		classes = {
-			"^(org.pulseaudio.pavucontrol)$", "^(blueman-manager)$",
-			"^(nm-applet)$", "^(nm-connection-editor)$",
-			"^(org.kde.polkit-kde-authentication-agent-1)$",
-			"^(polkit-gnome-authentication-agent-1)$",
-			"^(org.freedesktop.impl.portal.desktop.gtk)$",
-			"^(org.freedesktop.impl.portal.desktop.hyprland)$",
-		},
-	},
-	{
-		opacity = "0.70 0.70",
-		classes = { "^([Ss]team)$", "^(steamwebhelper)$" },
-	},
-}
-
-for _, rule in ipairs(opacity_rules) do
-	for _, class in ipairs(rule.classes) do
-		hl.window_rule({
-			name = rule_name("opacity", rule.opacity .. "_" .. class),
-			match = { class = class },
-			opacity = rule.opacity,
-		})
-	end
-end
-
-hl.window_rule({
-	name = "opacity_spotify_free",
-	match = { initial_title = "^(Spotify Free)$" },
-	opacity = "0.70 0.70",
-})
 
 -- ======================
 -- Floating Rules

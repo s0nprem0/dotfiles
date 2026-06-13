@@ -45,7 +45,7 @@ hl.config({
 	-- Decoration & Blur
 	decoration = {
 		active_opacity = 1,
-		inactive_opacity = 0.85,
+		inactive_opacity = 1,
 		rounding = 2,
 
 		-- Nested shadow settings
