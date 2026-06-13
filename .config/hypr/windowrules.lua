@@ -21,18 +21,12 @@ hl.window_rule({
 	name = "no_shadow_tiled",
 	match = { float = false },
 	no_shadow = true,
+	no_blur = true,
 })
 
 -- ======================
 -- Blur & Visual Layer Rules
 -- ======================
-
--- Blur for quickshell popup windows
-hl.window_rule({
-	name = "quickshell_blur",
-	match = { class = "^(org\\.quickshell)$" },
-	blur = true,
-})
 
 -- Blur + dim for rofi launcher
 hl.layer_rule({

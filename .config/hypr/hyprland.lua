@@ -48,6 +48,17 @@ hl.config({
 		inactive_opacity = 1,
 		rounding = 2,
 
+		-- Nested blur settings
+		blur = {
+			enabled = true,
+			size = 4,
+			passes = 2,
+			contrast = 1.5,
+			brightness = 0.8,
+			ignore_opacity = true,
+			new_optimizations = true,
+		},
+
 		-- Nested shadow settings
 		shadow = {
 			enabled = false,
