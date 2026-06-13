@@ -23,7 +23,54 @@ hl.window_rule({
 	no_shadow = true,
 })
 
+-- ======================
+-- Blur & Visual Layer Rules
+-- ======================
 
+-- Blur for quickshell popup windows
+hl.window_rule({
+	name = "quickshell_blur",
+	match = { class = "^(org\\.quickshell)$" },
+	blur = true,
+})
+
+-- Blur + dim for rofi launcher
+hl.layer_rule({
+	name = "rofi_blur",
+	match = { namespace = "rofi" },
+	blur = true,
+	dim_around = true,
+	animation = "slide top",
+})
+
+-- Blur for quickshell OSD layer
+hl.layer_rule({
+	name = "osd_blur",
+	match = { namespace = "quickshell-osd" },
+	blur = true,
+})
+
+-- Blur for waybar layer
+hl.layer_rule({
+	name = "waybar_blur",
+	match = { namespace = "waybar" },
+	blur = true,
+})
+
+-- Blur for mako notifications
+hl.layer_rule({
+	name = "mako_blur",
+	match = { namespace = "mako" },
+	blur = true,
+	animation = "slide top",
+})
+
+-- Dim around for quickshell popups (focus effect)
+hl.window_rule({
+	name = "quickshell_dim",
+	match = { class = "^(org\\.quickshell)$", float = true },
+	dim_around = true,
+})
 
 local function rule_name(prefix, s)
 	return (prefix .. "_" .. s):gsub("[^%w]+", "_")

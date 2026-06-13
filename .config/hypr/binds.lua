@@ -15,6 +15,15 @@ hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/cliph
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("~/.config/quickshell/helpers/ports_menu"), { description = "Ports menu" })
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("rofi -show bt -theme ~/.config/rofi/bluetooth.rasi"), { description = "Bluetooth menu" })
 
+-- Popup toggles (via quickshell IPC)
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call shell togglePopup clipboard"), { description = "Toggle clipboard popup" })
+hl.bind(mainMod .. " + COMMA", hl.dsp.exec_cmd("qs ipc call shell togglePopup emoji"), { description = "Toggle emoji picker" })
+hl.bind(mainMod .. " + G", hl.dsp.exec_cmd("qs ipc call shell togglePopup media"), { description = "Toggle media popup" })
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs ipc call shell togglePopup network"), { description = "Toggle network popup" })
+hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("qs ipc call shell togglePopup notifications"), { description = "Toggle notification center" })
+hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("qs ipc call shell togglePopup battery"), { description = "Toggle battery popup" })
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("qs ipc call shell togglePopup settings"), { description = "Toggle settings popup" })
+
 -- Windows
 hl.bind(mainMod .. " + W", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("hyprctl kill"), { description = "Force kill window" })
@@ -209,6 +218,7 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("Print", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot full"), { description = "Screenshot: full" })
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot region"), { description = "Screenshot: region" })
 hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot active"), { description = "Screenshot: active" })
+hl.bind(mainMod .. " + SHIFT + X", hl.dsp.exec_cmd("~/.config/quickshell/helpers/screenshot ocr"), { description = "Screenshot: OCR region" })
 
 -- Mouse
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: drag" })

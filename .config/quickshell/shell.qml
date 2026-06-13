@@ -98,6 +98,19 @@ Bar {
         id: centerPopup
     }
 
+    // IPC-callable toggle from keybindings (qs ipc call shell togglePopup <name>)
+    function togglePopup(name) {
+        switch (name) {
+            case "clipboard": clipboardPopup.showPopup = !clipboardPopup.showPopup; break;
+            case "emoji": emojiPopup.showPopup = !emojiPopup.showPopup; break;
+            case "media": mediaPopup.showPopup = !mediaPopup.showPopup; break;
+            case "network": networkPopup.showPopup = !networkPopup.showPopup; break;
+            case "battery": batteryPopup.showPopup = !batteryPopup.showPopup; break;
+            case "settings": settingsPopup.showPopup = !settingsPopup.showPopup; break;
+            case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
+        }
+    }
+
     // Popups
     Popups.Network {
         id: networkPopup

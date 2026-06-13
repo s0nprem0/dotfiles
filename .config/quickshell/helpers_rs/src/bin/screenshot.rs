@@ -30,6 +30,39 @@ fn grim_geometry_arg(geometry: &Option<String>) -> String {
   }
 }
 
+fn handle_ocr() {
+  let region = match run_cmd("slurp", &[]) {
+    Some(g) => g,
+    None => {
+      notify("OCR Cancelled", "No region selected.");
+      return;
+    }
+  };
+
+  let geom_arg = format!("-g '{}'", region);
+  let text = match run_cmd("sh", &["-c", &format!("grim {} - | tesseract stdin stdout", geom_arg)]) {
+    Some(t) => t.trim().to_string(),
+    None => {
+      notify("OCR Failed", "Could not extract text from selection.");
+      return;
+    }
+  };
+
+  if text.is_empty() {
+    notify("OCR Result", "No text detected in selection.");
+    return;
+  }
+
+  let _ = run_cmd("wl-copy", &[&text]);
+
+  let preview = if text.len() > 100 {
+    format!("{}...", &text[..100])
+  } else {
+    text.clone()
+  };
+  notify("OCR Captured", &preview);
+}
+
 fn main() {
   let args: Vec<String> = env::args().collect();
   let mut save = true;
@@ -41,7 +74,7 @@ fn main() {
       "-s" => copy = false,
       "-c" => save = false,
       _ => {
-        eprintln!("Usage: screenshot [-s] [-c] [full|region|active]");
+        eprintln!("Usage: screenshot [-s] [-c] [full|region|active|ocr]");
         std::process::exit(1);
       }
     }
@@ -49,6 +82,11 @@ fn main() {
   }
 
   let mode = args.get(arg_idx).map(|s| s.as_str()).unwrap_or("full");
+
+  if mode == "ocr" {
+    handle_ocr();
+    return;
+  }
 
   let dir = screenshot_dir();
   let _ = fs::create_dir_all(&dir);
@@ -76,7 +114,7 @@ fn main() {
       }
     }
     _ => {
-      eprintln!("Usage: screenshot [-s] [-c] [full|region|active]");
+      eprintln!("Usage: screenshot [-s] [-c] [full|region|active|ocr]");
       std::process::exit(1);
     }
   };

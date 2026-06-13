@@ -267,6 +267,30 @@ ColumnLayout {
             }
         }
 
+        Item {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
+
+            Text {
+                id: ocrIcon
+
+                anchors.centerIn: parent
+                text: "󰭎"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 14
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: ocrIcon.color = Theme.primary
+                onExited: ocrIcon.color = Theme.muted
+                onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "ocr"])
+            }
+        }
+
     }
 
 }
