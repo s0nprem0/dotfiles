@@ -111,6 +111,7 @@ Bar {
                 case "battery": batteryPopup.showPopup = !batteryPopup.showPopup; break;
                 case "settings": settingsPopup.showPopup = !settingsPopup.showPopup; break;
                 case "workspace": workspacePopup.showPopup = !workspacePopup.showPopup; break;
+                case "shortcut": shortcutPopup.showPopup = !shortcutPopup.showPopup; break;
                 case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
             }
         }
@@ -145,6 +146,10 @@ Bar {
 
     Popups.Workspace {
         id: workspacePopup
+    }
+
+    Popups.Shortcut {
+        id: shortcutPopup
     }
 
 }
