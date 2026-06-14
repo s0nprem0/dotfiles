@@ -3,6 +3,7 @@ import "../service"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 
 Item {
@@ -123,6 +124,12 @@ Item {
                         }
                     }
 
+                }
+
+                HyprlandFocusGrab {
+                    active: root.showPopup && !slide.closing
+                    windows: [win]
+                    onCleared: root.closePopup()
                 }
 
             }
