@@ -25,6 +25,9 @@ PopupPanel {
     property real dragY: 0
     property real dragOffsetX: 0
     property real dragOffsetY: 0
+    property real dragWidth: 0
+    property real dragHeight: 0
+    property string dragIcon: ""
     property int hoveredWorkspaceId: -1
     property bool dragMoved: false
 
@@ -107,46 +110,10 @@ PopupPanel {
         };
     }
 
-    function iconExists(iconName) {
-        if (!iconName) return false;
-        var path = Quickshell.iconPath(iconName, true);
-        return path && path.length > 0 && !String(path).includes("image-missing");
-    }
-
-    function iconFromString(value) {
-        if (!value) return "";
-        var name = String(value);
-        var entry = DesktopEntries.byId(name);
-        if (entry && entry.icon && root.iconExists(entry.icon)) return entry.icon;
-        var subs = {
-            "code": "visual-studio-code", "code-url-handler": "visual-studio-code",
-            "code-insiders": "visual-studio-code-insiders", "codium": "vscodium",
-            "footclient": "foot", "ghostty": "com.mitchellh.ghostty",
-            "google-chrome": "google-chrome", "kitty": "kitty",
-            "org.wezfurlong.wezterm": "org.wezfurlong.wezterm",
-            "steam": "steam", "thunar": "org.xfce.thunar",
-            "vesktop": "vesktop", "wezterm": "org.wezfurlong.wezterm",
-            "zen": "zen-browser"
-        };
-        var lower = name.toLowerCase();
-        if (subs[name] && root.iconExists(subs[name])) return subs[name];
-        if (subs[lower] && root.iconExists(subs[lower])) return subs[lower];
-        if (root.iconExists(name)) return name;
-        if (root.iconExists(lower)) return lower;
-        var last = name.split(".").pop();
-        if (root.iconExists(last)) return last;
-        if (root.iconExists(last.toLowerCase())) return last.toLowerCase();
-        var kebab = lower.replace(/\s+/g, "-").replace(/_/g, "-");
-        if (root.iconExists(kebab)) return kebab;
-        var heur = DesktopEntries.heuristicLookup(name);
-        if (heur && heur.icon && root.iconExists(heur.icon)) return heur.icon;
-        return "";
-    }
-
     function getWindowIconPath(win) {
         var candidates = [win ? win.class : "", win ? win.initialClass : "", win ? win.initialTitle : "", win ? win.title : ""];
         for (var i = 0; i < candidates.length; i++) {
-            var iconName = root.iconFromString(candidates[i]);
+            var iconName = IconResolver.resolveDesktopIcon(candidates[i]);
             if (iconName) return iconName.startsWith("/") ? "file://" + iconName : "image://icon/" + iconName;
         }
         return "image://icon/application-x-executable";
@@ -237,6 +204,29 @@ PopupPanel {
 
             implicitWidth: wsGrid.implicitWidth
             implicitHeight: wsGrid.implicitHeight
+
+            // ── Drag ghost overlay ──
+            Rectangle {
+                id: dragGhost
+                visible: root.dragActive
+                z: 99999
+                x: root.dragX
+                y: root.dragY
+                width: root.dragWidth
+                height: root.dragHeight
+                color: Qt.alpha(Theme.bg, 0.75)
+                border.width: 1
+                border.color: Theme.primary
+                radius: 4
+                opacity: 0.85
+
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 4
+                    fillMode: Image.PreserveAspectFit
+                    source: root.dragIcon
+                }
+            }
 
             GridLayout {
                 id: wsGrid
@@ -329,31 +319,30 @@ PopupPanel {
 
                                     required property var modelData
 
-                                    x: root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address) ? root.dragX : root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).x
-                                    y: root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address) ? root.dragY : root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).y
+                                    x: root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).x
+                                    y: root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).y
                                     width: root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).width
                                     height: root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).height
-                                    color: "transparent"
+                                    color: Qt.alpha(Theme.surface, 0.15)
                                     border.width: root.activeWindowAddress === root.normalizeAddress(modelData.address) ? 1 : 0
                                     border.color: Theme.primary
                                     radius: 2
                                     clip: true
-                                    opacity: root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).opacity
-                                    scale: root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address) ? 0.95 : 1
-                                    z: root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address) ? 9999 : 1
+                                    opacity: root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address) ? 0 : root.getVisualGeometry(wsCell.wsId, modelData, previewContainer.scale).opacity
+                                    scale: 1
+                                    z: 1
 
                                     // ── Live screencopy ──
                                     Loader {
+                                        id: previewLoader
                                         anchors.fill: parent
                                         anchors.margins: 1
-                                        active: true
+                                        active: root.getToplevelForAddress(winPreview.modelData.address) != null
 
                                         sourceComponent: ScreencopyView {
                                             captureSource: root.getToplevelForAddress(winPreview.modelData.address)
                                             live: true
-                                            width: Math.max(Math.round(winPreview.modelData.size[0] * previewContainer.scale), 12)
-                                            height: Math.max(Math.round(winPreview.modelData.size[1] * previewContainer.scale), 12)
-                                            constraintSize: Qt.size(width, height)
+                                            constraintSize: Qt.size(parent ? parent.width : 166, parent ? parent.height : 100)
                                         }
                                     }
 
@@ -364,6 +353,7 @@ PopupPanel {
                                         radius: 3
                                         color: Qt.alpha(Theme.bg, 0.7)
                                         anchors.centerIn: parent
+                                        visible: !previewLoader.active
 
                                         Image {
                                             anchors.fill: parent
@@ -371,6 +361,23 @@ PopupPanel {
                                             fillMode: Image.PreserveAspectFit
                                             source: root.getWindowIconPath(winPreview.modelData)
                                         }
+                                    }
+
+                                    // ── Window class label (fallback when no capture source) ──
+                                    Text {
+                                        anchors {
+                                            bottom: parent.bottom
+                                            horizontalCenter: parent.horizontalCenter
+                                            bottomMargin: 2
+                                        }
+                                        visible: !previewLoader.active
+                                        text: winPreview.modelData.class || winPreview.modelData.initialClass || ""
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 7
+                                        elide: Text.ElideRight
+                                        width: parent.width - 4
+                                        horizontalAlignment: Text.AlignHCenter
                                     }
 
                                     // ── Drag handle ──
@@ -385,6 +392,9 @@ PopupPanel {
                                             root.draggedSourceWorkspace = wsCell.wsId;
                                             root.dragActive = true;
                                             root.dragMoved = false;
+                                            root.dragWidth = winPreview.width;
+                                            root.dragHeight = winPreview.height;
+                                            root.dragIcon = root.getWindowIconPath(winPreview.modelData);
                                             var pt = mapToItem(contentRoot, mouse.x, mouse.y);
                                             root.dragOffsetX = mouse.x;
                                             root.dragOffsetY = mouse.y;
@@ -413,6 +423,9 @@ PopupPanel {
                                             }
                                             root.draggedAddress = "";
                                             root.draggedSourceWorkspace = -1;
+                                            root.dragIcon = "";
+                                            root.dragWidth = 0;
+                                            root.dragHeight = 0;
                                             root.hoveredWorkspaceId = -1;
                                         }
 
@@ -420,6 +433,9 @@ PopupPanel {
                                             root.dragActive = false;
                                             root.draggedAddress = "";
                                             root.draggedSourceWorkspace = -1;
+                                            root.dragIcon = "";
+                                            root.dragWidth = 0;
+                                            root.dragHeight = 0;
                                             root.hoveredWorkspaceId = -1;
                                         }
 
@@ -457,11 +473,10 @@ PopupPanel {
                                         }
                                     }
 
-                                    Behavior on x { enabled: !(root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address)); NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on y { enabled: !(root.dragActive && root.draggedAddress === root.normalizeAddress(modelData.address)); NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                                    Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                                    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                     Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                     Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                     Behavior on opacity { NumberAnimation { duration: 180 } }
                                 }
                             }

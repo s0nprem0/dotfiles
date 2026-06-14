@@ -12,9 +12,13 @@ QtObject {
             "code-url-handler": "visual-studio-code",
             "code-insiders": "visual-studio-code-insiders",
             "codium": "vscodium",
+            "footclient": "foot",
             "ghostty": "com.mitchellh.ghostty",
             "google-chrome": "google-chrome",
+            "kitty": "kitty",
             "org.wezfurlong.wezterm": "org.wezfurlong.wezterm",
+            "steam": "steam",
+            "thunar": "org.xfce.thunar",
             "vesktop": "vesktop",
             "wezterm": "org.wezfurlong.wezterm",
             "zen": "zen-browser"

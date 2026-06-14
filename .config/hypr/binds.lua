@@ -23,6 +23,7 @@ hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs ipc call shell togglePopu
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("qs ipc call shell togglePopup notifications"), { description = "Toggle notification center" })
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("qs ipc call shell togglePopup battery"), { description = "Toggle battery popup" })
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("qs ipc call shell togglePopup settings"), { description = "Toggle settings popup" })
+hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("qs ipc call shell togglePopup workspace"), { description = "Toggle workspace overview" })
 
 -- Windows
 hl.bind(mainMod .. " + W", hl.dsp.window.close(), { description = "Close window" })
