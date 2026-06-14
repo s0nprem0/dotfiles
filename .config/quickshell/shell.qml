@@ -107,6 +107,7 @@ Bar {
             case "network": networkPopup.showPopup = !networkPopup.showPopup; break;
             case "battery": batteryPopup.showPopup = !batteryPopup.showPopup; break;
             case "settings": settingsPopup.showPopup = !settingsPopup.showPopup; break;
+            case "workspace": workspacePopup.showPopup = !workspacePopup.showPopup; break;
             case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
         }
     }
@@ -136,6 +137,10 @@ Bar {
 
     Popups.Settings {
         id: settingsPopup
+    }
+
+    Popups.Workspace {
+        id: workspacePopup
     }
 
 }

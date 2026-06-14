@@ -4,3 +4,4 @@ Clipboard Clipboard.qml
 Media Media.qml
 Settings Settings.qml
 Emoji Emoji.qml
+Workspace Workspace.qml
