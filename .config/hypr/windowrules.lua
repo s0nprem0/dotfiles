@@ -34,7 +34,6 @@ hl.layer_rule({
 	match = { namespace = "rofi" },
 	blur = true,
 	dim_around = true,
-	animation = "slide top",
 })
 
 -- Blur for quickshell OSD layer
@@ -77,26 +76,31 @@ end
 local function float_centered(match, opts)
 	opts = opts or {}
 	local spec = {
-		name = rule_name("float", (match.class or "") .. "_" .. (match.title or "") .. "_" .. (match.initial_title or "")),
+		name = rule_name(
+			"float",
+			(match.class or "") .. "_" .. (match.title or "") .. "_" .. (match.initial_title or "")
+		),
 		match = match,
 		float = true,
 		center = opts.center ~= false,
 	}
-	if opts.size then spec.size = opts.size end
+	if opts.size then
+		spec.size = opts.size
+	end
 	hl.window_rule(spec)
 end
 
 -- Common dialogs by initial title
 local dialog_titles = {
-	{ re = "^(Open File)(.*)$",              size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Select a File)(.*)$",          size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Open Folder)(.*)$",            size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Save As)(.*)$",                size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(File Upload)(.*)$",            size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Library)(.*)$",                size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(.*)(wants to save)$",          size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(.*)(wants to open)$",          size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Choose wallpaper)(.*)$",       size = { "monitor_w*0.60", "monitor_h*0.65" } },
+	{ re = "^(Open File)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Select a File)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Open Folder)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Save As)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(File Upload)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Library)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(.*)(wants to save)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(.*)(wants to open)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
+	{ re = "^(Choose wallpaper)(.*)$", size = { "monitor_w*0.60", "monitor_h*0.65" } },
 }
 
 for _, d in ipairs(dialog_titles) do
@@ -104,14 +108,17 @@ for _, d in ipairs(dialog_titles) do
 end
 
 -- Portals (file pickers etc.)
-float_centered({ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" }, { size = { "monitor_w*0.50", "monitor_h*0.55" } })
+float_centered(
+	{ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" },
+	{ size = { "monitor_w*0.50", "monitor_h*0.55" } }
+)
 
 -- App-specific floating with sizing
 local sized_floats = {
-	{ re = "^(pavucontrol)$",                         size = { "monitor_w*0.45", "monitor_h*0.45" } },
-	{ re = "^(org\\.pulseaudio\\.pavucontrol)$",       size = { "monitor_w*0.45", "monitor_h*0.45" } },
-	{ re = "^(nm-connection-editor)$",                  size = { "monitor_w*0.45", "monitor_h*0.45" } },
-	{ re = "^(Zotero)$",                               size = { "monitor_w*0.45", "monitor_h*0.45" } },
+	{ re = "^(pavucontrol)$", size = { "monitor_w*0.45", "monitor_h*0.45" } },
+	{ re = "^(org\\.pulseaudio\\.pavucontrol)$", size = { "monitor_w*0.45", "monitor_h*0.45" } },
+	{ re = "^(nm-connection-editor)$", size = { "monitor_w*0.45", "monitor_h*0.45" } },
+	{ re = "^(Zotero)$", size = { "monitor_w*0.45", "monitor_h*0.45" } },
 }
 
 for _, c in ipairs(sized_floats) do
@@ -126,23 +133,36 @@ float_centered(
 
 -- Generic floating by class
 local floating_classes = {
-	"^(blueberry\\.py)$", "^(guifetch)$",
-	".*plasmawindowed.*", "kcm_.*", ".*bluedevilwizard",
+	"^(blueberry\\.py)$",
+	"^(guifetch)$",
+	".*plasmawindowed.*",
+	"kcm_.*",
+	".*bluedevilwizard",
 	"^(illogical-impulse Settings)$",
-	"^(org\\.quickshell)$", "^(vlc)$",
-	"^(kvantummanager)$", "^(qt5ct)$", "^(qt6ct)$", "^(nwg-look)$",
+	"^(org\\.quickshell)$",
+	"^(vlc)$",
+	"^(kvantummanager)$",
+	"^(qt5ct)$",
+	"^(qt6ct)$",
+	"^(nwg-look)$",
 	"^(org.kde.ark)$",
-	"^(blueman-manager)$", "^(nm-applet)$",
+	"^(blueman-manager)$",
+	"^(nm-applet)$",
 	"^(org.kde.polkit-kde-authentication-agent-1)$",
-	"^(Signal)$", "^(com.github.rafostar.Clapper)$", "^(app.drey.Warp)$",
-	"^(net.davidotek.pupgui2)$", "^(yad)$", "^(eog)$",
+	"^(Signal)$",
+	"^(com.github.rafostar.Clapper)$",
+	"^(app.drey.Warp)$",
+	"^(net.davidotek.pupgui2)$",
+	"^(yad)$",
+	"^(eog)$",
 	"^(io.github.alainm23.planify)$",
 	"^(io.gitlab.theevilskeleton.Upscaler)$",
 	"^(com.github.unrud.VideoDownloader)$",
 	"^(io.gitlab.adhami3310.Impression)$",
 	"^(io.missioncenter.MissionCenter)$",
 	"^(com.usebottles.bottles)$",
-	"^(gnome-calculator)$", "^(org.gnome.Calculator)$",
+	"^(gnome-calculator)$",
+	"^(org.gnome.Calculator)$",
 }
 
 for _, class in ipairs(floating_classes) do
@@ -155,9 +175,9 @@ end
 
 -- Specific class+title floating
 local specific_floats = {
-	{ class = "^(org.kde.dolphin)$",    title = "^(Progress Dialog — Dolphin)$" },
-	{ class = "^(firefox)$",            title = "^(Picture-in-Picture)$" },
-	{ class = "^(firefox)$",            title = "^(Library)$" },
+	{ class = "^(org.kde.dolphin)$", title = "^(Progress Dialog — Dolphin)$" },
+	{ class = "^(firefox)$", title = "^(Picture-in-Picture)$" },
+	{ class = "^(firefox)$", title = "^(Library)$" },
 }
 
 for _, m in ipairs(specific_floats) do
@@ -172,7 +192,8 @@ end
 hl.window_rule({
 	name = "plasma_changeicons",
 	match = { class = "^(plasma-changeicons)$" },
-	float = true, no_initial_focus = true,
+	float = true,
+	no_initial_focus = true,
 	move = { 999999, 999999 },
 })
 
@@ -191,7 +212,8 @@ hl.window_rule({
 hl.window_rule({
 	name = "quickshell_wifi",
 	match = { class = "^(org.quickshell)$" },
-	float = true, pin = true,
+	float = true,
+	pin = true,
 	move = { "monitor_w-window_w-12", "40" },
 	size = { 380, 460 },
 	no_initial_focus = true,
@@ -206,7 +228,9 @@ local pip_regex = [[^([Pp]icture[-\s]?[Ii]n[-\s]?[Pp]icture)(.*)$]]
 hl.window_rule({
 	name = "pip",
 	match = { initial_title = pip_regex },
-	float = true, pin = true, keep_aspect_ratio = true,
+	float = true,
+	pin = true,
+	keep_aspect_ratio = true,
 	move = { "monitor_w*0.73", "monitor_h*0.72" },
 	size = { "monitor_w*0.25", "monitor_h*0.25" },
 })
@@ -218,7 +242,8 @@ hl.window_rule({
 hl.window_rule({
 	name = "screen_sharing",
 	match = { initial_title = ".*is sharing (a window|your screen).*" },
-	float = true, pin = true,
+	float = true,
+	pin = true,
 	move = { "monitor_w*0.5-window_w*0.5", "monitor_h-window_h-12" },
 })
 
@@ -226,6 +251,6 @@ hl.window_rule({
 -- Tearing / Immediate
 -- ======================
 
-hl.window_rule({ name = "immediate_steam_app",  match = { class = "^(steam_app.*)$" }, immediate = true })
-hl.window_rule({ name = "immediate_minecraft",  match = { title = "^(.*minecraft.*)$" }, immediate = true })
-hl.window_rule({ name = "immediate_exe",        match = { title = [[^(.*\.exe.*)$]] }, immediate = true })
+hl.window_rule({ name = "immediate_steam_app", match = { class = "^(steam_app.*)$" }, immediate = true })
+hl.window_rule({ name = "immediate_minecraft", match = { title = "^(.*minecraft.*)$" }, immediate = true })
+hl.window_rule({ name = "immediate_exe", match = { title = [[^(.*\.exe.*)$]] }, immediate = true })

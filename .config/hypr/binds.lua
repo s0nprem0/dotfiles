@@ -216,3 +216,14 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, descrip
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Window: resize" })
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { description = "Workspace: next" })
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { description = "Workspace: prev" })
+
+-- Display Layout Toggles
+local monitors = require("monitors")
+
+hl.bind(mainMod .. " + " .. altMod .. " + X", function()
+	monitors.set_extended()
+end, { description = "Display: Extended mode" })
+
+hl.bind(mainMod .. " + " .. altMod .. " + Y", function()
+	monitors.set_mirror()
+end, { description = "Display: Mirror mode" })
