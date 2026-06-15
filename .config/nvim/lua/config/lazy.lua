@@ -7,6 +7,19 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(vim.env.LAZY or lazypath)
 
+-- Check for Node.js (required by Mason LSPs for JS/TS/JSON/YAML/Tailwind/PHP)
+if vim.fn.executable("node") == 0 then
+  vim.schedule(function()
+    vim.notify(
+      "Node.js not found. LSP servers for TypeScript, JSON, Tailwind,"
+        .. " PHP, YAML, and Prettier will fail to install via Mason."
+        .. " Install with: sudo apt install nodejs npm",
+      vim.log.levels.WARN,
+      { title = "Mason LSP Warning" }
+    )
+  end)
+end
+
 require("lazy").setup({
   spec = {
     -- 1. Base LazyVim distribution
