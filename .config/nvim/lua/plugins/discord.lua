@@ -1,5 +1,6 @@
 return {
   "vyfor/cord.nvim",
+  enabled = vim.fn.has("wsl") ~= 1,
   event = "VeryLazy",
   config = function()
     require("cord").setup({
