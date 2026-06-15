@@ -11,3 +11,7 @@ if (( $+functions[compdef] )); then
     compdef eza=ls
     # Add more compdef here (git, docker, etc.)
 fi
+
+# WSL Specfic alias
+alias pbcopy='/mnt/c/Windows/System32/clip.exe'
+alias pbpaste='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c "[Console]::Out.Write(\$(Get-Clipboard -Raw).ToString().Replace(\"\`r\", \"\"))"'

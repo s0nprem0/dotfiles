@@ -60,15 +60,14 @@ if vim.fn.has("wsl") == 1 then
   vim.g.clipboard = {
     name = "WslClipboard",
     copy = {
-      ["+"] = "clip.exe",
-      ["*"] = "clip.exe",
+      ["+"] = "/mnt/c/Windows/System32/clip.exe",
+      ["*"] = "/mnt/c/Windows/System32/clip.exe",
     },
     paste = {
-      ["+"] = [[powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))]],
-      ["*"] = [[powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))]],
+      ["+"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r",""))',
+      ["*"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r",""))',
     },
     cache_enabled = 0,
   }
-
   vim.opt.clipboard = "unnamedplus"
 end
