@@ -86,6 +86,7 @@ BarModule {
 
         command: ["pactl", "subscribe"]
         running: true
+        onExited: running = true
 
         stdout: SplitParser {
             onRead: function(data) {

@@ -73,10 +73,11 @@ PACMAN_PKGS=(
 
 # AUR packages (installed via yay / paru)
 AUR_PKGS=(
-  uwsm           # Universal Wayland Session Manager
-  quickshell-git # QML widget shell
-  matugen-bin    # Material You colour generator
-  cliphist       # Clipboard manager with history
+  uwsm               # Universal Wayland Session Manager
+  quickshell-git     # QML widget shell
+  matugen-bin        # Material You colour generator
+  cliphist           # Clipboard manager with history
+  cloudflare-warp-bin  # WARP VPN (optional, for network popup)
 )
 
 # ──────────────────────────────────────────────

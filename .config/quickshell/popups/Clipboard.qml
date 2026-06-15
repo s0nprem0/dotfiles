@@ -90,7 +90,7 @@ PopupPanel {
     Process {
         id: copyProc
         property string entryLine: ""
-        command: ["sh", "-c", "d=$(echo \"$1\" | cliphist decode); echo -n \"$d\" | wl-copy && notify-send -t 1000 -h string:x-canonical-private-synchronous:clip-notify -a clipboard -i edit-copy \"copied\" \"$(echo -n \"$d\" | head -c 50)\"", "_", entryLine]
+        command: ["sh", "-c", "d=$(printf '%s' \"$1\" | cliphist decode); printf '%s' \"$d\" | wl-copy && notify-send -t 1000 -h string:x-canonical-private-synchronous:clip-notify -a clipboard -i edit-copy \"copied\" \"$(printf '%s' \"$d\" | head -c 50)\"", "_", entryLine]
         running: false
         onExited: {
             root.showPopup = false;
@@ -101,7 +101,7 @@ PopupPanel {
     Process {
         id: deleteProc
         property string entryLine: ""
-        command: ["sh", "-c", "echo \"$1\" | cliphist delete && id=$(echo \"$1\" | cut -f1) && rm -f \"" + Theme.tmpDir + "/clip_${id}.png\"", "_", entryLine]
+        command: ["sh", "-c", "printf '%s' \"$1\" | cliphist delete && id=$(printf '%s' \"$1\" | cut -f1) && rm -f \"" + Theme.tmpDir + "/clip_${id}.png\"", "_", entryLine]
         running: false
         onExited: {
             refreshClipboard();
