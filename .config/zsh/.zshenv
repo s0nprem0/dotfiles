@@ -31,8 +31,16 @@ export GPG_TTY="${TTY:-$(tty)}"
 export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 
 export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+
+# XDG_RUNTIME_DIR may be unset on WSL without systemd; provide a fallback
+[[ -n "$XDG_RUNTIME_DIR" ]] || export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
-export SUDO_ASKPASS="/usr/lib/seahorse/ssh-askpass"
+
+# Only set SUDO_ASKPASS if seahorse is actually installed
+if [[ -f "/usr/lib/seahorse/ssh-askpass" ]]; then
+  export SUDO_ASKPASS="/usr/lib/seahorse/ssh-askpass"
+fi
 
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 export PATH="$HOME/.cache/.bun/bin:$PATH"

@@ -10,6 +10,11 @@ source "${ZDOTDIR}/prompt.zsh" # prompt
 autoload -Uz compinit
 compinit -C -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
+# Persist SSH keys across all WezTerm/WSL sessions
+if command -v keychain >/dev/null 2>&1; then
+    eval $(keychain --eval --agents ssh --quiet id_ed25519)
+fi
+
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' completer _expand _complete
@@ -41,4 +46,6 @@ alias history="history 0"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 
-eval "$(zoxide init zsh)"
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
