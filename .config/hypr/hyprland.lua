@@ -4,7 +4,7 @@
 pcall(require, "monitors")
 require("defaultPrograms")
 
-dofile(os.getenv("HOME") .. "/.config/hypr/colors.lua")
+pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
 
 -- Environment should be set before we start any long-running processes.
 require("env")
