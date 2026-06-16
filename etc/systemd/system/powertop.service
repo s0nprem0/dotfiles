@@ -1,0 +1,16 @@
+[Unit]
+Description=PowerTOP auto-tune — apply power-saving tunings at boot
+Documentation=man:powertop(8)
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/powertop --auto-tune
+
+# Quiet: no logs on success, only on failure
+StandardOutput=null
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

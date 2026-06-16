@@ -58,7 +58,7 @@ BarModule {
         id: battData
 
         path: Theme.bin("get_battery_status")
-        interval: 10000
+        interval: 60000
         onDataReceived: function(j) {
             root.pct = j.capacity ?? 0;
             var status = (j.status ?? "").toString().toLowerCase();

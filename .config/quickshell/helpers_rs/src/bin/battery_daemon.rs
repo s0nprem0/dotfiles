@@ -76,6 +76,53 @@ fn set_brightness(pct: i32, kbd_pct: i32) {
   }
 }
 
+/// Find the first wireless interface name (e.g. wlan0, wlp2s0)
+fn wifi_interface() -> Option<String> {
+  let out = run_cmd("iw", &["dev"])?;
+  for line in out.lines() {
+    let trimmed = line.trim();
+    if let Some(iface) = trimmed.strip_prefix("Interface ") {
+      return Some(iface.trim().to_string());
+    }
+  }
+  None
+}
+
+fn set_wifi_power_save(on: bool) {
+  if let Some(iface) = wifi_interface() {
+    if on {
+      let _ = run_cmd("iw", &["dev", &iface, "set", "power_save", "on"]);
+    } else {
+      let _ = run_cmd("iw", &["dev", &iface, "set", "power_save", "off"]);
+    }
+  }
+}
+
+fn set_bluetooth_power(on: bool) {
+  if on {
+    let _ = run_cmd("rfkill", &["unblock", "bluetooth"]);
+  } else {
+    let _ = run_cmd("rfkill", &["block", "bluetooth"]);
+  }
+}
+
+fn apply_power_state(state: &PowerState) {
+  match state {
+    PowerState::Ac => {
+      set_wifi_power_save(false);
+      set_bluetooth_power(true);
+    }
+    PowerState::Battery => {
+      set_wifi_power_save(true);
+      set_bluetooth_power(true);
+    }
+    PowerState::LowBattery => {
+      set_wifi_power_save(true);
+      set_bluetooth_power(false);
+    }
+  }
+}
+
 fn log_history(power_w: f64) {
   let path = history_path();
   if let Some(parent) = path.parent() {
@@ -179,6 +226,7 @@ fn main() {
 
         set_profile(profile);
         set_brightness(brightness, kbd_brightness);
+        apply_power_state(state);
 
         send_notification(
           &format!("Power: {}", label),

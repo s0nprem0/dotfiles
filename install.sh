@@ -55,11 +55,11 @@ PACMAN_PKGS=(
   # Screenshot, OCR, clipboard
   grim slurp tesseract tesseract-data-eng wl-clipboard
   # Backlight & power
-  brightnessctl power-profiles-daemon upower
+  brightnessctl power-profiles-daemon upower thermald
   # File management
   udisks2 ranger thunar
   # Utilities
-  fzf fd bat zoxide eza keychain jq socat wlogout
+  fzf fd bat zoxide eza keychain jq socat wlogout powertop
   # Development
   base-devel git rustup
   # Qt / GTK theming
@@ -197,13 +197,30 @@ if [[ -f "$DOTFILES/.config/quickshell/helpers_rs/Makefile" ]]; then
 fi
 
 # ──────────────────────────────────────────────
-# 8. Systemd services
+# 8. Deploy system-wide configs (etc/)
+# ──────────────────────────────────────────────
+info "Deploying system configs from etc/ ..."
+if [[ -d "$DOTFILES/etc" ]]; then
+  while IFS= read -r -d '' f; do
+    rel="${f#"$DOTFILES/etc/"}"
+    target="/etc/$rel"
+    target_dir="$(dirname "$target")"
+    sudo mkdir -p "$target_dir"
+    sudo cp "$f" "$target"
+    ok "$target"
+  done < <(find "$DOTFILES/etc" -type f -print0)
+fi
+
+# ──────────────────────────────────────────────
+# 9. Systemd services
 # ──────────────────────────────────────────────
 info "Enabling systemd services ..."
 
 sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
 sudo systemctl enable --now NetworkManager.service 2>/dev/null && ok "NetworkManager" || warn "NetworkManager"
 sudo systemctl enable --now power-profiles-daemon 2>/dev/null && ok "power-profiles-daemon" || warn "power-profiles-daemon"
+sudo systemctl enable --now thermald 2>/dev/null && ok "thermald" || warn "thermald"
+sudo systemctl enable powertop.service 2>/dev/null && ok "powertop" || warn "powertop"
 
 systemctl --user enable --now pipewire.service 2>/dev/null && ok "pipewire (user)" || warn "pipewire"
 systemctl --user enable --now pipewire-pulse.service 2>/dev/null && ok "pipewire-pulse (user)" || warn "pipewire-pulse"
