@@ -20,6 +20,8 @@ BarModule {
     property string artUrl: ""
     property double trackLength: 0
     property bool hasPlayer: false
+    // Prevents onExited from clearing state during a controlled player switch
+    property bool _switchingPlayer: false
 
     function refresh() {
         playerListProc.running = true;
@@ -30,6 +32,7 @@ BarModule {
             return ;
 
         if (playerFollowProc.running) {
+            root._switchingPlayer = true;
             playerFollowProc.running = false;
             restartFollow.restart();
         } else {
@@ -38,6 +41,7 @@ BarModule {
     }
 
     function doStartFollow() {
+        root._switchingPlayer = false;
         playerFollowProc.command = ["playerctl", "-p", root.playerName, "--follow", "--format", "{{artist}}|{{title}}|{{mpris:artUrl}}|{{mpris:length}}|{{mpris:playback-status}}"];
         playerFollowProc.running = true;
     }
@@ -86,7 +90,19 @@ BarModule {
 
         command: ["pactl", "subscribe"]
         running: true
-        onExited: running = true
+
+        // Restart with backoff on crash to avoid busy-loop
+        property int crashCount: 0
+        onExited: {
+            var delay = Math.min(1000 * Math.pow(2, pactlSub.crashCount), 30000);
+            pactlSub.crashCount++;
+            pactlRestartTimer.interval = delay;
+            pactlRestartTimer.running = true;
+        }
+        onRunningChanged: {
+            if (running)
+                pactlSub.crashCount = 0;
+        }
 
         stdout: SplitParser {
             onRead: function(data) {
@@ -98,6 +114,12 @@ BarModule {
             }
         }
 
+    }
+
+    Timer {
+        id: pactlRestartTimer
+
+        onTriggered: pactlSub.running = true
     }
 
     Timer {
@@ -161,6 +183,9 @@ BarModule {
 
         running: false
         onExited: {
+            if (root._switchingPlayer)
+                return;
+
             root.playerName = "";
             root.hasPlayer = false;
         }

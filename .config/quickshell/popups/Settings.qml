@@ -126,7 +126,7 @@ PopupPanel {
     Process {
         id: batteryProc
 
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity && cat /sys/class/power_supply/BAT0/status"]
+        command: ["sh", "-c", "for p in /sys/class/power_supply/BAT*/capacity; do [ -f \"$p\" ] && { cat \"$p\" && cat \"${p%capacity}status\"; break; }; done 2>/dev/null || printf '%s\n' '--' 'Unknown'"]
 
         stdout: StdioCollector {
             onStreamFinished: {

@@ -23,9 +23,23 @@ fn notify(summary: &str, body: &str) {
   let _ = run_cmd("notify-send", &["-a", "Screenshot", summary, body]);
 }
 
+// Escape a string for safe use inside single quotes in a shell command.
+// Replaces each ' with '\'' (end quote, escaped quote, reopen quote).
+fn sh_single_quote(s: &str) -> String {
+  let mut out = String::with_capacity(s.len() + 4);
+  for ch in s.chars() {
+    if ch == '\'' {
+      out.push_str("'\\''");
+    } else {
+      out.push(ch);
+    }
+  }
+  out
+}
+
 fn grim_geometry_arg(geometry: &Option<String>) -> String {
   match geometry {
-    Some(g) => format!("-g '{}'", g),
+    Some(g) => format!("-g '{}'", sh_single_quote(g)),
     None => String::new(),
   }
 }
@@ -39,7 +53,7 @@ fn handle_ocr() {
     }
   };
 
-  let geom_arg = format!("-g '{}'", region);
+  let geom_arg = format!("-g '{}'", sh_single_quote(&region));
   let text = match run_cmd("sh", &["-c", &format!("grim {} - | tesseract stdin stdout", geom_arg)]) {
     Some(t) => t.trim().to_string(),
     None => {
@@ -127,10 +141,11 @@ fn main() {
     _ => "Screenshot",
   };
 
+  let qpath = sh_single_quote(&path_str);
   let result = if save && copy {
-    run_cmd("sh", &["-c", &format!("grim {} '{}' && wl-copy < '{}'", geom_arg, path_str, path_str)])
+    run_cmd("sh", &["-c", &format!("grim {} '{}' && wl-copy < '{}'", geom_arg, qpath, qpath)])
   } else if save {
-    run_cmd("sh", &["-c", &format!("grim {} '{}'", geom_arg, path_str)])
+    run_cmd("sh", &["-c", &format!("grim {} '{}'", geom_arg, qpath)])
   } else if copy {
     run_cmd("sh", &["-c", &format!("grim {} - | wl-copy", geom_arg)])
   } else {

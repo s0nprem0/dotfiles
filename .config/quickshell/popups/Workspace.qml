@@ -301,8 +301,14 @@ PopupPanel {
                         Item {
                             id: previewContainer
 
-                            readonly property real monitorW: 1920
-                            readonly property real monitorH: 1080
+                            readonly property real monitorW: {
+                                var m = root.monitorById[root.activeWorkspaceId] || root.monitors[0];
+                                return m ? m.width : 1920;
+                            }
+                            readonly property real monitorH: {
+                                var m = root.monitorById[root.activeWorkspaceId] || root.monitors[0];
+                                return m ? m.height : 1080;
+                            }
                             readonly property real scaleX: width / monitorW
                             readonly property real scaleY: height / monitorH
                             readonly property real scale: Math.min(scaleX, scaleY)
