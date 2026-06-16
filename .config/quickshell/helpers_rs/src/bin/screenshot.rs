@@ -20,7 +20,9 @@ fn timestamp() -> String {
 }
 
 fn notify(summary: &str, body: &str) {
-  let _ = run_cmd("notify-send", &["-a", "Screenshot", summary, body]);
+  if run_cmd("notify-send", &["-a", "Screenshot", summary, body]).is_none() {
+    eprintln!("screenshot: notify-send failed: {summary}");
+  }
 }
 
 // Escape a string for safe use inside single quotes in a shell command.

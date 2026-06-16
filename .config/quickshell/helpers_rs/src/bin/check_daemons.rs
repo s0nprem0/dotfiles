@@ -34,10 +34,14 @@ fn notify(started: &[String], restarted: &[String]) {
     if !restarted.is_empty() {
         lines.push(format!("Restarted: {}", restarted.join(", ")));
     }
-    let _ = Command::new("notify-send")
+    if Command::new("notify-send")
         .args(["-i", "dialog-information", "-t", "5000", "Daemon Watchdog"])
         .arg(lines.join("\n"))
-        .status();
+        .status()
+        .map_or(true, |s| !s.success())
+    {
+        eprintln!("check_daemons: notify-send failed");
+    }
 }
 
 fn main() {

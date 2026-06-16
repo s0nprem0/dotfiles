@@ -145,10 +145,13 @@ fn log_history(power_w: f64) {
 }
 
 fn send_notification(summary: &str, body: &str, critical: bool) {
-  if critical {
-    let _ = run_cmd("notify-send", &["--app-name=Battery", "--urgency=critical", "-t", "10000", summary, body]);
+  let result = if critical {
+    run_cmd("notify-send", &["--app-name=Battery", "--urgency=critical", "-t", "10000", summary, body])
   } else {
-    let _ = run_cmd("notify-send", &["--app-name=Battery", summary, body]);
+    run_cmd("notify-send", &["--app-name=Battery", summary, body])
+  };
+  if result.is_none() {
+    eprintln!("battery_daemon: notify-send failed: {summary}");
   }
 }
 

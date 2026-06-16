@@ -9,9 +9,13 @@ struct PortEntry {
 fn main() {
     let entries = parse_ss();
     if entries.is_empty() {
-        let _ = Command::new("notify-send")
+        if Command::new("notify-send")
             .args(["Ports", "No listening ports found"])
-            .status();
+            .status()
+            .map_or(true, |s| !s.success())
+        {
+            eprintln!("ports_menu: notify-send failed: no listening ports");
+        }
         return;
     }
 
@@ -69,9 +73,13 @@ fn main() {
     let _ = Command::new("kill").args(["-15", &pid.to_string()]).status();
     std::thread::sleep(std::time::Duration::from_secs(3));
     let _ = Command::new("kill").args(["-9", &pid.to_string()]).status();
-    let _ = Command::new("notify-send")
+    if Command::new("notify-send")
         .args(["Ports", &format!("Killed process with PID {}", pid)])
-        .status();
+        .status()
+        .map_or(true, |s| !s.success())
+    {
+        eprintln!("ports_menu: notify-send failed: killed PID {pid}");
+    }
 }
 
 fn parse_ss() -> Vec<PortEntry> {

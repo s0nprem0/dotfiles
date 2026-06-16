@@ -12,7 +12,6 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
 	hl.exec_cmd("uwsm app -- ~/.config/hypr/scripts/usb-monitor.sh")
 	hl.exec_cmd("uwsm app -- ~/.config/hypr/scripts/idle-inhibit.sh")
-	hl.exec_cmd("uwsm app -- ~/.config/waybar/scripts/battery-notify.sh")
 
 	-- audio
 	hl.exec_cmd("uwsm app -- easyeffects --hide-window --service-mode")
