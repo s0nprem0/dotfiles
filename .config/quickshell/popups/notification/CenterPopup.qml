@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Wayland
 
 Item {
     id: root
@@ -368,6 +369,7 @@ Item {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
+                WlrLayershell.namespace: "quickshell-popup"
                 implicitWidth: 360
                 implicitHeight: Math.min(mainLayout.implicitHeight + 32, 720)
 

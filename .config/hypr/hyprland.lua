@@ -4,7 +4,13 @@
 pcall(require, "monitors")
 require("defaultPrograms")
 
-pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
+local colors_ok = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
+if not colors_ok then
+  accent = "b8c3ff"
+  surface = "121318"
+  on_surface = "e3e1e9"
+  error_hex = "ffb4ab"
+end
 
 -- Environment should be set before we start any long-running processes.
 require("env")

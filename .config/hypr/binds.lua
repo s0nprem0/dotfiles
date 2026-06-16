@@ -227,3 +227,15 @@ end, { description = "Display: Extended mode" })
 hl.bind(mainMod .. " + " .. altMod .. " + Y", function()
 	monitors.set_mirror()
 end, { description = "Display: Mirror mode" })
+
+hl.bind(mainMod .. " + " .. altMod .. " + I", function()
+	monitors.set_internal_only()
+end, { description = "Display: Internal only" })
+
+hl.bind(mainMod .. " + " .. altMod .. " + O", function()
+	monitors.set_external_only()
+end, { description = "Display: External only" })
+
+hl.bind(mainMod .. " + " .. altMod .. " + Z", function()
+	monitors.reset()
+end, { description = "Display: Reset layout" })

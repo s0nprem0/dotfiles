@@ -65,6 +65,7 @@ Item {
                 color: "transparent"
                 exclusionMode: PanelWindow.ExclusionMode.Ignore
                 focusable: true
+                WlrLayershell.namespace: "quickshell-popup"
                 implicitWidth: root.panelWidth
                 implicitHeight: {
                     var h = contentLoader.implicitHeight + root.contentMargin * 2;
@@ -150,7 +151,6 @@ Item {
                     w.visible = false;
 
             }
-            root.showPopup = false;
         }
     }
 

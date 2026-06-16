@@ -82,7 +82,10 @@ Item {
     ParallelAnimation {
         id: exitAnim
 
-        onStopped: root.exitCompleted()
+        onStopped: {
+            if (!root.show && root.closing)
+                root.exitCompleted();
+        }
 
         NumberAnimation {
             target: root

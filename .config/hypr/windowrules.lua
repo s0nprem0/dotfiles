@@ -59,9 +59,9 @@ hl.layer_rule({
 })
 
 -- Dim around for quickshell popups (focus effect)
-hl.window_rule({
-	name = "quickshell_dim",
-	match = { class = "^(org\\.quickshell)$", float = true },
+hl.layer_rule({
+	name = "quickshell_popup_dim",
+	match = { namespace = "quickshell-popup" },
 	dim_around = true,
 })
 
@@ -209,15 +209,6 @@ hl.window_rule({
 	tile = true,
 })
 
-hl.window_rule({
-	name = "quickshell_wifi",
-	match = { class = "^(org.quickshell)$" },
-	float = true,
-	pin = true,
-	move = { "monitor_w-window_w-12", "40" },
-	size = { 380, 460 },
-	no_initial_focus = true,
-})
 
 -- ======================
 -- Picture-in-Picture
