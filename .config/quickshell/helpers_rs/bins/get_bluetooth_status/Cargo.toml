@@ -1,0 +1,8 @@
+[package]
+name = "get_bluetooth_status"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+helpers_rs = { path = "../../libs/core" }
+serde = { version = "1", features = ["derive"] }

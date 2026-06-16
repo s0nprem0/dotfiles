@@ -1,0 +1,8 @@
+[package]
+name = "log_battery"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+helpers_rs = { path = "../../libs/core" }
+serde_json = "1"
