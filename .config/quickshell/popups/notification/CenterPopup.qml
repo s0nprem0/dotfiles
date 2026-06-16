@@ -32,6 +32,7 @@ Item {
     property string diagMem: ""
     property string diagDisk: ""
     property string timeShort24h: ""
+    property int visibleWindowCount: 0
 
     function refreshNotifications() {
         if (!NotificationState.service)
@@ -92,8 +93,12 @@ Item {
             }
             for (var i = 0; i < root.notificationItems.length; i++) root.notificationItems[i].unread = false
             slide.show = true;
+            pollTimer.running = true;
+            clockTimer.running = true;
         } else if (!slide.closing) {
             slide.closeAnim();
+            pollTimer.running = false;
+            clockTimer.running = false;
         }
     }
     Component.onCompleted: {
@@ -282,34 +287,15 @@ Item {
     Timer {
         id: pollTimer
 
-        interval: 5000
+        interval: 30000
         repeat: true
         running: false
         onTriggered: {
-            if (!uptimeProc.running)
-                uptimeProc.running = true;
-
             if (!audioProc.running)
                 audioProc.running = true;
 
             if (!btProc.running)
                 btProc.running = true;
-
-            if (!diagProc.running)
-                diagProc.running = true;
-
-        }
-    }
-
-    Timer {
-        interval: 2000
-        running: root.showPopup
-        repeat: true
-        onTriggered: {
-            if (NotificationState.service)
-                notificationItems = NotificationState.service.notifList.filter((n) => {
-                return root.showHistory ? n.closed : !n.closed;
-            });
 
         }
     }
@@ -373,20 +359,9 @@ Item {
                 onVisibleChanged: {
                     if (visible) {
                         refreshNotifications();
-                        pollTimer.running = true;
-                        clockTimer.running = true;
+                        root.visibleWindowCount++;
                     } else {
-                        var anyVisible = false;
-                        for (var i = 0; i < variantRepeater.instances.length; i++) {
-                            var w = variantRepeater.instances[i];
-                            if (w && w !== win && w.visible)
-                                anyVisible = true;
-
-                        }
-                        if (!anyVisible) {
-                            pollTimer.running = false;
-                            clockTimer.running = false;
-                        }
+                        root.visibleWindowCount--;
                     }
                 }
                 screen: modelData
