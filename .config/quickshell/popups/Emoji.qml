@@ -36,23 +36,16 @@ PopupPanel {
     panelMaxHeight: 500
     contentMargin: 10
 
-    Process {
-        id: loadProc
-
-        command: ["cat", Theme.home + "/.config/quickshell/emojis.json"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.allEmojis = JSON.parse(this.text);
-                    root.filterEmojis();
-                } catch (e) {
-                    console.log("Emoji: failed to parse emojis.json:", e);
-                }
+    FileView {
+        path: "file://" + Theme.home + "/.config/quickshell/emojis.json"
+        onLoaded: {
+            try {
+                root.allEmojis = JSON.parse(text);
+                root.filterEmojis();
+            } catch (e) {
+                console.log("Emoji: failed to parse emojis.json:", e);
             }
         }
-
     }
 
     Process {

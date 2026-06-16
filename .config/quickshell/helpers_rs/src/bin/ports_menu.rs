@@ -65,6 +65,9 @@ fn main() {
     }
 
     let pid = entries[index].pid;
+    // Try graceful SIGTERM first, escalate to SIGKILL after 3s
+    let _ = Command::new("kill").args(["-15", &pid.to_string()]).status();
+    std::thread::sleep(std::time::Duration::from_secs(3));
     let _ = Command::new("kill").args(["-9", &pid.to_string()]).status();
     let _ = Command::new("notify-send")
         .args(["Ports", &format!("Killed process with PID {}", pid)])

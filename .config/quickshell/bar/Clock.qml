@@ -4,7 +4,7 @@ import QtQuick
 Item {
     id: root
 
-    readonly property string dateFormat: "ddd MMM d hh:mm"
+    readonly property string dateFormat: "ddd MMM d HH:mm"
 
     width: clockText.implicitWidth + 16
     height: 28

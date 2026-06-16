@@ -144,8 +144,12 @@ fn log_history(power_w: f64) {
   }
 }
 
-fn send_notification(summary: &str, body: &str) {
-  let _ = run_cmd("notify-send", &["--app-name=Battery", summary, body]);
+fn send_notification(summary: &str, body: &str, critical: bool) {
+  if critical {
+    let _ = run_cmd("notify-send", &["--app-name=Battery", "--urgency=critical", "-t", "10000", summary, body]);
+  } else {
+    let _ = run_cmd("notify-send", &["--app-name=Battery", summary, body]);
+  }
 }
 
 enum PowerState {
@@ -228,9 +232,11 @@ fn main() {
         set_brightness(brightness, kbd_brightness);
         apply_power_state(state);
 
+        let is_critical = matches!(state, PowerState::LowBattery);
         send_notification(
           &format!("Power: {}", label),
           &format!("Profile: {}\nBrightness: {}%", profile, brightness),
+          is_critical,
         );
 
         last_state = Some(match state {
