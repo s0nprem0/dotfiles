@@ -60,7 +60,7 @@ PACMAN_PKGS=(
   # Bluetooth
   bluez bluez-utils blueman
   # Network
-  networkmanager nm-connection-editor iw
+  networkmanager nm-connection-editor iw iwd
   # Screenshot, OCR, clipboard
   grim slurp tesseract tesseract-data-eng wl-clipboard
   # Backlight & power
@@ -235,6 +235,7 @@ fi
 info "Enabling systemd services ..."
 
 sudo systemctl enable --now NetworkManager.service 2>/dev/null && ok "NetworkManager" || warn "NetworkManager"
+sudo systemctl enable --now iwd.service 2>/dev/null && ok "iwd" || warn "iwd"
 sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
 sudo systemctl enable --now power-profiles-daemon 2>/dev/null && ok "power-profiles-daemon" || warn "power-profiles-daemon"
 sudo systemctl enable --now thermald 2>/dev/null && ok "thermald" || warn "thermald"
