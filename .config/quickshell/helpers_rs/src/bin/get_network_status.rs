@@ -21,6 +21,12 @@ struct VpnConnection {
     active: bool,
 }
 
+#[derive(Serialize, Default)]
+struct EthernetInfo {
+    connected: bool,
+    speed: String,
+}
+
 #[derive(Serialize)]
 struct ConnectionDetails {
     ip_address: String,
@@ -40,6 +46,9 @@ struct NetworkStatus {
     active_signal: i32,
     active_band: String,
     active_speed: String,
+    ethernet: EthernetInfo,
+    vpn_connected: bool,
+    vpn_name: String,
     warp_connected: bool,
     warp_available: bool,
     details: ConnectionDetails,
@@ -118,6 +127,37 @@ fn wifi_autoconnect_by_ssid() -> HashMap<String, bool> {
     map
 }
 
+fn active_ethernet() -> EthernetInfo {
+    let dev = run_cmd(
+        "nmcli",
+        &["-t", "-f", "DEVICE,TYPE,STATE", "dev"],
+    )
+    .unwrap_or_default();
+
+    for line in dev.lines() {
+        let parts = split_nmcli_t_line(line);
+        if parts.len() >= 3 && parts[1] == "ethernet" && parts[2].contains("connected") {
+            let dev_name = &parts[0];
+            // Get speed from nmcli dev show
+            let info = run_cmd("nmcli", &["-t", "-f", "GENERAL.SPEED", "dev", "show", dev_name])
+                .unwrap_or_default();
+            let speed = info
+                .lines()
+                .next()
+                .unwrap_or("")
+                .trim_start_matches("GENERAL.SPEED:")
+                .trim()
+                .to_string();
+            // Fetch IP details for this ethernet device
+            return EthernetInfo {
+                connected: true,
+                speed,
+            };
+        }
+    }
+    EthernetInfo::default()
+}
+
 fn main() {
     let wifi_enabled = is_wifi_enabled();
     let airplane_mode = is_airplane_mode();
@@ -140,6 +180,7 @@ fn main() {
 
     let mut networks: Vec<WifiNetwork> = Vec::new();
     let mut vpns: Vec<VpnConnection> = Vec::new();
+    let ethernet = active_ethernet();
     let autoconnect_by_ssid = wifi_autoconnect_by_ssid();
 
     // 1. Get scanned wifi networks
@@ -268,8 +309,28 @@ fn main() {
         }
     });
 
-    // 2. Fetch IP details for the active Wi-Fi device if connected
-    if connected && let Some(dev) = wifi_device.as_deref() {
+    // 2. Fetch IP details for active device (wifi or ethernet)
+    let active_dev = if connected {
+        wifi_device.as_deref()
+    } else if ethernet.connected {
+        // Find the active ethernet device name
+        run_cmd("nmcli", &["-t", "-f", "DEVICE,TYPE,STATE", "dev"])
+            .unwrap_or_default()
+            .lines()
+            .find_map(|line| {
+                let parts = split_nmcli_t_line(line);
+                if parts.len() >= 3 && parts[1] == "ethernet" && parts[2].contains("connected") {
+                    Some(parts[0].clone())
+                } else {
+                    None
+                }
+            })
+            .as_deref()
+    } else {
+        None
+    };
+
+    if let Some(dev) = active_dev {
         let dev_info = run_cmd("nmcli", &["dev", "show", dev]).unwrap_or_default();
         for line in dev_info.lines() {
             let parts: Vec<&str> = line.splitn(2, ':').collect();
@@ -339,6 +400,13 @@ fn main() {
         .lines()
         .any(|l| l.to_lowercase().contains("status update: connected"));
 
+    // 5. Derive VPN status from vpns list
+    let vpn_connected = vpns.iter().any(|v| v.active);
+    let vpn_name = vpns.iter().find(|v| v.active).map(|v| v.name.clone()).unwrap_or_default();
+
+    // Mark connected if any interface is up (wifi, ethernet, or VPN)
+    let connected = connected || ethernet.connected || vpn_connected;
+
     let status = NetworkStatus {
         wifi_enabled,
         airplane_mode,
@@ -347,6 +415,9 @@ fn main() {
         active_signal,
         active_band,
         active_speed,
+        ethernet,
+        vpn_connected,
+        vpn_name,
         warp_connected,
         warp_available,
         details,
