@@ -46,6 +46,7 @@ Bar {
             }
 
             Tray {
+                trayPopupRef: trayPopup
             }
 
             Emoji {
@@ -112,6 +113,7 @@ Bar {
                 case "workspace": workspacePopup.showPopup = !workspacePopup.showPopup; break;
                 case "shortcut": shortcutPopup.showPopup = !shortcutPopup.showPopup; break;
                 case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
+                case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
             }
         }
     }
@@ -149,6 +151,10 @@ Bar {
 
     Popups.Shortcut {
         id: shortcutPopup
+    }
+
+    Popups.Tray {
+        id: trayPopup
     }
 
 }
