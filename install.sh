@@ -68,25 +68,27 @@ PACMAN_PKGS=(
   # File management
   udisks2 ranger thunar
   # Utilities
-  fzf fd bat zoxide eza keychain jq socat wlogout powertop
+  fzf fd bat zoxide eza keychain jq socat powertop
   # Development
   base-devel git rustup
   # Qt / GTK theming
   gtk3 gtk4 qt5ct qt6ct
   # Fonts
-  ttf-font-awesome ttf-jetbrains-mono-nerd noto-fonts
+  ttf-font-awesome ttf-jetbrains-mono-nerd ttf-gohu-nerd noto-fonts
   # Auth / session
   gnome-keyring polkit-kde-agent
   rofi
+  # QML shell
+  quickshell
+  # Clipboard manager
+  cliphist
 )
 
 # AUR packages (installed via yay / paru)
 AUR_PKGS=(
-  uwsm               # Universal Wayland Session Manager
-  quickshell-git     # QML widget shell
-  matugen-bin        # Material You colour generator
-  cliphist           # Clipboard manager with history
-  cloudflare-warp-bin  # WARP VPN (optional, for network popup)
+  uwsm                # Universal Wayland Session Manager
+  matugen-bin         # Material You colour generator
+  cloudflare-warp-bin # WARP VPN (optional, for network popup)
 )
 
 # ──────────────────────────────────────────────
