@@ -29,7 +29,7 @@ BarModule {
         id: clipData
 
         path: Theme.bin("get_clipboard_status.sh")
-        interval: 10000
+        interval: 30000
         onDataReceived: function(j) {
             root.hasItems = j.hasItems === true;
         }

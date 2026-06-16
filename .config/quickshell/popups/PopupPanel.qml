@@ -24,8 +24,7 @@ Item {
     // ── Content (set by popup file) ──
     property Component contentComponent
     // ── Per-screen Windows ──
-    property var screenWins: ({
-    })
+    property var screenWins: new Map()
 
     // ── Signals ──
     signal beforeOpen()
@@ -39,8 +38,7 @@ Item {
     // ── Show / Hide ──
     onShowPopupChanged: {
         if (root.showPopup) {
-            for (var key in screenWins) {
-                var w = screenWins[key];
+            for (var w of screenWins.values()) {
                 if (w)
                     w.visible = true;
 
@@ -79,7 +77,7 @@ Item {
                     return h;
                 }
                 Component.onCompleted: {
-                    root.screenWins[modelData] = win;
+                    root.screenWins.set(modelData, win);
                 }
 
                 anchors {
@@ -147,8 +145,7 @@ Item {
         exitDuration: root.exitDuration
         onIntroCompleted: root.afterOpen()
         onExitCompleted: {
-            for (var key in root.screenWins) {
-                var w = root.screenWins[key];
+            for (var w of root.screenWins.values()) {
                 if (w)
                     w.visible = false;
 

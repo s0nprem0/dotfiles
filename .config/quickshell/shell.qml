@@ -43,7 +43,6 @@ Bar {
             }
 
             Notifications {
-                notifService: notifService
             }
 
             Tray {

@@ -311,7 +311,7 @@ fn main() {
 
     // 2. Fetch IP details for active device (wifi or ethernet)
     let active_dev = if connected {
-        wifi_device.as_deref()
+        wifi_device.clone()
     } else if ethernet.connected {
         // Find the active ethernet device name
         run_cmd("nmcli", &["-t", "-f", "DEVICE,TYPE,STATE", "dev"])
@@ -320,17 +320,16 @@ fn main() {
             .find_map(|line| {
                 let parts = split_nmcli_t_line(line);
                 if parts.len() >= 3 && parts[1] == "ethernet" && parts[2].contains("connected") {
-                    Some(parts[0].clone())
+                    Some(parts[0].to_string())
                 } else {
                     None
                 }
             })
-            .as_deref()
     } else {
         None
     };
 
-    if let Some(dev) = active_dev {
+    if let Some(dev) = active_dev.as_deref() {
         let dev_info = run_cmd("nmcli", &["dev", "show", dev]).unwrap_or_default();
         for line in dev_info.lines() {
             let parts: Vec<&str> = line.splitn(2, ':').collect();

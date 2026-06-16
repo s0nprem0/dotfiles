@@ -39,6 +39,7 @@ Item {
             root.loading = false;
             if (code !== 0) {
                 root.hasError = true;
+                crashRestart.interval = root.backoffMs;
                 crashRestart.restart();
             }
         }
@@ -51,6 +52,8 @@ Item {
                 } catch (e) {
                     root.hasError = true;
                     root.loading = false;
+                    crashRestart.interval = root.backoffMs;
+                    crashRestart.restart();
                     console.warn("DataModule JSON parse error:", e);
                 }
             }
@@ -61,13 +64,13 @@ Item {
     Timer {
         id: crashRestart
 
-        interval: root.backoffMs
         repeat: false
         onTriggered: {
-            root.backoffMs = Math.min(root.backoffMs * 2, 30000);
-            if (!proc.running)
+            if (!proc.running) {
+                root.backoffMs = Math.min(root.backoffMs * 2, 30000);
+                crashRestart.interval = root.backoffMs;
                 proc.running = true;
-
+            }
         }
     }
 
