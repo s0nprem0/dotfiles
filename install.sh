@@ -18,11 +18,6 @@ if [[ -z "${XDG_CONFIG_HOME:-}" ]]; then
 fi
 
 # ── Sanity checks ──
-if [[ ! -d "$DOTFILES" ]]; then
-  echo "Cloning dotfiles into $DOTFILES ..."
-  git clone "$REPO" "$DOTFILES"
-fi
-
 if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
   echo "This script should NOT be run as root. Use a regular user with sudo."
   exit 1
@@ -33,6 +28,20 @@ if ! command -v sudo &>/dev/null; then
   echo "  pacman -S sudo"
   exit 1
 fi
+
+# Quick network check
+if ! ping -c 1 -W 2 archlinux.org &>/dev/null; then
+  echo "No network connectivity. Check your connection and try again."
+  exit 1
+fi
+
+if [[ ! -d "$DOTFILES" ]]; then
+  echo "Cloning dotfiles into $DOTFILES ..."
+  git clone "$REPO" "$DOTFILES"
+fi
+
+# Ensure .config directory exists before deploy
+mkdir -p "$XDG_CONFIG_HOME"
 
 # ──────────────────────────────────────────────
 # Package lists
@@ -84,13 +93,16 @@ AUR_PKGS=(
 # Helper functions
 # ──────────────────────────────────────────────
 
+# Use C locale for predictable command output
+export LC_ALL=C
+
 info() { printf "\033[1;34m==>\033[0m %s\n" "$*"; }
 ok() { printf "\033[1;32m  ✓\033[0m %s\n" "$*"; }
 warn() { printf "\033[1;33m  !\033[0m %s\n" "$*"; }
 err() { printf "\033[1;31m  ✗\033[0m %s\n" "$*"; }
 
 install_pacman() {
-  sudo pacman -S --needed --noconfirm "$@" 2>&1 | grep -v "^::\|^ \(checking\|loading\|resolving\|looking\| Package\)"
+  sudo pacman -S --needed --noconfirm "$@"
 }
 
 install_aur_helper() {
@@ -99,7 +111,6 @@ install_aur_helper() {
     return 0
   fi
   info "Installing $helper from AUR ..."
-  sudo pacman -S --needed --noconfirm base-devel git
   local tmpdir
   tmpdir="$(mktemp -d)"
   git clone "https://aur.archlinux.org/$helper.git" "$tmpdir/$helper"
@@ -114,8 +125,8 @@ info "Initialising pacman keyring (safe to re-run) ..."
 sudo pacman-key --init 2>/dev/null || true
 sudo pacman-key --populate archlinux 2>/dev/null || true
 
-info "Updating system ..."
-sudo pacman -Sy --noconfirm
+info "Updating package databases and system ..."
+sudo pacman -Syu --noconfirm
 
 info "Ensuring base-devel and git are installed ..."
 sudo pacman -S --needed --noconfirm base-devel git
@@ -159,7 +170,12 @@ fi
 # 4. Install AUR packages
 # ──────────────────────────────────────────────
 info "Installing AUR packages ..."
-"$AUR_HELPER" -S --needed --noconfirm "${AUR_PKGS[@]}" 2>&1 | grep -v "^::\|^\s"
+if [[ -z "${AUR_HELPER:-}" ]]; then
+  warn "No AUR helper available; skipping AUR packages."
+  warn "Install manually: ${AUR_PKGS[*]}"
+else
+  "${AUR_HELPER}" -S --needed --noconfirm "${AUR_PKGS[@]}"
+fi
 ok "AUR packages installed"
 
 # ──────────────────────────────────────────────
@@ -216,25 +232,34 @@ fi
 # ──────────────────────────────────────────────
 info "Enabling systemd services ..."
 
-sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
 sudo systemctl enable --now NetworkManager.service 2>/dev/null && ok "NetworkManager" || warn "NetworkManager"
+sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
 sudo systemctl enable --now power-profiles-daemon 2>/dev/null && ok "power-profiles-daemon" || warn "power-profiles-daemon"
 sudo systemctl enable --now thermald 2>/dev/null && ok "thermald" || warn "thermald"
 sudo systemctl enable powertop.service 2>/dev/null && ok "powertop" || warn "powertop"
 
+systemctl --user daemon-reload 2>/dev/null
 systemctl --user enable --now pipewire.service 2>/dev/null && ok "pipewire (user)" || warn "pipewire"
 systemctl --user enable --now pipewire-pulse.service 2>/dev/null && ok "pipewire-pulse (user)" || warn "pipewire-pulse"
 systemctl --user enable --now wireplumber.service 2>/dev/null && ok "wireplumber (user)" || warn "wireplumber"
-
 systemctl --user enable --now gnome-keyring-daemon.service 2>/dev/null && ok "gnome-keyring (user)" || warn "gnome-keyring"
 
 # ──────────────────────────────────────────────
-# 9. Set default shell to zsh
+# 10. Clean up pacman cache
 # ──────────────────────────────────────────────
-if [[ "$SHELL" != "$(which zsh)" ]]; then
+info "Cleaning pacman cache ..."
+sudo pacman -Sc --noconfirm 2>/dev/null && ok "Cache cleaned" || true
+
+# ──────────────────────────────────────────────
+# 11. Set default shell to zsh
+# ──────────────────────────────────────────────
+if [[ "$SHELL" != "$(command -v zsh)" ]]; then
   info "Setting zsh as default shell ..."
-  chsh -s "$(which zsh)"
-  ok "Default shell changed to zsh (log out & back in to apply)"
+  if chsh -s "$(command -v zsh)" 2>/dev/null; then
+    ok "Default shell changed to zsh (log out & back in to apply)"
+  else
+    warn "Could not change shell. Run manually: chsh -s $(command -v zsh)"
+  fi
 fi
 
 # ──────────────────────────────────────────────
