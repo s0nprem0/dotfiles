@@ -10,9 +10,15 @@ source "${ZDOTDIR}/prompt.zsh" # prompt
 autoload -Uz compinit
 compinit -C -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
-# Persist SSH keys across all WezTerm/WSL sessions
+# Compile zcompdump in the background if it was updated
+if [[ -s "$XDG_CACHE_HOME/zsh/zcompdump" && (! -s "${XDG_CACHE_HOME}/zsh/zcompdump.zwc" || "$XDG_CACHE_HOME/zsh/zcompdump" -nt "${XDG_CACHE_HOME}/zsh/zcompdump.zwc") ]]; then
+    zcompile "$XDG_CACHE_HOME/zsh/zcompdump"
+fi
+
+
+# Reuse a shared ssh-agent across all WSL sessions
 if command -v keychain >/dev/null 2>&1; then
-    eval $(keychain --eval --agents ssh --quiet id_ed25519)
+    eval "$(keychain --eval --quiet ~/.ssh/id_ed25519)"
 fi
 
 zstyle ':completion:*:*:*:*:*' menu select
@@ -22,7 +28,7 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' rehash true
 zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
 zstyle ':completion:*' use-compctl false
@@ -37,6 +43,8 @@ setopt hist_expire_dups_first # delete duplicates first when HISTFILE size excee
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running it
+setopt extended_history       # Save timestamps and command durations to the history file
+setopt inc_append_history     # Write commands to the history file *immediately*, not just when the shell exits
 #setopt share_history         # share command history data - uncomment if needed
 
 # force zsh to show the complete history
@@ -47,5 +55,10 @@ TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 
 if (( $+commands[zoxide] )); then
-  eval "$(zoxide init zsh)"
+    # Cache the init script to speed up shell startup
+    ZOXIDE_CACHE="$XDG_CACHE_HOME/zsh/zoxide.zsh"
+    if [[ ! -f "$ZOXIDE_CACHE" ]]; then
+        zoxide init zsh > "$ZOXIDE_CACHE"
+    fi
+    source "$ZOXIDE_CACHE"
 fi
