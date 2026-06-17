@@ -70,10 +70,10 @@ Scope {
         if (visibleNow) {
             hideTimer.interval = state.timeout_ms || 1200;
             hideTimer.restart();
-            if (message.includes("volume")) {
+            if (message.includes("volume") && !root.osdMedia) {
                 checkAudioStatusProc.running = false;
                 checkAudioStatusProc.running = true;
-            } else {
+            } else if (!message.includes("volume")) {
                 root.osdMedia = null;
                 root.osdMediaSources = [];
                 root.osdCurrentMediaSource = "";
