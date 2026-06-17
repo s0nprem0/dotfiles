@@ -12,20 +12,16 @@ Scope {
     property string message: ""
     property string kind: "info"
     property bool visibleNow: false
-    required property var audioModuleRef
+    property var osdMedia: null
+    property var osdMediaSources: []
+    property string osdCurrentMediaSource: ""
 
-    property string mediaArtUrl: ""
-
-    function handleArtUrl(url) {
-        if (!url) {
-            mediaArtUrl = "";
-            return;
+    function osdMediaSourceIndex() {
+        for (var i = 0; i < root.osdMediaSources.length; i++) {
+            if (root.osdMediaSources[i].name === root.osdCurrentMediaSource)
+                return i;
         }
-        if (url.indexOf("http://") === 0 || url.indexOf("https://") === 0) {
-            osdArtCache.ensureCached(url);
-        } else {
-            mediaArtUrl = url;
-        }
+        return -1;
     }
 
     function getIconColor(msg) {
@@ -74,8 +70,19 @@ Scope {
         if (visibleNow) {
             hideTimer.interval = state.timeout_ms || 1200;
             hideTimer.restart();
+            if (message.includes("volume")) {
+                checkAudioStatusProc.running = false;
+                checkAudioStatusProc.running = true;
+            } else {
+                root.osdMedia = null;
+                root.osdMediaSources = [];
+                root.osdCurrentMediaSource = "";
+            }
         } else {
             hideTimer.stop();
+            root.osdMedia = null;
+            root.osdMediaSources = [];
+            root.osdCurrentMediaSource = "";
         }
     }
 
@@ -86,6 +93,9 @@ Scope {
         repeat: false
         onTriggered: {
             root.visibleNow = false;
+            root.osdMedia = null;
+            root.osdMediaSources = [];
+            root.osdCurrentMediaSource = "";
         }
     }
 
@@ -99,24 +109,25 @@ Scope {
         onLoaded: root.refreshState()
     }
 
-    Connections {
-        target: audioModuleRef
-        function onArtUrlChanged() {
-            root.handleArtUrl(audioModuleRef ? audioModuleRef.artUrl : "");
-        }
-    }
+    Process {
+        id: checkAudioStatusProc
 
-    onAudioModuleRefChanged: {
-        if (audioModuleRef)
-            handleArtUrl(audioModuleRef.artUrl);
-    }
+        command: [Theme.bin("get_audio_status")]
+        running: false
 
-    ArtCache {
-        id: osdArtCache
-        cachePrefix: "osd_art_"
-        onCacheReady: function(url, localPath) {
-            if (url === osdArtCache.pendingUrl)
-                root.mediaArtUrl = localPath;
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var data = JSON.parse(this.text);
+                    root.osdMedia = data.media || null;
+                    root.osdMediaSources = data.media_sources || [];
+                    root.osdCurrentMediaSource = data.current_media_source || "";
+                } catch (e) {
+                    root.osdMedia = null;
+                    root.osdMediaSources = [];
+                    root.osdCurrentMediaSource = "";
+                }
+            }
         }
     }
 
@@ -144,14 +155,10 @@ Scope {
         WlrLayershell.namespace: "osd"
         visible: root.visibleNow || exitAnim.running
         implicitWidth: {
-            var base = 200;
-            if (OsdUtils.getPercentage(root.message) === -1)
-                base = fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
+            if (OsdUtils.getPercentage(root.message) !== -1)
+                return 200;
 
-            if (win.isShown && audioModuleRef && audioModuleRef.hasPlayer)
-                base = Math.max(base, 260);
-
-            return base;
+            return fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
         }
         implicitHeight: mainLayout.implicitHeight + 12
         Component.onCompleted: {
@@ -328,28 +335,29 @@ Scope {
                     height: 1
                     color: Theme.primary
                     opacity: 0.3
-                    visible: win.isShown && audioModuleRef && audioModuleRef.hasPlayer
+                    visible: root.osdMedia !== null && root.message.includes("volume")
                 }
 
                 Row {
-                    id: mediaRow
-                    visible: win.isShown && audioModuleRef && audioModuleRef.hasPlayer
-                    spacing: 6
                     width: parent.width
+                    spacing: 6
+                    visible: root.osdMedia !== null && root.message.includes("volume")
+                    anchors.horizontalCenter: parent.horizontalCenter
 
                     Rectangle {
-                        width: 24
-                        height: 24
+                        width: 18
+                        height: 18
                         color: Theme.surface
                         clip: true
+                        anchors.verticalCenter: parent.verticalCenter
 
                         Image {
-                            id: artImg
+                            id: artImage
                             anchors.fill: parent
                             fillMode: Image.PreserveAspectCrop
-                            source: root.mediaArtUrl
+                            source: (root.osdMedia && root.osdMedia.art_url) ? root.osdMedia.art_url : ""
                             asynchronous: true
-                            cache: true
+                            visible: source.toString() !== ""
                         }
 
                         Text {
@@ -357,61 +365,67 @@ Scope {
                             text: "󰎆"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
-                            visible: artImg.status === Image.Error || !root.mediaArtUrl
+                            font.pixelSize: 8
+                            visible: !artImage.visible
                             renderType: Text.NativeRendering
                         }
-
                     }
 
                     Column {
-                        width: parent.width - 30
-                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 24
                         spacing: 1
-
-                        Text {
-                            width: parent.width
-                            text: audioModuleRef ? audioModuleRef.title || "Unknown Track" : ""
-                            color: Theme.primary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            font.bold: true
-                            elide: Text.ElideRight
-                            renderType: Text.NativeRendering
-                        }
+                        anchors.verticalCenter: parent.verticalCenter
 
                         Row {
+                            width: parent.width
                             spacing: 4
 
                             Text {
-                                text: audioModuleRef ? audioModuleRef.artist || "" : ""
-                                width: parent.parent.width - 10
-                                color: Theme.fg
-                                opacity: 0.6
+                                width: parent.width - sourceIndicator.implicitWidth - 4
+                                text: root.osdMedia ? root.osdMedia.title : ""
+                                color: Theme.primary
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 8
+                                font.bold: true
                                 elide: Text.ElideRight
                                 renderType: Text.NativeRendering
-                            }
-
-                            Rectangle {
-                                width: 4
-                                height: 4
                                 anchors.verticalCenter: parent.verticalCenter
-                                color: audioModuleRef && audioModuleRef.playerStatus === "Playing" ? Theme.green : Theme.warning
-                                visible: audioModuleRef && audioModuleRef.playerStatus !== ""
                             }
 
+                            Row {
+                                id: sourceIndicator
+                                spacing: 2
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: root.osdMediaSources.length > 1
+
+                                Repeater {
+                                    model: root.osdMediaSources
+
+                                    delegate: Rectangle {
+                                        width: 3
+                                        height: 3
+                                        color: index === root.osdMediaSourceIndex() ? Theme.primary : Theme.surfaceLighter
+                                        border.width: 1
+                                        border.color: Theme.primary
+                                        opacity: index === root.osdMediaSourceIndex() ? 1 : 0.55
+                                    }
+                                }
+                            }
                         }
 
+                        Text {
+                            width: parent.width
+                            text: root.osdMedia ? (root.osdMedia.artist ? root.osdMedia.artist + " • " + root.osdMedia.player : root.osdMedia.player) : ""
+                            color: Theme.primary
+                            opacity: 0.6
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 7
+                            elide: Text.ElideRight
+                            renderType: Text.NativeRendering
+                        }
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }
