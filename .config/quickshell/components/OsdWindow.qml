@@ -12,6 +12,21 @@ Scope {
     property string message: ""
     property string kind: "info"
     property bool visibleNow: false
+    required property var audioModuleRef
+
+    property string mediaArtUrl: ""
+
+    function handleArtUrl(url) {
+        if (!url) {
+            mediaArtUrl = "";
+            return;
+        }
+        if (url.indexOf("http://") === 0 || url.indexOf("https://") === 0) {
+            osdArtCache.ensureCached(url);
+        } else {
+            mediaArtUrl = url;
+        }
+    }
 
     function getIconColor(msg) {
         var lower = msg.toLowerCase();
@@ -84,6 +99,27 @@ Scope {
         onLoaded: root.refreshState()
     }
 
+    Connections {
+        target: audioModuleRef
+        function onArtUrlChanged() {
+            root.handleArtUrl(audioModuleRef ? audioModuleRef.artUrl : "");
+        }
+    }
+
+    onAudioModuleRefChanged: {
+        if (audioModuleRef)
+            handleArtUrl(audioModuleRef.artUrl);
+    }
+
+    ArtCache {
+        id: osdArtCache
+        cachePrefix: "osd_art_"
+        onCacheReady: function(url, localPath) {
+            if (url === osdArtCache.pendingUrl)
+                root.mediaArtUrl = localPath;
+        }
+    }
+
     // Removed Variants model to prevent duplicate windows on multiple monitors
     PanelWindow {
         id: win
@@ -108,10 +144,14 @@ Scope {
         WlrLayershell.namespace: "osd"
         visible: root.visibleNow || exitAnim.running
         implicitWidth: {
-            if (OsdUtils.getPercentage(root.message) !== -1)
-                return 200;
+            var base = 200;
+            if (OsdUtils.getPercentage(root.message) === -1)
+                base = fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
 
-            return fallbackLabel.implicitWidth + (fallbackIcon.visible ? fallbackIcon.implicitWidth + 6 : 0) + 18;
+            if (win.isShown && audioModuleRef && audioModuleRef.hasPlayer)
+                base = Math.max(base, 260);
+
+            return base;
         }
         implicitHeight: mainLayout.implicitHeight + 12
         Component.onCompleted: {
@@ -279,6 +319,91 @@ Scope {
                         font.pixelSize: 9
                         renderType: Text.NativeRendering
                         anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: Theme.primary
+                    opacity: 0.3
+                    visible: win.isShown && audioModuleRef && audioModuleRef.hasPlayer
+                }
+
+                Row {
+                    id: mediaRow
+                    visible: win.isShown && audioModuleRef && audioModuleRef.hasPlayer
+                    spacing: 6
+                    width: parent.width
+
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        color: Theme.surface
+                        clip: true
+
+                        Image {
+                            id: artImg
+                            anchors.fill: parent
+                            fillMode: Image.PreserveAspectCrop
+                            source: root.mediaArtUrl
+                            asynchronous: true
+                            cache: true
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰎆"
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 12
+                            visible: artImg.status === Image.Error || !root.mediaArtUrl
+                            renderType: Text.NativeRendering
+                        }
+
+                    }
+
+                    Column {
+                        width: parent.width - 30
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 1
+
+                        Text {
+                            width: parent.width
+                            text: audioModuleRef ? audioModuleRef.title || "Unknown Track" : ""
+                            color: Theme.primary
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                            font.bold: true
+                            elide: Text.ElideRight
+                            renderType: Text.NativeRendering
+                        }
+
+                        Row {
+                            spacing: 4
+
+                            Text {
+                                text: audioModuleRef ? audioModuleRef.artist || "" : ""
+                                width: parent.parent.width - 10
+                                color: Theme.fg
+                                opacity: 0.6
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 8
+                                elide: Text.ElideRight
+                                renderType: Text.NativeRendering
+                            }
+
+                            Rectangle {
+                                width: 4
+                                height: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: audioModuleRef && audioModuleRef.playerStatus === "Playing" ? Theme.green : Theme.warning
+                                visible: audioModuleRef && audioModuleRef.playerStatus !== ""
+                            }
+
+                        }
+
                     }
 
                 }

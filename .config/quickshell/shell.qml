@@ -85,6 +85,7 @@ Bar {
 
     // OSD
     OsdWindow {
+        audioModuleRef: audioModule
     }
 
     // Notification System
