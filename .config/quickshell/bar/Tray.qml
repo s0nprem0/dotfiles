@@ -8,19 +8,32 @@ BarModule {
 
     property var trayPopupRef: null
 
-    implicitWidth: 28
+    implicitWidth: Math.max(28, iconRow.implicitWidth + 8)
     tooltipText: "System Tray (" + SystemTray.items.length + " items)"
-    visible: SystemTray.items.length > 0
+    visible: true
     mA.onClicked: {
         if (root.trayPopupRef)
             root.trayPopupRef.showPopup = !root.trayPopupRef.showPopup;
     }
 
-    Text {
+    Row {
+        id: iconRow
         anchors.centerIn: parent
-        text: "󰟸"
-        color: Theme.fg
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
+        spacing: 2
+
+        Repeater {
+            model: SystemTray.items
+
+            delegate: Image {
+                required property var modelData
+                width: 14
+                height: 14
+                source: modelData.icon
+                fillMode: Image.PreserveAspectFit
+                sourceSize.width: 14
+                sourceSize.height: 14
+                visible: status !== Image.Error
+            }
+        }
     }
 }
