@@ -22,6 +22,7 @@ Item {
     property var actions: []
     property var hints: ({
     })
+    property real snoozeUntil: 0
 
     function updateTimeStr() {
         var diff = Date.now() - root.time.getTime();
@@ -53,6 +54,15 @@ Item {
         if (root.notification && !root.closed)
             root.notification.invoke(actionId);
 
+    }
+
+    function snooze(ms) {
+        root.snoozeUntil = Date.now() + ms;
+        root.closed = true;
+        if (root.notification)
+            root.notification.dismiss();
+        snoozeTimer.interval = ms;
+        snoozeTimer.restart();
     }
 
     function mapActions(actionList) {
@@ -89,6 +99,14 @@ Item {
         root.hints = root.notification.hints;
         root.actions = mapActions(root.notification.actions);
         root.timestamp = root.time.getTime();
+    }
+
+    Timer {
+        id: snoozeTimer
+        onTriggered: {
+            root.closed = false;
+            root.snoozeUntil = 0;
+        }
     }
 
     Connections {

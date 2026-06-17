@@ -524,10 +524,10 @@ Item {
                                             Layout.alignment: Qt.AlignCenter
 
                                             Text {
-                                                text: "prev"
+                                                text: ""
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 9
+                                                font.pixelSize: 14
                                                 visible: root.mediaData && root.mediaData.status === "Playing"
 
                                                 MouseArea {
@@ -545,11 +545,10 @@ Item {
                                             }
 
                                             Text {
-                                                text: root.mediaData && root.mediaData.status === "Playing" ? "pause" : "play"
+                                                text: root.mediaData && root.mediaData.status === "Playing" ? "" : ""
                                                 color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 9
-                                                font.bold: true
+                                                font.pixelSize: 14
 
                                                 MouseArea {
                                                     anchors.fill: parent
@@ -566,10 +565,10 @@ Item {
                                             }
 
                                             Text {
-                                                text: "next"
+                                                text: ""
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 9
+                                                font.pixelSize: 14
                                                 visible: root.mediaData && root.mediaData.status === "Playing"
 
                                                 MouseArea {
@@ -608,6 +607,67 @@ Item {
 
                                     }
 
+                                }
+
+                            }
+
+                        }
+
+                        // ─── Active / History Tabs ──────────────────
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 28
+                                color: !root.showHistory ? Qt.alpha(Theme.primary, 0.12) : "transparent"
+                                radius: 4
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Active"
+                                    color: !root.showHistory ? Theme.primary : Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                    font.bold: !root.showHistory
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.showHistory = false;
+                                        root.selectedIds = ({});
+                                        root.refreshNotifications();
+                                    }
+                                }
+
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 28
+                                color: root.showHistory ? Qt.alpha(Theme.primary, 0.12) : "transparent"
+                                radius: 4
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "History"
+                                    color: root.showHistory ? Theme.primary : Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                    font.bold: root.showHistory
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.showHistory = true;
+                                        root.selectedIds = ({});
+                                        root.refreshNotifications();
+                                    }
                                 }
 
                             }

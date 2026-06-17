@@ -13,10 +13,20 @@ Rectangle {
 
     implicitHeight: root.btnHeight
     implicitWidth: label.implicitWidth + 10
-    color: mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Theme.surfaceLighter
+    color: mouseArea.containsMouse || activeFocus ? Qt.alpha(Theme.primary, 0.2) : Theme.surfaceLighter
     radius: root.btnRadius
-    border.width: 1
-    border.color: mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.4) : Qt.alpha(Theme.primary, 0.15)
+    border.width: activeFocus ? 2 : 1
+    border.color: activeFocus ? Theme.primary : (mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.4) : Qt.alpha(Theme.primary, 0.15))
+
+    focusPolicy: Qt.TabFocus
+
+    Keys.onReturnPressed: invokeAction()
+    Keys.onSpacePressed: invokeAction()
+
+    function invokeAction() {
+        root.action.invoke();
+        root.invoked();
+    }
 
     Text {
         id: label
@@ -35,8 +45,7 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
         onClicked: {
-            root.action.invoke();
-            root.invoked();
+            root.invokeAction();
         }
     }
 

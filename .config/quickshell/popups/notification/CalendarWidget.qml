@@ -6,7 +6,7 @@ RowLayout {
     id: root
 
     property int calendarMonthOffset: 0
-    property bool showCalendar: true
+    property bool showCalendar: false
     property string hourStr: ""
     property string minStr: ""
     property string secStr: ""
@@ -200,45 +200,27 @@ RowLayout {
         spacing: 2
         Layout.alignment: Qt.AlignVCenter
 
-        Text {
-            text: root.hourStr
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 28
-            font.bold: true
-            Layout.alignment: Qt.AlignHCenter
-        }
-
-        Text {
-            text: root.minStr
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 24
-            Layout.alignment: Qt.AlignHCenter
-        }
-
         RowLayout {
             spacing: 4
             Layout.alignment: Qt.AlignHCenter
 
             Text {
-                text: root.secStr
+                text: root.hourStr + ":" + root.minStr
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: 20
+                font.bold: true
             }
 
             Text {
                 text: root.ampmStr
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: 10
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 2
             }
 
-        }
-
-        Item {
-            height: 4
         }
 
         Text {
@@ -246,7 +228,7 @@ RowLayout {
             color: Theme.primary
             opacity: 0.75
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: 9
             Layout.alignment: Qt.AlignHCenter
         }
 

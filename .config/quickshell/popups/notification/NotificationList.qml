@@ -162,28 +162,6 @@ ColumnLayout {
 
         }
 
-        Text {
-            text: root.showHistory ? "Active" : "History"
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 9
-            font.bold: true
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-                onEntered: parent.color = Qt.lighter(Theme.primary, 1.2)
-                onExited: parent.color = Theme.primary
-                onClicked: {
-                    root.showHistory = !root.showHistory;
-                    root.selectedIds = ({
-                    });
-                }
-            }
-
-        }
-
     }
 
     ScrollView {
@@ -354,6 +332,35 @@ ColumnLayout {
 
                         }
 
+                        Rectangle {
+                            width: 20
+                            height: 20
+                            radius: 10
+                            color: snoozeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
+                            visible: !root.showHistory
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "⏰"
+                                color: snoozeMa.containsMouse ? Theme.primary : Theme.muted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                            }
+
+                            MouseArea {
+                                id: snoozeMa
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var n = notif;
+                                    n.snooze(30 * 60 * 1000);
+                                }
+                            }
+
+                        }
+
                     }
 
                     Text {
@@ -378,6 +385,23 @@ ColumnLayout {
                         clip: true
                         source: notif.image ? (notif.image.startsWith("/") ? ("file://" + notif.image) : notif.image) : ""
                         visible: notif.image && notif.image.length > 0
+                    }
+
+                    // ─── Progress Bar ──────────────────────────
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 4
+                        radius: 2
+                        color: Qt.alpha(Theme.primary, 0.1)
+                        visible: notif.hints && notif.hints.value !== undefined
+
+                        Rectangle {
+                            width: parent.width * Math.min(1, Math.max(0, (notif.hints.value / (notif.hints.maximum || 100))))
+                            height: parent.height
+                            radius: 2
+                            color: Theme.primary
+                        }
+
                     }
 
                     RowLayout {

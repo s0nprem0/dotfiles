@@ -57,6 +57,14 @@ ColumnLayout {
             Layout.fillWidth: true
         }
 
+        Text {
+            text: root.timeShort24h
+            color: Theme.primary
+            font.family: Theme.fontFamily
+            font.pixelSize: 13
+            font.bold: true
+        }
+
     }
 
     RowLayout {
@@ -177,14 +185,6 @@ ColumnLayout {
 
         Item {
             Layout.fillWidth: true
-        }
-
-        Text {
-            text: root.timeShort24h
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
-            font.bold: true
         }
 
     }
