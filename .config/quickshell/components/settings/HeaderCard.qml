@@ -13,9 +13,9 @@ Rectangle {
 
     Layout.fillWidth: true
     radius: 0
-    color: Theme.surface
+    color: "transparent"
     border.width: 1
-    border.color: Qt.alpha(Theme.primary, 0.15)
+    border.color: Theme.primary // Hard solid border instead of alpha
     implicitHeight: content.implicitHeight + 24
 
     ColumnLayout {
@@ -23,25 +23,26 @@ Rectangle {
 
         anchors.fill: parent
         anchors.margins: 12
-        spacing: 8
+        spacing: 12
 
         RowLayout {
             Layout.fillWidth: true
+            spacing: 12
 
+            // Inverted solid block for the Arch logo
             Rectangle {
-                width: 36
-                height: 36
+                width: 42
+                height: 42
                 radius: 0
-                color: Qt.alpha(Theme.primary, 0.12)
+                color: Theme.primary
 
                 Text {
                     anchors.centerIn: parent
                     text: "󰣇"
-                    color: Theme.primary
+                    color: Theme.bg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 18
+                    font.pixelSize: 24
                 }
-
             }
 
             ColumnLayout {
@@ -49,8 +50,8 @@ Rectangle {
                 spacing: 2
 
                 Text {
-                    text: root.hostname
-                    color: Theme.fg
+                    text: root.hostname.toUpperCase()
+                    color: Theme.primary
                     font.family: Theme.fontFamily
                     font.pixelSize: 13
                     font.bold: true
@@ -59,22 +60,22 @@ Rectangle {
                 }
 
                 Text {
-                    text: root.os
-                    color: Theme.muted
+                    text: root.os.toUpperCase()
+                    color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: 9
+                    font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
-
             }
-
         }
 
+        // Hard divider
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Qt.alpha(Theme.primary, 0.12)
+            color: Theme.primary
         }
 
         RowLayout {
@@ -83,23 +84,25 @@ Rectangle {
 
             Text {
                 text: root.charging ? "󱐋 " + root.batteryPercent + "%" : "󰁹 " + root.batteryPercent + "%"
-                color: Theme.fg
+                color: root.charging ? Theme.green : Theme.primary
                 font.family: Theme.fontFamily
                 font.pixelSize: 10
+                font.bold: true
             }
 
             Text {
                 text: "•"
-                color: Theme.muted
+                color: Theme.primary
                 font.family: Theme.fontFamily
                 font.pixelSize: 10
             }
 
             Text {
-                text: root.charging ? "Charging" : "Discharging"
-                color: root.charging ? Theme.green : Theme.muted
+                text: root.charging ? "CHARGING" : "DISCHARGING"
+                color: root.charging ? Theme.green : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 9
+                font.bold: true
             }
 
             Item {
@@ -107,21 +110,12 @@ Rectangle {
             }
 
             Text {
-                text: "󰔚 " + root.uptime
-                color: Theme.muted
+                text: "󰔚 " + root.uptime.toUpperCase()
+                color: Theme.primary
                 font.family: Theme.fontFamily
                 font.pixelSize: 10
+                font.bold: true
             }
-
         }
-
     }
-
-    Behavior on color {
-        ColorAnimation {
-            duration: 150
-        }
-
-    }
-
 }
