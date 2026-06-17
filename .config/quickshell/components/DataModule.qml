@@ -47,11 +47,9 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.loading = false;
                     root.dataReceived(JSON.parse(this.text));
                 } catch (e) {
                     root.hasError = true;
-                    root.loading = false;
                     crashRestart.interval = root.backoffMs;
                     crashRestart.restart();
                     console.warn("DataModule JSON parse error:", e);

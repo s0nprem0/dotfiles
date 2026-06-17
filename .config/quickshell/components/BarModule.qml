@@ -8,7 +8,6 @@ Rectangle {
     property alias tooltipText: tooltipLabel.text
     property bool tooltipVisible: tooltipLabel.text.length > 0
     property int acceptedButtons: Qt.LeftButton
-    // NEW: Allow changing tooltip direction based on bar placement (top vs bottom)
     property bool tooltipBelow: true
     property bool loading: false
     property bool error: false
@@ -21,7 +20,6 @@ Rectangle {
     Rectangle {
         id: tooltip
 
-        // NEW: Dynamic anchoring to prevent screen clipping
         anchors.top: root.tooltipBelow ? parent.bottom : undefined
         anchors.bottom: !root.tooltipBelow ? parent.top : undefined
         anchors.topMargin: root.tooltipBelow ? 4 : 0
@@ -29,11 +27,10 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         height: 20
         width: tooltipLabel.width + 12
-        radius: 4 // Slightly softer tooltip radius
+        radius: 0
         color: Qt.alpha(Theme.surface, 0.9)
         border.color: Qt.alpha(Theme.primary, 0.2)
         border.width: 1
-        // NEW: Animate the tooltip fading in and out
         opacity: (mA.containsMouse && root.tooltipVisible) ? 1 : 0
         visible: opacity > 0
 
@@ -61,7 +58,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: root.acceptedButtons
-        cursorShape: Qt.PointingHandCursor // NEW: Shows the hand icon on hover
+        cursorShape: Qt.PointingHandCursor
     }
 
     Behavior on color {
