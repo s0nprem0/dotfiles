@@ -21,8 +21,4 @@ pub fn cache_dir() -> PathBuf {
         .join("quickshell")
 }
 
-pub fn dotfiles_dir() -> PathBuf {
-    env::var_os("WABI_DOTFILES_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| home_dir().join("doty"))
-}
+
