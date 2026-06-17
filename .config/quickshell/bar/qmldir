@@ -1,0 +1,12 @@
+Audio Audio.qml
+Battery Battery.qml
+Bluetooth Bluetooth.qml
+Clipboard Clipboard.qml
+Clock Clock.qml
+Emoji Emoji.qml
+Network Network.qml
+Notifications Notifications.qml
+PowerProfile PowerProfile.qml
+Settings Settings.qml
+Tray Tray.qml
+Workspaces Workspaces.qml

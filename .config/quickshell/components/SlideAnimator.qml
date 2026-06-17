@@ -35,7 +35,6 @@ Item {
         closing = false;
     }
 
-    visible: false
     onShowChanged: {
         if (show) {
             exitAnim.stop();

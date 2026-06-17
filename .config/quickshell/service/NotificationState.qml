@@ -5,10 +5,7 @@ QtObject {
     id: root
 
     property bool dnd: false
-    property var toastModel
-
-    toastModel: ListModel {
-    }
+    property ListModel toastModel: ListModel { }
 
     property var centerPopup: null
     property var service: null
