@@ -173,7 +173,6 @@ fn main() {
     let home = std::env::var("HOME").unwrap_or_default();
     let storage = Storage::new(&home);
 
-    // Route command-line arguments flags safely
     if args.len() > 1 {
         match args[1].as_str() {
             "--clear-history" => {
@@ -228,7 +227,6 @@ fn main() {
 
                     if let Some(child_proc) = child {
                         if let Ok(output) = child_proc.wait_with_output() {
-                            // OPTIMIZATION: Build a lookup map to prevent nested O(N*M) iteration
                             let entry_map: HashMap<&str, &FileIndexEntry> = entries
                                 .iter()
                                 .map(|e| (e.path.as_str(), e))
@@ -274,7 +272,9 @@ fn main() {
                 } else {
                     file_path.to_string()
                 };
-                let _ = Command::new("thunar").arg(&open_path).status();
+
+                // UX FIX: Use xdg-open so files open in their native, preferred application
+                let _ = Command::new("xdg-open").arg(&open_path).status();
                 return;
             }
             "--file-history" => {
@@ -309,7 +309,6 @@ fn main() {
         }
     }
 
-    // Default Behavior: Scan system directories and dump standard JSON array
     let usage_map = storage.load_json::<HashMap<String, u32>>("app_usage.json").unwrap_or_default();
     let mut apps: HashMap<String, AppInfo> = HashMap::new();
 

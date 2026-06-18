@@ -20,6 +20,13 @@ Window {
     property string searchText: ""
     property int selectedIndex: 0
 
+    // UX UPGRADE: Auto-close window if you click away (Window Ghosting Fix)
+    onActiveChanged: {
+        if (!active && showPopup) {
+            showPopup = false;
+        }
+    }
+
     onVisibleChanged: {
         if (visible) {
             rebuildDisplay();
@@ -29,7 +36,18 @@ Window {
         }
     }
 
-    // ── NAVIGATION LOGIC (Fixes text cursor jumping) ──
+    // UX UPGRADE: True Fuzzy Matching Algorithm
+    function fuzzyMatch(str, query) {
+        if (query === "") return true;
+        str = (str || "").toLowerCase();
+        query = query.toLowerCase();
+        var j = 0;
+        for (var i = 0; i < str.length && j < query.length; i++) {
+            if (str[i] === query[j]) j++;
+        }
+        return j === query.length;
+    }
+
     function moveUp() {
         if (root.selectedIndex > 0) {
             root.selectedIndex--;
@@ -84,11 +102,10 @@ Window {
                 isWebAction: true
             });
         } else {
-            var lowerTerm = term.toLowerCase();
+            // Use the new fuzzyMatch function
             for (let i = 0; i < sourceApps.length; i++) {
                 let item = sourceApps[i];
-                if ((item.name || "").toLowerCase().indexOf(lowerTerm) >= 0 ||
-                    (item.comment && item.comment.toLowerCase().indexOf(lowerTerm) >= 0)) {
+                if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term)) {
                     item.typeLabel = "APP";
                     filtered.push(item);
                 }
@@ -120,7 +137,6 @@ Window {
         }
     }
 
-    // Global Window fallbacks
     Keys.onPressed: (event) => {
         if (event.key === Qt.Key_Escape) {
             root.showPopup = false;
@@ -245,14 +261,13 @@ Window {
                                 root.rebuildDisplay()
                             }
 
-                            // PERFECTED UX: Intercept navigation entirely so cursor doesn't jump
                             Keys.onPressed: (event) => {
                                 if (event.key === Qt.Key_Up || (event.key === Qt.Key_K && (event.modifiers & Qt.ControlModifier))) {
                                     root.moveUp();
-                                    event.accepted = true; // Stops text cursor movement
+                                    event.accepted = true;
                                 } else if (event.key === Qt.Key_Down || (event.key === Qt.Key_J && (event.modifiers & Qt.ControlModifier))) {
                                     root.moveDown();
-                                    event.accepted = true; // Stops text cursor movement
+                                    event.accepted = true;
                                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                     root.launchSelected();
                                     event.accepted = true;
@@ -356,22 +371,38 @@ Window {
                                 onClicked: root.launchSelected()
                             }
 
-                            // PERFECTED UX: Strict Grid Anchoring instead of RowLayout
-                            // 1. Icon Anchored Left
-                            Text {
+                            // PERFECTED UX: Dynamic Icon Rendering
+                            Item {
                                 id: itemIcon
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.icon || "󰣇"
-                                color: root.selectedIndex === index ? Theme.bg : Theme.primary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 16
                                 width: 24
-                                horizontalAlignment: Text.AlignHCenter
+                                height: 24
+
+                                // Fallback/Glyph Rendering
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: (modelData.typeLabel !== "APP") ? (modelData.icon || "󰣇") : "󰣇"
+                                    color: root.selectedIndex === index ? Theme.bg : Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 16
+                                    visible: imgIcon.status === Image.Error || modelData.typeLabel !== "APP"
+                                }
+
+                                // Native Icon Rendering
+                                Image {
+                                    id: imgIcon
+                                    anchors.centerIn: parent
+                                    width: 16
+                                    height: 16
+                                    source: modelData.typeLabel === "APP" && modelData.icon ? (modelData.icon.startsWith("/") ? "file://" + modelData.icon : "image://icon/" + modelData.icon) : ""
+                                    visible: modelData.typeLabel === "APP" && status !== Image.Error
+                                    sourceSize.width: 16
+                                    sourceSize.height: 16
+                                }
                             }
 
-                            // 2. The "Enter" Indicator Anchored Far Right
                             Text {
                                 id: enterIndicator
                                 anchors.right: parent.right
@@ -382,10 +413,9 @@ Window {
                                 color: Theme.bg
                                 font.pixelSize: 16
                                 font.bold: true
-                                width: visible ? 16 : 0 // Collapses to 0 width when hidden so badge doesn't shift
+                                width: visible ? 16 : 0
                             }
 
-                            // 3. The Classification Badge Anchored to the left of the Enter Indicator
                             Rectangle {
                                 id: typeBadge
                                 anchors.right: enterIndicator.visible ? enterIndicator.left : parent.right
@@ -408,7 +438,6 @@ Window {
                                 }
                             }
 
-                            // 4. The Text Block Anchored securely between the Icon and the Badge
                             Item {
                                 anchors.left: itemIcon.right
                                 anchors.leftMargin: 14
