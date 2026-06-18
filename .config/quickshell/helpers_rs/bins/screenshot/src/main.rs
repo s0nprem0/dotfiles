@@ -242,7 +242,7 @@ fn main() {
         ScreenshotMode::Ocr => unreachable!(),
     };
 
-    let screenshot = Screenshot::new(mode, save, copy, geometry.clone());
+    let screenshot = Screenshot::new(mode, save, copy, geometry);
     let result = screenshot.capture();
 
     match result {
