@@ -28,15 +28,11 @@ hl.bind(mainMod .. " + ESCAPE", exec("wlogout"), { description = "Power menu" })
 
 hl.bind(mainMod .. " + RETURN", exec(terminal), { description = "Terminal" })
 hl.bind(mainMod .. " + E", exec(fileManager), { description = "File manager" })
-hl.bind(mainMod .. " + SPACE", exec(menu), { description = "App launcher" })
+qs_popup("SPACE", "apps", "App launcher")
 hl.bind(mainMod .. " + SHIFT + V", script("cliphist.sh menu"), { description = "Clipboard history" })
 
 hl.bind(mainMod .. " + N", qs_helper("ports_menu"), { description = "Ports menu" })
-hl.bind(
-  mainMod .. " + B",
-  exec("rofi -show bt -theme ~/.config/rofi/bluetooth.rasi"),
-  { description = "Bluetooth menu" }
-)
+hl.bind(mainMod .. " + B", qs_helper("osdctl block bluetooth"), { description = "Toggle bluetooth" })
 
 qs_popup("V", "clipboard", "Toggle clipboard popup")
 qs_popup("COMMA", "emoji", "Toggle emoji picker")

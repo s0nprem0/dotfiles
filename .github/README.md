@@ -8,7 +8,7 @@ Personal dotfiles managed with GNU Stow.
 |-----------------|-------------------------------------|
 | `hypr/`         | Hyprland Lua config + scripts       |
 | `quickshell/`   | Quickshell bar, popups, daemons (replaces waybar) |
-| `rofi/`         | Rofi app launcher, wifi, bluetooth  |
+| `rofi/`         | Rofi config (legacy, replaced by quickshell popups) |
 | `waybar/`       | Waybar status bar (legacy, replaced by quickshell) |
 | `wlogout/`      | Power menu layout and styling       |
 | `nvim/`         | Neovim (LazyVim-based)              |

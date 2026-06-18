@@ -37,7 +37,7 @@
     "format-connected": "󰂯 {device_alias}",
     "format-disabled": "󰂲",
     "tooltip-format": "{num_connections} connected\n{device_address}",
-    "on-click": "~/.config/rofi/scripts/bluetooth-manager",
+    "on-click": "bluetoothctl power toggle",
     "persist": true
   },
 

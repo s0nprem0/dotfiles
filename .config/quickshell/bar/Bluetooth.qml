@@ -13,7 +13,7 @@ BarModule {
 
     opacity: btEnabled ? 1 : 0.4
     implicitWidth: btText.implicitWidth + 12
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    acceptedButtons: Qt.LeftButton
     tooltipText: root.btTooltip
 
     DataModule {
@@ -53,10 +53,6 @@ BarModule {
         id: btToggle
     }
 
-    Process {
-        id: btLauncher
-    }
-
     Connections {
         function onRunningChanged() {
             if (!btToggle.running)
@@ -69,16 +65,11 @@ BarModule {
 
     Connections {
         function onClicked(mouse) {
-            if (mouse.button === Qt.RightButton) {
-                btLauncher.command = [Theme.config("rofi/scripts/bluetooth-manager")];
-                btLauncher.running = true;
-            } else {
-                var nextPower = !root.btEnabled;
-                btToggle.command = ["bluetoothctl", "power", nextPower ? "on" : "off"];
-                btToggle.running = true;
-                root.btEnabled = nextPower;
-                Quickshell.execDetached([Theme.bin("osdctl"), "show", nextPower ? "Bluetooth on" : "Bluetooth off", "warn", "1500"]);
-            }
+            var nextPower = !root.btEnabled;
+            btToggle.command = ["bluetoothctl", "power", nextPower ? "on" : "off"];
+            btToggle.running = true;
+            root.btEnabled = nextPower;
+            Quickshell.execDetached([Theme.bin("osdctl"), "show", nextPower ? "Bluetooth on" : "Bluetooth off", "warn", "1500"]);
         }
 
         target: mA

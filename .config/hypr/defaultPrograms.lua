@@ -8,7 +8,7 @@
 -- Defining these without 'local' makes them globally available to other modules
 terminal = "uwsm app -- kitty"
 fileManager = "uwsm app -- thunar"
-menu = "uwsm app -- rofi -show drun"
+menu = "qs ipc call shell togglePopup apps"
 browser = "firefox"
 
 -- In Lua, we use '..' to concatenate strings

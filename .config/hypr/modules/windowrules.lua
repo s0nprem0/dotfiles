@@ -18,13 +18,6 @@ hl.window_rule({
 })
 
 hl.layer_rule({
-  name = "rofi_blur",
-  match = { namespace = "rofi" },
-  blur = true,
-  dim_around = true,
-})
-
-hl.layer_rule({
   name = "osd_blur",
   match = { namespace = "quickshell-osd" },
   blur = true,

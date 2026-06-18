@@ -41,7 +41,6 @@ Item {
             for (var w of screenWins.values()) {
                 if (w)
                     w.visible = true;
-
             }
             root.beforeOpen();
             slide.show = true;
@@ -51,6 +50,7 @@ Item {
         }
     }
 
+    // ── Anchor-side popups (per-screen PanelWindow) ──
     Variants {
         model: Quickshell.screens
 
@@ -80,11 +80,15 @@ Item {
                 Component.onCompleted: {
                     root.screenWins.set(modelData, win);
                 }
+                Component.onDestruction: {
+                    root.screenWins.delete(modelData);
+                }
 
                 anchors {
                     top: true
-                    left: root.anchorSide === "left" ? true : root.anchorSide === "none" ? true : false
+                    left: root.anchorSide === "left" || root.anchorSide === "none" ? true : false
                     right: root.anchorSide === "right" ? true : false
+                    bottom: false
                 }
 
                 margins {
@@ -99,9 +103,9 @@ Item {
                     anchors.fill: parent
                     opacity: slide.animOpacity
                     color: Theme.bg
-                    border.width: 1
+                    border.width: 2
                     border.color: Theme.primary
-                    radius: root.anchorSide === "none" ? 8 : 0
+                    radius: 0
                     focus: true
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Escape) {
@@ -149,7 +153,6 @@ Item {
             for (var w of root.screenWins.values()) {
                 if (w)
                     w.visible = false;
-
             }
         }
     }

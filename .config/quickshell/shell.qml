@@ -103,6 +103,7 @@ Bar {
         target: "shell"
         function togglePopup(name: string): void {
             switch (name) {
+                case "apps": appsPopup.showPopup = !appsPopup.showPopup; break;
                 case "clipboard": clipboardPopup.showPopup = !clipboardPopup.showPopup; break;
                 case "emoji": emojiPopup.showPopup = !emojiPopup.showPopup; break;
                 case "media": mediaPopup.showPopup = !mediaPopup.showPopup; break;
@@ -118,6 +119,10 @@ Bar {
     }
 
     // Popups
+    Popups.Apps {
+        id: appsPopup
+    }
+
     Popups.Network {
         id: networkPopup
     }

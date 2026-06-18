@@ -12,6 +12,7 @@ install: build
 		get_bluetooth_status get_power_profile battery_daemon \
 		log_battery osdctl screenshot ports_menu get_sys_diagnostics \
 		check_daemons parse_binds 2>/dev/null || true
+	cp target/release/get_apps_list ../helpers/get_apps_list
 	cp target/release/get_network_status ../helpers/get_network_status
 	cp target/release/get_battery_status ../helpers/get_battery_status
 	cp target/release/get_audio_status ../helpers/get_audio_status

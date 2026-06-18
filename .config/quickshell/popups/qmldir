@@ -1,4 +1,5 @@
 PopupPanel PopupPanel.qml
+Apps Apps.qml
 Network Network.qml
 Clipboard Clipboard.qml
 Media Media.qml

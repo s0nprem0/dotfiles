@@ -16,6 +16,15 @@ name = "check_daemons"
 version = "0.1.0"
 
 [[package]]
+name = "get_apps_list"
+version = "0.1.0"
+dependencies = [
+ "helpers_rs",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "get_audio_status"
 version = "0.1.0"
 dependencies = [

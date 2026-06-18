@@ -4,6 +4,7 @@ members = [
   "libs/core",
   "bins/battery_daemon",
   "bins/check_daemons",
+  "bins/get_apps_list",
   "bins/get_audio_status",
   "bins/get_battery_status",
   "bins/get_bluetooth_status",

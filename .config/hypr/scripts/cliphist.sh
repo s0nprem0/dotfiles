@@ -6,7 +6,7 @@ store)
 	wl-paste --type image --watch cliphist store 2>/dev/null &
 	;;
 menu)
-	selection=$(cliphist list | rofi -dmenu -p "󰅍 Clipboard" -theme ~/.config/rofi/base.rasi)
+	selection=$(cliphist list | fzf --prompt="󰅍 Clipboard > " --height=40% --layout=reverse --bind=enter:accept)
 	if [[ -n "$selection" ]]; then
 		echo "$selection" | cliphist decode | wl-copy
 	fi
