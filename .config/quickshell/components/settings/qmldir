@@ -1,3 +1,7 @@
 HeaderCard 1.0 HeaderCard.qml
 ModeCard 1.0 ModeCard.qml
 PowerCard 1.0 PowerCard.qml
+SystemTab 1.0 SystemTab.qml
+PowerTab 1.0 PowerTab.qml
+NetworkTab 1.0 NetworkTab.qml
+AboutTab 1.0 AboutTab.qml
