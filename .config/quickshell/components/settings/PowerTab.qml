@@ -7,43 +7,33 @@ Rectangle {
 
     property string activeProfile: "balanced"
     property var availableProfiles: []
+    property int chargeLimit: 80
+    property int currentBrightness: 80
+    property int currentKbd: 50
 
     signal setProfile(string profile)
+    signal brightnessChanged(int pct)
+    signal kbdChanged(int pct)
 
     color: "transparent"
 
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text { text: "POWER PROFILE"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        PowerCard {
+            activeProfile: root.activeProfile
+            chargeLimit: root.chargeLimit
+            onProfileSelected: (p) => root.setProfile(p)
+        }
 
-        Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 80
-            color: Theme.bg; border.width: 1; border.color: Theme.primary
-
-            RowLayout {
-                anchors.centerIn: parent; spacing: 8
-                Repeater {
-                    model: root.availableProfiles
-                    delegate: Rectangle {
-                        required property string modelData
-                        Layout.preferredWidth: 100; Layout.preferredHeight: 44
-                        color: modelData === root.activeProfile ? Theme.primary : Theme.surface
-                        border.width: 1; border.color: Theme.primary
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData.toUpperCase()
-                            color: modelData === root.activeProfile ? Theme.bg : Theme.fg
-                            font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
-                        }
-                        MouseArea {
-                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                            onClicked: root.setProfile(modelData)
-                        }
-                    }
-                }
-            }
+        ModeCard {
+            cardTitle: "Display"
+            currentProfile: root.activeProfile
+            currentBrightness: root.currentBrightness
+            currentKbd: root.currentKbd
+            onProfileChanged: (p) => root.setProfile(p)
+            onBrightnessChanged: (pct) => root.brightnessChanged(pct)
+            onKbdChanged: (pct) => root.kbdChanged(pct)
         }
 
         Item { Layout.fillHeight: true }

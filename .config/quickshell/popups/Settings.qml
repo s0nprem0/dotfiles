@@ -38,6 +38,9 @@ Window {
     property bool confirmVisible: false
     property string activeProfile: "balanced"
     property var availableProfiles: ["balanced", "power-saver", "performance"]
+    property int chargeLimit: 80
+    property int currentBrightness: 80
+    property int currentKbd: 50
     property int currentTab: 0
     readonly property var tabData: [
         { icon: "󰒓", label: "System" },
@@ -222,7 +225,11 @@ Window {
                         }
                         PowerTab {
                             activeProfile: root.activeProfile; availableProfiles: root.availableProfiles
+                            chargeLimit: root.chargeLimit
+                            currentBrightness: root.currentBrightness; currentKbd: root.currentKbd
                             onSetProfile: (p) => root.setProfile(p)
+                            onBrightnessChanged: (pct) => root.currentBrightness = pct
+                            onKbdChanged: (pct) => root.currentKbd = pct
                         }
                         NetworkTab {
                             onOpenImpala: { Quickshell.execDetached(Config.impalaCmd); root.closeWin(); }
