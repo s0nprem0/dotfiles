@@ -217,6 +217,7 @@ ColumnLayout {
                 onExited: fullIcon.color = Theme.muted
                 onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "full"])
             }
+
         }
 
         Item {
@@ -241,6 +242,7 @@ ColumnLayout {
                 onExited: regionIcon.color = Theme.muted
                 onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "region"])
             }
+
         }
 
         Item {
@@ -265,6 +267,7 @@ ColumnLayout {
                 onExited: activeIcon.color = Theme.muted
                 onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "active"])
             }
+
         }
 
         Item {
@@ -289,6 +292,7 @@ ColumnLayout {
                 onExited: ocrIcon.color = Theme.muted
                 onClicked: Quickshell.execDetached([Theme.bin("screenshot"), "ocr"])
             }
+
         }
 
     }

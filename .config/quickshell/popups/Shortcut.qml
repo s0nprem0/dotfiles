@@ -6,41 +6,30 @@ import Quickshell.Io
 
 PopupPanel {
     id: root
-    anchorSide: "none"
-    panelWidth: 400
-    panelMinHeight: 140
-    panelMaxHeight: 620
-    contentMargin: 14
 
     property var rawData: []
     property var displayData: []
     property string searchText: ""
     property int filteredCount: 0
 
-    onBeforeOpen: {
-        parseProc.running = true
-    }
-
     function rebuildDisplay() {
         var term = root.searchText.toLowerCase().trim();
         var filtered = [];
-
         for (var i = 0; i < root.rawData.length; i++) {
             var item = root.rawData[i];
-            if (term === "" ||
-                item.keys.toLowerCase().indexOf(term) >= 0 ||
-                item.description.toLowerCase().indexOf(term) >= 0 ||
-                item.category.toLowerCase().indexOf(term) >= 0) {
+            if (term === "" || item.keys.toLowerCase().indexOf(term) >= 0 || item.description.toLowerCase().indexOf(term) >= 0 || item.category.toLowerCase().indexOf(term) >= 0)
                 filtered.push(item);
-            }
-        }
 
+        }
         var result = [];
         var lastCat = "";
         for (var j = 0; j < filtered.length; j++) {
             var it = filtered[j];
             if (it.category !== lastCat) {
-                result.push({ isHeader: true, category: it.category });
+                result.push({
+                    "isHeader": true,
+                    "category": it.category
+                });
                 lastCat = it.category;
             }
             result.push(it);
@@ -49,10 +38,21 @@ PopupPanel {
         root.displayData = result;
     }
 
+    anchorSide: "none"
+    panelWidth: 400
+    panelMinHeight: 140
+    panelMaxHeight: 620
+    contentMargin: 14
+    onBeforeOpen: {
+        parseProc.running = true;
+    }
+
     Process {
         id: parseProc
+
         running: false
         command: [Theme.bin("parse_binds"), Theme.config("hypr/binds.lua")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -64,22 +64,26 @@ PopupPanel {
                 }
             }
         }
+
     }
 
     Process {
         id: copyCmd
+
         running: false
     }
 
     contentComponent: Component {
         Item {
             id: contentRoot
+
             implicitWidth: 400 - root.contentMargin * 2
             implicitHeight: headerBar.height + listView.contentHeight + 40
 
             // Header
             Rectangle {
                 id: headerBar
+
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -114,13 +118,13 @@ PopupPanel {
 
                             TextInput {
                                 id: searchField
+
                                 Layout.fillWidth: true
                                 verticalAlignment: TextInput.AlignVCenter
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 11
                                 selectByMouse: true
-
                                 onTextChanged: {
                                     root.searchText = text;
                                     root.rebuildDisplay();
@@ -132,6 +136,7 @@ PopupPanel {
                                 color: Theme.muted
                                 font.pixelSize: 14
                                 visible: searchField.text !== ""
+
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
@@ -140,8 +145,11 @@ PopupPanel {
                                         searchField.forceActiveFocus();
                                     }
                                 }
+
                             }
+
                         }
+
                     }
 
                     Text {
@@ -150,12 +158,15 @@ PopupPanel {
                         font.pixelSize: 10
                         font.family: Theme.fontFamily
                     }
+
                 }
+
             }
 
             // Empty state
             Text {
                 id: emptyText
+
                 anchors.top: headerBar.bottom
                 anchors.topMargin: 40
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -169,6 +180,7 @@ PopupPanel {
             // Copy toast
             Rectangle {
                 id: copyToast
+
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 16
@@ -176,11 +188,12 @@ PopupPanel {
                 height: 28
                 radius: 6
                 color: Theme.primary
-                opacity: 0.0
+                opacity: 0
                 visible: opacity > 0
 
                 Text {
                     id: copyLabel
+
                     anchors.centerIn: parent
                     text: ""
                     color: Theme.bg
@@ -190,25 +203,30 @@ PopupPanel {
                 }
 
                 Behavior on opacity {
-                    NumberAnimation { duration: 200 }
+                    NumberAnimation {
+                        duration: 200
+                    }
+
                 }
+
             }
 
             Timer {
                 id: copyTimer
+
                 interval: 800
-                onTriggered: copyToast.opacity = 0.0
+                onTriggered: copyToast.opacity = 0
             }
 
             // Main list
             ListView {
                 id: listView
+
                 anchors.top: headerBar.bottom
                 anchors.topMargin: 8
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-
                 model: root.displayData
                 spacing: 2
                 clip: true
@@ -217,6 +235,7 @@ PopupPanel {
 
                 delegate: Item {
                     required property var modelData
+
                     width: ListView.view.width
                     height: modelData.isHeader ? 32 : 34
 
@@ -250,6 +269,7 @@ PopupPanel {
                             font.bold: true
                             opacity: 0.85
                         }
+
                     }
 
                     // Binding item
@@ -261,16 +281,16 @@ PopupPanel {
 
                         MouseArea {
                             id: ma
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-
                             onClicked: {
                                 if (modelData.keys) {
                                     copyCmd.command = ["sh", "-c", "echo -n \"$1\" | wl-copy", "_", modelData.keys];
                                     copyCmd.running = true;
                                     copyLabel.text = "Copied!";
-                                    copyToast.opacity = 1.0;
+                                    copyToast.opacity = 1;
                                     copyTimer.restart();
                                 }
                             }
@@ -291,6 +311,7 @@ PopupPanel {
 
                                 Text {
                                     id: keyLabel
+
                                     anchors.centerIn: parent
                                     width: Math.min(implicitWidth, parent.width - 8)
                                     text: modelData.keys || ""
@@ -299,6 +320,7 @@ PopupPanel {
                                     font.pixelSize: 9
                                     font.bold: true
                                 }
+
                             }
 
                             Text {
@@ -309,10 +331,17 @@ PopupPanel {
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

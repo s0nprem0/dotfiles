@@ -908,9 +908,9 @@ PopupPanel {
                                 echoMode: TextInput.Password
                                 focus: root.pendingSsid !== ""
                                 onVisibleChanged: {
-                                    if (visible) {
+                                    if (visible)
                                         forceActiveFocus();
-                                    }
+
                                 }
                                 onAccepted: {
                                     root.submitPassword(text);

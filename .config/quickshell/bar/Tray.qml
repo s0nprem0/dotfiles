@@ -14,10 +14,12 @@ BarModule {
     mA.onClicked: {
         if (root.trayPopupRef)
             root.trayPopupRef.showPopup = !root.trayPopupRef.showPopup;
+
     }
 
     Row {
         id: iconRow
+
         anchors.centerIn: parent
         spacing: 2
 
@@ -26,6 +28,7 @@ BarModule {
 
             delegate: Image {
                 required property var modelData
+
                 width: 14
                 height: 14
                 source: modelData.icon
@@ -34,6 +37,9 @@ BarModule {
                 sourceSize.height: 14
                 visible: status !== Image.Error
             }
+
         }
+
     }
+
 }

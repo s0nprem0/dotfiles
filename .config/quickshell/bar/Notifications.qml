@@ -7,15 +7,15 @@ BarModule {
 
     property int notifCount: 0
 
+    implicitWidth: notifText.implicitWidth + 12 + (badge.visible ? badge.width + 2 : 0)
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    tooltipText: NotificationState.dnd ? "Do Not Disturb" : (notifCount > 0 ? notifCount + " notification(s)" : "No notifications")
+
     Binding {
         target: root
         property: "notifCount"
         value: NotificationState.service ? NotificationState.service.trackedCount : 0
     }
-
-    implicitWidth: notifText.implicitWidth + 12 + (badge.visible ? badge.width + 2 : 0)
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
-    tooltipText: NotificationState.dnd ? "Do Not Disturb" : (notifCount > 0 ? notifCount + " notification(s)" : "No notifications")
 
     Connections {
         function onClicked(mouse) {

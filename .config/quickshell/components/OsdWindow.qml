@@ -20,6 +20,7 @@ Scope {
         for (var i = 0; i < root.osdMediaSources.length; i++) {
             if (root.osdMediaSources[i].name === root.osdCurrentMediaSource)
                 return i;
+
         }
         return -1;
     }
@@ -129,6 +130,7 @@ Scope {
                 }
             }
         }
+
     }
 
     // Removed Variants model to prevent duplicate windows on multiple monitors
@@ -353,6 +355,7 @@ Scope {
 
                         Image {
                             id: artImage
+
                             anchors.fill: parent
                             fillMode: Image.PreserveAspectCrop
                             source: (root.osdMedia && root.osdMedia.art_url) ? root.osdMedia.art_url : ""
@@ -369,6 +372,7 @@ Scope {
                             visible: !artImage.visible
                             renderType: Text.NativeRendering
                         }
+
                     }
 
                     Column {
@@ -394,6 +398,7 @@ Scope {
 
                             Row {
                                 id: sourceIndicator
+
                                 spacing: 2
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: root.osdMediaSources.length > 1
@@ -409,8 +414,11 @@ Scope {
                                         border.color: Theme.primary
                                         opacity: index === root.osdMediaSourceIndex() ? 1 : 0.55
                                     }
+
                                 }
+
                             }
+
                         }
 
                         Text {
@@ -423,9 +431,15 @@ Scope {
                             elide: Text.ElideRight
                             renderType: Text.NativeRendering
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

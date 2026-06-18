@@ -61,6 +61,7 @@ Item {
         root.closed = true;
         if (root.notification)
             root.notification.dismiss();
+
         snoozeTimer.interval = ms;
         snoozeTimer.restart();
     }
@@ -103,6 +104,7 @@ Item {
 
     Timer {
         id: snoozeTimer
+
         onTriggered: {
             root.closed = false;
             root.snoozeUntil = 0;

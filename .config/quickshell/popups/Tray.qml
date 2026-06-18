@@ -7,22 +7,16 @@ import Quickshell.Services.SystemTray
 PopupPanel {
     id: root
 
-    anchorSide: "right"
-    panelWidth: 280
-    panelMinHeight: 300
-
     property var activeItem: null
     property bool showMenu: false
     property real menuX: 0
     property int menuSelectedIndex: -1
     property int trayIndex: -1
-
     property var activeSubmenu: null
     property bool showSubmenu: false
     property real submenuX: 0
     property real submenuY: 0
     property int submenuSelectedIndex: -1
-
     property real menuAnimOpacity: 0
     property real menuScale: 0.92
 
@@ -30,7 +24,9 @@ PopupPanel {
         var next = current + dir;
         var children = menuOpener.children.values;
         while (next >= 0 && next < children.length) {
-            if (!children[next].isSeparator) return next;
+            if (!children[next].isSeparator)
+                return next;
+
             next += dir;
         }
         return current;
@@ -40,23 +36,68 @@ PopupPanel {
         var next = current + dir;
         var children = submenuOpener.children.values;
         while (next >= 0 && next < children.length) {
-            if (!children[next].isSeparator) return next;
+            if (!children[next].isSeparator)
+                return next;
+
             next += dir;
         }
         return current;
     }
 
+    function openMenuItem(item, iconCenterX) {
+        root.activeItem = item;
+        root.menuX = iconCenterX;
+        if (!root.showMenu) {
+            root.menuAnimOpacity = 0;
+            root.menuScale = 0.92;
+            root.showMenu = true;
+            root.menuSelectedIndex = root.nextMenuIndex(-1, 1);
+            menuCloseAnim.stop();
+            menuOpenAnim.start();
+        }
+    }
+
+    function openSubmenu(entry, x, y) {
+        if (root.showSubmenu)
+            root.closeSubmenu();
+
+        root.activeSubmenu = entry;
+        root.submenuX = x;
+        root.submenuY = y;
+        root.showSubmenu = true;
+        root.submenuSelectedIndex = root.nextSubmenuIndex(-1, 1);
+    }
+
+    function closeSubmenu() {
+        root.showSubmenu = false;
+        root.activeSubmenu = null;
+        root.submenuSelectedIndex = -1;
+    }
+
+    function closeMenu() {
+        if (!root.showMenu || menuCloseAnim.running)
+            return ;
+
+        menuOpenAnim.stop();
+        menuCloseAnim.start();
+    }
+
+    anchorSide: "right"
+    panelWidth: 280
+    panelMinHeight: 300
     Component.onCompleted: {
         SystemTray.isService = false;
     }
 
     QsMenuOpener {
         id: menuOpener
+
         menu: root.activeItem ? root.activeItem.menu : null
     }
 
     QsMenuOpener {
         id: submenuOpener
+
         menu: root.activeSubmenu
     }
 
@@ -74,7 +115,7 @@ PopupPanel {
         NumberAnimation {
             target: root
             property: "menuScale"
-            to: 1.0
+            to: 1
             duration: 150
             easing.type: Easing.OutCubic
         }
@@ -109,62 +150,27 @@ PopupPanel {
 
     }
 
-    function openMenuItem(item, iconCenterX) {
-        root.activeItem = item;
-        root.menuX = iconCenterX;
-        if (!root.showMenu) {
-            root.menuAnimOpacity = 0;
-            root.menuScale = 0.92;
-            root.showMenu = true;
-            root.menuSelectedIndex = root.nextMenuIndex(-1, 1);
-            menuCloseAnim.stop();
-            menuOpenAnim.start();
-        }
-    }
-
-    function openSubmenu(entry, x, y) {
-        if (root.showSubmenu)
-            root.closeSubmenu();
-        root.activeSubmenu = entry;
-        root.submenuX = x;
-        root.submenuY = y;
-        root.showSubmenu = true;
-        root.submenuSelectedIndex = root.nextSubmenuIndex(-1, 1);
-    }
-
-    function closeSubmenu() {
-        root.showSubmenu = false;
-        root.activeSubmenu = null;
-        root.submenuSelectedIndex = -1;
-    }
-
-    function closeMenu() {
-        if (!root.showMenu || menuCloseAnim.running) return;
-        menuOpenAnim.stop();
-        menuCloseAnim.start();
-    }
-
     contentComponent: Component {
         FocusScope {
             anchors.fill: parent
             focus: true
             implicitWidth: root.panelWidth - root.contentMargin * 2
             implicitHeight: Math.max(contentLayout.implicitHeight, 300)
-
             Keys.onPressed: (event) => {
                 if (root.showMenu) {
                     if (root.showSubmenu) {
                         switch (event.key) {
-                            case Qt.Key_Up:
-                                root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, -1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Down:
-                                root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, 1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Return:
-                            case Qt.Key_Space: {
+                        case Qt.Key_Up:
+                            root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, -1);
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Down:
+                            root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, 1);
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Return:
+                        case Qt.Key_Space:
+                            {
                                 var subChildren = submenuOpener.children.values;
                                 if (root.submenuSelectedIndex >= 0 && root.submenuSelectedIndex < subChildren.length) {
                                     var subEntry = subChildren[root.submenuSelectedIndex];
@@ -175,25 +181,26 @@ PopupPanel {
                                 }
                                 event.accepted = true;
                                 break;
-                            }
-                            case Qt.Key_Escape:
-                            case Qt.Key_Left:
-                                root.closeSubmenu();
-                                event.accepted = true;
-                                break;
+                            };
+                        case Qt.Key_Escape:
+                        case Qt.Key_Left:
+                            root.closeSubmenu();
+                            event.accepted = true;
+                            break;
                         }
                     } else {
                         switch (event.key) {
-                            case Qt.Key_Up:
-                                root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, -1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Down:
-                                root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, 1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Return:
-                            case Qt.Key_Space: {
+                        case Qt.Key_Up:
+                            root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, -1);
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Down:
+                            root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, 1);
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Return:
+                        case Qt.Key_Space:
+                            {
                                 var children = menuOpener.children.values;
                                 if (root.menuSelectedIndex >= 0 && root.menuSelectedIndex < children.length) {
                                     var entry = children[root.menuSelectedIndex];
@@ -210,17 +217,18 @@ PopupPanel {
                                 }
                                 event.accepted = true;
                                 break;
-                            }
-                            case Qt.Key_Escape:
-                                root.closeMenu();
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Left:
-                                root.closeMenu();
-                                root.trayIndex = Math.max(0, root.trayIndex - 1);
-                                event.accepted = true;
-                                break;
-                            case Qt.Key_Right: {
+                            };
+                        case Qt.Key_Escape:
+                            root.closeMenu();
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Left:
+                            root.closeMenu();
+                            root.trayIndex = Math.max(0, root.trayIndex - 1);
+                            event.accepted = true;
+                            break;
+                        case Qt.Key_Right:
+                            {
                                 var children = menuOpener.children.values;
                                 if (root.menuSelectedIndex >= 0 && root.menuSelectedIndex < children.length) {
                                     var entry = children[root.menuSelectedIndex];
@@ -238,45 +246,47 @@ PopupPanel {
                                 }
                                 event.accepted = true;
                                 break;
-                            }
+                            };
                         }
                     }
                 } else {
                     switch (event.key) {
-                        case Qt.Key_Left:
-                            root.trayIndex = Math.max(0, root.trayIndex - 1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Right:
-                            root.trayIndex = Math.min(SystemTray.items.length - 1, root.trayIndex + 1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Return:
-                        case Qt.Key_Space: {
+                    case Qt.Key_Left:
+                        root.trayIndex = Math.max(0, root.trayIndex - 1);
+                        event.accepted = true;
+                        break;
+                    case Qt.Key_Right:
+                        root.trayIndex = Math.min(SystemTray.items.length - 1, root.trayIndex + 1);
+                        event.accepted = true;
+                        break;
+                    case Qt.Key_Return:
+                    case Qt.Key_Space:
+                        {
                             var item = SystemTray.items.values[root.trayIndex];
                             if (item) {
-                                if (item.hasMenu)
+                                if (item.hasMenu) {
                                     root.openMenuItem(item, trayBar.width / 2);
-                                else {
+                                } else {
                                     item.activate();
                                     root.closePopup();
                                 }
                             }
                             event.accepted = true;
                             break;
-                        }
+                        };
                     }
                 }
             }
 
             Connections {
-                target: root
                 function onBeforeOpen() {
                     root.trayIndex = SystemTray.items.length > 0 ? 0 : -1;
                 }
+
                 function onMenuSelectedIndexChanged() {
                     if (!root.showMenu || root.menuSelectedIndex < 0 || !menuFlick)
-                        return;
+                        return ;
+
                     var itemH = 23;
                     var itemY = root.menuSelectedIndex * itemH;
                     if (itemY < menuFlick.contentY)
@@ -284,9 +294,11 @@ PopupPanel {
                     else if (itemY + 22 > menuFlick.contentY + menuFlick.height)
                         menuFlick.contentY = itemY + 22 - menuFlick.height;
                 }
+
                 function onSubmenuSelectedIndexChanged() {
                     if (!root.showSubmenu || root.submenuSelectedIndex < 0 || !submenuFlick)
-                        return;
+                        return ;
+
                     var itemH = 23;
                     var itemY = root.submenuSelectedIndex * itemH;
                     if (itemY < submenuFlick.contentY)
@@ -294,6 +306,8 @@ PopupPanel {
                     else if (itemY + 22 > submenuFlick.contentY + submenuFlick.height)
                         submenuFlick.contentY = itemY + 22 - submenuFlick.height;
                 }
+
+                target: root
             }
 
             ColumnLayout {
@@ -307,6 +321,7 @@ PopupPanel {
 
                 Rectangle {
                     id: trayBar
+
                     Layout.fillWidth: true
                     height: 34
                     color: Theme.surface
@@ -316,6 +331,7 @@ PopupPanel {
 
                     Row {
                         id: iconRow
+
                         anchors.centerIn: parent
                         spacing: 8
 
@@ -324,13 +340,13 @@ PopupPanel {
 
                             delegate: Rectangle {
                                 id: trayIconItem
+
                                 required property var modelData
                                 required property int index
 
                                 width: 18
                                 height: 18
-                                color: trayIconMouse.containsMouse || index === root.trayIndex
-                                    ? Qt.alpha(Theme.primary, 0.15) : "transparent"
+                                color: trayIconMouse.containsMouse || index === root.trayIndex ? Qt.alpha(Theme.primary, 0.15) : "transparent"
                                 radius: 2
 
                                 Image {
@@ -338,12 +354,14 @@ PopupPanel {
                                     anchors.margins: 2
                                     source: modelData.icon
                                     fillMode: Image.PreserveAspectFit
-                                    sourceSize.width: 18; sourceSize.height: 18
+                                    sourceSize.width: 18
+                                    sourceSize.height: 18
                                     visible: status !== Image.Error
                                 }
 
                                 MouseArea {
                                     id: trayIconMouse
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -365,14 +383,20 @@ PopupPanel {
                                         }
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
                 id: menuContent
+
                 visible: root.showMenu
                 width: 180
                 height: Math.min(menuFlick.contentHeight + 8, Math.round(parent.height * 0.55))
@@ -391,6 +415,7 @@ PopupPanel {
 
                 Flickable {
                     id: menuFlick
+
                     anchors.fill: parent
                     anchors.margins: 4
                     contentHeight: menuColumn.implicitHeight
@@ -400,6 +425,7 @@ PopupPanel {
 
                     Column {
                         id: menuColumn
+
                         width: parent.width
                         spacing: 1
 
@@ -409,14 +435,17 @@ PopupPanel {
                             delegate: Rectangle {
                                 required property var modelData
                                 required property int index
+
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 height: modelData.isSeparator ? 6 : 22
                                 color: {
                                     if (modelData.isSeparator)
                                         return "transparent";
+
                                     if (menuMouse.containsMouse || index === root.menuSelectedIndex)
                                         return Qt.alpha(Theme.primary, 0.15);
+
                                     return "transparent";
                                 }
 
@@ -441,7 +470,10 @@ PopupPanel {
                                         text: {
                                             if (modelData.buttonType === 1 || modelData.buttonType === 2)
                                                 return modelData.checkState === Qt.Checked ? "✓" : "";
-                                            if (modelData.icon) return "";
+
+                                            if (modelData.icon)
+                                                return "";
+
                                             return "";
                                         }
                                         color: Theme.fg
@@ -450,11 +482,13 @@ PopupPanel {
                                     }
 
                                     Image {
-                                        width: 12; height: 12
+                                        width: 12
+                                        height: 12
                                         source: modelData.icon
                                         visible: modelData.icon !== "" && status !== Image.Error
                                         fillMode: Image.PreserveAspectFit
-                                        sourceSize.width: 12; sourceSize.height: 12
+                                        sourceSize.width: 12
+                                        sourceSize.height: 12
                                     }
 
                                     Text {
@@ -473,10 +507,12 @@ PopupPanel {
                                         font.pixelSize: 9
                                         Layout.alignment: Qt.AlignVCenter
                                     }
+
                                 }
 
                                 MouseArea {
                                     id: menuMouse
+
                                     anchors.fill: parent
                                     hoverEnabled: modelData.enabled && !modelData.isSeparator
                                     acceptedButtons: Qt.LeftButton
@@ -495,14 +531,20 @@ PopupPanel {
                                         }
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
                 id: submenuContent
+
                 visible: root.showSubmenu
                 width: 180
                 height: Math.min(submenuFlick.contentHeight + 8, Math.round(parent.height * 0.55))
@@ -520,6 +562,7 @@ PopupPanel {
 
                 Flickable {
                     id: submenuFlick
+
                     anchors.fill: parent
                     anchors.margins: 4
                     contentHeight: submenuColumn.implicitHeight
@@ -529,6 +572,7 @@ PopupPanel {
 
                     Column {
                         id: submenuColumn
+
                         width: parent.width
                         spacing: 1
 
@@ -538,14 +582,17 @@ PopupPanel {
                             delegate: Rectangle {
                                 required property var modelData
                                 required property int index
+
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 height: modelData.isSeparator ? 6 : 22
                                 color: {
                                     if (modelData.isSeparator)
                                         return "transparent";
+
                                     if (submenuMouse.containsMouse || index === root.submenuSelectedIndex)
                                         return Qt.alpha(Theme.primary, 0.15);
+
                                     return "transparent";
                                 }
 
@@ -570,7 +617,10 @@ PopupPanel {
                                         text: {
                                             if (modelData.buttonType === 1 || modelData.buttonType === 2)
                                                 return modelData.checkState === Qt.Checked ? "✓" : "";
-                                            if (modelData.icon) return "";
+
+                                            if (modelData.icon)
+                                                return "";
+
                                             return "";
                                         }
                                         color: Theme.fg
@@ -579,11 +629,13 @@ PopupPanel {
                                     }
 
                                     Image {
-                                        width: 12; height: 12
+                                        width: 12
+                                        height: 12
                                         source: modelData.icon
                                         visible: modelData.icon !== "" && status !== Image.Error
                                         fillMode: Image.PreserveAspectFit
-                                        sourceSize.width: 12; sourceSize.height: 12
+                                        sourceSize.width: 12
+                                        sourceSize.height: 12
                                     }
 
                                     Text {
@@ -602,10 +654,12 @@ PopupPanel {
                                         font.pixelSize: 9
                                         Layout.alignment: Qt.AlignVCenter
                                     }
+
                                 }
 
                                 MouseArea {
                                     id: submenuMouse
+
                                     anchors.fill: parent
                                     hoverEnabled: modelData.enabled && !modelData.isSeparator
                                     acceptedButtons: Qt.LeftButton
@@ -624,10 +678,15 @@ PopupPanel {
                                         }
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             MouseArea {
@@ -639,6 +698,9 @@ PopupPanel {
                 z: 9
                 onClicked: root.closeMenu()
             }
+
         }
+
     }
+
 }

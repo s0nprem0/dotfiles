@@ -84,6 +84,7 @@ Item {
         onStopped: {
             if (!root.show && root.closing)
                 root.exitCompleted();
+
         }
 
         NumberAnimation {

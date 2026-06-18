@@ -41,6 +41,7 @@ Item {
             for (var w of screenWins.values()) {
                 if (w)
                     w.visible = true;
+
             }
             root.beforeOpen();
             slide.show = true;
@@ -153,6 +154,7 @@ Item {
             for (var w of root.screenWins.values()) {
                 if (w)
                     w.visible = false;
+
             }
         }
     }

@@ -36,85 +36,162 @@ Rectangle {
         }
 
         // ── Quick actions ──
-        Text { text: "ACTIONS"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        Text {
+            text: "ACTIONS"
+            font.family: Theme.fontFamily
+            font.pixelSize: 9
+            color: Theme.primary
+            font.bold: true
+        }
 
         GridLayout {
             Layout.fillWidth: true
-            columns: 5; columnSpacing: 4; rowSpacing: 4
+            columns: 5
+            columnSpacing: 4
+            rowSpacing: 4
 
             Repeater {
                 model: root.sysActions
+
                 delegate: Rectangle {
                     required property var modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 52
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 52
                     color: ma.containsMouse ? Theme.primary : Theme.bg
-                    border.width: 1; border.color: Theme.primary
+                    border.width: 1
+                    border.color: Theme.primary
 
                     ColumnLayout {
-                        anchors.centerIn: parent; spacing: 2
+                        anchors.centerIn: parent
+                        spacing: 2
+
                         Text {
                             text: modelData.icon
                             color: ma.containsMouse ? Theme.bg : Theme.primary
-                            font.family: Theme.fontFamily; font.pixelSize: 18
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 18
                         }
+
                         Text {
                             text: modelData.label
                             color: ma.containsMouse ? Theme.bg : Theme.fg
-                            font.family: Theme.fontFamily; font.pixelSize: 8; font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 8
+                            font.bold: true
                         }
+
                     }
 
                     MouseArea {
-                        id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                        id: ma
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (modelData.confirm) root.confirmAction(modelData.cmd, modelData.label)
-                            else root.executeAction(modelData.cmd)
+                            if (modelData.confirm)
+                                root.confirmAction(modelData.cmd, modelData.label);
+                            else
+                                root.executeAction(modelData.cmd);
                         }
                     }
+
                 }
+
             }
+
         }
 
         // ── Confirm dialog overlay ──
         Rectangle {
             visible: root.confirmVisible
-            anchors.fill: parent; z: 10
+            anchors.fill: parent
+            z: 10
             color: Qt.rgba(0, 0, 0, 0.7)
 
             Rectangle {
                 anchors.centerIn: parent
-                width: 260; height: 110
-                color: Theme.bg; border.width: 2; border.color: Theme.error
+                width: 260
+                height: 110
+                color: Theme.bg
+                border.width: 2
+                border.color: Theme.error
 
                 ColumnLayout {
-                    anchors.fill: parent; anchors.margins: 12; spacing: 8
+                    anchors.fill: parent
+                    anchors.margins: 12
+                    spacing: 8
 
                     Text {
                         text: "CONFIRM " + root.pendingLabel.toUpperCase() + "?"
-                        Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter
-                        color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: 11; font.bold: true
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        color: Theme.error
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 11
+                        font.bold: true
                     }
 
                     RowLayout {
-                        Layout.fillWidth: true; spacing: 8
+                        Layout.fillWidth: true
+                        spacing: 8
+
                         Rectangle {
-                            Layout.fillWidth: true; Layout.preferredHeight: 30
-                            color: Theme.surface; border.width: 1; border.color: Theme.primary
-                            Text { anchors.centerIn: parent; text: "CANCEL"; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true }
-                            MouseArea { anchors.fill: parent; onClicked: root.closeConfirm() }
-                        }
-                        Rectangle {
-                            Layout.fillWidth: true; Layout.preferredHeight: 30
-                            color: Theme.error
-                            Text { anchors.centerIn: parent; text: "CONFIRM"; color: Theme.bg; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true }
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 30
+                            color: Theme.surface
+                            border.width: 1
+                            border.color: Theme.primary
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "CANCEL"
+                                color: Theme.fg
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                font.bold: true
+                            }
+
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: { root.executeAction(root.pendingAction); root.closeConfirm(); }
+                                onClicked: root.closeConfirm()
                             }
+
                         }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 30
+                            color: Theme.error
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "CONFIRM"
+                                color: Theme.bg
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    root.executeAction(root.pendingAction);
+                                    root.closeConfirm();
+                                }
+                            }
+
+                        }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

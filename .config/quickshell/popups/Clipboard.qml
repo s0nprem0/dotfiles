@@ -19,6 +19,7 @@ PopupPanel {
     function getEntryId(line) {
         if (!line)
             return "";
+
         var parts = line.split("\t");
         return parts[0] || "";
     }
@@ -26,6 +27,7 @@ PopupPanel {
     function getEntryText(line) {
         if (!line)
             return "";
+
         var parts = line.split("\t");
         return parts.length > 1 ? parts.slice(1).join("\t").trim() : line;
     }
@@ -43,6 +45,7 @@ PopupPanel {
             for (var i = 0; i < rawEntries.length; i++) {
                 if (getEntryText(rawEntries[i]).toLowerCase().indexOf(query) !== -1)
                     temp.push(rawEntries[i]);
+
             }
             filteredEntries = temp;
         }
@@ -58,6 +61,7 @@ PopupPanel {
     // ── Decode images to temp files ───────────────────────────
     Process {
         id: decodeScript
+
         command: [Theme.bin("decode_clipboard_images.sh")]
         running: false
         onExited: {
@@ -68,6 +72,7 @@ PopupPanel {
     // ── List clipboard entries ────────────────────────────────
     Process {
         id: cliphistListProc
+
         command: ["cliphist", "list"]
         running: false
 
@@ -79,17 +84,21 @@ PopupPanel {
                     var line = lines[i].trim();
                     if (line !== "")
                         temp.push(line);
+
                 }
                 rawEntries = temp;
                 filterEntries();
             }
         }
+
     }
 
     // ── Copy entry ────────────────────────────────────────────
     Process {
         id: copyProc
+
         property string entryLine: ""
+
         command: ["sh", "-c", "d=$(printf '%s' \"$1\" | cliphist decode); printf '%s' \"$d\" | wl-copy && notify-send -t 1000 -h string:x-canonical-private-synchronous:clip-notify -a clipboard -i edit-copy \"copied\" \"$(printf '%s' \"$d\" | head -c 50)\"", "_", entryLine]
         running: false
         onExited: {
@@ -100,7 +109,9 @@ PopupPanel {
     // ── Delete entry ──────────────────────────────────────────
     Process {
         id: deleteProc
+
         property string entryLine: ""
+
         command: ["sh", "-c", "printf '%s' \"$1\" | cliphist delete && id=$(printf '%s' \"$1\" | cut -f1) && rm -f \"" + Theme.tmpDir + "/clip_${id}.png\"", "_", entryLine]
         running: false
         onExited: {
@@ -111,6 +122,7 @@ PopupPanel {
     // ── Wipe all ──────────────────────────────────────────────
     Process {
         id: wipeProc
+
         command: ["sh", "-c", "cliphist wipe && rm -f \"" + Theme.tmpDir + "/clip_*.png\""]
         running: false
         onExited: {
@@ -156,11 +168,13 @@ PopupPanel {
                 function onAfterOpen() {
                     searchInput.forceActiveFocus();
                 }
+
                 target: root
             }
 
             ColumnLayout {
                 id: contentLayout
+
                 anchors.fill: parent
                 spacing: 6
 
@@ -181,6 +195,7 @@ PopupPanel {
 
                     Text {
                         id: clearText
+
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         text: "clear all"
@@ -190,13 +205,16 @@ PopupPanel {
 
                         MouseArea {
                             id: clearBtn
+
                             anchors.fill: parent
                             anchors.margins: -4
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: wipeProc.running = true
                         }
+
                     }
+
                 }
 
                 // ── Search bar ────────────────────────
@@ -210,6 +228,7 @@ PopupPanel {
 
                     TextInput {
                         id: searchInput
+
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
@@ -218,21 +237,19 @@ PopupPanel {
                         font.family: Theme.fontFamily
                         font.pixelSize: 12
                         clip: true // Prevent character bleeding on long queries
-
                         onTextChanged: {
                             root.searchQuery = text;
                             root.filterEntries();
                         }
-
                         Keys.onPressed: (event) => {
                             var navKeys = [Qt.Key_Up, Qt.Key_Down, Qt.Key_Return, Qt.Key_Enter, Qt.Key_Delete, Qt.Key_K, Qt.Key_J];
                             if (navKeys.indexOf(event.key) !== -1) {
                                 event.accepted = false;
-                                return;
+                                return ;
                             }
                             if (event.key === Qt.Key_Backspace && searchInput.text === "") {
                                 event.accepted = false;
-                                return;
+                                return ;
                             }
                         }
 
@@ -244,7 +261,9 @@ PopupPanel {
                             visible: searchInput.text === ""
                             anchors.verticalCenter: parent.verticalCenter
                         }
+
                     }
+
                 }
 
                 // ── Entry list ─────────────────────────
@@ -255,6 +274,7 @@ PopupPanel {
 
                     ListView {
                         id: entryList
+
                         anchors.fill: parent
                         clip: true
                         model: root.filteredEntries
@@ -294,6 +314,7 @@ PopupPanel {
                             // Strictly anchored components replacing loose Row structures
                             Text {
                                 id: typeIcon
+
                                 anchors.left: parent.left
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
@@ -330,11 +351,19 @@ PopupPanel {
                                     wrapMode: Text.NoWrap
                                     verticalAlignment: Text.AlignVCenter
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

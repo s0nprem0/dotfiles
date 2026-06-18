@@ -1,44 +1,29 @@
 import "../service"
 import QtQuick
+import QtQuick.Controls // Added for the ScrollBar
 import QtQuick.Layouts
 import QtQuick.Window
-import QtQuick.Controls // Added for the ScrollBar
 import Quickshell
 
 Window {
     id: root
 
-    title: "System Index"
-    // UX UPGRADE: Responsive sizing based on screen resolution with minimum fallbacks
-    width: Screen.width ? Math.max(460, Math.round(Screen.width * 0.22)) : 460
-    height: Screen.height ? Math.max(520, Math.round(Screen.height * 0.48)) : 520
-    color: "transparent"
-    flags: Qt.Window | Qt.FramelessWindowHint
-
     property bool showPopup: false
-    visible: showPopup
-
     property var displayData: []
     property string searchText: ""
     property int selectedIndex: 0
 
-
-    onVisibleChanged: {
-        if (visible) {
-            rebuildDisplay();
-            searchField.forceActiveFocus();
-        } else {
-            searchField.text = "";
-        }
-    }
-
     function fuzzyMatch(str, query) {
-        if (query === "") return true;
+        if (query === "")
+            return true;
+
         str = (str || "").toLowerCase();
         query = query.toLowerCase();
         var j = 0;
         for (var i = 0; i < str.length && j < query.length; i++) {
-            if (str[i] === query[j]) j++;
+            if (str[i] === query[j])
+                j++;
+
         }
         return j === query.length;
     }
@@ -64,21 +49,21 @@ Window {
         var webHistory = AppsService.rawData.web_history || [];
         var fileHistory = AppsService.rawData.file_history || [];
         var filtered = [];
-
         if (term === "") {
             for (let i = 0; i < sourceApps.length; i++) {
-                let item = Object.assign({}, sourceApps[i]);
+                let item = Object.assign({
+                }, sourceApps[i]);
                 item.typeLabel = "APP";
                 filtered.push(item);
             }
         } else if (term.startsWith("!")) {
             filtered.push({
-                typeLabel: "SEARCH",
-                name: "EXECUTE WEB QUERY",
-                icon: "󰖟",
-                comment: term,
-                query: term,
-                isWebAction: true
+                "typeLabel": "SEARCH",
+                "name": "EXECUTE WEB QUERY",
+                "icon": "󰖟",
+                "comment": term,
+                "query": term,
+                "isWebAction": true
             });
         } else {
             for (let i = 0; i < sourceApps.length; i++) {
@@ -89,7 +74,6 @@ Window {
                 }
             }
         }
-
         root.displayData = filtered;
         root.selectedIndex = 0;
     }
@@ -97,7 +81,6 @@ Window {
     function launchSelected() {
         if (root.displayData.length > 0 && root.selectedIndex < root.displayData.length) {
             var item = root.displayData[root.selectedIndex];
-
             if (item.isWebAction) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--web-search", item.query]);
             } else if (item.typeLabel === "FILE") {
@@ -108,12 +91,26 @@ Window {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--launch", item.name]);
                 Quickshell.execDetached(["sh", "-c", item.exec]);
             }
-
             AppsService.refresh();
             root.showPopup = false;
         }
     }
 
+    title: "System Index"
+    // UX UPGRADE: Responsive sizing based on screen resolution with minimum fallbacks
+    width: Screen.width ? Math.max(460, Math.round(Screen.width * 0.22)) : 460
+    height: Screen.height ? Math.max(520, Math.round(Screen.height * 0.48)) : 520
+    color: "transparent"
+    flags: Qt.Window | Qt.FramelessWindowHint
+    visible: showPopup
+    onVisibleChanged: {
+        if (visible) {
+            rebuildDisplay();
+            searchField.forceActiveFocus();
+        } else {
+            searchField.text = "";
+        }
+    }
     Keys.onPressed: (event) => {
         if (event.key === Qt.Key_Escape) {
             root.showPopup = false;
@@ -147,7 +144,12 @@ Window {
                     anchors.rightMargin: 8
                     spacing: 12
 
-                    Text { text: "󰀻"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 13 }
+                    Text {
+                        text: "󰀻"
+                        color: Theme.primary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 13
+                    }
 
                     Text {
                         text: "SYSTEM INDEX"
@@ -167,24 +169,34 @@ Window {
                     }
 
                     Rectangle {
-                        implicitWidth: 24; implicitHeight: 24; radius: 0
+                        implicitWidth: 24
+                        implicitHeight: 24
+                        radius: 0
                         color: closeMa.containsMouse ? Theme.error : "transparent"
-                        border.width: 1; border.color: closeMa.containsMouse ? Theme.error : "transparent"
+                        border.width: 1
+                        border.color: closeMa.containsMouse ? Theme.error : "transparent"
 
                         Text {
-                            anchors.centerIn: parent; text: "✕";
-                            color: closeMa.containsMouse ? Theme.bg : Theme.fg;
-                            font.pixelSize: 10; font.bold: true
+                            anchors.centerIn: parent
+                            text: "✕"
+                            color: closeMa.containsMouse ? Theme.bg : Theme.fg
+                            font.pixelSize: 10
+                            font.bold: true
                         }
+
                         MouseArea {
                             id: closeMa
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.showPopup = false
                         }
+
                     }
+
                 }
+
             }
 
             // ── Row 2: Search Input Block ──
@@ -207,7 +219,11 @@ Window {
                     anchors.rightMargin: 12
                     spacing: 12
 
-                    Text { text: ""; color: searchField.activeFocus ? Theme.primary : Theme.muted; font.pixelSize: 14 }
+                    Text {
+                        text: ""
+                        color: searchField.activeFocus ? Theme.primary : Theme.muted
+                        font.pixelSize: 14
+                    }
 
                     // UX FIX: Replaced StackLayout with absolute anchoring to prevent input interference
                     Item {
@@ -227,6 +243,7 @@ Window {
 
                         TextInput {
                             id: searchField
+
                             anchors.fill: parent
                             verticalAlignment: TextInput.AlignVCenter
                             color: Theme.fg
@@ -235,12 +252,10 @@ Window {
                             font.bold: true
                             selectByMouse: true
                             clip: true
-
                             onTextChanged: {
-                                root.searchText = text
-                                root.rebuildDisplay()
+                                root.searchText = text;
+                                root.rebuildDisplay();
                             }
-
                             Keys.onPressed: (event) => {
                                 if (event.key === Qt.Key_Up || (event.key === Qt.Key_K && (event.modifiers & Qt.ControlModifier))) {
                                     root.moveUp();
@@ -257,43 +272,74 @@ Window {
                                 }
                             }
                         }
+
                     }
 
                     Rectangle {
-                        implicitWidth: 24; implicitHeight: 24; radius: 0
+                        implicitWidth: 24
+                        implicitHeight: 24
+                        radius: 0
                         color: clearMa.containsMouse ? Theme.primary : "transparent"
                         visible: searchField.text !== ""
 
                         Text {
-                            anchors.centerIn: parent; text: "󰅖"
+                            anchors.centerIn: parent
+                            text: "󰅖"
                             color: clearMa.containsMouse ? Theme.bg : Theme.muted
                             font.pixelSize: 14
                         }
+
                         MouseArea {
                             id: clearMa
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                searchField.text = ""
-                                searchField.forceActiveFocus()
+                                searchField.text = "";
+                                searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                 }
+
             }
 
             // ── System Status States ──
             Rectangle {
-                Layout.fillWidth: true; Layout.fillHeight: true; color: "transparent"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: "transparent"
                 visible: !AppsService.isLoaded
-                Text { anchors.centerIn: parent; text: "WAITING FOR BACKEND..."; color: Theme.muted; font.family: Theme.fontFamily; font.pixelSize: 11; font.bold: true }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "WAITING FOR BACKEND..."
+                    color: Theme.muted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+
             }
 
             Rectangle {
-                Layout.fillWidth: true; Layout.fillHeight: true; color: "transparent"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: "transparent"
                 visible: AppsService.isLoaded && root.displayData.length === 0 && root.searchText !== ""
-                Text { anchors.centerIn: parent; text: "NO MATCHES FOUND"; color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: 11; font.bold: true }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "NO MATCHES FOUND"
+                    color: Theme.error
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+
             }
 
             // ── Universal Index List ──
@@ -305,6 +351,7 @@ Window {
 
                 ListView {
                     id: listView
+
                     anchors.fill: parent
                     anchors.margins: 4
                     clip: true
@@ -315,11 +362,13 @@ Window {
                     // UX UPGRADE: Brutalist Scrollbar
                     ScrollBar.vertical: ScrollBar {
                         policy: listView.contentHeight > listView.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+
                         contentItem: Rectangle {
                             implicitWidth: 4
                             color: Theme.primary
                             radius: 0
                         }
+
                     }
 
                     delegate: Item {
@@ -337,6 +386,7 @@ Window {
 
                             MouseArea {
                                 id: ma
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
@@ -346,6 +396,7 @@ Window {
 
                             Item {
                                 id: itemIcon
+
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
@@ -363,6 +414,7 @@ Window {
 
                                 Image {
                                     id: imgIcon
+
                                     anchors.centerIn: parent
                                     width: 16
                                     height: 16
@@ -371,10 +423,12 @@ Window {
                                     sourceSize.width: 16
                                     sourceSize.height: 16
                                 }
+
                             }
 
                             Text {
                                 id: enterIndicator
+
                                 anchors.right: parent.right
                                 anchors.rightMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
@@ -388,6 +442,7 @@ Window {
 
                             Rectangle {
                                 id: typeBadge
+
                                 anchors.right: enterIndicator.visible ? enterIndicator.left : parent.right
                                 anchors.rightMargin: enterIndicator.visible ? 8 : 14
                                 anchors.verticalCenter: parent.verticalCenter
@@ -406,6 +461,7 @@ Window {
                                     font.pixelSize: 9
                                     font.bold: true
                                 }
+
                             }
 
                             Item {
@@ -439,11 +495,19 @@ Window {
                                     elide: Text.ElideRight
                                     visible: modelData.comment !== ""
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

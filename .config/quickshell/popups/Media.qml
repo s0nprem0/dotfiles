@@ -941,9 +941,9 @@ PopupPanel {
                                 preventStealing: true
                                 onPressed: root.setMicVol(mouse.x / width)
                                 onPositionChanged: {
-                                    if (pressed) {
+                                    if (pressed)
                                         root.setMicVol(mouse.x / width);
-                                    }
+
                                 }
                             }
 
@@ -1080,9 +1080,9 @@ PopupPanel {
                                         preventStealing: true
                                         onPressed: root.setAppVol(parent.parent.parent.appIndex, mouse.x / width)
                                         onPositionChanged: {
-                                            if (pressed) {
+                                            if (pressed)
                                                 root.setAppVol(parent.parent.parent.appIndex, mouse.x / width);
-                                            }
+
                                         }
                                     }
 

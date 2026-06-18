@@ -191,10 +191,18 @@ ColumnLayout {
                 height: notifContent.implicitHeight + 12
                 clip: true
                 color: mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.08) : Theme.surface
-                border.width: ListView.isCurrentItem ? 2 : 1
+                border.width: 0
                 border.color: ListView.isCurrentItem ? Theme.primary : (modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter)
-                radius: 6
+                radius: 0
                 opacity: notif.closed ? 0.5 : 1
+
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: 4
+                    color: notif.urgency === 2 ? Theme.error : notif.unread ? Theme.primary : Theme.surfaceLighter
+                }
 
                 MouseArea {
                     id: mouseArea
@@ -208,7 +216,10 @@ ColumnLayout {
                     id: notifContent
 
                     anchors.fill: parent
-                    anchors.margins: 8
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 8
+                    anchors.topMargin: 8
+                    anchors.bottomMargin: 8
                     spacing: 6
 
                     RowLayout {
@@ -219,7 +230,7 @@ ColumnLayout {
                             width: 12
                             height: 12
                             color: root.selectedIds[notif.id] ? Theme.primary : "transparent"
-                            radius: 2
+                            radius: 0
                             border.width: root.selectedIds[notif.id] ? 0 : 1
                             border.color: Theme.muted
                             anchors.verticalCenter: parent.verticalCenter
@@ -243,16 +254,8 @@ ColumnLayout {
                         }
 
                         Rectangle {
-                            width: 6
-                            height: 6
-                            color: notif.unread ? Theme.primary : "transparent"
-                            radius: 3
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Rectangle {
-                            width: 24
-                            height: 24
+                            width: 32
+                            height: 32
                             color: "transparent"
                             visible: notif.appIcon && notif.appIcon.length > 0
 
@@ -302,7 +305,8 @@ ColumnLayout {
                                 text: notif.time ? notif.timeStr : ""
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: 7
+                                Layout.alignment: Qt.AlignTop
                             }
 
                         }
@@ -310,7 +314,7 @@ ColumnLayout {
                         Rectangle {
                             width: 20
                             height: 20
-                            radius: 10
+                            radius: 0
                             color: closeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
 
                             Text {
@@ -335,7 +339,7 @@ ColumnLayout {
                         Rectangle {
                             width: 20
                             height: 20
-                            radius: 10
+                            radius: 0
                             color: snoozeMa.containsMouse ? Qt.alpha(Theme.muted, 0.2) : "transparent"
                             visible: !root.showHistory
 
@@ -363,42 +367,63 @@ ColumnLayout {
 
                     }
 
-                    Text {
-                        text: notif.body
-                        color: Theme.muted
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 9
-                        textFormat: Text.StyledText
-                        wrapMode: Text.Wrap
+                    RowLayout {
                         Layout.fillWidth: true
-                        elide: root.expandedNotifIds[notif.id] ? Text.ElideNone : Text.ElideRight
-                        maximumLineCount: root.expandedNotifIds[notif.id] ? 99 : 2
-                        onLinkActivated: (link) => {
-                            return Qt.openUrlExternally(link);
-                        }
-                    }
+                        spacing: 8
 
-                    Image {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 120
-                        fillMode: Image.PreserveAspectFit
-                        clip: true
-                        source: notif.image ? (notif.image.startsWith("/") ? ("file://" + notif.image) : notif.image) : ""
-                        visible: notif.image && notif.image.length > 0
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignTop
+
+                            Text {
+                                text: notif.body
+                                color: Theme.muted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                                textFormat: Text.StyledText
+                                wrapMode: Text.Wrap
+                                Layout.fillWidth: true
+                                elide: root.expandedNotifIds[notif.id] ? Text.ElideNone : Text.ElideRight
+                                maximumLineCount: root.expandedNotifIds[notif.id] ? 99 : 2
+                                onLinkActivated: (link) => {
+                                    return Qt.openUrlExternally(link);
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.preferredWidth: 80
+                                Layout.preferredHeight: 80
+                                visible: notif.image && notif.image.length > 0
+                                color: "transparent"
+                                border.width: 1
+                                border.color: Theme.primary
+
+                                Image {
+                                    anchors.fill: parent
+                                    anchors.margins: 2
+                                    fillMode: Image.PreserveAspectCrop
+                                    clip: true
+                                    source: notif.image ? (notif.image.startsWith("/") ? ("file://" + notif.image) : notif.image) : ""
+                                }
+
+                            }
+
+                        }
+
                     }
 
                     // ─── Progress Bar ──────────────────────────
                     Rectangle {
                         Layout.fillWidth: true
                         height: 4
-                        radius: 2
+                        radius: 0
                         color: Qt.alpha(Theme.primary, 0.1)
                         visible: notif.hints && notif.hints.value !== undefined
 
                         Rectangle {
                             width: parent.width * Math.min(1, Math.max(0, (notif.hints.value / (notif.hints.maximum || 100))))
                             height: parent.height
-                            radius: 2
+                            radius: 0
                             color: Theme.primary
                         }
 
@@ -415,7 +440,7 @@ ColumnLayout {
                             delegate: NotificationActionButton {
                                 action: modelData
                                 btnHeight: 24
-                                btnRadius: 3
+                                btnRadius: 0
                             }
 
                         }

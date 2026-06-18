@@ -1,21 +1,24 @@
-pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+pragma Singleton
 
 QtObject {
     id: root
 
     // Initialize with the new expected Rust JSON structure
-    property var rawData: { "most_used": [], "all_apps": [], "web_history": [], "file_history": [] }
-    property bool isLoaded: false
-
-    function refresh() {
-        appProc.running = true;
+    property var rawData: {
+        "most_used": [],
+        "all_apps": [],
+        "web_history": [],
+        "file_history": []
     }
+    property bool isLoaded: false
+    property Process appProc
 
-    property Process appProc: Process {
+    appProc: Process {
         command: [Theme.bin("get_apps_list")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -26,6 +29,11 @@ QtObject {
                 }
             }
         }
+
+    }
+
+    function refresh() {
+        appProc.running = true;
     }
 
     Component.onCompleted: {

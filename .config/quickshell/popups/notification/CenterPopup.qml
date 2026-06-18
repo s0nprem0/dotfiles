@@ -638,7 +638,8 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         root.showHistory = false;
-                                        root.selectedIds = ({});
+                                        root.selectedIds = ({
+                                        });
                                         root.refreshNotifications();
                                     }
                                 }
@@ -665,7 +666,8 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         root.showHistory = true;
-                                        root.selectedIds = ({});
+                                        root.selectedIds = ({
+                                        });
                                         root.refreshNotifications();
                                     }
                                 }

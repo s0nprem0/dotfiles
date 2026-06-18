@@ -43,6 +43,7 @@ Rectangle {
                     font.family: Theme.fontFamily
                     font.pixelSize: 24
                 }
+
             }
 
             ColumnLayout {
@@ -68,7 +69,9 @@ Rectangle {
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
+
             }
+
         }
 
         // Hard divider
@@ -116,6 +119,9 @@ Rectangle {
                 font.pixelSize: 10
                 font.bold: true
             }
+
         }
+
     }
+
 }

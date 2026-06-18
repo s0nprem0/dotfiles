@@ -11,10 +11,12 @@ PopupPanel {
 
     // ── Hyprland state ──
     property var windowList: []
-    property var windowByAddress: ({})
+    property var windowByAddress: ({
+    })
     property var activeWorkspaceId: 1
     property var monitors: []
-    property var monitorById: ({})
+    property var monitorById: ({
+    })
     property string activeWindowAddress: ""
     property var visibleWorkspaceIds: [1]
     // ── Drag state ──
@@ -31,41 +33,60 @@ PopupPanel {
     property int hoveredWorkspaceId: -1
     property bool dragMoved: false
 
-    // ── Config ──
-    anchorSide: "none"
-    panelWidth: 720
-    panelMaxHeight: 0
-    finalInset: 12
-    contentMargin: 8
-    onBeforeOpen: updateAll()
-
     // ── Helpers ──
     function toRoman(num) {
-        var lookup = { 1: "i", 2: "ii", 3: "iii", 4: "iv", 5: "v", 6: "vi", 7: "vii", 8: "viii", 9: "ix", 10: "x" };
+        var lookup = {
+            "1": "i",
+            "2": "ii",
+            "3": "iii",
+            "4": "iv",
+            "5": "v",
+            "6": "vi",
+            "7": "vii",
+            "8": "viii",
+            "9": "ix",
+            "10": "x"
+        };
         return lookup[num] || String(num);
     }
 
     function normalizeAddress(address) {
-        if (!address) return "";
+        if (!address)
+            return "";
+
         var s = String(address).toLowerCase();
-        if (!s.startsWith("0x")) s = "0x" + s;
+        if (!s.startsWith("0x"))
+            s = "0x" + s;
+
         return s;
     }
 
     function rebuildVisibleWorkspaceIds() {
-        var map = {};
+        var map = {
+        };
         var activeId = Math.max(1, root.activeWorkspaceId);
         var maxId = activeId;
         map[activeId] = true;
         for (var i = 0; i < root.windowList.length; i++) {
             var win = root.windowList[i];
             var wsId = (win && win.workspace) ? win.workspace.id : -1;
-            if (wsId > 0) { map[wsId] = true; maxId = Math.max(maxId, wsId); }
+            if (wsId > 0) {
+                map[wsId] = true;
+                maxId = Math.max(maxId, wsId);
+            }
         }
-        if (maxId < 10) { map[maxId + 1] = true; maxId++; }
-        else { map[9] = true; }
+        if (maxId < 10) {
+            map[maxId + 1] = true;
+            maxId++;
+        } else {
+            map[9] = true;
+        }
         var ids = [];
-        for (var id = 1; id <= maxId; id++) { if (map[id]) ids.push(id); }
+        for (var id = 1; id <= maxId; id++) {
+            if (map[id])
+                ids.push(id);
+
+        }
         root.visibleWorkspaceIds = ids.length > 0 ? ids : [1];
     }
 
@@ -77,12 +98,17 @@ PopupPanel {
             if (tl.HyprlandToplevel) {
                 var tlAddr = tl.HyprlandToplevel.address;
                 var tlAddrStr = "";
-                if (typeof tlAddr === "number") tlAddrStr = "0x" + tlAddr.toString(16);
-                else {
+                if (typeof tlAddr === "number") {
+                    tlAddrStr = "0x" + tlAddr.toString(16);
+                } else {
                     tlAddrStr = String(tlAddr).toLowerCase();
-                    if (!tlAddrStr.startsWith("0x")) tlAddrStr = "0x" + tlAddrStr;
+                    if (!tlAddrStr.startsWith("0x"))
+                        tlAddrStr = "0x" + tlAddrStr;
+
                 }
-                if (tlAddrStr === targetAddr) return tl;
+                if (tlAddrStr === targetAddr)
+                    return tl;
+
             }
         }
         return null;
@@ -95,6 +121,7 @@ PopupPanel {
                 var cp = container.mapToItem(cell, globalX, globalY);
                 if (cp.x >= 0 && cp.x <= cell.width && cp.y >= 0 && cp.y <= cell.height)
                     return cell.wsId;
+
             }
         }
         return -1;
@@ -102,11 +129,11 @@ PopupPanel {
 
     function getVisualGeometry(wsId, modelData, scale) {
         return {
-            x: Math.round(modelData.at[0] * scale),
-            y: Math.round(modelData.at[1] * scale),
-            width: Math.max(Math.round(modelData.size[0] * scale), 12),
-            height: Math.max(Math.round(modelData.size[1] * scale), 12),
-            opacity: (root.dragActive && root.draggedAddress === modelData.address) ? 0.85 : 0.8
+            "x": Math.round(modelData.at[0] * scale),
+            "y": Math.round(modelData.at[1] * scale),
+            "width": Math.max(Math.round(modelData.size[0] * scale), 12),
+            "height": Math.max(Math.round(modelData.size[1] * scale), 12),
+            "opacity": (root.dragActive && root.draggedAddress === modelData.address) ? 0.85 : 0.8
         };
     }
 
@@ -114,7 +141,9 @@ PopupPanel {
         var candidates = [win ? win.class : "", win ? win.initialClass : "", win ? win.initialTitle : "", win ? win.title : ""];
         for (var i = 0; i < candidates.length; i++) {
             var iconName = IconResolver.resolveDesktopIcon(candidates[i]);
-            if (iconName) return iconName.startsWith("/") ? "file://" + iconName : "image://icon/" + iconName;
+            if (iconName)
+                return iconName.startsWith("/") ? "file://" + iconName : "image://icon/" + iconName;
+
         }
         return "image://icon/application-x-executable";
     }
@@ -126,16 +155,27 @@ PopupPanel {
         getActiveWindow.running = true;
     }
 
+    // ── Config ──
+    anchorSide: "none"
+    panelWidth: 720
+    panelMaxHeight: 0
+    finalInset: 12
+    contentMargin: 8
+    onBeforeOpen: updateAll()
+
     // ── Hyprctl processes ──
     Process {
         id: getClients
+
         command: ["hyprctl", "clients", "-j"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     var parsed = JSON.parse(this.text);
                     root.windowList = parsed;
-                    var temp = {};
+                    var temp = {
+                    };
                     for (var i = 0; i < parsed.length; i++) {
                         var win = parsed[i];
                         win.address = root.normalizeAddress(win.address);
@@ -143,58 +183,82 @@ PopupPanel {
                     }
                     root.windowByAddress = temp;
                     root.rebuildVisibleWorkspaceIds();
-                } catch (e) { console.warn("Workspace: clients parse error", e); }
+                } catch (e) {
+                    console.warn("Workspace: clients parse error", e);
+                }
             }
         }
+
     }
 
     Process {
         id: getMonitors
+
         command: ["hyprctl", "monitors", "-j"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     var parsed = JSON.parse(this.text);
                     root.monitors = parsed;
-                    var temp = {};
-                    for (var i = 0; i < parsed.length; i++) temp[parsed[i].id] = parsed[i];
+                    var temp = {
+                    };
+                    for (var i = 0; i < parsed.length; i++) temp[parsed[i].id] = parsed[i]
                     root.monitorById = temp;
-                } catch (e) { console.warn("Workspace: monitors parse error", e); }
+                } catch (e) {
+                    console.warn("Workspace: monitors parse error", e);
+                }
             }
         }
+
     }
 
     Process {
         id: getActiveWorkspace
+
         command: ["hyprctl", "activeworkspace", "-j"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     root.activeWorkspaceId = JSON.parse(this.text).id;
                     root.rebuildVisibleWorkspaceIds();
-                } catch (e) {}
+                } catch (e) {
+                }
             }
         }
+
     }
 
     Process {
         id: getActiveWindow
+
         command: ["hyprctl", "activewindow", "-j"]
+
         stdout: StdioCollector {
             onStreamFinished: {
-                try { root.activeWindowAddress = root.normalizeAddress(JSON.parse(this.text).address); }
-                catch (e) { root.activeWindowAddress = ""; }
+                try {
+                    root.activeWindowAddress = root.normalizeAddress(JSON.parse(this.text).address);
+                } catch (e) {
+                    root.activeWindowAddress = "";
+                }
             }
         }
+
     }
 
     // ── Live refresh on Hyprland events ──
     Connections {
-        target: Hyprland
         function onRawEvent(event) {
-            if (["openlayer", "closelayer", "screencast"].includes(event.name)) return;
-            if (root.showPopup) updateAll();
+            if (["openlayer", "closelayer", "screencast"].includes(event.name))
+                return ;
+
+            if (root.showPopup)
+                updateAll();
+
         }
+
+        target: Hyprland
     }
 
     // ── Content ──
@@ -208,6 +272,7 @@ PopupPanel {
             // ── Drag ghost overlay ──
             Rectangle {
                 id: dragGhost
+
                 visible: root.dragActive
                 z: 99999
                 x: root.dragX
@@ -226,6 +291,7 @@ PopupPanel {
                     fillMode: Image.PreserveAspectFit
                     source: root.dragIcon
                 }
+
             }
 
             GridLayout {
@@ -271,6 +337,7 @@ PopupPanel {
 
                             Text {
                                 id: badgeText
+
                                 anchors.centerIn: parent
                                 text: root.toRoman(wsCell.wsId)
                                 color: isActive ? Theme.bg : Theme.fg
@@ -278,6 +345,7 @@ PopupPanel {
                                 font.pixelSize: 9
                                 font.bold: true
                             }
+
                         }
 
                         // ── Click to switch ──
@@ -294,7 +362,11 @@ PopupPanel {
                         DropArea {
                             anchors.fill: parent
                             onEntered: root.hoveredWorkspaceId = wsCell.wsId
-                            onExited: { if (root.hoveredWorkspaceId === wsCell.wsId) root.hoveredWorkspaceId = -1; }
+                            onExited: {
+                                if (root.hoveredWorkspaceId === wsCell.wsId)
+                                    root.hoveredWorkspaceId = -1;
+
+                            }
                         }
 
                         // ── Window previews ──
@@ -318,7 +390,9 @@ PopupPanel {
                             clip: true
 
                             Repeater {
-                                model: root.windowList.filter(function(w) { return w.workspace && w.workspace.id === wsCell.wsId; })
+                                model: root.windowList.filter(function(w) {
+                                    return w.workspace && w.workspace.id === wsCell.wsId;
+                                })
 
                                 delegate: Rectangle {
                                     id: winPreview
@@ -341,6 +415,7 @@ PopupPanel {
                                     // ── Live screencopy ──
                                     Loader {
                                         id: previewLoader
+
                                         anchors.fill: parent
                                         anchors.margins: 1
                                         active: root.getToplevelForAddress(winPreview.modelData.address) != null
@@ -350,6 +425,7 @@ PopupPanel {
                                             live: true
                                             constraintSize: Qt.size(parent ? parent.width : 166, parent ? parent.height : 100)
                                         }
+
                                     }
 
                                     // ── App icon overlay ──
@@ -367,15 +443,11 @@ PopupPanel {
                                             fillMode: Image.PreserveAspectFit
                                             source: root.getWindowIconPath(winPreview.modelData)
                                         }
+
                                     }
 
                                     // ── Window class label (fallback when no capture source) ──
                                     Text {
-                                        anchors {
-                                            bottom: parent.bottom
-                                            horizontalCenter: parent.horizontalCenter
-                                            bottomMargin: 2
-                                        }
                                         visible: !previewLoader.active
                                         text: winPreview.modelData.class || winPreview.modelData.initialClass || ""
                                         color: Theme.muted
@@ -384,6 +456,13 @@ PopupPanel {
                                         elide: Text.ElideRight
                                         width: parent.width - 4
                                         horizontalAlignment: Text.AlignHCenter
+
+                                        anchors {
+                                            bottom: parent.bottom
+                                            horizontalCenter: parent.horizontalCenter
+                                            bottomMargin: 2
+                                        }
+
                                     }
 
                                     // ── Drag handle ──
@@ -392,7 +471,6 @@ PopupPanel {
 
                                         anchors.fill: parent
                                         hoverEnabled: true
-
                                         onPressed: function(mouse) {
                                             root.draggedAddress = root.normalizeAddress(winPreview.modelData.address);
                                             root.draggedSourceWorkspace = wsCell.wsId;
@@ -407,7 +485,6 @@ PopupPanel {
                                             root.dragX = pt.x - mouse.x;
                                             root.dragY = pt.y - mouse.y;
                                         }
-
                                         onPositionChanged: function(mouse) {
                                             if (pressed) {
                                                 var pt = mapToItem(contentRoot, mouse.x, mouse.y);
@@ -417,7 +494,6 @@ PopupPanel {
                                                 root.hoveredWorkspaceId = root.findHoveredWorkspace(contentRoot, pt.x, pt.y, wsGridRepeater);
                                             }
                                         }
-
                                         onReleased: function(mouse) {
                                             var targetWs = root.hoveredWorkspaceId;
                                             if (root.dragActive) {
@@ -434,7 +510,6 @@ PopupPanel {
                                             root.dragHeight = 0;
                                             root.hoveredWorkspaceId = -1;
                                         }
-
                                         onCanceled: {
                                             root.dragActive = false;
                                             root.draggedAddress = "";
@@ -444,9 +519,10 @@ PopupPanel {
                                             root.dragHeight = 0;
                                             root.hoveredWorkspaceId = -1;
                                         }
-
                                         onClicked: function(mouse) {
-                                            if (root.dragMoved) return;
+                                            if (root.dragMoved)
+                                                return ;
+
                                             Quickshell.execDetached(["hyprctl", "dispatch", "focuswindow", "address:" + root.normalizeAddress(winPreview.modelData.address)]);
                                             root.closePopup();
                                         }
@@ -455,6 +531,7 @@ PopupPanel {
                                     // ── Tooltip ──
                                     Rectangle {
                                         id: tooltip
+
                                         visible: dragHandle.containsMouse && !root.dragActive && winPreview.modelData.title
                                         z: 99999
                                         x: (winPreview.width - width) / 2
@@ -468,6 +545,7 @@ PopupPanel {
 
                                         Text {
                                             id: tooltipText
+
                                             anchors.centerIn: parent
                                             text: winPreview.modelData.title
                                             color: Theme.fg
@@ -477,14 +555,50 @@ PopupPanel {
                                             elide: Text.ElideRight
                                             horizontalAlignment: Text.AlignHCenter
                                         }
+
                                     }
 
-                                    Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                    Behavior on opacity { NumberAnimation { duration: 180 } }
+                                    Behavior on x {
+                                        NumberAnimation {
+                                            duration: 180
+                                            easing.type: Easing.OutCubic
+                                        }
+
+                                    }
+
+                                    Behavior on y {
+                                        NumberAnimation {
+                                            duration: 180
+                                            easing.type: Easing.OutCubic
+                                        }
+
+                                    }
+
+                                    Behavior on width {
+                                        NumberAnimation {
+                                            duration: 180
+                                            easing.type: Easing.OutCubic
+                                        }
+
+                                    }
+
+                                    Behavior on height {
+                                        NumberAnimation {
+                                            duration: 180
+                                            easing.type: Easing.OutCubic
+                                        }
+
+                                    }
+
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: 180
+                                        }
+
+                                    }
+
                                 }
+
                             }
 
                             // ── Empty workspace text ──
@@ -500,17 +614,37 @@ PopupPanel {
                                     for (var i = 0; i < root.windowList.length; i++) {
                                         if (root.windowList[i].workspace && root.windowList[i].workspace.id === wsCell.wsId)
                                             count++;
+
                                     }
                                     return count === 0;
                                 }
                             }
+
                         }
 
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 150
+                                easing.type: Easing.OutCubic
+                            }
+
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+
+                        }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

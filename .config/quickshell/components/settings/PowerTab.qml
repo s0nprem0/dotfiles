@@ -18,12 +18,16 @@ Rectangle {
     color: "transparent"
 
     ColumnLayout {
-        anchors.fill: parent; anchors.margins: 8; spacing: 8
+        anchors.fill: parent
+        anchors.margins: 8
+        spacing: 8
 
         PowerCard {
             activeProfile: root.activeProfile
             chargeLimit: root.chargeLimit
-            onProfileSelected: (p) => root.setProfile(p)
+            onProfileSelected: (p) => {
+                return root.setProfile(p);
+            }
         }
 
         ModeCard {
@@ -31,11 +35,21 @@ Rectangle {
             currentProfile: root.activeProfile
             currentBrightness: root.currentBrightness
             currentKbd: root.currentKbd
-            onProfileChanged: (p) => root.setProfile(p)
-            onBrightnessChanged: (pct) => root.brightnessChanged(pct)
-            onKbdChanged: (pct) => root.kbdChanged(pct)
+            onProfileChanged: (p) => {
+                return root.setProfile(p);
+            }
+            onBrightnessChanged: (pct) => {
+                return root.brightnessChanged(pct);
+            }
+            onKbdChanged: (pct) => {
+                return root.kbdChanged(pct);
+            }
         }
 
-        Item { Layout.fillHeight: true }
+        Item {
+            Layout.fillHeight: true
+        }
+
     }
+
 }

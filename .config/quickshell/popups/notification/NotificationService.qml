@@ -7,11 +7,6 @@ Item {
 
     property bool dnd: false
     property var toastModel
-
-    toastModel: ListModel {
-        id: toastModel
-    }
-
     property int maxToasts: 5
     property int maxTotal: 200
     property var notifList: []
@@ -141,6 +136,7 @@ Item {
             NotificationState.dnd = dnd;
         }
     }
+
     Component {
         id: notifDataComp
 
@@ -208,6 +204,10 @@ Item {
         onTriggered: {
             for (var i = 0; i < service.notifList.length; i++) service.notifList[i].updateTimeStr()
         }
+    }
+
+    toastModel: ListModel {
+        id: toastModel
     }
 
 }

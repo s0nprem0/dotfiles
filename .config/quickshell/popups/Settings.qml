@@ -9,23 +9,7 @@ import Quickshell.Io
 Window {
     id: root
 
-    title: "Quickshell Settings"
-    minimumWidth: 480
-    minimumHeight: 400
-    width: 520
-    height: 440
-    color: "transparent"
-    flags: Qt.Window | Qt.FramelessWindowHint
-
     property bool showPopup: false
-    visible: showPopup
-
-    onVisibleChanged: { if (visible) refresh(); }
-
-    Keys.onPressed: (event) => {
-        if (event.key === Qt.Key_Escape) { root.closeWin(); event.accepted = true; }
-    }
-
     // ── Data ──
     property string hostname: ""
     property string kernel: ""
@@ -42,42 +26,109 @@ Window {
     property int currentBrightness: 80
     property int currentKbd: 50
     property int currentTab: 0
-    readonly property var tabData: [
-        { icon: "󰒓", label: "System" },
-        { icon: "󰢟", label: "Power" },
-        { icon: "󰤨", label: "Network" },
-        { icon: "󰻞", label: "About" },
-    ]
-    property var sysActions: [
-        { icon: "󰌾", label: "Lock",     cmd: ["hyprlock"],                 confirm: false },
-        { icon: "󰍃", label: "Logout",   cmd: ["hyprctl", "dispatch", "exit"], confirm: true  },
-        { icon: "󰤄", label: "Sleep",    cmd: ["systemctl", "suspend"],        confirm: true  },
-        { icon: "󰜉", label: "Reboot",   cmd: ["systemctl", "reboot"],         confirm: true  },
-        { icon: "󰐥", label: "Shutdown", cmd: ["systemctl", "poweroff"],       confirm: true  },
-    ]
-    property var aboutRows: [
-        { label: "Host",   value: root.hostname },
-        { label: "OS",     value: root.os       },
-        { label: "Kernel", value: root.kernel   },
-        { label: "Uptime", value: root.uptime   },
-    ]
+    readonly property var tabData: [{
+        "icon": "󰒓",
+        "label": "System"
+    }, {
+        "icon": "󰢟",
+        "label": "Power"
+    }, {
+        "icon": "󰤨",
+        "label": "Network"
+    }, {
+        "icon": "󰻞",
+        "label": "About"
+    }]
+    property var sysActions: [{
+        "icon": "󰌾",
+        "label": "Lock",
+        "cmd": ["hyprlock"],
+        "confirm": false
+    }, {
+        "icon": "󰍃",
+        "label": "Logout",
+        "cmd": ["hyprctl", "dispatch", "exit"],
+        "confirm": true
+    }, {
+        "icon": "󰤄",
+        "label": "Sleep",
+        "cmd": ["systemctl", "suspend"],
+        "confirm": true
+    }, {
+        "icon": "󰜉",
+        "label": "Reboot",
+        "cmd": ["systemctl", "reboot"],
+        "confirm": true
+    }, {
+        "icon": "󰐥",
+        "label": "Shutdown",
+        "cmd": ["systemctl", "poweroff"],
+        "confirm": true
+    }]
+    property var aboutRows: [{
+        "label": "Host",
+        "value": root.hostname
+    }, {
+        "label": "OS",
+        "value": root.os
+    }, {
+        "label": "Kernel",
+        "value": root.kernel
+    }, {
+        "label": "Uptime",
+        "value": root.uptime
+    }]
 
     function refresh() {
-        sysInfoProc.running = true; uptimeProc.running = true;
-        batteryProc.running = true; profileProc.running = true;
+        sysInfoProc.running = true;
+        uptimeProc.running = true;
+        batteryProc.running = true;
+        profileProc.running = true;
     }
+
     function setProfile(profile) {
         root.activeProfile = profile;
         setProfileProc.command = [Theme.bin("set_power_profile.sh"), profile];
         setProfileProc.running = true;
     }
-    function confirmAction(action, label) { pendingAction = action; pendingLabel = label; confirmVisible = true; }
-    function closeWin() { root.showPopup = false; confirmVisible = false; }
+
+    function confirmAction(action, label) {
+        pendingAction = action;
+        pendingLabel = label;
+        confirmVisible = true;
+    }
+
+    function closeWin() {
+        root.showPopup = false;
+        confirmVisible = false;
+    }
+
+    title: "Quickshell Settings"
+    minimumWidth: 480
+    minimumHeight: 400
+    width: 520
+    height: 440
+    color: "transparent"
+    flags: Qt.Window | Qt.FramelessWindowHint
+    visible: showPopup
+    onVisibleChanged: {
+        if (visible)
+            refresh();
+
+    }
+    Keys.onPressed: (event) => {
+        if (event.key === Qt.Key_Escape) {
+            root.closeWin();
+            event.accepted = true;
+        }
+    }
 
     // ── Processes ──
     Process {
         id: sysInfoProc
+
         command: [Theme.bin("get_sysinfo.sh")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 var lines = (this.text || "").trim().split("\n");
@@ -88,34 +139,72 @@ Window {
                 }
             }
         }
+
     }
+
     Process {
-        id: uptimeProc; command: ["uptime", "-p"];
+        id: uptimeProc
+
+        command: ["uptime", "-p"]
+
         stdout: StdioCollector {
-            onStreamFinished: { root.uptime = (this.text || "").trim().replace(/^up /i, ""); }
+            onStreamFinished: {
+                root.uptime = (this.text || "").trim().replace(/^up /i, "");
+            }
         }
+
     }
+
     Process {
         id: batteryProc
+
         command: ["sh", "-c", "for p in /sys/class/power_supply/BAT*/capacity; do [ -f \"$p\" ] && { cat \"$p\" && cat \"${p%capacity}status\"; break; }; done 2>/dev/null || printf '%s\\n' '--' 'Unknown'"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const lines = (this.text || "").trim().split("\n");
-                if (lines.length >= 2) { root.batteryPercent = lines[0]; root.charging = lines[1] === "Charging"; }
+                if (lines.length >= 2) {
+                    root.batteryPercent = lines[0];
+                    root.charging = lines[1] === "Charging";
+                }
             }
         }
+
     }
+
     Process {
         id: profileProc
+
         command: [Theme.bin("get_power_profile")]
+
         stdout: StdioCollector {
             onStreamFinished: {
-                try { var j = JSON.parse(this.text.trim()); root.activeProfile = j.active ?? "balanced"; root.availableProfiles = j.available ?? [root.activeProfile]; } catch (e) {}
+                try {
+                    var j = JSON.parse(this.text.trim());
+                    root.activeProfile = j.active ?? "balanced";
+                    root.availableProfiles = j.available ?? [root.activeProfile];
+                } catch (e) {
+                }
             }
         }
+
     }
-    Process { id: setProfileProc; onExited: profileProc.running = true }
-    Process { id: actionProc; onExited: { if (root.showPopup) root.closeWin(); } }
+
+    Process {
+        id: setProfileProc
+
+        onExited: profileProc.running = true
+    }
+
+    Process {
+        id: actionProc
+
+        onExited: {
+            if (root.showPopup)
+                root.closeWin();
+
+        }
+    }
 
     // ── UI ──
     Rectangle {
@@ -135,109 +224,203 @@ Window {
                 color: Theme.primary
 
                 RowLayout {
-                    anchors.fill: parent; anchors.leftMargin: 8; anchors.rightMargin: 4
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+                    anchors.rightMargin: 4
                     spacing: 8
 
-                    Text { text: "󰒓"; color: Theme.bg; font.family: Theme.fontFamily; font.pixelSize: 12 }
-                    Text { text: "SYSTEM SETTINGS"; color: Theme.bg; font.family: Theme.fontFamily; font.pixelSize: 11; font.bold: true; Layout.fillWidth: true }
+                    Text {
+                        text: "󰒓"
+                        color: Theme.bg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 12
+                    }
+
+                    Text {
+                        text: "SYSTEM SETTINGS"
+                        color: Theme.bg
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 11
+                        font.bold: true
+                        Layout.fillWidth: true
+                    }
 
                     Rectangle {
-                        implicitWidth: 24; implicitHeight: 24
+                        implicitWidth: 24
+                        implicitHeight: 24
                         color: closeMa.containsMouse ? Theme.bg : "transparent"
-                        border.width: 1; border.color: closeMa.containsMouse ? Theme.bg : "transparent"
+                        border.width: 1
+                        border.color: closeMa.containsMouse ? Theme.bg : "transparent"
+
                         Text {
                             anchors.centerIn: parent
-                            text: "✕"; color: closeMa.containsMouse ? Theme.primary : Theme.bg
-                            font.family: Theme.fontFamily; font.pixelSize: 10; font.bold: true
+                            text: "✕"
+                            color: closeMa.containsMouse ? Theme.primary : Theme.bg
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
                         }
+
                         MouseArea {
-                            id: closeMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            id: closeMa
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: root.closeWin()
                         }
+
                     }
+
                 }
+
             }
 
             // ── Body ──
             RowLayout {
-                Layout.fillWidth: true; Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 spacing: 0
 
                 // ── Sidebar ──
                 Rectangle {
-                    Layout.preferredWidth: 100; Layout.fillHeight: true
+                    Layout.preferredWidth: 100
+                    Layout.fillHeight: true
                     color: Theme.surface
 
-                    ColumnLayout { anchors.fill: parent; anchors.margins: 4; spacing: 2
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        spacing: 2
 
                         Repeater {
                             model: root.tabData
+
                             delegate: Rectangle {
-                                required property var modelData; required property int index
-                                Layout.fillWidth: true; Layout.preferredHeight: 30
+                                required property var modelData
+                                required property int index
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 30
                                 color: index === root.currentTab ? Theme.primary : (tabMa.containsMouse ? Theme.surfaceLighter : "transparent")
 
                                 RowLayout {
-                                    anchors.fill: parent; anchors.leftMargin: 8; spacing: 8
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    spacing: 8
+
                                     Text {
                                         text: modelData.icon
                                         color: index === root.currentTab ? Theme.bg : Theme.fg
-                                        font.family: Theme.fontFamily; font.pixelSize: 11
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 11
                                     }
+
                                     Text {
                                         text: modelData.label
                                         color: index === root.currentTab ? Theme.bg : Theme.fg
-                                        font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        font.bold: true
                                     }
+
                                 }
 
                                 MouseArea {
-                                    id: tabMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    id: tabMa
+
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: root.currentTab = index
                                 }
+
                             }
+
                         }
-                        Item { Layout.fillHeight: true }
+
+                        Item {
+                            Layout.fillHeight: true
+                        }
+
                     }
+
                 }
 
                 // ── Separator ──
                 Rectangle {
-                    Layout.preferredWidth: 2; Layout.fillHeight: true; color: Theme.primary
+                    Layout.preferredWidth: 2
+                    Layout.fillHeight: true
+                    color: Theme.primary
                 }
 
                 // ── Content ──
                 Rectangle {
-                    Layout.fillWidth: true; Layout.fillHeight: true; color: Theme.surface
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: Theme.surface
 
                     StackLayout {
-                        anchors.fill: parent; anchors.margins: 8
+                        anchors.fill: parent
+                        anchors.margins: 8
                         currentIndex: root.currentTab
 
                         SystemTab {
-                            hostname: root.hostname; os: root.os; uptime: root.uptime
-                            batteryPercent: root.batteryPercent; charging: root.charging
-                            sysActions: root.sysActions; confirmVisible: root.confirmVisible
-                            pendingAction: root.pendingAction; pendingLabel: root.pendingLabel
-                            onConfirmAction: (a, l) => root.confirmAction(a, l)
+                            hostname: root.hostname
+                            os: root.os
+                            uptime: root.uptime
+                            batteryPercent: root.batteryPercent
+                            charging: root.charging
+                            sysActions: root.sysActions
+                            confirmVisible: root.confirmVisible
+                            pendingAction: root.pendingAction
+                            pendingLabel: root.pendingLabel
+                            onConfirmAction: (a, l) => {
+                                return root.confirmAction(a, l);
+                            }
                             onCloseConfirm: root.confirmVisible = false
-                            onExecuteAction: (cmd) => { actionProc.command = cmd; actionProc.running = true; }
+                            onExecuteAction: (cmd) => {
+                                actionProc.command = cmd;
+                                actionProc.running = true;
+                            }
                         }
+
                         PowerTab {
-                            activeProfile: root.activeProfile; availableProfiles: root.availableProfiles
+                            activeProfile: root.activeProfile
+                            availableProfiles: root.availableProfiles
                             chargeLimit: root.chargeLimit
-                            currentBrightness: root.currentBrightness; currentKbd: root.currentKbd
-                            onSetProfile: (p) => root.setProfile(p)
-                            onBrightnessChanged: (pct) => root.currentBrightness = pct
-                            onKbdChanged: (pct) => root.currentKbd = pct
+                            currentBrightness: root.currentBrightness
+                            currentKbd: root.currentKbd
+                            onSetProfile: (p) => {
+                                return root.setProfile(p);
+                            }
+                            onBrightnessChanged: (pct) => {
+                                return root.currentBrightness = pct;
+                            }
+                            onKbdChanged: (pct) => {
+                                return root.currentKbd = pct;
+                            }
                         }
+
                         NetworkTab {
-                            onOpenImpala: { Quickshell.execDetached(Config.impalaCmd); root.closeWin(); }
+                            onOpenImpala: {
+                                Quickshell.execDetached(Config.impalaCmd);
+                                root.closeWin();
+                            }
                         }
-                        AboutTab { aboutRows: root.aboutRows }
+
+                        AboutTab {
+                            aboutRows: root.aboutRows
+                        }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

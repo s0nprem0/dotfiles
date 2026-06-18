@@ -88,11 +88,11 @@ BarModule {
     Process {
         id: pactlSub
 
-        command: ["pactl", "subscribe"]
-        running: true
-
         // Restart with backoff on crash to avoid busy-loop
         property int crashCount: 0
+
+        command: ["pactl", "subscribe"]
+        running: true
         onExited: {
             var delay = Math.min(1000 * Math.pow(2, pactlSub.crashCount), 30000);
             pactlSub.crashCount++;
@@ -102,6 +102,7 @@ BarModule {
         onRunningChanged: {
             if (running)
                 pactlSub.crashCount = 0;
+
         }
 
         stdout: SplitParser {
@@ -184,7 +185,7 @@ BarModule {
         running: false
         onExited: {
             if (root._switchingPlayer)
-                return;
+                return ;
 
             root.playerName = "";
             root.hasPlayer = false;
