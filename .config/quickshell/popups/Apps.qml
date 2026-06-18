@@ -2,14 +2,16 @@ import "../service"
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
+import QtQuick.Controls // Added for the ScrollBar
 import Quickshell
 
 Window {
     id: root
 
     title: "System Index"
-    width: 460
-    height: 520
+    // UX UPGRADE: Responsive sizing based on screen resolution with minimum fallbacks
+    width: Screen.width ? Math.max(460, Math.round(Screen.width * 0.22)) : 460
+    height: Screen.height ? Math.max(520, Math.round(Screen.height * 0.48)) : 520
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint
 
@@ -20,12 +22,6 @@ Window {
     property string searchText: ""
     property int selectedIndex: 0
 
-    // UX UPGRADE: Auto-close window if you click away (Window Ghosting Fix)
-    onActiveChanged: {
-        if (!active && showPopup) {
-            showPopup = false;
-        }
-    }
 
     onVisibleChanged: {
         if (visible) {
@@ -36,7 +32,6 @@ Window {
         }
     }
 
-    // UX UPGRADE: True Fuzzy Matching Algorithm
     function fuzzyMatch(str, query) {
         if (query === "") return true;
         str = (str || "").toLowerCase();
@@ -62,7 +57,6 @@ Window {
         }
     }
 
-    // ── DATA AGGREGATION ENGINE ──
     function rebuildDisplay() {
         var term = root.searchText.trim();
         var sourceApps = AppsService.rawData.all_apps || [];
@@ -72,24 +66,9 @@ Window {
         var filtered = [];
 
         if (term === "") {
-            for (let i = 0; i < mostUsed.length; i++) {
-                let item = Object.assign({}, mostUsed[i]);
+            for (let i = 0; i < sourceApps.length; i++) {
+                let item = Object.assign({}, sourceApps[i]);
                 item.typeLabel = "APP";
-                filtered.push(item);
-            }
-            for (let i = 0; i < Math.min(fileHistory.length, 5); i++) {
-                let item = Object.assign({}, fileHistory[i]);
-                item.typeLabel = "FILE";
-                item.icon = "󰈔";
-                item.comment = item.path;
-                filtered.push(item);
-            }
-            for (let i = 0; i < Math.min(webHistory.length, 5); i++) {
-                let item = Object.assign({}, webHistory[i]);
-                item.typeLabel = "WEB";
-                item.name = item.query;
-                item.icon = "󰖟";
-                item.comment = item.engine.toUpperCase();
                 filtered.push(item);
             }
         } else if (term.startsWith("!")) {
@@ -102,7 +81,6 @@ Window {
                 isWebAction: true
             });
         } else {
-            // Use the new fuzzyMatch function
             for (let i = 0; i < sourceApps.length; i++) {
                 let item = sourceApps[i];
                 if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term)) {
@@ -116,7 +94,6 @@ Window {
         root.selectedIndex = 0;
     }
 
-    // ── LAUNCH ROUTER ──
     function launchSelected() {
         if (root.displayData.length > 0 && root.selectedIndex < root.displayData.length) {
             var item = root.displayData[root.selectedIndex];
@@ -232,11 +209,13 @@ Window {
 
                     Text { text: ""; color: searchField.activeFocus ? Theme.primary : Theme.muted; font.pixelSize: 14 }
 
-                    StackLayout {
+                    // UX FIX: Replaced StackLayout with absolute anchoring to prevent input interference
+                    Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
                         Text {
+                            anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
                             text: "SEARCH APPS, TYPE !g OR !yt..."
                             color: Theme.muted
@@ -248,6 +227,7 @@ Window {
 
                         TextInput {
                             id: searchField
+                            anchors.fill: parent
                             verticalAlignment: TextInput.AlignVCenter
                             color: Theme.fg
                             font.family: Theme.fontFamily
@@ -332,20 +312,13 @@ Window {
                     spacing: 2
                     boundsBehavior: Flickable.StopAtBounds
 
-                    header: Item {
-                        width: ListView.view.width
-                        height: root.searchText === "" && root.displayData.length > 0 ? 28 : 0
-                        visible: height > 0
-
-                        Text {
-                            anchors.fill: parent
-                            anchors.leftMargin: 10
-                            verticalAlignment: Text.AlignVCenter
-                            text: "FREQUENTLY USED"
-                            color: Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            font.bold: true
+                    // UX UPGRADE: Brutalist Scrollbar
+                    ScrollBar.vertical: ScrollBar {
+                        policy: listView.contentHeight > listView.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                        contentItem: Rectangle {
+                            implicitWidth: 4
+                            color: Theme.primary
+                            radius: 0
                         }
                     }
 
@@ -353,7 +326,7 @@ Window {
                         required property var modelData
                         required property int index
 
-                        width: ListView.view.width
+                        width: ListView.view.width - (listView.ScrollBar.vertical.visible ? 8 : 0) // Account for scrollbar width
                         height: 44
 
                         Rectangle {
@@ -371,7 +344,6 @@ Window {
                                 onClicked: root.launchSelected()
                             }
 
-                            // PERFECTED UX: Dynamic Icon Rendering
                             Item {
                                 id: itemIcon
                                 anchors.left: parent.left
@@ -380,7 +352,6 @@ Window {
                                 width: 24
                                 height: 24
 
-                                // Fallback/Glyph Rendering
                                 Text {
                                     anchors.centerIn: parent
                                     text: (modelData.typeLabel !== "APP") ? (modelData.icon || "󰣇") : "󰣇"
@@ -390,7 +361,6 @@ Window {
                                     visible: imgIcon.status === Image.Error || modelData.typeLabel !== "APP"
                                 }
 
-                                // Native Icon Rendering
                                 Image {
                                     id: imgIcon
                                     anchors.centerIn: parent

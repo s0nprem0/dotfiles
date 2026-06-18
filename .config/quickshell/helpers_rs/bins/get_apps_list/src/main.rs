@@ -10,6 +10,7 @@ struct AppInfo {
     name: String,
     exec: String,
     icon: String,
+    desktop_id: String, // REQUIRED: Needed by the QML frontend
     #[serde(default)]
     count: u32,
 }
@@ -42,8 +43,7 @@ struct MainResponse {
     file_history: Vec<FileHistoryItem>,
 }
 
-// ── STATE & CACHE HELPERS ────────────────────────────────────────────────────
-
+// ── STATE & CACHE HELPERS ──
 struct Storage {
     cache_dir: PathBuf,
 }
@@ -74,8 +74,6 @@ impl Storage {
         let _ = fs::write(path, "[]");
     }
 }
-
-// ── UTILITIES ────────────────────────────────────────────────────────────────
 
 fn url_encode(input: &str) -> String {
     let mut encoded = String::with_capacity(input.len() * 3);
@@ -117,7 +115,8 @@ fn parse_web_search(query: &str) -> Option<WebHistoryItem> {
     })
 }
 
-fn parse_desktop_file(path: &Path) -> Option<AppInfo> {
+// FIX: Hardened desktop parsing to capture all apps
+fn parse_desktop_file(path: &Path, desktop_id: &str) -> Option<AppInfo> {
     let content = fs::read_to_string(path).ok()?;
     let mut name = None;
     let mut exec = None;
@@ -127,8 +126,10 @@ fn parse_desktop_file(path: &Path) -> Option<AppInfo> {
 
     for line in content.lines() {
         let line = line.trim();
+        if line.is_empty() || line.starts_with('#') { continue; }
+
         if line.starts_with('[') && line.ends_with(']') {
-            in_desktop_entry = line == "[Desktop Entry]";
+            in_desktop_entry = line.contains("Desktop Entry");
             continue;
         }
         if !in_desktop_entry { continue; }
@@ -162,15 +163,15 @@ fn parse_desktop_file(path: &Path) -> Option<AppInfo> {
         name: name?,
         exec: exec?,
         icon: icon.unwrap_or_default(),
+        desktop_id: desktop_id.to_string(),
         count: 0,
     })
 }
 
-// ── MAIN RUNNER ──────────────────────────────────────────────────────────────
-
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let home = std::env::var("HOME").unwrap_or_default();
+    // Safely unwrap HOME or fail fast. Do not use an empty string as a fallback for filesystem crawling.
+    let home = std::env::var("HOME").expect("CRITICAL: HOME environment variable is not set.");
     let storage = Storage::new(&home);
 
     if args.len() > 1 {
@@ -227,6 +228,7 @@ fn main() {
 
                     if let Some(child_proc) = child {
                         if let Ok(output) = child_proc.wait_with_output() {
+                            // FIX: Replaced slow Iterator string matching with an O(1) HashMap lookup
                             let entry_map: HashMap<&str, &FileIndexEntry> = entries
                                 .iter()
                                 .map(|e| (e.path.as_str(), e))
@@ -273,7 +275,7 @@ fn main() {
                     file_path.to_string()
                 };
 
-                // UX FIX: Use xdg-open so files open in their native, preferred application
+                // FIX: Use xdg-open instead of thunar so non-directory files open correctly
                 let _ = Command::new("xdg-open").arg(&open_path).status();
                 return;
             }
@@ -326,8 +328,9 @@ fn main() {
             for entry in entries.flatten() {
                 let p = entry.path();
                 if p.extension().map_or(false, |ext| ext == "desktop") {
+                    // FIX: Pass the desktop_id cleanly to the parser
                     if let Some(file_name) = p.file_name().and_then(|f| f.to_str()) {
-                        if let Some(mut app_info) = parse_desktop_file(&p) {
+                        if let Some(mut app_info) = parse_desktop_file(&p, file_name) {
                             if let Some(&count) = usage_map.get(&app_info.name) {
                                 app_info.count = count;
                             }
