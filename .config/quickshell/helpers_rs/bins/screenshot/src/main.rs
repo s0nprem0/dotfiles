@@ -18,6 +18,31 @@ enum ScreenshotMode {
     Ocr,
 }
 
+struct Screenshot {
+    mode: ScreenshotMode,
+    save: bool,
+    copy: bool,
+    path: PathBuf,
+    geometry: Option<String>,
+}
+
+impl Screenshot {
+    fn new(mode: ScreenshotMode, save: bool, copy: bool, geometry: Option<String>) -> Self {
+        let dir = screenshot_dir();
+        let _ = fs::create_dir_all(&dir);
+
+        let path = dir.join(format!("{}_{}.png", mode.filename(), timestamp(),));
+
+        Self {
+            mode,
+            save,
+            copy,
+            path,
+            geometry,
+        }
+    }
+}
+
 impl ScreenshotMode {
     fn from_str(s: &str) -> Option<Self> {
         match s {
@@ -151,11 +176,6 @@ fn main() {
         return;
     }
 
-    let dir = screenshot_dir();
-    let _ = fs::create_dir_all(&dir);
-    let path = dir.join(format!("{}_{}.png", mode.filename(), timestamp()));
-    let path_str = path.to_string_lossy().to_string();
-
     let geometry = match mode {
         ScreenshotMode::Full => None,
 
@@ -186,11 +206,15 @@ fn main() {
         ScreenshotMode::Ocr => unreachable!(),
     };
 
-    let geom_arg = grim_geometry_arg(&geometry);
-    let label = mode.label();
+    let screenshot = Screenshot::new(mode, save, copy, geometry.clone());
+
+    let path_str = screenshot.path.to_string_lossy().to_string();
+
+    let geom_arg = grim_geometry_arg(&screenshot.geometry);
+    let label = screenshot.mode.label();
 
     let qpath = sh_single_quote(&path_str);
-    let result = if save && copy {
+    let result = if screenshot.save && screenshot.copy {
         run_cmd(
             "sh",
             &[
@@ -198,9 +222,9 @@ fn main() {
                 &format!("grim {} '{}' && wl-copy < '{}'", geom_arg, qpath, qpath),
             ],
         )
-    } else if save {
+    } else if screenshot.save {
         run_cmd("sh", &["-c", &format!("grim {} '{}'", geom_arg, qpath)])
-    } else if copy {
+    } else if screenshot.copy {
         run_cmd("sh", &["-c", &format!("grim {} - | wl-copy", geom_arg)])
     } else {
         notify("Screenshot Failed", "No action specified.");
@@ -209,12 +233,12 @@ fn main() {
 
     match result {
         Some(_) => {
-            if save && copy {
+            if screenshot.save && screenshot.copy {
                 notify(
                     "Screenshot Captured!",
                     &format!("{} saved and copied.", label),
                 );
-            } else if save {
+            } else if screenshot.save {
                 notify("Screenshot Captured!", &format!("{} saved.", label));
             } else {
                 notify(
