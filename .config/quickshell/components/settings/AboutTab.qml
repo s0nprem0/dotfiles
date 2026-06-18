@@ -1,6 +1,6 @@
+import "../../service"
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 
 Rectangle {
     id: root
@@ -10,46 +10,40 @@ Rectangle {
     color: "transparent"
 
     ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
+        anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text {
-            text: "About This System"
-            font.pixelSize: 14
-            color: Theme.fg
-            font.bold: true
-        }
+        Text { text: "ABOUT"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            color: Theme.surface
-            border.width: 1
-            border.color: Theme.primary
+            Layout.fillWidth: true; Layout.fillHeight: true
+            color: Theme.bg; border.width: 1; border.color: Theme.primary
 
-            ListView {
-                anchors.fill: parent
-                anchors.margins: 12
-                model: root.aboutRows
-                spacing: 8
-                delegate: RowLayout {
-                    width: ListView.view.width
-                    spacing: 12
-                    Text {
-                        text: modelData.label + ":"
-                        Layout.preferredWidth: 80
-                        color: Theme.muted
-                        font.pixelSize: 11
-                    }
-                    Text {
-                        text: modelData.value || "—"
-                        Layout.fillWidth: true
-                        color: Theme.fg
-                        font.pixelSize: 11
+            ColumnLayout {
+                anchors.fill: parent; anchors.margins: 10; spacing: 6
+
+                Repeater {
+                    model: root.aboutRows
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true; spacing: 6
+
+                        Text {
+                            text: modelData.label.toUpperCase() + ":"
+                            Layout.preferredWidth: 56
+                            color: Theme.primary; font.pixelSize: 9; font.bold: true
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true; height: 1; color: Theme.primary; Layout.alignment: Qt.AlignVCenter
+                        }
+                        Text {
+                            text: modelData.value.toUpperCase()
+                            color: Theme.fg; font.pixelSize: 9; font.bold: true
+                        }
                     }
                 }
             }
         }
+
+        Item { Layout.fillHeight: true }
     }
 }

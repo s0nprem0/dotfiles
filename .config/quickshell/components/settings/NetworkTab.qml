@@ -11,43 +11,47 @@ Rectangle {
     color: "transparent"
 
     ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 16
-        spacing: 16
+        anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text {
-            text: "Network Tools"
-            font.pixelSize: 14
-            color: Theme.fg
-            font.bold: true
-        }
+        Text { text: "NETWORK TOOLS"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            color: nwMa.containsMouse ? Theme.surfaceLighter : Theme.surface
-            border.width: 1
-            border.color: Theme.primary
+            Layout.fillWidth: true; Layout.preferredHeight: 44
+            color: nwMa.containsMouse ? Theme.primary : Theme.bg
+            border.width: 1; border.color: Theme.primary
 
             RowLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 12
-
-                Text { text: "󰤨"; color: Theme.primary; font.pixelSize: 18 }
-                ColumnLayout {
-                    Layout.fillWidth: true; spacing: 2
-                    Text { text: "WiFi Manager"; color: Theme.fg; font.pixelSize: 11; font.bold: true }
-                    Text { text: "Launch impala"; color: Theme.muted; font.pixelSize: 9 }
+                anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 10; spacing: 10
+                Text {
+                    text: "󰤨"
+                    color: nwMa.containsMouse ? Theme.bg : Theme.primary
+                    font.pixelSize: 16
                 }
-                Text { text: "Open"; color: Theme.primary; font.pixelSize: 10; font.bold: true }
+                ColumnLayout { Layout.fillWidth: true; spacing: 0
+                    Text {
+                        text: "WIFI MANAGER"
+                        color: nwMa.containsMouse ? Theme.bg : Theme.fg
+                        font.pixelSize: 9; font.bold: true
+                    }
+                    Text {
+                        text: "LAUNCH IMPALA"
+                        color: nwMa.containsMouse ? Theme.bg : Theme.muted
+                        font.pixelSize: 8; font.bold: true
+                    }
+                }
+                Text {
+                    text: "OPEN >"
+                    color: nwMa.containsMouse ? Theme.bg : Theme.primary
+                    font.pixelSize: 9; font.bold: true
+                }
             }
 
             MouseArea {
-                id: nwMa
-                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                id: nwMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                 onClicked: root.openImpala()
             }
         }
+
+        Item { Layout.fillHeight: true }
     }
 }
