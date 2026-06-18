@@ -145,7 +145,7 @@ Window {
                         Text {
                             anchors.centerIn: parent
                             text: "✕"; color: closeMa.containsMouse ? Theme.primary : Theme.bg
-                            font.pixelSize: 10; font.bold: true
+                            font.family: Theme.fontFamily; font.pixelSize: 10; font.bold: true
                         }
                         MouseArea {
                             id: closeMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor

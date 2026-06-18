@@ -38,35 +38,35 @@ Rectangle {
                 anchors.centerIn: parent; spacing: 2
                 Text {
                     text: root.hostname.toUpperCase()
-                    font.pixelSize: 16; color: Theme.primary; font.bold: true
+                    font.family: Theme.fontFamily; font.pixelSize: 16; color: Theme.primary; font.bold: true
                 }
                 Text {
                     text: root.os.toUpperCase()
-                    font.pixelSize: 9; color: Theme.fg; font.bold: true
+                    font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.fg; font.bold: true
                 }
 
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter; spacing: 8
                     Text {
                         text: (root.charging ? "󱐋 " : "󰁹 ") + root.batteryPercent + "%"
-                        font.pixelSize: 8; color: root.charging ? Theme.green : Theme.primary; font.bold: true
+                        font.family: Theme.fontFamily; font.pixelSize: 8; color: root.charging ? Theme.green : Theme.primary; font.bold: true
                     }
-                    Text { text: "•"; font.pixelSize: 8; color: Theme.primary }
+                    Text { text: "•"; font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary }
                     Text {
                         text: root.charging ? "CHARGING" : "DISCHARGING"
-                        font.pixelSize: 8; color: root.charging ? Theme.green : Theme.fg; font.bold: true
+                        font.family: Theme.fontFamily; font.pixelSize: 8; color: root.charging ? Theme.green : Theme.fg; font.bold: true
                     }
-                    Text { text: "•"; font.pixelSize: 8; color: Theme.primary }
+                    Text { text: "•"; font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary }
                     Text {
                         text: "󰔚 " + root.uptime.toUpperCase()
-                        font.pixelSize: 8; color: Theme.primary; font.bold: true
+                        font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary; font.bold: true
                     }
                 }
             }
         }
 
         // ── Quick actions ──
-        Text { text: "ACTIONS"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        Text { text: "ACTIONS"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         GridLayout {
             Layout.fillWidth: true
@@ -85,12 +85,12 @@ Rectangle {
                         Text {
                             text: modelData.icon
                             color: ma.containsMouse ? Theme.bg : Theme.primary
-                            font.pixelSize: 18
+                            font.family: Theme.fontFamily; font.pixelSize: 18
                         }
                         Text {
                             text: modelData.label
                             color: ma.containsMouse ? Theme.bg : Theme.fg
-                            font.pixelSize: 8; font.bold: true
+                            font.family: Theme.fontFamily; font.pixelSize: 8; font.bold: true
                         }
                     }
 
@@ -122,7 +122,7 @@ Rectangle {
                     Text {
                         text: "CONFIRM " + root.pendingLabel.toUpperCase() + "?"
                         Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter
-                        color: Theme.error; font.pixelSize: 11; font.bold: true
+                        color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: 11; font.bold: true
                     }
 
                     RowLayout {
@@ -130,13 +130,13 @@ Rectangle {
                         Rectangle {
                             Layout.fillWidth: true; Layout.preferredHeight: 30
                             color: Theme.surface; border.width: 1; border.color: Theme.primary
-                            Text { anchors.centerIn: parent; text: "CANCEL"; color: Theme.fg; font.pixelSize: 9; font.bold: true }
+                            Text { anchors.centerIn: parent; text: "CANCEL"; color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true }
                             MouseArea { anchors.fill: parent; onClicked: root.closeConfirm() }
                         }
                         Rectangle {
                             Layout.fillWidth: true; Layout.preferredHeight: 30
                             color: Theme.error
-                            Text { anchors.centerIn: parent; text: "CONFIRM"; color: Theme.bg; font.pixelSize: 9; font.bold: true }
+                            Text { anchors.centerIn: parent; text: "CONFIRM"; color: Theme.bg; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true }
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: { root.executeAction(root.pendingAction); root.closeConfirm(); }

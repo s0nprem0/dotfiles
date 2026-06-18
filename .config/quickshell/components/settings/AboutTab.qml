@@ -12,7 +12,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text { text: "ABOUT"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        Text { text: "ABOUT"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         Rectangle {
             Layout.fillWidth: true; Layout.fillHeight: true
@@ -30,14 +30,14 @@ Rectangle {
                         Text {
                             text: modelData.label.toUpperCase() + ":"
                             Layout.preferredWidth: 56
-                            color: Theme.primary; font.pixelSize: 9; font.bold: true
+                            color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
                         }
                         Rectangle {
                             Layout.fillWidth: true; height: 1; color: Theme.primary; Layout.alignment: Qt.AlignVCenter
                         }
                         Text {
                             text: modelData.value.toUpperCase()
-                            color: Theme.fg; font.pixelSize: 9; font.bold: true
+                            color: Theme.fg; font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
                         }
                     }
                 }

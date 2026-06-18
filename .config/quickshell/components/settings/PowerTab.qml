@@ -15,7 +15,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text { text: "POWER PROFILE"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        Text { text: "POWER PROFILE"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 80
@@ -35,7 +35,7 @@ Rectangle {
                             anchors.centerIn: parent
                             text: modelData.toUpperCase()
                             color: modelData === root.activeProfile ? Theme.bg : Theme.fg
-                            font.pixelSize: 9; font.bold: true
+                            font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
                         }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor

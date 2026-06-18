@@ -13,7 +13,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 8; spacing: 8
 
-        Text { text: "NETWORK TOOLS"; font.pixelSize: 9; color: Theme.primary; font.bold: true }
+        Text { text: "NETWORK TOOLS"; font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.primary; font.bold: true }
 
         Rectangle {
             Layout.fillWidth: true; Layout.preferredHeight: 44
@@ -25,24 +25,24 @@ Rectangle {
                 Text {
                     text: "󰤨"
                     color: nwMa.containsMouse ? Theme.bg : Theme.primary
-                    font.pixelSize: 16
+                    font.family: Theme.fontFamily; font.pixelSize: 16
                 }
                 ColumnLayout { Layout.fillWidth: true; spacing: 0
                     Text {
                         text: "WIFI MANAGER"
                         color: nwMa.containsMouse ? Theme.bg : Theme.fg
-                        font.pixelSize: 9; font.bold: true
+                        font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
                     }
                     Text {
                         text: "LAUNCH IMPALA"
                         color: nwMa.containsMouse ? Theme.bg : Theme.muted
-                        font.pixelSize: 8; font.bold: true
+                        font.family: Theme.fontFamily; font.pixelSize: 8; font.bold: true
                     }
                 }
                 Text {
                     text: "OPEN >"
                     color: nwMa.containsMouse ? Theme.bg : Theme.primary
-                    font.pixelSize: 9; font.bold: true
+                    font.family: Theme.fontFamily; font.pixelSize: 9; font.bold: true
                 }
             }
 
