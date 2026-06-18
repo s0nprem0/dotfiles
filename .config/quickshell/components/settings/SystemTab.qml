@@ -27,42 +27,12 @@ Rectangle {
         anchors.margins: 8
         spacing: 8
 
-        // ── Header block ──
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 72
-            color: Theme.bg
-            border.width: 1; border.color: Theme.primary
-
-            ColumnLayout {
-                anchors.centerIn: parent; spacing: 2
-                Text {
-                    text: root.hostname.toUpperCase()
-                    font.family: Theme.fontFamily; font.pixelSize: 16; color: Theme.primary; font.bold: true
-                }
-                Text {
-                    text: root.os.toUpperCase()
-                    font.family: Theme.fontFamily; font.pixelSize: 9; color: Theme.fg; font.bold: true
-                }
-
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter; spacing: 8
-                    Text {
-                        text: (root.charging ? "󱐋 " : "󰁹 ") + root.batteryPercent + "%"
-                        font.family: Theme.fontFamily; font.pixelSize: 8; color: root.charging ? Theme.green : Theme.primary; font.bold: true
-                    }
-                    Text { text: "•"; font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary }
-                    Text {
-                        text: root.charging ? "CHARGING" : "DISCHARGING"
-                        font.family: Theme.fontFamily; font.pixelSize: 8; color: root.charging ? Theme.green : Theme.fg; font.bold: true
-                    }
-                    Text { text: "•"; font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary }
-                    Text {
-                        text: "󰔚 " + root.uptime.toUpperCase()
-                        font.family: Theme.fontFamily; font.pixelSize: 8; color: Theme.primary; font.bold: true
-                    }
-                }
-            }
+        HeaderCard {
+            hostname: root.hostname
+            os: root.os
+            uptime: root.uptime
+            batteryPercent: root.batteryPercent
+            charging: root.charging
         }
 
         // ── Quick actions ──
