@@ -10,6 +10,44 @@ struct HyprctlActiveWindow {
     size: [i32; 2],
 }
 
+#[derive(Debug, Clone, Copy)]
+enum ScreenshotMode {
+    Full,
+    Region,
+    Active,
+    Ocr,
+}
+
+impl ScreenshotMode {
+    fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "full" => Some(Self::Full),
+            "region" => Some(Self::Region),
+            "active" => Some(Self::Active),
+            "ocr" => Some(Self::Ocr),
+            _ => None,
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::Full => "Full screen",
+            Self::Region => "Region",
+            Self::Active => "Active window",
+            Self::Ocr => "OCR",
+        }
+    }
+
+    fn filename(self) -> &'static str {
+        match self {
+            Self::Full => "full",
+            Self::Region => "region",
+            Self::Active => "active",
+            Self::Ocr => "ocr",
+        }
+    }
+}
+
 fn screenshot_dir() -> PathBuf {
     let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
     home.join("Pictures/Screenshots")
@@ -103,30 +141,39 @@ fn main() {
         arg_idx += 1;
     }
 
-    let mode = args.get(arg_idx).map(|s| s.as_str()).unwrap_or("full");
+    let mode = args
+        .get(arg_idx)
+        .and_then(|s| ScreenshotMode::from_str(s))
+        .unwrap_or(ScreenshotMode::Full);
 
-    if mode == "ocr" {
+    if matches!(mode, ScreenshotMode::Ocr) {
         handle_ocr();
         return;
     }
 
     let dir = screenshot_dir();
     let _ = fs::create_dir_all(&dir);
-    let path = dir.join(format!("{}_{}.png", mode, timestamp()));
+    let path = dir.join(format!("{}_{}.png", mode.filename(), timestamp()));
     let path_str = path.to_string_lossy().to_string();
 
     let geometry = match mode {
-        "full" => None,
-        "region" => {
-            let region = run_cmd("slurp", &[]);
-            if region.is_none() {
-                notify("Screenshot Cancelled", "No region selected.");
-                return;
-            }
-            Some(region.unwrap())
+        ScreenshotMode::Full => None,
+
+        ScreenshotMode::Region => {
+            let region = match run_cmd("slurp", &[]) {
+                Some(r) => r,
+                None => {
+                    notify("Screenshot Cancelled", "No region selected.");
+                    return;
+                }
+            };
+
+            Some(region)
         }
-        "active" => {
+
+        ScreenshotMode::Active => {
             let out = run_cmd("hyprctl", &["-j", "activewindow"]).unwrap_or_default();
+
             match parse_active_window_geometry(&out) {
                 Some(g) => Some(g),
                 None => {
@@ -135,19 +182,12 @@ fn main() {
                 }
             }
         }
-        _ => {
-            eprintln!("Usage: screenshot [-s] [-c] [full|region|active|ocr]");
-            std::process::exit(1);
-        }
+
+        ScreenshotMode::Ocr => unreachable!(),
     };
 
     let geom_arg = grim_geometry_arg(&geometry);
-    let label = match mode {
-        "full" => "Full screen",
-        "region" => "Region",
-        "active" => "Active window",
-        _ => "Screenshot",
-    };
+    let label = mode.label();
 
     let qpath = sh_single_quote(&path_str);
     let result = if save && copy {
