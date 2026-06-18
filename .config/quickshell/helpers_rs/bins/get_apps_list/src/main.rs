@@ -57,7 +57,9 @@ impl Storage {
 
     fn load_json<T: serde::de::DeserializeOwned>(&self, file_name: &str) -> Option<T> {
         let path = self.cache_dir.join(file_name);
-        if !path.exists() { return None; }
+        if !path.exists() {
+            return None;
+        }
         let content = fs::read_to_string(path).ok()?;
         serde_json::from_str(&content).ok()
     }
@@ -91,7 +93,9 @@ fn url_encode(input: &str) -> String {
 
 fn parse_web_search(query: &str) -> Option<WebHistoryItem> {
     let q = query.trim();
-    if !q.starts_with('!') { return None; }
+    if !q.starts_with('!') {
+        return None;
+    }
 
     let (trigger, search_text) = match q.find(' ') {
         None => (q.to_lowercase(), ""),
@@ -99,14 +103,28 @@ fn parse_web_search(query: &str) -> Option<WebHistoryItem> {
     };
 
     let (engine_name, search_url, query_text) = match trigger.as_str() {
-        "!yt" | "!youtube" => ("youtube", "https://www.youtube.com/results?search_query=", search_text),
-        "!g" | "!google"   => ("google", "https://www.google.com/search?q=", search_text),
-        "!gh" | "!github"  => ("github", "https://github.com/search?q=", search_text),
-        "!w" | "!wiki" | "!wikipedia" => ("wikipedia", "https://en.wikipedia.org/wiki/Special:Search?search=", search_text),
-        _ => ("duckduckgo", "https://duckduckgo.com/?q=", if search_text.is_empty() { &q[1..] } else { q }),
+        "!yt" | "!youtube" => (
+            "youtube",
+            "https://www.youtube.com/results?search_query=",
+            search_text,
+        ),
+        "!g" | "!google" => ("google", "https://www.google.com/search?q=", search_text),
+        "!gh" | "!github" => ("github", "https://github.com/search?q=", search_text),
+        "!w" | "!wiki" | "!wikipedia" => (
+            "wikipedia",
+            "https://en.wikipedia.org/wiki/Special:Search?search=",
+            search_text,
+        ),
+        _ => (
+            "duckduckgo",
+            "https://duckduckgo.com/?q=",
+            if search_text.is_empty() { &q[1..] } else { q },
+        ),
     };
 
-    if query_text.is_empty() { return None; }
+    if query_text.is_empty() {
+        return None;
+    }
 
     Some(WebHistoryItem {
         query: query_text.to_string(),
@@ -126,13 +144,17 @@ fn parse_desktop_file(path: &Path, desktop_id: &str) -> Option<AppInfo> {
 
     for line in content.lines() {
         let line = line.trim();
-        if line.is_empty() || line.starts_with('#') { continue; }
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
 
         if line.starts_with('[') && line.ends_with(']') {
             in_desktop_entry = line.contains("Desktop Entry");
             continue;
         }
-        if !in_desktop_entry { continue; }
+        if !in_desktop_entry {
+            continue;
+        }
 
         if let Some(pos) = line.find('=') {
             let key = line[..pos].trim();
@@ -150,14 +172,18 @@ fn parse_desktop_file(path: &Path, desktop_id: &str) -> Option<AppInfo> {
                 }
                 "Icon" if icon.is_none() => icon = Some(val.to_string()),
                 "NoDisplay" => {
-                    if val.eq_ignore_ascii_case("true") { no_display = true; }
+                    if val.eq_ignore_ascii_case("true") {
+                        no_display = true;
+                    }
                 }
                 _ => {}
             }
         }
     }
 
-    if no_display { return None; }
+    if no_display {
+        return None;
+    }
 
     Some(AppInfo {
         name: name?,
@@ -186,7 +212,21 @@ fn main() {
             }
             "--index-files" => {
                 let out = Command::new("fd")
-                    .args(["--type", "f", "--hidden", "--exclude", ".git", "--exclude", "node_modules", "--exclude", ".cache", "--exclude", "target", "--max-depth", "8"])
+                    .args([
+                        "--type",
+                        "f",
+                        "--hidden",
+                        "--exclude",
+                        ".git",
+                        "--exclude",
+                        "node_modules",
+                        "--exclude",
+                        ".cache",
+                        "--exclude",
+                        "target",
+                        "--max-depth",
+                        "8",
+                    ])
                     .current_dir(&home)
                     .output();
 
@@ -199,7 +239,10 @@ fn main() {
                                 .and_then(|f| f.to_str())
                                 .unwrap_or(line)
                                 .to_string();
-                            FileIndexEntry { path: format!("~/{}", line), name }
+                            FileIndexEntry {
+                                path: format!("~/{}", line),
+                                name,
+                            }
                         })
                         .collect();
 
@@ -229,16 +272,15 @@ fn main() {
                     if let Some(child_proc) = child {
                         if let Ok(output) = child_proc.wait_with_output() {
                             // FIX: Replaced slow Iterator string matching with an O(1) HashMap lookup
-                            let entry_map: HashMap<&str, &FileIndexEntry> = entries
-                                .iter()
-                                .map(|e| (e.path.as_str(), e))
-                                .collect();
+                            let entry_map: HashMap<&str, &FileIndexEntry> =
+                                entries.iter().map(|e| (e.path.as_str(), e)).collect();
 
-                            let results: Vec<&FileIndexEntry> = String::from_utf8_lossy(&output.stdout)
-                                .lines()
-                                .filter_map(|line| entry_map.get(line).copied())
-                                .take(50)
-                                .collect();
+                            let results: Vec<&FileIndexEntry> =
+                                String::from_utf8_lossy(&output.stdout)
+                                    .lines()
+                                    .filter_map(|line| entry_map.get(line).copied())
+                                    .take(50)
+                                    .collect();
 
                             let _ = serde_json::to_writer(std::io::stdout(), &results);
                             return;
@@ -250,7 +292,9 @@ fn main() {
             }
             "--open-file" if args.len() > 2 => {
                 let file_path = &args[2];
-                let mut history = storage.load_json::<Vec<FileHistoryItem>>("file_history.json").unwrap_or_default();
+                let mut history = storage
+                    .load_json::<Vec<FileHistoryItem>>("file_history.json")
+                    .unwrap_or_default();
 
                 let name = Path::new(file_path)
                     .file_name()
@@ -264,7 +308,14 @@ fn main() {
                     .as_secs();
 
                 history.retain(|x| x.path != *file_path);
-                history.insert(0, FileHistoryItem { path: file_path.to_string(), name, timestamp });
+                history.insert(
+                    0,
+                    FileHistoryItem {
+                        path: file_path.to_string(),
+                        name,
+                        timestamp,
+                    },
+                );
                 history.truncate(30);
 
                 storage.save_json("file_history.json", &history);
@@ -280,13 +331,17 @@ fn main() {
                 return;
             }
             "--file-history" => {
-                let history = storage.load_json::<Vec<FileHistoryItem>>("file_history.json").unwrap_or_default();
+                let history = storage
+                    .load_json::<Vec<FileHistoryItem>>("file_history.json")
+                    .unwrap_or_default();
                 let _ = serde_json::to_writer(std::io::stdout(), &history);
                 return;
             }
             "--launch" if args.len() > 2 => {
                 let app_name = &args[2];
-                let mut usage_map = storage.load_json::<HashMap<String, u32>>("app_usage.json").unwrap_or_default();
+                let mut usage_map = storage
+                    .load_json::<HashMap<String, u32>>("app_usage.json")
+                    .unwrap_or_default();
                 *usage_map.entry(app_name.clone()).or_insert(0) += 1;
                 storage.save_json("app_usage.json", &usage_map);
                 return;
@@ -294,16 +349,23 @@ fn main() {
             "--web-search" if args.len() > 2 => {
                 let query = &args[2];
                 if let Some(item) = parse_web_search(query) {
-                    let mut history = storage.load_json::<Vec<WebHistoryItem>>("web_search_history.json").unwrap_or_default();
+                    let mut history = storage
+                        .load_json::<Vec<WebHistoryItem>>("web_search_history.json")
+                        .unwrap_or_default();
 
-                    history.retain(|x| !(x.query.to_lowercase() == item.query.to_lowercase() && x.engine == item.engine));
+                    history.retain(|x| {
+                        !(x.query.to_lowercase() == item.query.to_lowercase()
+                            && x.engine == item.engine)
+                    });
                     history.insert(0, item.clone());
                     history.truncate(20);
 
                     storage.save_json("web_search_history.json", &history);
 
                     let _ = Command::new("xdg-open").arg(&item.url).status();
-                    let _ = Command::new("hyprctl").args(["dispatch", "workspace", "1"]).status();
+                    let _ = Command::new("hyprctl")
+                        .args(["dispatch", "workspace", "1"])
+                        .status();
                 }
                 return;
             }
@@ -311,7 +373,9 @@ fn main() {
         }
     }
 
-    let usage_map = storage.load_json::<HashMap<String, u32>>("app_usage.json").unwrap_or_default();
+    let usage_map = storage
+        .load_json::<HashMap<String, u32>>("app_usage.json")
+        .unwrap_or_default();
     let mut apps: HashMap<String, AppInfo> = HashMap::new();
 
     let paths = [
@@ -323,7 +387,9 @@ fn main() {
 
     for dir_path in &paths {
         let path = Path::new(dir_path);
-        if !path.exists() { continue; }
+        if !path.exists() {
+            continue;
+        }
         if let Ok(entries) = fs::read_dir(path) {
             for entry in entries.flatten() {
                 let p = entry.path();
@@ -345,15 +411,32 @@ fn main() {
     let mut all_apps: Vec<AppInfo> = apps.into_values().collect();
     all_apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
 
-    let mut most_used: Vec<AppInfo> = all_apps.iter().filter(|app| app.count > 0).cloned().collect();
-    most_used.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())));
+    let mut most_used: Vec<AppInfo> = all_apps
+        .iter()
+        .filter(|app| app.count > 0)
+        .cloned()
+        .collect();
+    most_used.sort_by(|a, b| {
+        b.count
+            .cmp(&a.count)
+            .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+    });
     most_used.truncate(5);
 
-    let web_history = storage.load_json::<Vec<WebHistoryItem>>("web_search_history.json").unwrap_or_default();
-    let file_history = storage.load_json::<Vec<FileHistoryItem>>("file_history.json").unwrap_or_default();
+    let web_history = storage
+        .load_json::<Vec<WebHistoryItem>>("web_search_history.json")
+        .unwrap_or_default();
+    let file_history = storage
+        .load_json::<Vec<FileHistoryItem>>("file_history.json")
+        .unwrap_or_default();
 
     let _ = serde_json::to_writer(
         std::io::stdout(),
-        &MainResponse { most_used, all_apps, web_history, file_history },
+        &MainResponse {
+            most_used,
+            all_apps,
+            web_history,
+            file_history,
+        },
     );
 }

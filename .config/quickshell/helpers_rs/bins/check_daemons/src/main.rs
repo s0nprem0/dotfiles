@@ -16,11 +16,7 @@ fn is_running(process_name: &str) -> bool {
 }
 
 fn start(cmd: &str) -> bool {
-    Command::new("bash")
-        .arg("-c")
-        .arg(cmd)
-        .spawn()
-        .is_ok()
+    Command::new("bash").arg("-c").arg(cmd).spawn().is_ok()
 }
 
 fn notify(started: &[String], restarted: &[String]) {

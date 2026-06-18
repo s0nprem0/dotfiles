@@ -128,19 +128,18 @@ fn wifi_autoconnect_by_ssid() -> HashMap<String, bool> {
 }
 
 fn active_ethernet() -> EthernetInfo {
-    let dev = run_cmd(
-        "nmcli",
-        &["-t", "-f", "DEVICE,TYPE,STATE", "dev"],
-    )
-    .unwrap_or_default();
+    let dev = run_cmd("nmcli", &["-t", "-f", "DEVICE,TYPE,STATE", "dev"]).unwrap_or_default();
 
     for line in dev.lines() {
         let parts = split_nmcli_t_line(line);
         if parts.len() >= 3 && parts[1] == "ethernet" && parts[2].contains("connected") {
             let dev_name = &parts[0];
             // Get speed from nmcli dev show
-            let info = run_cmd("nmcli", &["-t", "-f", "GENERAL.SPEED", "dev", "show", dev_name])
-                .unwrap_or_default();
+            let info = run_cmd(
+                "nmcli",
+                &["-t", "-f", "GENERAL.SPEED", "dev", "show", dev_name],
+            )
+            .unwrap_or_default();
             let speed = info
                 .lines()
                 .next()
@@ -395,13 +394,18 @@ fn main() {
     let warp_out = run_cmd("warp-cli", &["status"]);
     let warp_available = warp_out.is_some();
     let warp_out = warp_out.unwrap_or_default();
-    let warp_connected = warp_available && warp_out
-        .lines()
-        .any(|l| l.to_lowercase().contains("status update: connected"));
+    let warp_connected = warp_available
+        && warp_out
+            .lines()
+            .any(|l| l.to_lowercase().contains("status update: connected"));
 
     // 5. Derive VPN status from vpns list
     let vpn_connected = vpns.iter().any(|v| v.active);
-    let vpn_name = vpns.iter().find(|v| v.active).map(|v| v.name.clone()).unwrap_or_default();
+    let vpn_name = vpns
+        .iter()
+        .find(|v| v.active)
+        .map(|v| v.name.clone())
+        .unwrap_or_default();
 
     // Mark connected if any interface is up (wifi, ethernet, or VPN)
     let connected = connected || ethernet.connected || vpn_connected;
@@ -426,4 +430,3 @@ fn main() {
 
     print_json(&status);
 }
-

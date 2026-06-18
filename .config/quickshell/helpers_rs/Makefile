@@ -1,11 +1,20 @@
-.PHONY: all build install
+.PHONY: all build update format install
 
 all: build install
 
 build:
 	cargo build --release
 
+update:
+	cargo update
+
+format:
+	cargo fmt --all
+
 install: build
+	@echo "-- Stopping running daemons before install"
+	-pkill -f battery_daemon 2>/dev/null || true
+	@sleep 1
 	mkdir -p ../helpers
 	cd target/release && strip \
 		get_network_status get_battery_status get_audio_status \

@@ -22,11 +22,7 @@ fn main() {
         .join("\n");
 
     let mut fzf = match Command::new("fzf")
-        .args([
-            "--prompt=Ports > ",
-            "--height=60%",
-            "--layout=reverse",
-        ])
+        .args(["--prompt=Ports > ", "--height=60%", "--layout=reverse"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
@@ -42,16 +38,11 @@ fn main() {
     }
 
     let selected = match fzf.wait_with_output() {
-        Ok(o) if o.status.success() => {
-            String::from_utf8_lossy(&o.stdout).trim().to_string()
-        }
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).trim().to_string(),
         _ => return,
     };
 
-    let pid = entries
-        .iter()
-        .find(|e| e.label == selected)
-        .map(|e| e.pid);
+    let pid = entries.iter().find(|e| e.label == selected).map(|e| e.pid);
 
     let Some(pid) = pid else {
         return;
@@ -63,9 +54,7 @@ fn main() {
 
     std::thread::sleep(std::time::Duration::from_secs(2));
 
-    let _ = Command::new("kill")
-        .args(["-9", &pid.to_string()])
-        .status();
+    let _ = Command::new("kill").args(["-9", &pid.to_string()]).status();
 
     let _ = Command::new("notify-send")
         .args(["Ports", &format!("Killed process {}", pid)])
@@ -112,14 +101,7 @@ fn parse_ss() -> Vec<PortEntry> {
         };
 
         entries.push(PortEntry {
-            label: format!(
-                "{} {:<6} {:<20} {:<5} {}",
-                icon,
-                port,
-                pname,
-                proto,
-                ip
-            ),
+            label: format!("{} {:<6} {:<20} {:<5} {}", icon, port, pname, proto, ip),
             pid,
         });
     }

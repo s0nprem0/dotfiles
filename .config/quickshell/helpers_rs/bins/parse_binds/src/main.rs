@@ -94,11 +94,7 @@ fn find_line_end_or_pipe(bytes: &[u8], start: usize) -> usize {
     while pos < bytes.len() && bytes[pos] != b'\n' {
         pos += 1;
     }
-    if pos < bytes.len() {
-        pos + 1
-    } else {
-        pos
-    }
+    if pos < bytes.len() { pos + 1 } else { pos }
 }
 
 fn starts_with(bytes: &[u8], pos: usize, s: &str) -> bool {
@@ -199,7 +195,8 @@ fn expand_for_loops(input: &str) -> String {
                 if let Some((alias_var, alias_fn)) = &alias {
                     if alias_fn == "tostring" {
                         let alias_val = format!("\"{}\"", s);
-                        replaced = replaced.replace(&format!(" {}", alias_var), &format!(" {}", alias_val));
+                        replaced = replaced
+                            .replace(&format!(" {}", alias_var), &format!(" {}", alias_val));
                     }
                 }
                 result.push_str(&replaced);
@@ -222,10 +219,7 @@ fn expand_for_loops(input: &str) -> String {
     result
 }
 
-fn try_parse_ipairs_for(
-    bytes: &[u8],
-    start: usize,
-) -> Option<(String, Vec<String>, usize, usize)> {
+fn try_parse_ipairs_for(bytes: &[u8], start: usize) -> Option<(String, Vec<String>, usize, usize)> {
     // Match: for _, VAR in ipairs({VAL1, VAL2, ...}) do
     let s = std::str::from_utf8(&bytes[start..]).ok()?;
     let s_trimmed = s.trim_start();
@@ -273,7 +267,8 @@ fn try_parse_ipairs_for(
     }
 
     // Find `do`
-    let _after_ipairs_paren = start + (values_str.len() + values_str.as_ptr() as usize - s.as_ptr() as usize);
+    let _after_ipairs_paren =
+        start + (values_str.len() + values_str.as_ptr() as usize - s.as_ptr() as usize);
     let do_pos = find_word(bytes, abs_ipairs_start + values_str.len(), "do")?;
     let body_start = do_pos + 2;
 
@@ -371,7 +366,8 @@ fn find_word(bytes: &[u8], start: usize, word: &str) -> Option<usize> {
         }
         if pos + wb.len() <= bytes.len() && &bytes[pos..pos + wb.len()] == wb {
             // Check word boundary (not preceded by alphanumeric/underscore)
-            let prev_ok = pos == 0 || !bytes[pos - 1].is_ascii_alphanumeric() && bytes[pos - 1] != b'_';
+            let prev_ok =
+                pos == 0 || !bytes[pos - 1].is_ascii_alphanumeric() && bytes[pos - 1] != b'_';
             if prev_ok {
                 return Some(pos);
             }
@@ -419,8 +415,8 @@ fn find_word_at_level(bytes: &[u8], start: usize, word: &str, level: usize) -> O
         if depth >= level as i32 {
             if pos + 2 < bytes.len() && &bytes[pos..pos + 3] == b"end" {
                 // Check word boundary
-                let prev_ok = pos == 0
-                    || !bytes[pos - 1].is_ascii_alphanumeric() && bytes[pos - 1] != b'_';
+                let prev_ok =
+                    pos == 0 || !bytes[pos - 1].is_ascii_alphanumeric() && bytes[pos - 1] != b'_';
                 let after = pos + 3;
                 let next_ok = after >= bytes.len()
                     || !bytes[after].is_ascii_alphanumeric() && bytes[after] != b'_';

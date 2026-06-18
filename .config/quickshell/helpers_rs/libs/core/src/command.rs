@@ -6,7 +6,9 @@ pub fn run_cmd(cmd: &str, args: &[&str]) -> Option<String> {
     if !output.status.success() {
         return None;
     }
-    str::from_utf8(&output.stdout).ok().map(|s| s.trim().to_string())
+    str::from_utf8(&output.stdout)
+        .ok()
+        .map(|s| s.trim().to_string())
 }
 
 pub fn run_cmd_with_stderr(cmd: &str, args: &[&str]) -> Option<(String, String)> {

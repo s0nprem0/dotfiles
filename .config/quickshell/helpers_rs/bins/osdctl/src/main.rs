@@ -52,7 +52,10 @@ fn brightness_value() -> String {
 }
 
 fn set_brightness_abs(pct: &str) {
-    let _ = run_cmd("brightnessctl", &["-e4", "-n2", "set", &format!("{}%", pct)]);
+    let _ = run_cmd(
+        "brightnessctl",
+        &["-e4", "-n2", "set", &format!("{}%", pct)],
+    );
     write_state(&format!("brightness {}%", pct), "info", 1200);
 }
 
@@ -108,7 +111,11 @@ fn set_kbd_brightness(dir: &str) {
         }
         _ => {}
     }
-    write_state(&format!("kbd brightness {}", kbd_brightness_value()), "info", 1200);
+    write_state(
+        &format!("kbd brightness {}", kbd_brightness_value()),
+        "info",
+        1200,
+    );
 }
 
 fn sink_volume() -> (i64, bool) {
@@ -136,7 +143,10 @@ fn source_volume() -> (i64, bool) {
 fn set_volume(action: &str) {
     match action {
         "up" => {
-            let _ = run_cmd("wpctl", &["set-volume", "-l", "1", "@DEFAULT_AUDIO_SINK@", "5%+"]);
+            let _ = run_cmd(
+                "wpctl",
+                &["set-volume", "-l", "1", "@DEFAULT_AUDIO_SINK@", "5%+"],
+            );
             let (pct, _) = sink_volume();
             write_state(&format!("volume {}%", pct), "info", 1200);
         }
@@ -149,7 +159,11 @@ fn set_volume(action: &str) {
             let _ = run_cmd("wpctl", &["set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]);
             let (_, muted) = sink_volume();
             write_state(
-                if muted { "volume muted" } else { "volume unmuted" },
+                if muted {
+                    "volume muted"
+                } else {
+                    "volume unmuted"
+                },
                 if muted { "warn" } else { "info" },
                 1200,
             );

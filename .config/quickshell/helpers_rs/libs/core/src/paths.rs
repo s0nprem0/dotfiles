@@ -20,5 +20,3 @@ pub fn cache_dir() -> PathBuf {
         .unwrap_or_else(|| home_dir().join(".cache"))
         .join("quickshell")
 }
-
-
