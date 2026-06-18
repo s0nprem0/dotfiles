@@ -43,45 +43,40 @@ impl Screenshot {
     }
 
     fn capture(&self) -> Option<String> {
-    let path_str = self.path.to_string_lossy().to_string();
+        let path_str = self.path.to_string_lossy().to_string();
 
-    let geom_arg = grim_geometry_arg(&self.geometry);
+        let geom_arg = grim_geometry_arg(&self.geometry);
 
-    let qpath = sh_single_quote(&path_str);
+        let qpath = sh_single_quote(&path_str);
 
-    if self.save && self.copy {
-        run_cmd(
-            "sh",
-            &[
-                "-c",
-                &format!(
-                    "grim {} '{}' && wl-copy < '{}'",
-                    geom_arg,
-                    qpath,
-                    qpath
-                ),
-            ],
-        )
-    } else if self.save {
-        run_cmd(
-            "sh",
-            &[
-                "-c",
-                &format!("grim {} '{}'", geom_arg, qpath),
-            ],
-        )
-    } else if self.copy {
-        run_cmd(
-            "sh",
-            &[
-                "-c",
-                &format!("grim {} - | wl-copy", geom_arg),
-            ],
-        )
-    } else {
-        None
+        if self.save && self.copy {
+            run_cmd(
+                "sh",
+                &[
+                    "-c",
+                    &format!("grim {} '{}' && wl-copy < '{}'", geom_arg, qpath, qpath),
+                ],
+            )
+        } else if self.save {
+            run_cmd("sh", &["-c", &format!("grim {} '{}'", geom_arg, qpath)])
+        } else if self.copy {
+            run_cmd("sh", &["-c", &format!("grim {} - | wl-copy", geom_arg)])
+        } else {
+            None
+        }
     }
-}
+
+    fn success_message(&self) -> String {
+        let label = self.mode.label();
+
+        if self.save && self.copy {
+            format!("{} saved and copied.", label)
+        } else if self.save {
+            format!("{} saved.", label)
+        } else {
+            format!("{} copied to clipboard.", label)
+        }
+    }
 }
 
 impl ScreenshotMode {
@@ -248,26 +243,16 @@ fn main() {
     };
 
     let screenshot = Screenshot::new(mode, save, copy, geometry.clone());
-    let label = screenshot.mode.label();
     let result = screenshot.capture();
 
     match result {
         Some(_) => {
-            if screenshot.save && screenshot.copy {
-                notify(
-                    "Screenshot Captured!",
-                    &format!("{} saved and copied.", label),
-                );
-            } else if screenshot.save {
-                notify("Screenshot Captured!", &format!("{} saved.", label));
-            } else {
-                notify(
-                    "Screenshot Captured!",
-                    &format!("{} copied to clipboard.", label),
-                );
-            }
+            notify("Screenshot Captured!", &screenshot.success_message());
         }
-        None => notify("Screenshot Failed", "Capture command failed."),
+
+        None => {
+            notify("Screenshot Failed", "Capture command failed.");
+        }
     }
 }
 
