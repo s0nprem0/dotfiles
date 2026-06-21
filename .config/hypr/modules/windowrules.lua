@@ -1,3 +1,8 @@
+local dialog_size = {
+	"monitor_w*0.50",
+	"monitor_h*0.55",
+}
+
 hl.window_rule({
 	name = "suppress_maximize",
 	match = { class = ".*" },
@@ -64,25 +69,27 @@ local function float_centered(match, opts)
 end
 
 local dialog_titles = {
-	{ re = "^(Open File)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Select a File)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Open Folder)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Save As)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(File Upload)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Library)(.*)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(.*)(wants to save)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(.*)(wants to open)$", size = { "monitor_w*0.50", "monitor_h*0.55" } },
-	{ re = "^(Choose wallpaper)(.*)$", size = { "monitor_w*0.60", "monitor_h*0.65" } },
+	{ re = "^(Open File)(.*)$", size = dialog_size },
+	{ re = "^(Select a File)(.*)$", size = dialog_size },
+	{ re = "^(Open Folder)(.*)$", size = dialog_size },
+	{ re = "^(Save As)(.*)$", size = dialog_size },
+	{ re = "^(File Upload)(.*)$", size = dialog_size },
+	{ re = "^(Library)(.*)$", size = dialog_size },
+	{ re = "^(.*)(wants to save)$", size = dialog_size },
+	{ re = "^(.*)(wants to open)$", size = dialog_size },
+	{
+		re = "^(Choose wallpaper)(.*)$",
+		size = { "monitor_w*0.60", "monitor_h*0.65" },
+	},
 }
 
 for _, d in ipairs(dialog_titles) do
 	float_centered({ initial_title = d.re }, { size = d.size })
 end
 
-float_centered(
-	{ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" },
-	{ size = { "monitor_w*0.50", "monitor_h*0.55" } }
-)
+float_centered({ class = "^org\\.freedesktop\\.impl\\.portal\\.desktop\\..*$" }, { size = dialog_size })
+
+float_centered({ initial_title = "^Edit snapshot$" }, { size = { "monitor_w*0.75", "monitor_h*0.80" } })
 
 local sized_floats = {
 	{ re = "^(pavucontrol)$", size = { "monitor_w*0.45", "monitor_h*0.45" } },
@@ -95,10 +102,7 @@ for _, c in ipairs(sized_floats) do
 	float_centered({ class = c.re }, { size = c.size })
 end
 
-float_centered(
-	{ class = "^(kitty|foot|Alacritty)$", initial_title = "^(impala)$" },
-	{ size = { "monitor_w*0.50", "monitor_h*0.50" } }
-)
+float_centered({ class = "^(kitty|foot|Alacritty)$", initial_title = "^(impala)$" }, { size = dialog_size })
 
 local floating_classes = {
 	"^(blueberry\\.py)$",
@@ -163,20 +167,6 @@ for _, m in ipairs(specific_floats) do
 end
 
 hl.window_rule({
-	name = "opera_tile",
-	match = { class = "^(Opera GX|Opera)$" },
-	tile = true,
-})
-
-for _, m in ipairs(specific_floats) do
-	hl.window_rule({
-		name = rule_name("float", m.class .. "_" .. m.title),
-		match = { class = m.class, initial_title = m.title },
-		float = true,
-	})
-end
-
-hl.window_rule({
 	name = "plasma_changeicons",
 	match = { class = "^(plasma-changeicons)$" },
 	float = true,
@@ -190,13 +180,7 @@ hl.window_rule({
 	move = { 40, 80 },
 })
 
-hl.window_rule({
-	name = "warp_tile",
-	match = { class = "^dev\\.warp\\.Warp$" },
-	tile = true,
-})
-
-local pip_regex = [[^([Pp]icture[-\s]?[Ii]n[-\s]?[Pp]icture)(.*)$]]
+local pip_regex = "^[Pp]icture[- ]?[Ii]n[- ]?[Pp]icture.*$"
 
 hl.window_rule({
 	name = "pip",
@@ -212,7 +196,9 @@ hl.window_rule({
 
 hl.window_rule({
 	name = "screen_sharing",
-	match = { initial_title = ".*is sharing (a window|your screen).*" },
+	match = {
+		initial_title = "^.*is sharing (a window|your screen).*$",
+	},
 	float = true,
 	pin = true,
 	move = { "monitor_w*0.5-window_w*0.5", "monitor_h-window_h-12" },
