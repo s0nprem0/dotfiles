@@ -46,7 +46,16 @@ Rectangle {
 
     function pickWallpaper() {
         Quickshell.execDetached(["sh", "-c",
-            "selected=$(zenity --file-selection --file-filter=*.png --file-filter=*.jpg --file-filter=*.jpeg --file-filter=*.gif --file-filter=*.bmp --file-filter=*.webp --title='Choose Wallpaper' --filename=" + Theme.home + "/Pictures/" + " 2>/dev/null) && " +
+            "selected=$(zenity --file-selection " +
+            "--file-filter='*.png' " +
+            "--file-filter='*.jpg' " +
+            "--file-filter='*.jpeg' " +
+            "--file-filter='*.gif' " +
+            "--file-filter='*.bmp' " +
+            "--file-filter='*.webp' " +
+            "--title='Choose Wallpaper' " +
+            "--filename=" + Theme.home + "/Pictures/ " +
+            " 2>/dev/null) && " +
             "if [ -n \"$selected\" ]; then " +
             "realpath \"$selected\" > " + Theme.home + "/.cache/quickshell/current_wallpaper && " +
             Theme.home + "/.config/hypr/scripts/wallpaper.sh \"$selected\"; " +
