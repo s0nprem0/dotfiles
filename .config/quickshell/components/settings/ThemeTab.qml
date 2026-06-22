@@ -322,7 +322,6 @@ Rectangle {
 
                         Row {
                             spacing: 3
-                            anchors.verticalCenter: parent.verticalCenter
                             Layout.alignment: Qt.AlignVCenter
 
                             Repeater {
