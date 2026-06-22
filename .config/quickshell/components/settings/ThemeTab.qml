@@ -1,8 +1,9 @@
 import "../../service"
 import QtQuick
-import QtQuick.Dialogs
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 
 Rectangle {
     id: root
@@ -42,15 +43,24 @@ Rectangle {
         }
     }
 
-    FileDialog {
-        id: wallpaperDialog
-        title: "Choose Wallpaper"
-        currentFolder: "file://" + Theme.home + "/Pictures"
-        nameFilters: ["Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp)"]
-        onAccepted: {
-            var path = String(wallpaperDialog.selectedFile).replace(/^(file:\/\/)/, "");
-            root.applyWallpaper(path);
+    property bool pickWallpaperRequested: false
+
+    Process {
+        id: wallpaperPicker
+        command: ["zenity", "--file-selection", "--file-filter=*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp", "--title=Choose Wallpaper", "--filename=" + Theme.home + "/Pictures/"]
+        running: root.pickWallpaperRequested
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.pickWallpaperRequested = false;
+                var path = this.text.trim();
+                if (path.length > 0)
+                    root.applyWallpaper(path);
+            }
         }
+    }
+
+    function pickWallpaper() {
+        root.pickWallpaperRequested = true;
     }
 
     Process {
@@ -195,7 +205,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: wallpaperDialog.open()
+                onClicked: root.pickWallpaper()
             }
         }
 
@@ -312,6 +322,7 @@ Rectangle {
                         Row {
                             spacing: 3
                             anchors.verticalCenter: parent.verticalCenter
+                            Layout.alignment: Qt.AlignVCenter
 
                             Repeater {
                                 model: [
