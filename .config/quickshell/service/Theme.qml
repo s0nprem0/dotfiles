@@ -176,6 +176,26 @@ QtObject {
 
     }
 
+    Component.onCompleted: {
+        var comp = Qt.createComponent("file://" + home + "/.cache/quickshell/Colors.qml");
+        if (comp !== null && comp.status === Component.Ready) {
+            var c = comp.createObject(theme);
+            if (c !== null) {
+                theme.bg = c.bg;
+                theme.fg = c.fg;
+                theme.surface = c.surface;
+                theme.surfaceLighter = c.surfaceLighter;
+                theme.primary = c.primary;
+                theme.muted = c.muted;
+                theme.error = c.error;
+                theme.warning = c.warning;
+                theme.green = c.green;
+                theme.blue = c.blue;
+                c.destroy();
+            }
+        }
+    }
+
     colorsWatcher: FileView {
         path: "file://" + home + "/.cache/quickshell/colors.json"
         watchChanges: true

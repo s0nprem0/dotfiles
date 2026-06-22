@@ -36,6 +36,9 @@ Window {
         "icon": "󰤨",
         "label": "Network"
     }, {
+        "icon": "󰸌",
+        "label": "Theme"
+    }, {
         "icon": "󰻞",
         "label": "About"
     }]
@@ -431,6 +434,10 @@ Window {
                                 Quickshell.execDetached(Config.impalaCmd);
                                 root.closeWin();
                             }
+                        }
+
+                        ThemeTab {
+                            onCloseSettings: root.closeWin()
                         }
 
                         AboutTab {

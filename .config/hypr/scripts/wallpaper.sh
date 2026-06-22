@@ -24,6 +24,10 @@ done
 sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprpaper.conf"
 sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprlock.conf"
 
+# Persist wallpaper path for theme tab
+mkdir -p "$HOME/.cache/quickshell"
+printf '%s' "$WALLPAPER" > "$HOME/.cache/quickshell/current_wallpaper"
+
 # Step 3: Reload services (if any needed)
 
 echo "Wallpaper and colors updated!"

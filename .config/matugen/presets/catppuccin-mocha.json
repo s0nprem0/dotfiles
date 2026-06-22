@@ -1,0 +1,22 @@
+{
+  "name": "Catppuccin Mocha",
+  "variant": "dark",
+  "shell": {
+    "bg": "#1e1e2e",
+    "fg": "#cdd6f4",
+    "surface": "#181825",
+    "surfaceLighter": "#313244",
+    "primary": "#89b4fa",
+    "muted": "#66cdd6f4",
+    "error": "#f38ba8",
+    "warning": "#fab387",
+    "green": "#a6e3a1",
+    "blue": "#89dceb"
+  },
+  "hyprland": {
+    "accent": "89b4fa",
+    "surface": "1e1e2e",
+    "on_surface": "cdd6f4",
+    "error_hex": "f38ba8"
+  }
+}

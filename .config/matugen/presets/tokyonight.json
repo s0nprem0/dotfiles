@@ -1,0 +1,22 @@
+{
+  "name": "Tokyo Night",
+  "variant": "dark",
+  "shell": {
+    "bg": "#1a1b26",
+    "fg": "#c0caf5",
+    "surface": "#16161e",
+    "surfaceLighter": "#1f2335",
+    "primary": "#7aa2f7",
+    "muted": "#66c0caf5",
+    "error": "#f7768e",
+    "warning": "#e0af68",
+    "green": "#bb9af7",
+    "blue": "#7dcfff"
+  },
+  "hyprland": {
+    "accent": "7aa2f7",
+    "surface": "1a1b26",
+    "on_surface": "c0caf5",
+    "error_hex": "f7768e"
+  }
+}

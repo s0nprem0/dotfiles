@@ -1,0 +1,22 @@
+{
+  "name": "Catppuccin Latte",
+  "variant": "light",
+  "shell": {
+    "bg": "#eff1f5",
+    "fg": "#4c4f69",
+    "surface": "#e6e9ef",
+    "surfaceLighter": "#ccd0da",
+    "primary": "#7287fd",
+    "muted": "#664c4f69",
+    "error": "#d20f39",
+    "warning": "#fe640b",
+    "green": "#40a02b",
+    "blue": "#04a5e5"
+  },
+  "hyprland": {
+    "accent": "7287fd",
+    "surface": "eff1f5",
+    "on_surface": "4c4f69",
+    "error_hex": "d20f39"
+  }
+}

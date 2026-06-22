@@ -1,0 +1,22 @@
+{
+  "name": "Gruvbox",
+  "variant": "dark",
+  "shell": {
+    "bg": "#1d2021",
+    "fg": "#ebdbb2",
+    "surface": "#282828",
+    "surfaceLighter": "#3c3836",
+    "primary": "#a9b665",
+    "muted": "#66ebdbb2",
+    "error": "#cc241d",
+    "warning": "#d8a657",
+    "green": "#b8bb26",
+    "blue": "#7daea3"
+  },
+  "hyprland": {
+    "accent": "a9b665",
+    "surface": "1d2021",
+    "on_surface": "ebdbb2",
+    "error_hex": "cc241d"
+  }
+}

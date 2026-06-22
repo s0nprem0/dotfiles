@@ -1,0 +1,22 @@
+{
+  "name": "Rose Pine",
+  "variant": "dark",
+  "shell": {
+    "bg": "#191724",
+    "fg": "#e0def4",
+    "surface": "#1f1d2e",
+    "surfaceLighter": "#26233a",
+    "primary": "#c4a7e7",
+    "muted": "#66e0def4",
+    "error": "#eb6f92",
+    "warning": "#f6c177",
+    "green": "#9ccfd8",
+    "blue": "#31748f"
+  },
+  "hyprland": {
+    "accent": "c4a7e7",
+    "surface": "191724",
+    "on_surface": "e0def4",
+    "error_hex": "eb6f92"
+  }
+}

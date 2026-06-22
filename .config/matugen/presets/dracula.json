@@ -1,0 +1,22 @@
+{
+  "name": "Dracula",
+  "variant": "dark",
+  "shell": {
+    "bg": "#282a36",
+    "fg": "#f8f8f2",
+    "surface": "#21222c",
+    "surfaceLighter": "#44475a",
+    "primary": "#bd93f9",
+    "muted": "#66f8f8f2",
+    "error": "#ff5555",
+    "warning": "#f1fa8c",
+    "green": "#50fa7b",
+    "blue": "#8be9fd"
+  },
+  "hyprland": {
+    "accent": "bd93f9",
+    "surface": "282a36",
+    "on_surface": "f8f8f2",
+    "error_hex": "ff5555"
+  }
+}

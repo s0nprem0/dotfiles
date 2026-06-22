@@ -1,0 +1,22 @@
+{
+  "name": "Kanagawa",
+  "variant": "dark",
+  "shell": {
+    "bg": "#1f1f28",
+    "fg": "#dcd7ba",
+    "surface": "#16161d",
+    "surfaceLighter": "#363646",
+    "primary": "#7e9cd8",
+    "muted": "#66dcd7ba",
+    "error": "#c34043",
+    "warning": "#dca561",
+    "green": "#76946a",
+    "blue": "#7fb4ca"
+  },
+  "hyprland": {
+    "accent": "7e9cd8",
+    "surface": "1f1f28",
+    "on_surface": "dcd7ba",
+    "error_hex": "c34043"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Everforest",
+  "variant": "dark",
+  "shell": {
+    "bg": "#2d353b",
+    "fg": "#d3c6aa",
+    "surface": "#272e33",
+    "surfaceLighter": "#3d484d",
+    "primary": "#a7c080",
+    "muted": "#66d3c6aa",
+    "error": "#e67e80",
+    "warning": "#e69875",
+    "green": "#83c092",
+    "blue": "#7fbbb3"
+  },
+  "hyprland": {
+    "accent": "a7c080",
+    "surface": "2d353b",
+    "on_surface": "d3c6aa",
+    "error_hex": "e67e80"
+  }
+}

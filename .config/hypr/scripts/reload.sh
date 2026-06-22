@@ -23,6 +23,9 @@ grep -A1 '^wallpaper {' ~/.config/hypr/hyprpaper.conf | awk '
   [ -f "$path" ] || continue
   hyprctl hyprpaper preload "$path" 2>/dev/null || true
   hyprctl hyprpaper wallpaper "$monitor,$path" 2>/dev/null || true
+  # Persist wallpaper path for theme tab
+  mkdir -p "$HOME/.cache/quickshell"
+  printf '%s' "$path" > "$HOME/.cache/quickshell/current_wallpaper"
 done
 
 # Restart Quickshell and battery daemon
