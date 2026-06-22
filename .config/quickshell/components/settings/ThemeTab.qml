@@ -21,7 +21,7 @@ Rectangle {
         var absPath = Quickshell.env("HOME") + "/.cache/quickshell/current_wallpaper";
         root.wallpaperPath = path;
         Quickshell.execDetached(["sh", "-c",
-            "readlink -f <<< \"" + path.replace(/"/g, '\\"') + "\" > " + absPath + " && " +
+            "realpath \"" + path.replace(/"/g, '\\"') + "\" > " + absPath + " && " +
             Theme.home + "/.config/hypr/scripts/wallpaper.sh \"" + path.replace(/"/g, '\\"') + "\""]);
         root.currentMode = "wallpaper";
         root.modeName = "";

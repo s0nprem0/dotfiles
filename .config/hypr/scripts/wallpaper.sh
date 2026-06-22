@@ -26,7 +26,7 @@ sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprlock.co
 
 # Persist wallpaper path for theme tab
 mkdir -p "$HOME/.cache/quickshell"
-readlink -f <<< "$WALLPAPER" > "$HOME/.cache/quickshell/current_wallpaper"
+realpath "$WALLPAPER" > "$HOME/.cache/quickshell/current_wallpaper"
 
 # Step 3: Reload services (if any needed)
 
