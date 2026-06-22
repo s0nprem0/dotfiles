@@ -18,9 +18,10 @@ Rectangle {
     color: "transparent"
 
     function applyWallpaper(path) {
+        var absPath = Quickshell.env("HOME") + "/.cache/quickshell/current_wallpaper";
         root.wallpaperPath = path;
         Quickshell.execDetached(["sh", "-c",
-            "printf '%s' \"" + path.replace(/"/g, '\\"') + "\" > " + Theme.home + "/.cache/quickshell/current_wallpaper && " +
+            "readlink -f <<< \"" + path.replace(/"/g, '\\"') + "\" > " + absPath + " && " +
             Theme.home + "/.config/hypr/scripts/wallpaper.sh \"" + path.replace(/"/g, '\\"') + "\""]);
         root.currentMode = "wallpaper";
         root.modeName = "";
