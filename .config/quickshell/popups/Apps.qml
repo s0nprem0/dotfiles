@@ -4,7 +4,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Wayland
 
 Window {
     id: root
@@ -391,6 +393,111 @@ Window {
                             onClicked: {
                                 searchField.text = "";
                                 searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Row 2.5: Active Windows ──
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 80
+                color: Theme.surface
+                visible: Hyprland.toplevels.length > 0
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 6
+                    spacing: 4
+
+                    Text {
+                        text: "ACTIVE WINDOWS (" + Hyprland.toplevels.length + ")"
+                        color: Theme.muted
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 9
+                        font.bold: true
+                        leftPadding: 6
+                    }
+
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        orientation: ListView.Horizontal
+                        spacing: 6
+                        clip: true
+                        model: Hyprland.toplevels
+
+                        ScrollBar.horizontal: ScrollBar {
+                            policy: ScrollBar.AsNeeded
+                            contentItem: Rectangle {
+                                implicitHeight: 3
+                                color: Theme.primary
+                            }
+                        }
+
+                        delegate: Item {
+                            required property var modelData
+
+                            width: 140
+                            height: ListView.view.height
+
+                            Rectangle {
+                                anchors.fill: parent
+                                color: Theme.surfaceLighter
+                                border.width: 1
+                                border.color: Theme.muted
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+
+                                    Item {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        Layout.margins: 2
+
+                                        ScreencopyView {
+                                            id: scrCap
+                                            anchors.fill: parent
+                                            captureSource: modelData
+                                            live: true
+                                            visible: hasContent
+                                        }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "󰇄"
+                                            color: Theme.muted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 20
+                                            visible: !scrCap.hasContent
+                                        }
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: 4
+                                        Layout.rightMargin: 4
+                                        Layout.bottomMargin: 4
+                                        text: (modelData.appId || "").toUpperCase()
+                                        color: Theme.fg
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        font.bold: true
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 1
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        modelData.activate();
+                                        root.showPopup = false;
+                                    }
+                                }
                             }
                         }
                     }

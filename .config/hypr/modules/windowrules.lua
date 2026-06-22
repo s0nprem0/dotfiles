@@ -50,12 +50,6 @@ hl.layer_rule({
 })
 
 hl.layer_rule({
-	name = "waybar_blur",
-	match = { namespace = "waybar" },
-	blur = true,
-})
-
-hl.layer_rule({
 	name = "mako_blur",
 	match = { namespace = "mako" },
 	blur = true,

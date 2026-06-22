@@ -119,7 +119,7 @@ Rectangle {
             spacing: 4
 
             Text {
-                text: "\u263e"
+                text: "\u2600"
                 color: Theme.muted
                 font.family: Theme.fontFamily
                 font.pixelSize: 9
@@ -133,13 +133,13 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width
                     height: 4
-                    radius: 2
+                    radius: 0
                     color: Theme.surfaceLighter
 
                     Rectangle {
                         width: parent.width * (root.currentBrightness / 100)
                         height: parent.height
-                        radius: 2
+                        radius: 0
                         color: root.active ? Theme.primary : Theme.muted
                     }
 
@@ -159,6 +159,61 @@ Rectangle {
 
             Text {
                 text: root.currentBrightness + "%"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 9
+                Layout.minimumWidth: 28
+                horizontalAlignment: Text.AlignRight
+            }
+
+        }
+
+        // ── Keyboard backlight slider ──
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 4
+
+            Text {
+                text: "\u2328"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: 9
+            }
+
+            Item {
+                Layout.fillWidth: true
+                height: 20
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: 4
+                    radius: 0
+                    color: Theme.surfaceLighter
+
+                    Rectangle {
+                        width: parent.width * (root.currentKbd / 100)
+                        height: parent.height
+                        radius: 0
+                        color: root.active ? Theme.primary : Theme.muted
+                    }
+
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var pct = Math.round((mouseX / width) * 100);
+                        pct = Math.max(0, Math.min(100, pct));
+                        root.kbdChanged(pct);
+                    }
+                }
+
+            }
+
+            Text {
+                text: root.currentKbd + "%"
                 color: Theme.muted
                 font.family: Theme.fontFamily
                 font.pixelSize: 9

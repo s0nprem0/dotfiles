@@ -1,0 +1,13 @@
+* {
+    background:       #121318;
+    background-alt:   #1f1f25;
+    background-trans: rgba(31, 31, 37, 0.6);
+    bg:               #121318;
+    foreground:       #e3e1e9;
+    foreground-dim:   #c6c5d0;
+    selected:         #b8c3ff;
+    selected-bg:      rgba(184, 195, 255, 0.15);
+    active:           #c3c5dd;
+    urgent:           #ffb4ab;
+    urgent-bg:        rgba(255, 180, 171, 0.15);
+}

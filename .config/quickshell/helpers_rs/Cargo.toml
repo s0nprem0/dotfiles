@@ -16,4 +16,5 @@ members = [
   "bins/parse_binds",
   "bins/ports_menu",
   "bins/screenshot",
+  "bins/mtp_notify",
 ]

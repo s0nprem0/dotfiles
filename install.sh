@@ -68,8 +68,9 @@ PACMAN_PKGS=(
   brightnessctl power-profiles-daemon upower thermald
   # File management
   udisks2 ranger thunar
+  gvfs gvfs-mtp
   # Utilities
-  fzf fd bat zoxide eza keychain jq socat powertop
+  fzf fd bat zoxide eza keychain jq socat powertop wlogout libnotify xdg-desktop-portal-hyprland
   # Development
   base-devel git rustup
   # Qt / GTK theming
@@ -90,6 +91,8 @@ AUR_PKGS=(
   uwsm                # Universal Wayland Session Manager
   matugen-bin         # Material You colour generator
   cloudflare-warp-bin # WARP VPN (optional, for network popup)
+  udiskie             # Disk automounter with MTP support
+  hyprland-preview-share-picker # GTK4 screen/window share picker
 )
 
 # ──────────────────────────────────────────────

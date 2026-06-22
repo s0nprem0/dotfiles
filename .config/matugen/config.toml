@@ -1,13 +1,5 @@
 [config]
 
-[templates.rofi]
-input_path = "~/.config/matugen/templates/rofi/colors.rasi"
-output_path = "~/.config/rofi/colors.rasi"
-
-[templates.waybar]
-input_path = "~/.config/matugen/templates/waybar/colors.css"
-output_path = "~/.config/waybar/colors.css"
-
 [templates.hyprland]
 input_path = "~/.config/matugen/templates/hypr/hyprland-colors.lua"
 output_path = "~/.config/hypr/colors.lua"
@@ -28,14 +20,10 @@ output_path = "~/.config/gtk-4.0/gtk.css"
 input_path = "~/.config/matugen/templates/quickshell/colors.json"
 output_path = "~/.cache/quickshell/colors.json"
 
-[templates.fuzzel]
-input_path = "~/.config/matugen/templates/fuzzel/fuzzel.ini"
-output_path = "~/.config/fuzzel/fuzzel.ini"
-
-[templates.mako]
-input_path = "~/.config/matugen/templates/mako/config"
-output_path = "~/.config/mako/config"
-
 [templates.kitty]
 input_path = "~/.config/matugen/templates/kitty/colors.conf"
 output_path = "~/.config/kitty/themes/matugen.conf"
+
+[templates.preview_picker]
+input_path = "~/.config/matugen/templates/hyprland-preview-share-picker/style.css.template"
+output_path = "~/.config/hyprland-preview-share-picker/style.css"

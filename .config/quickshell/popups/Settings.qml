@@ -92,6 +92,22 @@ Window {
         setProfileProc.running = true;
     }
 
+    function setBrightness(pct) {
+        root.currentBrightness = pct;
+        brightProc.command = ["brightnessctl", "set", pct + "%"];
+        brightProc.running = true;
+    }
+
+    function setKbdBrightness(pct) {
+        root.currentKbd = pct;
+        kbdProc.command = [
+            "sh", "-c",
+            "dev=$(ls /sys/class/leds/*kbd_backlight 2>/dev/null | head -1) && " +
+            "[ -n \"$dev\" ] && brightnessctl -d \"$(basename \"$dev\")\" set " + pct + "%"
+        ];
+        kbdProc.running = true;
+    }
+
     function confirmAction(action, label) {
         pendingAction = action;
         pendingLabel = label;
@@ -204,6 +220,14 @@ Window {
                 root.closeWin();
 
         }
+    }
+
+    Process {
+        id: brightProc
+    }
+
+    Process {
+        id: kbdProc
     }
 
     // ── UI ──
@@ -395,10 +419,10 @@ Window {
                                 return root.setProfile(p);
                             }
                             onBrightnessChanged: (pct) => {
-                                return root.currentBrightness = pct;
+                                root.setBrightness(pct);
                             }
                             onKbdChanged: (pct) => {
-                                return root.currentKbd = pct;
+                                root.setKbdBrightness(pct);
                             }
                         }
 
