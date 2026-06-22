@@ -1,6 +1,11 @@
 local mainMod = "SUPER"
 local altMod = "ALT"
 
+-- Zoom constants
+local ZOOM_MIN = 1.0
+local ZOOM_MAX = 3.0
+local ZOOM_STEP = 0.3
+
 local scripts = "~/.config/hypr/scripts/"
 local qs_helpers = "~/.config/quickshell/helpers/"
 
@@ -172,21 +177,21 @@ hl.bind(mainMod .. " + SHIFT + X", qs_helper("screenshot ocr"), { description = 
 
 local function zoomfunction(value)
   local zoomvalue = hl.get_config("cursor:zoom_factor")
-  local new_zoom = math.max(1.0, math.min(3.0, zoomvalue + value))
+  local new_zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, zoomvalue + value))
   hl.config({ cursor = { zoom_factor = new_zoom } })
 end
 
 hl.bind(mainMod .. " + Minus", function()
-  zoomfunction(-0.3)
+  zoomfunction(-ZOOM_STEP)
 end, { repeating = true, description = "Zoom out" })
 hl.bind(mainMod .. " + Equal", function()
-  zoomfunction(0.3)
+  zoomfunction(ZOOM_STEP)
 end, { repeating = true, description = "Zoom in" })
 hl.bind(mainMod .. " + code:82", function()
-  zoomfunction(-0.3)
+  zoomfunction(-ZOOM_STEP)
 end, { repeating = true, description = "Zoom out (keypad)" })
 hl.bind(mainMod .. " + code:86", function()
-  zoomfunction(0.3)
+  zoomfunction(ZOOM_STEP)
 end, { repeating = true, description = "Zoom in (keypad)" })
 
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: drag" })

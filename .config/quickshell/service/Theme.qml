@@ -180,45 +180,33 @@ QtObject {
         path: "file://" + home + "/.cache/quickshell/colors.json"
         watchChanges: true
         onLoaded: {
+            var textVal = colorsWatcher.text().trim();
+            if (textVal.length === 0)
+                return ;
+
+            var data;
             try {
-                var textVal = colorsWatcher.text().trim();
-                if (textVal.length === 0)
-                    return ;
-
-                var data = JSON.parse(textVal);
-                if (data.bg)
-                    theme.bg = data.bg;
-
-                if (data.fg)
-                    theme.fg = data.fg;
-
-                if (data.surface)
-                    theme.surface = data.surface;
-
-                if (data.surfaceLighter)
-                    theme.surfaceLighter = data.surfaceLighter;
-
-                if (data.primary)
-                    theme.primary = data.primary;
-
-                if (data.muted)
-                    theme.muted = data.muted;
-
-                if (data.error)
-                    theme.error = data.error;
-
-                if (data.warning)
-                    theme.warning = data.warning;
-
-                if (data.green)
-                    theme.green = data.green;
-
-                if (data.blue)
-                    theme.blue = data.blue;
-
+                data = JSON.parse(textVal);
             } catch (e) {
-                console.warn("Theme: failed to parse colors.json:", e);
+                console.warn("Theme: failed to parse colors.json:", e, "data:", textVal.substring(0, 100));
+                return;
             }
+
+            if (typeof data !== "object" || data === null) {
+                console.warn("Theme: colors.json is not an object:", typeof data);
+                return;
+            }
+
+            if (data.bg) theme.bg = data.bg;
+            if (data.fg) theme.fg = data.fg;
+            if (data.surface) theme.surface = data.surface;
+            if (data.surfaceLighter) theme.surfaceLighter = data.surfaceLighter;
+            if (data.primary) theme.primary = data.primary;
+            if (data.muted) theme.muted = data.muted;
+            if (data.error) theme.error = data.error;
+            if (data.warning) theme.warning = data.warning;
+            if (data.green) theme.green = data.green;
+            if (data.blue) theme.blue = data.blue;
         }
         onFileChanged: reload()
     }

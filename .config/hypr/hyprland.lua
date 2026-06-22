@@ -8,7 +8,7 @@ local function safe_require(mod)
 end
 
 pcall(require, "monitors")
-require("defaultPrograms")
+safe_require("modules.defaultPrograms")
 
 local colors_ok = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
 if not colors_ok then

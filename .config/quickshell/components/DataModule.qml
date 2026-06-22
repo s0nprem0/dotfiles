@@ -46,13 +46,21 @@ Item {
 
         stdout: StdioCollector {
             onStreamFinished: {
+                var text = this.text.trim();
+                if (!text) {
+                    console.warn("DataModule: empty output from", root.path);
+                    root.hasError = true;
+                    crashRestart.interval = root.backoffMs;
+                    crashRestart.restart();
+                    return;
+                }
                 try {
-                    root.dataReceived(JSON.parse(this.text));
+                    root.dataReceived(JSON.parse(text));
                 } catch (e) {
                     root.hasError = true;
                     crashRestart.interval = root.backoffMs;
                     crashRestart.restart();
-                    console.warn("DataModule JSON parse error:", e);
+                    console.warn("DataModule JSON parse error:", e, "path:", root.path, "data:", text.substring(0, 200));
                 }
             }
         }

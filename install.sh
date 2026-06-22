@@ -10,7 +10,8 @@ set -euo pipefail
 # ──────────────────────────────────────────────
 
 DOTFILES="${DOTFILES:-$HOME/dotfiles}"
-REPO="https://github.com/s0nprem0/dotfiles"
+# Set REPO to your fork if cloning from a different location
+REPO="${REPO:-https://github.com/jllyn/dotfiles}"
 
 # ── XDG base directories ──
 if [[ -z "${XDG_CONFIG_HOME:-}" ]]; then
@@ -210,7 +211,7 @@ fi
 # ──────────────────────────────────────────────
 if [[ -f "$DOTFILES/.config/quickshell/helpers_rs/Makefile" ]]; then
   info "Building quickshell Rust helpers ..."
-  make -C "$DOTFILES/.config/quickshell/helpers_rs" all
+  make -C "$DOTFILES/.config/quickshell/helpers_rs" all || warn "quickshell helpers build failed"
   ok "quickshell helpers built"
 fi
 

@@ -1,22 +1,57 @@
 # Quickshell Configuration
 
-Configuration for Quickshell (Hyprland status bar and OSD).
+Hyprland status bar and popups built with Quickshell QML.
 
-## Components
+## Architecture
 
-### OSD (`components/OsdWindow.qml`)
-On-screen display for volume, brightness, and other system feedback. Contains utility functions:
-- `getPercentage(msg)` - Extract numeric percentage from message
-- `getPrefix(msg)` - Extract label prefix
-- `getPercentText(msg)` - Extract percentage text
-- `getIcon(msg)` - Return icon based on message type
-- `getIconColor(msg)` - Return color based on message type
+```
+quickshell/
+├── shell.qml                    # Main entry, composes all components
+├── bar/                         # Bar modules
+│   ├── Bar.qml                  # Base bar component
+│   ├── BarModule.qml            # Styled module wrapper
+│   ├── Audio.qml                # Volume/media controls
+│   ├── Battery.qml              # Battery status
+│   ├── Bluetooth.qml            # Bluetooth status
+│   ├── Clock.qml                # Time display
+│   ├── Network.qml              # Network status
+│   └── Workspaces.qml           # Workspace indicator
+├── components/                  # Shared QML components
+│   ├── DataModule.qml           # Async data loader
+│   ├── OsdWindow.qml            # On-screen display
+│   └── SlideAnimator.qml        # Animation helper
+├── popups/                      # Popup windows
+│   ├── PopupPanel.qml           # Base popup container
+│   ├── Apps.qml                 # App launcher
+│   ├── Battery.qml              # Battery details
+│   ├── Media.qml                # Media controls
+│   └── ...
+├── service/                     # Singleton services
+│   ├── Theme.qml                # Color state (matugen integration)
+│   ├── Config.qml               # App configuration
+│   └── NotificationState.qml    # Notification state
+└── scripts/                     # Shell helpers
+```
 
-### Bar Components (`bar/`)
-Status bar modules using `BarModule.qml` as base:
-- `Audio.qml` - Volume and media controls
-- `Battery.qml` - Battery status
-- `Network.qml` - Network status
-- `Bluetooth.qml` - Bluetooth status
-- `Tray.qml` - System tray
-- `Workspaces.qml` - Hyprland workspaces
+## Data Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌──────────┐
+│   Helper    │────▶│ DataModule  │────▶│ Bar/Popup│
+│ (Rust bin)  │     │   (QML)     │     │  (QML)   │
+└─────────────┘     └─────────────┘     └──────────┘
+       ▲                   │
+       │               JSON parse
+       │               error handling
+       │                   │
+  ┌────┴────┐        ┌────▼────┐
+  │ matugen │───────▶│ colors  │
+  │ (wallp) │        │ .json   │
+  └─────────┘        └─────────┘
+```
+
+## Key Patterns
+
+- **DataModule**: Wraps external process calls with polling, error handling, and backoff
+- **Theme service**: Singleton that manages colors, watches `colors.json` for updates
+- **Popup toggle**: Use `qs ipc call shell togglePopup <name>` for keybindings

@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal dotfiles managed with GNU Stow.
+Personal dotfiles managed with a custom deploy script.
 
 ## What's included
 
@@ -8,15 +8,13 @@ Personal dotfiles managed with GNU Stow.
 |-----------------|-------------------------------------|
 | `hypr/`         | Hyprland Lua config + scripts       |
 | `quickshell/`   | Quickshell bar, popups, daemons (replaces waybar) |
-| `rofi/`         | Rofi config (legacy, replaced by quickshell popups) |
-| `waybar/`       | Waybar status bar (legacy, replaced by quickshell) |
+| `rofi/`         | Rofi config (legacy, replaced by quickshell) |
+| `waybar/`       | Waybar config (legacy, kept for reference) |
 | `wlogout/`      | Power menu layout and styling       |
 | `nvim/`         | Neovim (LazyVim-based)              |
 | `kitty/`        | Kitty terminal emulator             |
 | `tmux/`         | Tmux configuration                  |
 | `zsh/`          | Zsh shell config                    |
-| `gtk-3.0/`      | GTK3 theme/settings                 |
-| `gtk-4.0/`      | GTK4 theme/settings                 |
 | `matugen/`      | Material color generator            |
 | `ranger/`       | Ranger file manager                 |
 | `helpers_rs/`   | Rust source for quickshell helpers  |
@@ -24,12 +22,9 @@ Personal dotfiles managed with GNU Stow.
 ## Usage
 
 ```sh
-# Single config
-stow -vt ~ nvim
+# Deploy all configs
+./install.sh
 
-# Multiple configs
-stow -vt ~ {hypr,rofi,waybar,nvim,zsh,tmux,kitty}
-
-# Everything
-stow -vt ~ */
+# Deploy specific configs (run from repo root)
+./deploy.sh  # Symlinks .config/* to ~/.config/
 ```

@@ -247,7 +247,7 @@ Scope {
 
                     spacing: 6
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: OsdUtils.getPercentage(root.message) !== -1
+                    visible: blockSlider.percentage !== -1
 
                     Text {
                         text: OsdUtils.getIcon(root.message)
@@ -268,15 +268,17 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Row {
-                        id: blockSlider
+Row {
+                    id: blockSlider
 
-                        property int totalBlocks: 15
-                        property double currentVal: OsdUtils.getPercentage(root.message) / 100
+                    property int totalBlocks: 15
+                    property int percentage: OsdUtils.getPercentage(root.message)
+                    property double currentVal: percentage !== -1 ? percentage / 100 : 0
 
-                        spacing: 1
-                        height: 4
-                        anchors.verticalCenter: parent.verticalCenter
+                    spacing: 1
+                    height: 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: percentage !== -1
 
                         Repeater {
                             model: blockSlider.totalBlocks

@@ -44,3 +44,4 @@ fi
 
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 export PATH="$HOME/.cache/.bun/bin:$PATH"
+export PATH="$HOME/.nub/bin:$PATH"

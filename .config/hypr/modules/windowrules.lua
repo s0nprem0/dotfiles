@@ -3,6 +3,27 @@ local dialog_size = {
 	"monitor_h*0.55",
 }
 
+local function rule_name(prefix, s)
+	return (prefix .. "_" .. s):gsub("[^%w]+", "_")
+end
+
+local function float_centered(match, opts)
+	opts = opts or {}
+	local spec = {
+		name = rule_name(
+			"float",
+			(match.class or "") .. "_" .. (match.title or "") .. "_" .. (match.initial_title or "")
+		),
+		match = match,
+		float = true,
+		center = opts.center ~= false,
+	}
+	if opts.size then
+		spec.size = opts.size
+	end
+	hl.window_rule(spec)
+end
+
 hl.window_rule({
 	name = "suppress_maximize",
 	match = { class = ".*" },
@@ -46,27 +67,6 @@ hl.layer_rule({
 	match = { namespace = "quickshell-popup" },
 	dim_around = true,
 })
-
-local function rule_name(prefix, s)
-	return (prefix .. "_" .. s):gsub("[^%w]+", "_")
-end
-
-local function float_centered(match, opts)
-	opts = opts or {}
-	local spec = {
-		name = rule_name(
-			"float",
-			(match.class or "") .. "_" .. (match.title or "") .. "_" .. (match.initial_title or "")
-		),
-		match = match,
-		float = true,
-		center = opts.center ~= false,
-	}
-	if opts.size then
-		spec.size = opts.size
-	end
-	hl.window_rule(spec)
-end
 
 local dialog_titles = {
 	{ re = "^(Open File)(.*)$", size = dialog_size },
