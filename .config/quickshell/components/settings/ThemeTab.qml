@@ -44,26 +44,6 @@ Rectangle {
         }
     }
 
-    property bool pickWallpaperRequested: false
-
-    Process {
-        id: wallpaperPicker
-        command: ["zenity", "--file-selection", "--file-filter=Image files|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp", "--title=Choose Wallpaper", "--filename=" + Theme.home + "/Pictures/"]
-        running: root.pickWallpaperRequested
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.pickWallpaperRequested = false;
-                var path = this.text.trim();
-                if (path.length > 0)
-                    root.applyWallpaper(path);
-            }
-        }
-    }
-
-    function pickWallpaper() {
-        root.pickWallpaperRequested = true;
-    }
-
     Process {
         id: presetLister
         command: [Theme.bin("presetctl"), "list"]
