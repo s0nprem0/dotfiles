@@ -1,10 +1,10 @@
 // jsonc
+// NOTE: This waybar config is kept for reference only.
+// Quickshell is the primary status bar. To use waybar, uncomment the hypr layer rule.
 {
   "layer": "top",
   "position": "top",
-  "output": "eDP-1",
   "height": 36,
-  // wlr/taskbar
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
   "modules-right": [
@@ -14,7 +14,5 @@
     "battery",
     "tray",
   ],
-
-  // Modules Config
   "include": ["~/.config/waybar/modules.json"],
 }
