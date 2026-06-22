@@ -46,6 +46,8 @@ Rectangle {
 
     function pickWallpaper() {
         Quickshell.execDetached(["sh", "-c",
+            "[ -f " + Theme.home + "/.cache/quickshell/picker_running ] && exit 0; " +
+            "touch " + Theme.home + "/.cache/quickshell/picker_running; " +
             "selected=$(zenity --file-selection " +
             "--file-filter='*.png' " +
             "--file-filter='*.jpg' " +
@@ -59,7 +61,8 @@ Rectangle {
             "if [ -n \"$selected\" ]; then " +
             "realpath \"$selected\" > " + Theme.home + "/.cache/quickshell/current_wallpaper && " +
             Theme.home + "/.config/hypr/scripts/wallpaper.sh \"$selected\"; " +
-            "fi"]);
+            "fi; " +
+            "rm -f " + Theme.home + "/.cache/quickshell/picker_running"]);
     }
 
     Process {
