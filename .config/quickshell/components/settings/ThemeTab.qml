@@ -171,7 +171,7 @@ Rectangle {
 
                     Row {
                         spacing: 3
-                        anchors.verticalCenter: parent.verticalCenter
+                        Layout.alignment: Qt.AlignVCenter
 
                         Repeater {
                             model: [Theme.bg, Theme.surface, Theme.surfaceLighter, Theme.primary, Theme.fg, Theme.muted]
