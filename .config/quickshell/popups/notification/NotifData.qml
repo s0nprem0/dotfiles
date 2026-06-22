@@ -11,7 +11,7 @@ Item {
     property date time: new Date()
     property real timestamp: time.getTime()
     property string timeStr: "now"
-    property string id
+    property var id
     property string summary
     property string body
     property string appIcon
