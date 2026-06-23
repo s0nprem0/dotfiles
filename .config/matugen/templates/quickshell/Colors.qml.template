@@ -10,4 +10,5 @@ QtObject {
     property color warning: "#{{warning_hex}}"
     property color green: "#{{green_hex}}"
     property color blue: "#{{blue_hex}}"
+    property color tertiary: "#{{surface_hex}}"
 }

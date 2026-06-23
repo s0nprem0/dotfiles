@@ -8,5 +8,6 @@
   "error": "{{colors.error.default.hex}}",
   "warning": "{{colors.tertiary.default.hex}}",
   "green": "{{colors.tertiary.default.hex}}",
-  "blue": "{{colors.secondary.default.hex}}"
+  "blue": "{{colors.secondary.default.hex}}",
+  "tertiary": "{{colors.surface_container_high.default.hex}}"
 }

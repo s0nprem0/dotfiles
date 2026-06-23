@@ -17,6 +17,7 @@ QtObject {
     property color warning: "#ddc48c"
     property color green: "#A6DA95"
     property color blue: "#8AADF4"
+    property color tertiary: "#271d1c"
     readonly property string surfaceContainer: surface
     readonly property string surfaceHover: surfaceLighter
     readonly property string border: surfaceLighter
@@ -200,6 +201,7 @@ QtObject {
                 theme.warning = c.warning;
                 theme.green = c.green;
                 theme.blue = c.blue;
+                theme.tertiary = c.tertiary !== undefined ? c.tertiary : c.surface;
                 c.destroy();
             }
         }
@@ -236,6 +238,7 @@ QtObject {
             if (data.warning) theme.warning = data.warning;
             if (data.green) theme.green = data.green;
             if (data.blue) theme.blue = data.blue;
+            if (data.tertiary) theme.tertiary = data.tertiary;
         }
         onFileChanged: reload()
     }
