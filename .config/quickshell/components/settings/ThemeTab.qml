@@ -118,21 +118,21 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 8
-        spacing: 8
+        anchors.margins: 16
+        spacing: 16
 
         // ── Current Wallpaper ──
         Text {
             text: "CURRENT WALLPAPER"
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: 11
             color: Theme.primary
             font.bold: true
         }
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 80
+            Layout.preferredHeight: 160
             color: Theme.bg
             border.width: 1
             border.color: Theme.primary
@@ -145,39 +145,38 @@ Rectangle {
                 asynchronous: true
             }
 
-            Rectangle {
-                anchors.bottom: parent.bottom
-                width: parent.width
-                height: 28
+Rectangle {
+                                anchors.bottom: parent.bottom
+                                 width: parent.width
+                                 height: 32
                 gradient: Gradient {
                     GradientStop { position: 0; color: "transparent" }
                     GradientStop { position: 1; color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.85) }
                 }
 
-                RowLayout {
+RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 8
-                    anchors.rightMargin: 8
-                    spacing: 6
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    spacing: 10
 
                     Text {
                         text: root.currentMode === "preset" ? "Preset: " + root.modeName : "Wallpaper"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: 10
                         font.bold: true
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                     }
 
                     Row {
-                        spacing: 3
-                        Layout.alignment: Qt.AlignVCenter
+                        spacing: 4
 
                         Repeater {
                             model: [Theme.bg, Theme.surface, Theme.surfaceLighter, Theme.primary, Theme.fg, Theme.muted]
                             delegate: Rectangle {
-                                width: 8; height: 8; color: modelData
+                                width: 10; height: 10; color: modelData
                             }
                         }
                     }
@@ -188,7 +187,7 @@ Rectangle {
         // ── Browse Button ──
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 28
+            Layout.preferredHeight: 36
             color: browseMa.containsMouse ? Theme.primary : Theme.surface
             border.width: 1
             border.color: Theme.primary
@@ -198,7 +197,7 @@ Rectangle {
                 text: "󰉋  Browse Wallpaper"
                 color: browseMa.containsMouse ? Theme.bg : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: 10
                 font.bold: true
             }
 
@@ -218,18 +217,11 @@ Rectangle {
             color: Qt.alpha(Theme.primary, 0.2)
         }
 
-        // ── Divider ──
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: Qt.alpha(Theme.primary, 0.2)
-        }
-
         // ── Presets ──
         Text {
             text: "PRESETS"
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: 11
             color: Theme.primary
             font.bold: true
         }
@@ -243,20 +235,20 @@ Rectangle {
             ListView {
                 id: presetList
                 model: root.presets
-                spacing: 4
+                spacing: 8
 
                 header: Rectangle {
                     width: presetList.width
-                    height: 28
+                    height: 32
                     color: autoMa.containsMouse ? Theme.primary : (root.currentMode === "wallpaper" ? Qt.alpha(Theme.primary, 0.15) : "transparent")
                     border.width: 1
                     border.color: root.currentMode === "wallpaper" ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-                        spacing: 8
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 10
 
                         Text {
                             anchors.left: parent.left
@@ -264,7 +256,7 @@ Rectangle {
                             text: "󰸉"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: 12
                         }
 
                         Text {
@@ -273,7 +265,7 @@ Rectangle {
                             text: "Auto (wallpaper-based)"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: 10
                             font.bold: true
                             Layout.fillWidth: true
                             elide: Text.ElideRight
@@ -285,7 +277,7 @@ Rectangle {
                             text: root.currentMode === "wallpaper" ? "active" : ""
                             color: Theme.green
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: 9
                         }
                     }
 
@@ -301,68 +293,68 @@ Rectangle {
                     }
                 }
 
-                delegate: Rectangle {
-                    required property var modelData
-                    required property int index
-                    property bool isActive: root.currentMode === "preset" && root.modeName === modelData.name
+delegate: Rectangle {
+                                    required property var modelData
+                                    required property int index
+                                    property bool isActive: root.currentMode === "preset" && root.modeName === modelData.name
 
-                    width: presetList.width
-                    height: 28
-                    color: ma.containsMouse ? Theme.primary : (isActive ? Qt.alpha(Theme.primary, 0.15) : "transparent")
-                    border.width: 1
-                    border.color: isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
+                                    width: presetList.width
+                                    height: 48
+                                    color: ma.containsMouse ? Theme.primary : (isActive ? Qt.alpha(Theme.primary, 0.15) : "transparent")
+                                    border.width: 1
+                                    border.color: isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-                        spacing: 8
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 12
+                                        anchors.rightMargin: 12
+                                        spacing: 10
 
-                        Text {
-                            text: modelData.variant === "light" ? "󰖨" : "󰖔"
-                            color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 11
-                        }
+                                        Text {
+                                            text: modelData.variant === "light" ? "󰖨" : "󰖔"
+                                            color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 12
+                                        }
 
-                        Text {
-                            text: modelData.name
-                            color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.fg
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 9
-                            font.bold: true
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                        }
+                                        Text {
+                                            text: modelData.name
+                                            color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.fg
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
 
-                        Row {
-                            spacing: 3
-                            Layout.alignment: Qt.AlignVCenter
+                                        Row {
+                                            spacing: 3
+                                            Layout.alignment: Qt.AlignVCenter
 
-                            Repeater {
-                                model: [
-                                    modelData.shell ? modelData.shell.bg : "",
-                                    modelData.shell ? modelData.shell.surface : "",
-                                    modelData.shell ? modelData.shell.fg : "",
-                                    modelData.shell ? modelData.shell.primary : "",
-                                    modelData.shell ? modelData.shell.blue : "",
-                                    modelData.shell ? modelData.shell.error : ""
-                                ]
-                                delegate: Rectangle {
-                                    width: 7; height: 7; color: modelData || "transparent"
+                                            Repeater {
+                                                model: [
+                                                    modelData.shell ? modelData.shell.bg : "",
+                                                    modelData.shell ? modelData.shell.surface : "",
+                                                    modelData.shell ? modelData.shell.fg : "",
+                                                    modelData.shell ? modelData.shell.primary : "",
+                                                    modelData.shell ? modelData.shell.blue : "",
+                                                    modelData.shell ? modelData.shell.error : ""
+                                                ]
+                                                delegate: Rectangle {
+                                                    width: 8; height: 8; color: modelData || "transparent"
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: ma
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.applyPreset(modelData.name)
+                                    }
                                 }
-                            }
-                        }
-                    }
-
-                    MouseArea {
-                        id: ma
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.applyPreset(modelData.name)
-                    }
-                }
             }
         }
     }

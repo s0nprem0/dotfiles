@@ -36,8 +36,8 @@ Rectangle {
         id: content
 
         anchors.fill: parent
-        anchors.margins: 8
-        spacing: 6
+        anchors.margins: 12
+        spacing: 10
 
         RowLayout {
             Layout.fillWidth: true
@@ -46,7 +46,7 @@ Rectangle {
                 text: root.cardTitle
                 color: root.active ? Theme.primary : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 12
                 font.bold: true
             }
 
@@ -58,7 +58,7 @@ Rectangle {
                 text: root.active ? "\u25cf Active" : ""
                 color: Theme.green
                 font.family: Theme.fontFamily
-                font.pixelSize: 8
+                font.pixelSize: 10
                 visible: root.active
             }
 
@@ -67,14 +67,14 @@ Rectangle {
         // ── Profile selector row ──
         RowLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: 6
 
             Text {
                 text: "Profile:"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
-                Layout.minimumWidth: 36
+                font.pixelSize: 10
+                Layout.minimumWidth: 48
             }
 
             Item {
@@ -87,8 +87,8 @@ Rectangle {
                 delegate: Rectangle {
                     required property var modelData
 
-                    Layout.preferredWidth: 40
-                    height: 22
+                    Layout.preferredWidth: 52
+                    height: 28
                     radius: 4
                     color: modelData.val === root.currentProfile ? Theme.primary : Theme.surfaceLighter
 
@@ -97,7 +97,7 @@ Rectangle {
                         text: modelData.label
                         color: modelData.val === root.currentProfile ? Theme.bg : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: 9
                         font.bold: modelData.val === root.currentProfile
                     }
 
@@ -116,23 +116,23 @@ Rectangle {
         // ── Screen brightness slider ──
         RowLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: 8
 
             Text {
                 text: "\u2600"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: 12
             }
 
             Item {
                 Layout.fillWidth: true
-                height: 20
+                height: 24
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width
-                    height: 4
+                    height: 6
                     radius: 0
                     color: Theme.surfaceLighter
 
@@ -161,8 +161,8 @@ Rectangle {
                 text: root.currentBrightness + "%"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
-                Layout.minimumWidth: 28
+                font.pixelSize: 11
+                Layout.minimumWidth: 36
                 horizontalAlignment: Text.AlignRight
             }
 
@@ -171,23 +171,23 @@ Rectangle {
         // ── Keyboard backlight slider ──
         RowLayout {
             Layout.fillWidth: true
-            spacing: 4
+            spacing: 8
 
             Text {
                 text: "\u2328"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: 12
             }
 
             Item {
                 Layout.fillWidth: true
-                height: 20
+                height: 24
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width
-                    height: 4
+                    height: 6
                     radius: 0
                     color: Theme.surfaceLighter
 
@@ -216,8 +216,8 @@ Rectangle {
                 text: root.currentKbd + "%"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
-                Layout.minimumWidth: 28
+                font.pixelSize: 11
+                Layout.minimumWidth: 36
                 horizontalAlignment: Text.AlignRight
             }
 

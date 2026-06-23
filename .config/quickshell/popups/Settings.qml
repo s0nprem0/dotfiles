@@ -123,10 +123,10 @@ Window {
     }
 
     title: "Quickshell Settings"
-    minimumWidth: 480
-    minimumHeight: 400
-    width: 520
-    height: 440
+    minimumWidth: 640
+    minimumHeight: 520
+    width: 720
+    height: 560
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint
     visible: showPopup
@@ -247,34 +247,34 @@ Window {
             // ── Title bar (solid block) ──
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 32
+                Layout.preferredHeight: 40
                 color: Theme.primary
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 8
-                    anchors.rightMargin: 4
-                    spacing: 8
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 8
+                    spacing: 10
 
                     Text {
                         text: "󰒓"
                         color: Theme.bg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: 16
                     }
 
                     Text {
                         text: "SYSTEM SETTINGS"
                         color: Theme.bg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: 14
                         font.bold: true
                         Layout.fillWidth: true
                     }
 
                     Rectangle {
-                        implicitWidth: 24
-                        implicitHeight: 24
+                        implicitWidth: 32
+                        implicitHeight: 32
                         color: closeMa.containsMouse ? Theme.bg : "transparent"
                         border.width: 1
                         border.color: closeMa.containsMouse ? Theme.bg : "transparent"
@@ -284,7 +284,7 @@ Window {
                             text: "✕"
                             color: closeMa.containsMouse ? Theme.primary : Theme.bg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: 12
                             font.bold: true
                         }
 
@@ -311,14 +311,14 @@ Window {
 
                 // ── Sidebar ──
                 Rectangle {
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 160
                     Layout.fillHeight: true
                     color: Theme.surface
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 4
-                        spacing: 2
+                        anchors.margins: 6
+                        spacing: 4
 
                         Repeater {
                             model: root.tabData
@@ -328,34 +328,37 @@ Window {
                                 required property int index
 
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 30
+                                Layout.preferredHeight: 52
                                 color: index === root.currentTab ? Theme.primary : (tabMa.containsMouse ? Theme.surfaceLighter : "transparent")
+                                border.width: index === root.currentTab ? 1 : 0
+                                border.color: Theme.primary
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 8
-                                    spacing: 8
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 10
+                                    spacing: 12
 
                                     Text {
                                         text: modelData.icon
-                                        color: index === root.currentTab ? Theme.bg : Theme.fg
+                                        color: index === root.currentTab ? Theme.bg : Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: 16
                                     }
 
                                     Text {
                                         text: modelData.label
                                         color: index === root.currentTab ? Theme.bg : Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: 11
                                         font.bold: true
+                                        Layout.fillWidth: true
                                     }
 
                                 }
 
                                 MouseArea {
                                     id: tabMa
-
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor

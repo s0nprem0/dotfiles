@@ -14,21 +14,21 @@ Rectangle {
     radius: 0
     color: Theme.surface
     border.width: 1
-    border.color: Qt.alpha(Theme.primary, 0.15)
+    border.color: Qt.alpha(Theme.primary, 0.3)
     implicitHeight: content.implicitHeight + 24
 
     ColumnLayout {
         id: content
 
         anchors.fill: parent
-        anchors.margins: 12
-        spacing: 12
+        anchors.margins: 16
+        spacing: 16
 
         Text {
             text: "Power"
-            color: Theme.fg
+            color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: 14
             font.bold: true
         }
 
@@ -36,22 +36,22 @@ Rectangle {
             text: "Power Mode"
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: 11
         }
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: 8
 
             Repeater {
                 model: [{
-                    "label": "Saver",
+                    "label": "SAVER",
                     "profile": "power-saver"
                 }, {
-                    "label": "Balanced",
+                    "label": "BALANCED",
                     "profile": "balanced"
                 }, {
-                    "label": "Performance",
+                    "label": "PERFORMANCE",
                     "profile": "performance"
                 }]
 
@@ -59,18 +59,17 @@ Rectangle {
                     required property var modelData
 
                     Layout.fillWidth: true
-                    height: 32
-                    radius: 6
+                    height: 40
                     color: root.activeProfile === modelData.profile ? Theme.primary : Theme.surfaceLighter
                     border.width: 1
-                    border.color: Qt.alpha(Theme.primary, 0.15)
+                    border.color: Theme.primary
 
                     Text {
                         anchors.centerIn: parent
                         text: modelData.label
                         color: root.activeProfile === modelData.profile ? Theme.bg : Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: 11
                         font.bold: root.activeProfile === modelData.profile
                     }
 
@@ -90,7 +89,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Qt.alpha(Theme.primary, 0.12)
+            color: Qt.alpha(Theme.primary, 0.3)
         }
 
         RowLayout {
@@ -100,7 +99,7 @@ Rectangle {
                 text: "Battery Charge Limit"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 11
             }
 
             Item {
@@ -111,7 +110,7 @@ Rectangle {
                 text: root.chargeLimit + "%"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 12
                 font.bold: true
             }
 

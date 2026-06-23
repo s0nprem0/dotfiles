@@ -19,8 +19,8 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 8
-        spacing: 8
+        anchors.margins: 16
+        spacing: 16
 
         PowerCard {
             activeProfile: root.activeProfile

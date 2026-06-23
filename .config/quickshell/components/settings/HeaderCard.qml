@@ -15,24 +15,23 @@ Rectangle {
     radius: 0
     color: "transparent"
     border.width: 1
-    border.color: Theme.primary // Hard solid border instead of alpha
+    border.color: Theme.primary
     implicitHeight: content.implicitHeight + 24
 
     ColumnLayout {
         id: content
 
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: 16
         spacing: 12
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
+            spacing: 16
 
-            // Inverted solid block for the Arch logo
             Rectangle {
-                width: 42
-                height: 42
+                width: 48
+                height: 48
                 radius: 0
                 color: Theme.primary
 
@@ -41,20 +40,20 @@ Rectangle {
                     text: "󰣇"
                     color: Theme.bg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 24
+                    font.pixelSize: 28
                 }
 
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
+                spacing: 4
 
                 Text {
                     text: root.hostname.toUpperCase()
                     color: Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 13
+                    font.pixelSize: 16
                     font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -64,7 +63,7 @@ Rectangle {
                     text: root.os.toUpperCase()
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: 11
                     font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -74,7 +73,6 @@ Rectangle {
 
         }
 
-        // Hard divider
         Rectangle {
             Layout.fillWidth: true
             height: 1
@@ -83,13 +81,13 @@ Rectangle {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 12
 
             Text {
                 text: root.charging ? "󱐋 " + root.batteryPercent + "%" : "󰁹 " + root.batteryPercent + "%"
                 color: root.charging ? Theme.green : Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 12
                 font.bold: true
             }
 
@@ -97,14 +95,14 @@ Rectangle {
                 text: "•"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 12
             }
 
             Text {
                 text: root.charging ? "CHARGING" : "DISCHARGING"
                 color: root.charging ? Theme.green : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: 11
                 font.bold: true
             }
 
@@ -116,7 +114,7 @@ Rectangle {
                 text: "󰔚 " + root.uptime.toUpperCase()
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: 12
                 font.bold: true
             }
 

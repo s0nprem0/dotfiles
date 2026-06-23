@@ -24,8 +24,8 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 8
-        spacing: 8
+        anchors.margins: 16
+        spacing: 16
 
         HeaderCard {
             hostname: root.hostname
@@ -39,16 +39,16 @@ Rectangle {
         Text {
             text: "ACTIONS"
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: 11
             color: Theme.primary
             font.bold: true
         }
 
         GridLayout {
             Layout.fillWidth: true
-            columns: 5
-            columnSpacing: 4
-            rowSpacing: 4
+            columns: 3
+            columnSpacing: 10
+            rowSpacing: 10
 
             Repeater {
                 model: root.sysActions
@@ -57,28 +57,30 @@ Rectangle {
                     required property var modelData
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 52
+                    Layout.preferredHeight: 56
                     color: ma.containsMouse ? Theme.primary : Theme.bg
                     border.width: 1
                     border.color: Theme.primary
 
                     ColumnLayout {
                         anchors.centerIn: parent
-                        spacing: 2
+                        anchors.margins: 10
+                        spacing: 4
 
                         Text {
                             text: modelData.icon
                             color: ma.containsMouse ? Theme.bg : Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 18
+                            font.pixelSize: 20
                         }
 
                         Text {
                             text: modelData.label
                             color: ma.containsMouse ? Theme.bg : Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: 9
                             font.bold: true
+                            elide: Text.ElideRight
                         }
 
                     }
@@ -112,16 +114,16 @@ Rectangle {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: 260
-                height: 110
+                width: 300
+                height: 130
                 color: Theme.bg
                 border.width: 2
                 border.color: Theme.error
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 8
+                    anchors.margins: 16
+                    spacing: 12
 
                     Text {
                         text: "CONFIRM " + root.pendingLabel.toUpperCase() + "?"
@@ -129,17 +131,17 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         color: Theme.error
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: 12
                         font.bold: true
                     }
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8
+                        spacing: 12
 
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 30
+                            Layout.preferredHeight: 36
                             color: Theme.surface
                             border.width: 1
                             border.color: Theme.primary
@@ -149,7 +151,7 @@ Rectangle {
                                 text: "CANCEL"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 10
                                 font.bold: true
                             }
 
@@ -162,7 +164,7 @@ Rectangle {
 
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 30
+                            Layout.preferredHeight: 36
                             color: Theme.error
 
                             Text {
@@ -170,7 +172,7 @@ Rectangle {
                                 text: "CONFIRM"
                                 color: Theme.bg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 10
                                 font.bold: true
                             }
 
