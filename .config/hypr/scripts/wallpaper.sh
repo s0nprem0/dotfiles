@@ -15,6 +15,9 @@ fi
 # Step 1: Generate all colors via matugen templates
 matugen image "$WALLPAPER" --prefer darkness -q
 
+# Step 2: Apply theme_switcher to update app-specific themes
+theme_switcher "$WALLPAPER" 2>/dev/null || true
+
 # Step 2: Set wallpaper on all monitors
 for MONITOR in $(hyprctl -j monitors | jq -r '.[].name'); do
   hyprctl hyprpaper wallpaper "$MONITOR,$WALLPAPER"

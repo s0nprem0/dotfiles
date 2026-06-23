@@ -31,3 +31,7 @@ output_path = "~/.cache/quickshell/Colors.qml"
 [templates.preview_picker]
 input_path = "~/.config/matugen/templates/hyprland-preview-share-picker/style.css.template"
 output_path = "~/.config/hyprland-preview-share-picker/style.css"
+
+[templates.vesktop]
+input_path = "~/.config/matugen/templates/vesktop/quickCss.css.template"
+output_path = "~/.config/vesktop/settings/quickCss.css"

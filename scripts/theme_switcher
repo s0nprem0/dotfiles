@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WALLPAPER="${1:-}"
+
+if [[ -z "$WALLPAPER" ]]; then
+    if [[ -f "$HOME/.cache/quickshell/current_wallpaper" ]]; then
+        WALLPAPER=$(cat "$HOME/.cache/quickshell/current_wallpaper")
+    else
+        echo "Usage: $0 <path-to-wallpaper>"
+        exit 1
+    fi
+fi
+
+if [[ ! -f "$WALLPAPER" ]]; then
+    echo "Error: $WALLPAPER not found"
+    exit 1
+fi
+
+echo "Generating theme from: $WALLPAPER"
+
+matugen image "$WALLPAPER" --prefer darkness --json
+
+MATUGEN_COLORS="$HOME/.config/matugen/colors.json"
+if [[ ! -f "$MATUGEN_COLORS" ]]; then
+    echo "Error: matugen colors.json not found at $MATUGEN_COLORS"
+    exit 1
+fi
+
+get_color() {
+    local key="$1"
+    jq -r ".${key}" "$MATUGEN_COLORS"
+}
+
+get_rgb() {
+    local hex="$1"
+    echo "${hex:1:2},${hex:3:2},${hex:5:2}"
+}
+
+ACCENT=$(get_color "color.accent")
+SECONDARY=$(get_color "color.secondary")
+FG=$(get_color "color.on_surface")
+FG_LIGHT=$(get_color "color.on_surface_variant")
+BG=$(get_color "color.surface")
+BG_DARK=$(get_color "color.surface_variant")
+BG_LIGHT=$(get_color "color.surface_tint")
+
+ACCENT_RGB=$(get_rgb "$ACCENT")
+SECONDARY_RGB=$(get_rgb "$SECONDARY")
+FG_RGB=$(get_rgb "$FG")
+FG_LIGHT_RGB=$(get_rgb "$FG_LIGHT")
+BG_RGB=$(get_rgb "$BG")
+BG_DARK_RGB=$(get_rgb "$BG_DARK")
+
+VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
+VESKTOP_OUTPUT="$HOME/.config/vesktop/settings/quickCss.css"
+
+if [[ -f "$VESKTOP_TEMPLATE" ]]; then
+    sed -e "s|{{accent_rgb}}|$ACCENT_RGB|g" \
+        -e "s|{{secondary_rgb}}|$SECONDARY_RGB|g" \
+        -e "s|{{fg_rgb}}|$FG_RGB|g" \
+        -e "s|{{fg_light_rgb}}|$FG_LIGHT_RGB|g" \
+        -e "s|{{bg_rgb}}|$BG_RGB|g" \
+        -e "s|{{bg_dark_rgb}}|$BG_DARK_RGB|g" \
+        -e "s|{{bg_light_rgb}}|$BG_LIGHT_RGB|g" \
+        "$VESKTOP_TEMPLATE" > "$VESKTOP_OUTPUT"
+    echo "Updated Vesktop theme: $VESKTOP_OUTPUT"
+fi
+
+echo "Theme generation complete!"
