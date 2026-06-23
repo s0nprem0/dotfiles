@@ -13,7 +13,7 @@ usage() {
     echo "  --validate    Check WCAG contrast ratios"
     echo "  --verbose     Show detailed output"
     echo "  --dry-run     Preview changes without writing"
-    echo "  --apps LIST   Generate only specified apps"
+    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,opencode,thunar)"
     exit 1
 }
 
@@ -171,6 +171,16 @@ if should_generate "opencode"; then
 }
 EOF
     echo "Updated opencode theme"
+fi
+
+if should_generate "thunar"; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "Would run: rebuild_thunar.sh"
+    else
+        ~/.local/bin/rebuild_thunar.sh 2>/dev/null || "$HOME/.local/share/bin/rebuild_thunar.sh" 2>/dev/null || \
+        bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
+        echo "Warning: rebuild_thunar.sh not found"
+    fi
 fi
 
 log "Theme generation complete!"
