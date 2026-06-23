@@ -242,15 +242,4 @@ Item {
         }
         onFileChanged: reload()
     }
-
-    FileView {
-        id: glassStateWatcher
-        path: "file://" + home + "/.cache/quickshell/glass_state"
-        watchChanges: true
-        onLoaded: {
-            var val = glassStateWatcher.text().trim();
-            glassEnabled = (val !== "false");
-        }
-        onFileChanged: reload()
-    }
 }
