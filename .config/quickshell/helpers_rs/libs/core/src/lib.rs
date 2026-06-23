@@ -1,5 +1,6 @@
 pub mod battery;
 pub mod command;
+pub mod display;
 pub mod external;
 pub mod paths;
 pub mod settings;
@@ -7,6 +8,7 @@ pub mod state_file;
 
 pub use battery::{BatterySnapshot, battery_snapshot, find_battery_dir};
 pub use command::{run_cmd, run_cmd_with_stderr};
+pub use display::{get_current_mode, get_monitors, set_mode, toggle_mode, DisplayMode, Monitor};
 pub use external::{
     active_wifi_device, brightnessctl_percent, cidr_to_netmask, find_kbd_backlight_device,
     parse_percent, split_nmcli_t_line, wpctl_get_volume,

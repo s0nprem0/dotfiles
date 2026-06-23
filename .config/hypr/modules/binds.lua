@@ -201,22 +201,26 @@ hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { descrip
 
 local monitors = require("monitors")
 
+qs_popup("P", "presentation", "Display: Presentation mode")
+
+hl.bind(mainMod .. " + P", function()
+	monitors.toggle()
+end, { description = "Display: Toggle presentation mode" })
+
 hl.bind(mainMod .. " + " .. altMod .. " + X", function()
-  monitors.set_extended()
-end, { description = "Display: Extended mode" })
+	monitors.set_extend()
+end, { description = "Display: Extend mode" })
 
 hl.bind(mainMod .. " + " .. altMod .. " + Y", function()
-  monitors.set_mirror()
-end, { description = "Display: Mirror mode" })
+	monitors.set_duplicate()
+end, { description = "Display: Duplicate mode" })
 
 hl.bind(mainMod .. " + " .. altMod .. " + I", function()
-  monitors.set_internal_only()
+	monitors.set_internal()
 end, { description = "Display: Internal only" })
 
 hl.bind(mainMod .. " + " .. altMod .. " + O", function()
-  monitors.set_external_only()
+	monitors.set_external()
 end, { description = "Display: External only" })
 
-hl.bind(mainMod .. " + " .. altMod .. " + Z", function()
-  monitors.reset()
-end, { description = "Display: Reset layout" })
+qs_popup("p", "presentation", "Display: Open presentation menu")

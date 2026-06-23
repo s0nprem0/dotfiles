@@ -9,3 +9,4 @@ Workspace Workspace.qml
 Shortcut Shortcut.qml
 Tray Tray.qml
 Battery Battery.qml
+PresentationPopup PresentationPopup.qml

@@ -114,6 +114,7 @@ Bar {
                 case "shortcut": shortcutPopup.showPopup = !shortcutPopup.showPopup; break;
                 case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
                 case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
+                case "presentation": presentationPopup.showPopup = !presentationPopup.showPopup; break;
             }
         }
     }
@@ -159,6 +160,10 @@ Bar {
 
     Popups.Tray {
         id: trayPopup
+    }
+
+    Popups.PresentationPopup {
+        id: presentationPopup
     }
 
 }

@@ -17,4 +17,5 @@ members = [
   "bins/ports_menu",
   "bins/screenshot",
   "bins/mtp_notify",
+  "bins/display_toggle",
 ]
