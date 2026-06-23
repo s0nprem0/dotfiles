@@ -25,9 +25,9 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
     box-shadow: none;
 }
 
-/* Menu bar - darkened */
+/* Menu bar - solid dark */
 .menu-bar {
-    background-color: alpha(@bg_color, 0.95);
+    background-color: @bg_color;
     border: none;
 }
 
@@ -38,7 +38,7 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 }
 
 .menu-bar .button:hover {
-    background-color: alpha(@primary_color, 0.3);
+    background-color: @primary_color;
 }
 
 /* Loading icon fix */
@@ -62,7 +62,7 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 
 /* Toolbar */
 .toolbar {
-    background-color: alpha(@bg_color, 0.9);
+    background-color: @bg_color;
     border-bottom: 1px solid @border_color;
 }
 
@@ -77,13 +77,13 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 
 /* Location bar */
 .location-bar {
-    background-color: alpha(@bg_color, 0.95);
+    background-color: @bg_color;
 }
 
 /* Icon view */
 .icon-view .tile {
     background-color: transparent;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .icon-view .tile:selected {
@@ -97,12 +97,12 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 
 /* Scrollbars */
 .scrollbar {
-    background-color: alpha(black, 0.2);
+    background-color: alpha(black, 0.4);
 }
 
 .scrollbar slider {
-    background-color: alpha(@fg_color, 0.4);
-    border-radius: 6px;
+    background-color: @fg_color;
+    border-radius: 0;
 }
 EOF
 
@@ -116,9 +116,9 @@ cat > "$THEME_DIR/gtk-4.0/gtk.css" << 'EOF'
     box-shadow: none;
 }
 
-/* Menu bar - darkened */
+/* Menu bar - solid dark */
 .menu-bar {
-    background-color: alpha(@bg_color, 0.95);
+    background-color: @bg_color;
 }
 
 .menu-bar .button {
@@ -127,7 +127,7 @@ cat > "$THEME_DIR/gtk-4.0/gtk.css" << 'EOF'
 }
 
 .menu-bar .button:hover {
-    background-color: alpha(@primary_color, 0.3);
+    background-color: @primary_color;
 }
 
 /* Loading icon fix */
@@ -142,13 +142,13 @@ cat > "$THEME_DIR/gtk-4.0/gtk.css" << 'EOF'
 
 /* Toolbar */
 .toolbar {
-    background-color: alpha(@bg_color, 0.95);
+    background-color: @bg_color;
 }
 
 /* Icon view */
 .icon-view.tile {
     background-color: transparent;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .icon-view.tile:selected {

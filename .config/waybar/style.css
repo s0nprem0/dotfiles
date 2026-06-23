@@ -1,0 +1,163 @@
+@import "colors.css";
+
+* {
+  font-family: "GohuFont 11 Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 11px;
+  min-height: 0;
+}
+
+window#waybar {
+  background-color: @background;
+  border-bottom: 1px solid @primary;
+}
+
+.window#waybar.empty {
+  background-color: @background;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+  padding: 0 8px;
+}
+
+#workspaces {
+  margin: 4px 0;
+  padding: 0 4px;
+  background: @surface;
+  border: 1px solid @primary;
+  border-radius: 0;
+}
+
+#workspaces button {
+  padding: 0 6px;
+  margin: 2px 1px;
+  color: @foreground;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-width: 20px;
+}
+
+#workspaces button:hover {
+  background: @primary;
+  color: @background;
+}
+
+#workspaces button.active {
+  color: @background;
+  background: @primary;
+  font-weight: bold;
+}
+
+#workspaces button.urgent {
+  color: @background;
+  background: @error;
+}
+
+#workspaces button.empty {
+  color: @foreground;
+}
+
+#window {
+  color: @foreground;
+  padding: 0 12px;
+  margin: 4px 0;
+  background: @surface;
+  border: 1px solid @primary;
+  border-radius: 0;
+}
+
+#window.empty {
+  background: transparent;
+  border-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+#clock,
+#battery,
+#custom-network,#pulseaudio,
+#tray,
+#bluetooth,
+#custom-player,
+#backlight,
+#temperature,
+#memory,
+#cpu,
+#custom-power,
+#language,
+#custom-updater {
+  color: @foreground;
+  background: @surface;
+  border: 1px solid @primary;
+  border-radius: 0;
+  padding: 0 10px;
+  margin: 4px 3px;
+}
+
+#battery.warning {
+  color: @warning;
+  border-color: @warning;
+}
+
+#battery.critical {
+  color: @error;
+  border-color: @error;
+}
+
+#battery.charging {
+  color: #a6e3a1;
+  border-color: #a6e3a1;
+}
+
+#battery.plugged {
+  color: @foreground;
+  border-color: @primary;
+}
+
+#clock {
+  font-weight: bold;
+}
+
+#custom-network.disconnected {
+  color: @foreground;
+}
+
+#custom-network.disabled {
+  color: @foreground;
+}
+
+#custom-network.limited {
+  color: @warning;
+  border-color: @warning;
+}
+
+#pulseaudio.muted {
+  color: @foreground;
+}
+
+#tray {
+  padding: 0 6px;
+  min-width: 0;
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+}
+
+tooltip {
+  background: @background;
+  border: 1px solid @primary;
+  border-radius: 0;
+  padding: 8px;
+}
+
+tooltip label {
+  color: @foreground;
+  font-size: 11px;
+}
