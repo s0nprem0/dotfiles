@@ -72,7 +72,16 @@ ERROR_RGB=$(get_rgb "$ERROR")
 VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
 VESKTOP_OUTPUT="$HOME/.config/vesktop/settings/quickCss.css"
 
-if [[ -f "$VESKTOP_TEMPLATE" ]]; then
+APPS=()
+if [[ -d "$HOME/.config/vesktop" ]]; then
+    APPS+=("vesktop")
+fi
+if [[ -d "$HOME/.config/equibop" ]]; then
+    APPS+=("equibop")
+fi
+
+if [[ -f "$VESKTOP_TEMPLATE" ]] && [[ ${#APPS[@]} -gt 0 ]]; then
+    THEME_CONTENT=$(mktemp)
     sed -e "s|{{accent_hex}}|$ACCENT_HEX|g" \
         -e "s|{{accent_rgb}}|$ACCENT_RGB|g" \
         -e "s|{{secondary_hex}}|$SECONDARY_HEX|g" \
@@ -88,8 +97,15 @@ if [[ -f "$VESKTOP_TEMPLATE" ]]; then
         -e "s|{{bg_light_hex}}|$BG_LIGHT_HEX|g" \
         -e "s|{{bg_light_rgb}}|$BG_LIGHT_RGB|g" \
         -e "s|{{error_hex}}|$ERROR_HEX|g" \
-        "$VESKTOP_TEMPLATE" > "$VESKTOP_OUTPUT"
-    echo "Updated Vesktop theme: $VESKTOP_OUTPUT"
+        "$VESKTOP_TEMPLATE" > "$THEME_CONTENT"
+    
+    for APP in "${APPS[@]}"; do
+        APP_OUTPUT="$HOME/.config/$APP/settings/quickCss.css"
+        mkdir -p "$(dirname "$APP_OUTPUT")"
+        cp "$THEME_CONTENT" "$APP_OUTPUT"
+        echo "Updated $APP theme: $APP_OUTPUT"
+    done
+    rm -f "$THEME_CONTENT"
 fi
 
 echo "Theme generation complete!"
