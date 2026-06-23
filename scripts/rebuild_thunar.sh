@@ -25,9 +25,9 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
     box-shadow: none;
 }
 
-/* Transparent menu bar */
+/* Menu bar - darkened */
 .menu-bar {
-    background-color: alpha(@bg_color, 0.7);
+    background-color: alpha(@bg_color, 0.95);
     border: none;
 }
 
@@ -38,7 +38,16 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 }
 
 .menu-bar .button:hover {
-    background-color: alpha(@fg_color, 0.1);
+    background-color: alpha(@primary_color, 0.3);
+}
+
+/* Loading icon fix */
+.menu-bar spinner {
+    display: none;
+}
+
+.menu-bar .arrow {
+    color: @fg_color;
 }
 
 /* Sidebar styling */
@@ -53,7 +62,7 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 
 /* Toolbar */
 .toolbar {
-    background-color: @toolbar_bg_color;
+    background-color: alpha(@bg_color, 0.9);
     border-bottom: 1px solid @border_color;
 }
 
@@ -68,7 +77,7 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 
 /* Location bar */
 .location-bar {
-    background-color: alpha(@bg_color, 0.8);
+    background-color: alpha(@bg_color, 0.95);
 }
 
 /* Icon view */
@@ -92,7 +101,7 @@ cat > "$THEME_DIR/gtk-3.0/gtk.css" << 'EOF'
 }
 
 .scrollbar slider {
-    background-color: alpha(@fg_color, 0.3);
+    background-color: alpha(@fg_color, 0.4);
     border-radius: 6px;
 }
 EOF
@@ -107,14 +116,23 @@ cat > "$THEME_DIR/gtk-4.0/gtk.css" << 'EOF'
     box-shadow: none;
 }
 
-/* Menu bar */
+/* Menu bar - darkened */
 .menu-bar {
-    background-color: alpha(@bg_color, 0.7);
+    background-color: alpha(@bg_color, 0.95);
 }
 
 .menu-bar .button {
     background: transparent;
     border: none;
+}
+
+.menu-bar .button:hover {
+    background-color: alpha(@primary_color, 0.3);
+}
+
+/* Loading icon fix */
+.menu-bar spinner {
+    display: none;
 }
 
 /* Sidebar */
@@ -124,7 +142,7 @@ cat > "$THEME_DIR/gtk-4.0/gtk.css" << 'EOF'
 
 /* Toolbar */
 .toolbar {
-    background-color: @toolbar_bg_color;
+    background-color: alpha(@bg_color, 0.95);
 }
 
 /* Icon view */
