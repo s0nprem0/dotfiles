@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 pragma Singleton
 
-QtObject {
+Item {
     id: theme
 
     readonly property string fontFamily: "GohuFont 11 Nerd Font"
@@ -31,7 +31,6 @@ QtObject {
     readonly property string helperDir: home + "/.config/quickshell/helpers"
     readonly property string cacheDir: home + "/.cache/quickshell"
     readonly property string tmpDir: "/tmp/quickshell"
-    property FileView colorsWatcher
     property bool glassEnabled: true
     property color popupBgColor: glassEnabled ? Qt.rgba(bg.r, bg.g, bg.b, 0.5) : bg
 
@@ -207,7 +206,8 @@ QtObject {
         }
     }
 
-    colorsWatcher: FileView {
+    FileView {
+        id: colorsWatcher
         path: "file://" + home + "/.cache/quickshell/colors.json"
         watchChanges: true
         onLoaded: {
