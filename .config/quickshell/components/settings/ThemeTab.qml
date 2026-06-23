@@ -271,18 +271,15 @@ Rectangle {
                 }
             }
 
-            MouseArea {
-                id: glassMa
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    Theme.glassEnabled = !Theme.glassEnabled;
-                    var proc = Qt.createQmlObject('Quickshell.Io.Process', this);
-                    proc.command = ["sh", "-c", "echo " + (Theme.glassEnabled ? "true" : "false") + " > ~/.cache/quickshell/glass_state"];
-                    proc.running = true;
-                }
-            }
+MouseArea {
+                        id: glassMa
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Theme.setGlassState(!Theme.glassEnabled);
+                        }
+                    }
         }
 
         // ── Divider ──

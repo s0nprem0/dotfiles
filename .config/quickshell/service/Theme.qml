@@ -204,6 +204,27 @@ Item {
                 c.destroy();
             }
         }
+        loadGlassState();
+    }
+
+    function loadGlassState() {
+        var proc = Qt.createQmlObject('Quickshell.Io.Process', theme);
+        proc.command = ["sh", "-c", "cat ~/.cache/quickshell/glass_state 2>/dev/null || echo 'true'"];
+        proc.stdout.onStreamFinished.connect(function() {
+            try {
+                var val = proc.stdout.text.trim();
+                glassEnabled = (val !== "false");
+            } catch (e) {}
+            proc.destroy();
+        });
+        proc.running = true;
+    }
+
+    function setGlassState(enabled) {
+        var proc = Qt.createQmlObject('Quickshell.Io.Process', theme);
+        proc.command = ["sh", "-c", "mkdir -p ~/.cache/quickshell && echo " + (enabled ? "true" : "false") + " > ~/.cache/quickshell/glass_state"];
+        proc.running = true;
+        proc.destroy();
     }
 
     FileView {
