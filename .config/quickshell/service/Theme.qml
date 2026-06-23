@@ -204,20 +204,25 @@ Item {
                 c.destroy();
             }
         }
-        loadGlassState();
+    }
+
+    Process {
+        id: glassStateProc
+        command: ["sh", "-c", "cat ~/.cache/quickshell/glass_state 2>/dev/null || echo 'true'"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    var val = glassStateProc.stdout.text.trim();
+                    glassEnabled = (val !== "false");
+                } catch (e) {}
+            }
+        }
     }
 
     function loadGlassState() {
-        var proc = Qt.createQmlObject('Quickshell.Io.Process', theme);
-        proc.command = ["sh", "-c", "cat ~/.cache/quickshell/glass_state 2>/dev/null || echo 'true'"];
-        proc.stdout.onStreamFinished.connect(function() {
-            try {
-                var val = proc.stdout.text.trim();
-                glassEnabled = (val !== "false");
-            } catch (e) {}
-            proc.destroy();
-        });
-        proc.running = true;
+        glassStateProc.running = false;
+        glassStateProc.running = true;
     }
 
     function setGlassState(enabled) {
