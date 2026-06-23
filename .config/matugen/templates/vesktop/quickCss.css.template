@@ -46,5 +46,3 @@
 --scrollbar-auto-track: transparent !important;
 --scrollbar-auto-scrollbar-color-thumb: rgba({{accent_rgb}}, 0.3) !important;
 --scrollbar-auto-scrollbar-color-track: transparent !important;
-
-}

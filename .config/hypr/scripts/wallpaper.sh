@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 WALLPAPER="${1:-}"
 if [[ -z "$WALLPAPER" ]]; then
@@ -16,9 +16,13 @@ fi
 matugen image "$WALLPAPER" --prefer darkness -q
 
 # Step 2: Apply theme_switcher to update app-specific themes
-theme_switcher "$WALLPAPER" 2>/dev/null || true
+if command -v theme_switcher &>/dev/null; then
+  theme_switcher "$WALLPAPER" || echo "Warning: theme_switcher failed"
+else
+  echo "theme_switcher not found in PATH"
+fi
 
-# Step 2: Set wallpaper on all monitors
+# Step 3: Set wallpaper on all monitors
 for MONITOR in $(hyprctl -j monitors | jq -r '.[].name'); do
   hyprctl hyprpaper wallpaper "$MONITOR,$WALLPAPER"
 done
@@ -30,7 +34,5 @@ sed -i "s|^    path = .*|    path = $WALLPAPER|" "$HOME/.config/hypr/hyprlock.co
 # Persist wallpaper path for theme tab
 mkdir -p "$HOME/.cache/quickshell"
 realpath "$WALLPAPER" > "$HOME/.cache/quickshell/current_wallpaper"
-
-# Step 3: Reload services (if any needed)
 
 echo "Wallpaper and colors updated!"

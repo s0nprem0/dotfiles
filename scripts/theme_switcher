@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 WALLPAPER="${1:-}"
 
@@ -19,9 +19,9 @@ fi
 
 echo "Generating theme from: $WALLPAPER"
 
-matugen image "$WALLPAPER" --prefer darkness --json
+matugen image "$WALLPAPER" --prefer darkness --quiet
 
-MATUGEN_COLORS="$HOME/.config/matugen/colors.json"
+MATUGEN_COLORS="$HOME/.cache/quickshell/colors.json"
 if [[ ! -f "$MATUGEN_COLORS" ]]; then
     echo "Error: matugen colors.json not found at $MATUGEN_COLORS"
     exit 1
@@ -34,51 +34,68 @@ get_color() {
 
 get_rgb() {
     local hex="$1"
-    echo "${hex:1:2},${hex:3:2},${hex:5:2}"
+    local h="${hex#\#}"
+    echo "${h:0:2},${h:2:2},${h:4:2}"
 }
 
 get_hex() {
     local hex="$1"
-    echo "#${hex:0:2}${hex:2:2}${hex:4:2}"
+    printf '%s' "${hex#\#}"
 }
 
-ACCENT=$(get_color "color.accent")
-SECONDARY=$(get_color "color.secondary")
-FG=$(get_color "color.on_surface")
-FG_LIGHT=$(get_color "color.on_surface_variant")
-BG=$(get_color "color.surface")
-BG_DARK=$(get_color "color.surface_variant")
-BG_LIGHT=$(get_color "color.surface_tint")
-ERROR=$(get_color "color.error")
+BG=$(get_color "bg")
+FG=$(get_color "fg")
+PRIMARY=$(get_color "primary")
+ERROR=$(get_color "error")
+SURFACE=$(get_color "surface")
+SURFACE_LIGHTER=$(get_color "surfaceLighter")
 
-ACCENT_HEX=$(get_hex "$ACCENT")
-SECONDARY_HEX=$(get_hex "$SECONDARY")
-FG_HEX=$(get_hex "$FG")
-FG_LIGHT_HEX=$(get_hex "$FG_LIGHT")
 BG_HEX=$(get_hex "$BG")
-BG_DARK_HEX=$(get_hex "$BG_DARK")
-BG_LIGHT_HEX=$(get_hex "$BG_LIGHT")
+FG_HEX=$(get_hex "$FG")
+PRIMARY_HEX=$(get_hex "$PRIMARY")
 ERROR_HEX=$(get_hex "$ERROR")
+SURFACE_HEX=$(get_hex "$SURFACE")
+SURFACE_LIGHTER_HEX=$(get_hex "$SURFACE_LIGHTER")
 
-ACCENT_RGB=$(get_rgb "$ACCENT")
-SECONDARY_RGB=$(get_rgb "$SECONDARY")
-FG_RGB=$(get_rgb "$FG")
-FG_LIGHT_RGB=$(get_rgb "$FG_LIGHT")
 BG_RGB=$(get_rgb "$BG")
-BG_DARK_RGB=$(get_rgb "$BG_DARK")
-BG_LIGHT_RGB=$(get_rgb "$BG_LIGHT")
+FG_RGB=$(get_rgb "$FG")
+PRIMARY_RGB=$(get_rgb "$PRIMARY")
 ERROR_RGB=$(get_rgb "$ERROR")
+SURFACE_RGB=$(get_rgb "$SURFACE")
+SURFACE_LIGHTER_RGB=$(get_rgb "$SURFACE_LIGHTER")
 
-VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
-VESKTOP_OUTPUT="$HOME/.config/vesktop/settings/quickCss.css"
+ACCENT="$PRIMARY"
+ACCENT_HEX="$PRIMARY_HEX"
+ACCENT_RGB="$PRIMARY_RGB"
+
+SECONDARY="$FG"
+SECONDARY_HEX="$FG_HEX"
+SECONDARY_RGB="$FG_RGB"
+
+BG_DARK="$SURFACE"
+BG_DARK_HEX="$SURFACE_HEX"
+BG_DARK_RGB="$SURFACE_RGB"
+
+BG_LIGHT="$SURFACE_LIGHTER"
+BG_LIGHT_HEX="$SURFACE_LIGHTER_HEX"
+BG_LIGHT_RGB="$SURFACE_LIGHTER_RGB"
+
+FG_LIGHT="$FG"
+FG_LIGHT_HEX="$FG_HEX"
+FG_LIGHT_RGB="$FG_RGB"
 
 APPS=()
-if [[ -d "$HOME/.config/vesktop" ]]; then
+if [[ -d "$HOME/.config/vesktop/settings" ]]; then
     APPS+=("vesktop")
 fi
-if [[ -d "$HOME/.config/equibop" ]]; then
+if [[ -d "$HOME/.config/equibop/settings" ]]; then
     APPS+=("equibop")
 fi
+if [[ -d "$HOME/.config/Equicord/settings" ]]; then
+    APPS+=("Equicord")
+fi
+
+VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
 
 if [[ -f "$VESKTOP_TEMPLATE" ]] && [[ ${#APPS[@]} -gt 0 ]]; then
     THEME_CONTENT=$(mktemp)
@@ -106,6 +123,80 @@ if [[ -f "$VESKTOP_TEMPLATE" ]] && [[ ${#APPS[@]} -gt 0 ]]; then
         echo "Updated $APP theme: $APP_OUTPUT"
     done
     rm -f "$THEME_CONTENT"
+fi
+
+OPECODE_THEME="$HOME/.config/opencode/themes/matugen.json"
+if [[ -n "${ACCENT_HEX:-}" ]]; then
+    mkdir -p "$(dirname "$OPECODE_THEME")"
+    cat > "$OPECODE_THEME" << EOF
+{
+  "\$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "matugen_bg": "$BG",
+    "matugen_bg_dark": "$SURFACE",
+    "matugen_bg_light": "$SURFACE_LIGHTER",
+    "matugen_fg": "$FG",
+    "matugen_fg_light": "$FG_LIGHT",
+    "matugen_accent": "$PRIMARY",
+    "matugen_secondary": "$FG",
+    "matugen_tertiary": "$SURFACE",
+    "matugen_error": "$ERROR"
+  },
+  "theme": {
+    "primary":              { "dark": "matugen_accent",     "light": "matugen_accent" },
+    "secondary":            { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "accent":               { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "error":                { "dark": "matugen_error",       "light": "matugen_error" },
+    "warning":              { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "success":              { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "info":                 { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "text":                 { "dark": "matugen_fg",          "light": "matugen_fg" },
+    "textMuted":            { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
+    "background":           { "dark": "matugen_bg",          "light": "matugen_bg" },
+    "backgroundPanel":      { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
+    "backgroundElement":    { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
+    "border":               { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
+    "borderActive":         { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "borderSubtle":         { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
+    "diffAdded":            { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "diffRemoved":          { "dark": "matugen_error",       "light": "matugen_error" },
+    "diffContext":          { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
+    "diffHunkHeader":       { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "diffHighlightAdded":   { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "diffHighlightRemoved": { "dark": "matugen_error",       "light": "matugen_error" },
+    "diffAddedBg":          { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
+    "diffRemovedBg":        { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
+    "diffContextBg":        { "dark": "matugen_bg",          "light": "matugen_bg" },
+    "diffLineNumber":       { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
+    "diffAddedLineNumberBg":    { "dark": "matugen_bg_dark", "light": "matugen_bg_dark" },
+    "diffRemovedLineNumberBg":  { "dark": "matugen_bg_dark", "light": "matugen_bg_dark" },
+    "markdownText":         { "dark": "matugen_fg",          "light": "matugen_fg" },
+    "markdownHeading":      { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "markdownLink":         { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "markdownLinkText":     { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "markdownCode":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "markdownBlockQuote":   { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
+    "markdownEmph":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "markdownStrong":       { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "markdownHorizontalRule": { "dark": "matugen_bg_light",  "light": "matugen_bg_light" },
+    "markdownListItem":     { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "markdownListEnumeration": { "dark": "matugen_tertiary", "light": "matugen_tertiary" },
+    "markdownImage":        { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "markdownImageText":    { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "markdownCodeBlock":    { "dark": "matugen_fg",          "light": "matugen_fg" },
+    "syntaxComment":        { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
+    "syntaxKeyword":        { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "syntaxFunction":       { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "syntaxVariable":       { "dark": "matugen_fg",          "light": "matugen_fg" },
+    "syntaxString":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "syntaxNumber":         { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "syntaxType":           { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "syntaxOperator":       { "dark": "matugen_accent",      "light": "matugen_accent" },
+    "syntaxPunctuation":    { "dark": "matugen_fg_light",    "light": "matugen_fg_light" }
+  }
+}
+EOF
+    echo "Updated opencode theme: $OPECODE_THEME"
 fi
 
 echo "Theme generation complete!"
