@@ -17,6 +17,13 @@ QtObject {
     property color warning: "#ddc48c"
     property color green: "#A6DA95"
     property color blue: "#8AADF4"
+    readonly property string surfaceContainer: surface
+    readonly property string surfaceHover: surfaceLighter
+    readonly property string border: surfaceLighter
+    readonly property string textDisabled: fg + "80"
+    readonly property string textAccent: primary
+    readonly property string success: green
+    readonly property string info: blue
     readonly property real barOpacity: 0.65
     readonly property int barHeight: 38
     readonly property string home: Quickshell.env("HOME")

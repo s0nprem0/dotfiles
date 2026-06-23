@@ -1,0 +1,13 @@
+pragma Singleton
+QtObject {
+    property color bg: "#{{bg_hex}}"
+    property color fg: "#{{fg_hex}}"
+    property color surface: "#{{surface_hex}}"
+    property color surfaceLighter: "#{{surface_light_hex}}"
+    property color primary: "#{{primary_hex}}"
+    property color muted: "#{{fg_hex}}"
+    property color error: "#{{error_hex}}"
+    property color warning: "#{{warning_hex}}"
+    property color green: "#{{green_hex}}"
+    property color blue: "#{{blue_hex}}"
+}
