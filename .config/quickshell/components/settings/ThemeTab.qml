@@ -218,6 +218,80 @@ Rectangle {
             color: Qt.alpha(Theme.primary, 0.2)
         }
 
+        // ── Glass Effect Toggle ──
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 28
+            color: glassMa.containsMouse ? Theme.primary : Qt.alpha(Theme.primary, 0.15)
+            border.width: 1
+            border.color: Qt.alpha(Theme.primary, 0.3)
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
+                spacing: 8
+
+                Text {
+                    text: "󰖆"
+                    color: glassMa.containsMouse ? Theme.bg : Theme.fg
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                }
+
+                Text {
+                    text: Theme.glassEnabled ? "Glass Effect: ON" : "Glass Effect: OFF"
+                    color: glassMa.containsMouse ? Theme.bg : Theme.primary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 9
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    implicitWidth: 24
+                    implicitHeight: 14
+                    color: Theme.glassEnabled ? Theme.primary : Theme.surfaceLighter
+                    border.width: 1
+                    border.color: Theme.primary
+                    radius: 7
+
+                    Rectangle {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        implicitWidth: 10
+                        implicitHeight: 10
+                        color: Theme.bg
+                        radius: 5
+                        x: Theme.glassEnabled ? 10 : 1
+                        Behavior on x {
+                            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                        }
+                    }
+                }
+            }
+
+            MouseArea {
+                id: glassMa
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    Theme.glassEnabled = !Theme.glassEnabled;
+                    var proc = Qt.createQmlObject('Quickshell.Io.Process', this);
+                    proc.command = ["sh", "-c", "echo " + (Theme.glassEnabled ? "true" : "false") + " > ~/.cache/quickshell/glass_state"];
+                    proc.running = true;
+                }
+            }
+        }
+
+        // ── Divider ──
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Qt.alpha(Theme.primary, 0.2)
+        }
+
         // ── Presets ──
         Text {
             text: "PRESETS"
@@ -252,6 +326,8 @@ Rectangle {
                         spacing: 8
 
                         Text {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
                             text: "󰸉"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
@@ -259,15 +335,20 @@ Rectangle {
                         }
 
                         Text {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
                             text: "Auto (wallpaper-based)"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
                             font.pixelSize: 9
                             font.bold: true
                             Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
 
                         Text {
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
                             text: root.currentMode === "wallpaper" ? "active" : ""
                             color: Theme.green
                             font.family: Theme.fontFamily

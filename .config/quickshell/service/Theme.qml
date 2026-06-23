@@ -31,6 +31,8 @@ QtObject {
     readonly property string cacheDir: home + "/.cache/quickshell"
     readonly property string tmpDir: "/tmp/quickshell"
     property FileView colorsWatcher
+    property bool glassEnabled: true
+    property color popupBgColor: glassEnabled ? Qt.rgba(bg.r, bg.g, bg.b, 0.5) : bg
 
     function bin(name) {
         return helperDir + "/" + name;
@@ -238,4 +240,14 @@ QtObject {
         onFileChanged: reload()
     }
 
+    FileView {
+        id: glassStateWatcher
+        path: "file://" + home + "/.cache/quickshell/glass_state"
+        watchChanges: true
+        onLoaded: {
+            var val = glassStateWatcher.text().trim();
+            glassEnabled = (val !== "false");
+        }
+        onFileChanged: reload()
+    }
 }

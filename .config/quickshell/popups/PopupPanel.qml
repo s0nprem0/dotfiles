@@ -9,7 +9,7 @@ import Quickshell.Wayland
 Item {
     id: root
 
-    // ── Configuration ──
+    property string popupName: "default"
     property string anchorSide: "left"
     property int panelWidth: 340
     property int panelMinHeight: 0
@@ -19,23 +19,31 @@ Item {
     property int introDuration: 120
     property int exitDuration: 100
     property int contentMargin: 10
-    // ── State ──
     property bool showPopup: false
-    // ── Content (set by popup file) ──
     property Component contentComponent
-    // ── Per-screen Windows ──
     property var screenWins: new Map()
 
-    // ── Signals ──
     signal beforeOpen()
     signal afterOpen()
     signal beforeClose()
+
+    property int savedSection: 0
+    property int savedSubIndex: 0
+    property int progressHeight: 0
+    property int progressWidth: 0
 
     function closePopup() {
         root.showPopup = false;
     }
 
-    // ── Show / Hide ──
+    function saveFocusState(sec, sub) {
+        root.savedSection = sec;
+        root.savedSubIndex = sub;
+        if (FocusState) {
+            FocusState.saveState(root.popupName, sec, sub);
+        }
+    }
+
     onShowPopupChanged: {
         if (root.showPopup) {
             for (var w of screenWins.values()) {
@@ -112,6 +120,23 @@ Item {
                         if (event.key === Qt.Key_Escape) {
                             root.closePopup();
                             event.accepted = true;
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: root.progressHeight
+                        color: Theme.primary
+                        opacity: root.progressWidth > 0 ? 0.8 : 0
+                        width: {
+                            var contentWidth = contentLoader.implicitWidth || parent.width;
+                            var maxWidth = parent.width - root.contentMargin * 2;
+                            return (root.progressWidth / contentWidth) * maxWidth;
+                        }
+                        Behavior on width {
+                            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
                         }
                     }
 
