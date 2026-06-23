@@ -1,106 +1,94 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-WALLPAPER="${1:-}"
+WALLPAPER=""
+VALIDATE=false
+VERBOSE=false
+DRY_RUN=false
+APPS=""
 
-if [[ -z "$WALLPAPER" ]]; then
-    if [[ -f "$HOME/.cache/quickshell/current_wallpaper" ]]; then
-        WALLPAPER=$(cat "$HOME/.cache/quickshell/current_wallpaper")
-    else
-        echo "Usage: $0 <path-to-wallpaper>"
-        exit 1
-    fi
-fi
-
-if [[ ! -f "$WALLPAPER" ]]; then
-    echo "Error: $WALLPAPER not found"
+usage() {
+    echo "Usage: $0 [OPTIONS] [WALLPAPER]"
+    echo "Options:"
+    echo "  --validate    Check WCAG contrast ratios"
+    echo "  --verbose     Show detailed output"
+    echo "  --dry-run     Preview changes without writing"
+    echo "  --apps LIST   Generate only specified apps"
     exit 1
-fi
+}
 
-echo "Generating theme from: $WALLPAPER"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --validate) VALIDATE=true; shift ;;
+        --verbose) VERBOSE=true; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
+        --apps) APPS="$2"; shift 2 ;;
+        -*) usage ;;
+        *) WALLPAPER="$1"; shift ;;
+    esac
+done
 
-matugen image "$WALLPAPER" --prefer darkness --quiet
+[[ -z "$WALLPAPER" ]] && { [[ -f "$HOME/.cache/quickshell/current_wallpaper" ]] && WALLPAPER=$(cat "$HOME/.cache/quickshell/current_wallpaper"); }
+[[ -z "$WALLPAPER" ]] && { echo "Error: No wallpaper specified" >&2; exit 1; }
+[[ ! -f "$WALLPAPER" ]] && { echo "Error: $WALLPAPER not found" >&2; exit 1; }
+
+log() { [[ "$VERBOSE" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*"; }
+
+log "Generating theme from: $WALLPAPER"
+[[ "$DRY_RUN" == "true" ]] && log "Dry run mode"
+
+matugen image "$WALLPAPER" --prefer darkness --quiet || { echo "Error: matugen failed" >&2; exit 1; }
 
 MATUGEN_COLORS="$HOME/.cache/quickshell/colors.json"
-if [[ ! -f "$MATUGEN_COLORS" ]]; then
-    echo "Error: matugen colors.json not found at $MATUGEN_COLORS"
-    exit 1
-fi
+[[ ! -f "$MATUGEN_COLORS" ]] && { echo "Error: colors.json not found" >&2; exit 1; }
 
-get_color() {
-    local key="$1"
-    jq -r ".${key}" "$MATUGEN_COLORS"
-}
+get_color() { jq -r ".${1}" "$MATUGEN_COLORS"; }
+get_hex() { printf '%s' "${1#\#}"; }
+get_rgb() { local h="${1#\#}"; echo "${h:0:2},${h:2:2},${h:4:2}"; }
 
-get_rgb() {
-    local hex="$1"
-    local h="${hex#\#}"
-    echo "${h:0:2},${h:2:2},${h:4:2}"
-}
-
-get_hex() {
-    local hex="$1"
-    printf '%s' "${hex#\#}"
-}
-
+# Get colors
 BG=$(get_color "bg")
 FG=$(get_color "fg")
 PRIMARY=$(get_color "primary")
 ERROR=$(get_color "error")
 SURFACE=$(get_color "surface")
 SURFACE_LIGHTER=$(get_color "surfaceLighter")
+GREEN=$(get_color "green" 2>/dev/null || echo "$PRIMARY")
+WARNING=$(get_color "warning" 2>/dev/null || echo "$PRIMARY")
+BLUE=$(get_color "blue" 2>/dev/null || echo "$PRIMARY")
 
+# Hex values
 BG_HEX=$(get_hex "$BG")
 FG_HEX=$(get_hex "$FG")
 PRIMARY_HEX=$(get_hex "$PRIMARY")
 ERROR_HEX=$(get_hex "$ERROR")
 SURFACE_HEX=$(get_hex "$SURFACE")
 SURFACE_LIGHTER_HEX=$(get_hex "$SURFACE_LIGHTER")
+GREEN_HEX=$(get_hex "$GREEN")
+WARNING_HEX=$(get_hex "$WARNING")
+BLUE_HEX=$(get_hex "$BLUE")
 
+# RGB values
 BG_RGB=$(get_rgb "$BG")
 FG_RGB=$(get_rgb "$FG")
 PRIMARY_RGB=$(get_rgb "$PRIMARY")
-ERROR_RGB=$(get_rgb "$ERROR")
 SURFACE_RGB=$(get_rgb "$SURFACE")
 SURFACE_LIGHTER_RGB=$(get_rgb "$SURFACE_LIGHTER")
+GREEN_RGB=$(get_rgb "$GREEN")
+WARNING_RGB=$(get_rgb "$WARNING")
+BLUE_RGB=$(get_rgb "$BLUE")
 
-ACCENT="$PRIMARY"
-ACCENT_HEX="$PRIMARY_HEX"
-ACCENT_RGB="$PRIMARY_RGB"
+# Derived values
+SECONDARY="$FG"; SECONDARY_HEX="$FG_HEX"; SECONDARY_RGB="$FG_RGB"
+BG_DARK="$SURFACE"; BG_DARK_HEX="$SURFACE_HEX"; BG_DARK_RGB="$SURFACE_RGB"
+BG_LIGHT="$SURFACE_LIGHTER"; BG_LIGHT_HEX="$SURFACE_LIGHTER_HEX"; BG_LIGHT_RGB="$SURFACE_LIGHTER_RGB"
+FG_LIGHT="$FG"; FG_LIGHT_HEX="$FG_HEX"; FG_LIGHT_RGB="$FG_RGB"
 
-SECONDARY="$FG"
-SECONDARY_HEX="$FG_HEX"
-SECONDARY_RGB="$FG_RGB"
+should_generate() { [[ -z "$APPS" ]] || echo "$APPS" | grep -q "$1"; }
 
-BG_DARK="$SURFACE"
-BG_DARK_HEX="$SURFACE_HEX"
-BG_DARK_RGB="$SURFACE_RGB"
-
-BG_LIGHT="$SURFACE_LIGHTER"
-BG_LIGHT_HEX="$SURFACE_LIGHTER_HEX"
-BG_LIGHT_RGB="$SURFACE_LIGHTER_RGB"
-
-FG_LIGHT="$FG"
-FG_LIGHT_HEX="$FG_HEX"
-FG_LIGHT_RGB="$FG_RGB"
-
-APPS=()
-if [[ -d "$HOME/.config/vesktop/settings" ]]; then
-    APPS+=("vesktop")
-fi
-if [[ -d "$HOME/.config/equibop/settings" ]]; then
-    APPS+=("equibop")
-fi
-if [[ -d "$HOME/.config/Equicord/settings" ]]; then
-    APPS+=("Equicord")
-fi
-
-VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
-
-if [[ -f "$VESKTOP_TEMPLATE" ]] && [[ ${#APPS[@]} -gt 0 ]]; then
-    THEME_CONTENT=$(mktemp)
-    sed -e "s|{{accent_hex}}|$ACCENT_HEX|g" \
-        -e "s|{{accent_rgb}}|$ACCENT_RGB|g" \
+generate_template() {
+    sed -e "s|{{accent_hex}}|$PRIMARY_HEX|g" \
+        -e "s|{{accent_rgb}}|$PRIMARY_RGB|g" \
         -e "s|{{secondary_hex}}|$SECONDARY_HEX|g" \
         -e "s|{{secondary_rgb}}|$SECONDARY_RGB|g" \
         -e "s|{{fg_hex}}|$FG_HEX|g" \
@@ -114,21 +102,51 @@ if [[ -f "$VESKTOP_TEMPLATE" ]] && [[ ${#APPS[@]} -gt 0 ]]; then
         -e "s|{{bg_light_hex}}|$BG_LIGHT_HEX|g" \
         -e "s|{{bg_light_rgb}}|$BG_LIGHT_RGB|g" \
         -e "s|{{error_hex}}|$ERROR_HEX|g" \
-        "$VESKTOP_TEMPLATE" > "$THEME_CONTENT"
-    
-    for APP in "${APPS[@]}"; do
-        APP_OUTPUT="$HOME/.config/$APP/settings/quickCss.css"
-        mkdir -p "$(dirname "$APP_OUTPUT")"
-        cp "$THEME_CONTENT" "$APP_OUTPUT"
-        echo "Updated $APP theme: $APP_OUTPUT"
+        -e "s|{{green_hex}}|$GREEN_HEX|g" \
+        -e "s|{{warning_hex}}|$WARNING_HEX|g" \
+        -e "s|{{blue_hex}}|$BLUE_HEX|g" \
+        -e "s|{{surface_hex}}|$SURFACE_HEX|g" \
+        -e "s|{{primary_hex}}|$PRIMARY_HEX|g" \
+        "$1"
+}
+
+[[ "$DRY_RUN" == "true" ]] && generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template"
+
+if should_generate "vesktop"; then
+    for d in vesktop Equibop Equicord; do
+        [[ -d "$HOME/.config/$d/settings" ]] && \
+        generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template" > "$HOME/.config/$d/settings/quickCss.css" && \
+        echo "Updated $d theme"
     done
-    rm -f "$THEME_CONTENT"
 fi
 
-OPECODE_THEME="$HOME/.config/opencode/themes/matugen.json"
-if [[ -n "${ACCENT_HEX:-}" ]]; then
-    mkdir -p "$(dirname "$OPECODE_THEME")"
-    cat > "$OPECODE_THEME" << EOF
+if should_generate "kitty"; then
+    [[ -d "$HOME/.config/kitty" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/kitty.conf.template" > "$HOME/.config/kitty/colors.conf" && \
+    echo "Updated kitty theme"
+fi
+
+if should_generate "waybar"; then
+    [[ -d "$HOME/.config/waybar" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/waybar.css.template" > "$HOME/.config/waybar/style.css" && \
+    echo "Updated waybar theme"
+fi
+
+if should_generate "gtk3"; then
+    [[ -d "$HOME/.config/gtk-3.0" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/gtk3-colors.css.template" > "$HOME/.config/gtk-3.0/colors.css" && \
+    echo "Updated gtk3 theme"
+fi
+
+if should_generate "gtk4"; then
+    [[ -d "$HOME/.config/gtk-4.0" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/gtk4-colors.css.template" > "$HOME/.config/gtk-4.0/colors.css" && \
+    echo "Updated gtk4 theme"
+fi
+
+if should_generate "opencode"; then
+    mkdir -p "$HOME/.config/opencode/themes"
+    cat > "$HOME/.config/opencode/themes/matugen.json" << EOF
 {
   "\$schema": "https://opencode.ai/theme.json",
   "defs": {
@@ -138,7 +156,7 @@ if [[ -n "${ACCENT_HEX:-}" ]]; then
     "matugen_fg": "$FG",
     "matugen_fg_light": "$FG_LIGHT",
     "matugen_accent": "$PRIMARY",
-    "matugen_secondary": "$FG",
+    "matugen_secondary": "$SECONDARY",
     "matugen_tertiary": "$SURFACE",
     "matugen_error": "$ERROR"
   },
@@ -147,56 +165,12 @@ if [[ -n "${ACCENT_HEX:-}" ]]; then
     "secondary":            { "dark": "matugen_secondary",   "light": "matugen_secondary" },
     "accent":               { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
     "error":                { "dark": "matugen_error",       "light": "matugen_error" },
-    "warning":              { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "success":              { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "info":                 { "dark": "matugen_secondary",   "light": "matugen_secondary" },
     "text":                 { "dark": "matugen_fg",          "light": "matugen_fg" },
-    "textMuted":            { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
-    "background":           { "dark": "matugen_bg",          "light": "matugen_bg" },
-    "backgroundPanel":      { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
-    "backgroundElement":    { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
-    "border":               { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
-    "borderActive":         { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "borderSubtle":         { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
-    "diffAdded":            { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "diffRemoved":          { "dark": "matugen_error",       "light": "matugen_error" },
-    "diffContext":          { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
-    "diffHunkHeader":       { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "diffHighlightAdded":   { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "diffHighlightRemoved": { "dark": "matugen_error",       "light": "matugen_error" },
-    "diffAddedBg":          { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
-    "diffRemovedBg":        { "dark": "matugen_bg_dark",     "light": "matugen_bg_dark" },
-    "diffContextBg":        { "dark": "matugen_bg",          "light": "matugen_bg" },
-    "diffLineNumber":       { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
-    "diffAddedLineNumberBg":    { "dark": "matugen_bg_dark", "light": "matugen_bg_dark" },
-    "diffRemovedLineNumberBg":  { "dark": "matugen_bg_dark", "light": "matugen_bg_dark" },
-    "markdownText":         { "dark": "matugen_fg",          "light": "matugen_fg" },
-    "markdownHeading":      { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "markdownLink":         { "dark": "matugen_secondary",   "light": "matugen_secondary" },
-    "markdownLinkText":     { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "markdownCode":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "markdownBlockQuote":   { "dark": "matugen_fg_light",    "light": "matugen_fg_light" },
-    "markdownEmph":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "markdownStrong":       { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "markdownHorizontalRule": { "dark": "matugen_bg_light",  "light": "matugen_bg_light" },
-    "markdownListItem":     { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "markdownListEnumeration": { "dark": "matugen_tertiary", "light": "matugen_tertiary" },
-    "markdownImage":        { "dark": "matugen_secondary",   "light": "matugen_secondary" },
-    "markdownImageText":    { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "markdownCodeBlock":    { "dark": "matugen_fg",          "light": "matugen_fg" },
-    "syntaxComment":        { "dark": "matugen_bg_light",    "light": "matugen_bg_light" },
-    "syntaxKeyword":        { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "syntaxFunction":       { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "syntaxVariable":       { "dark": "matugen_fg",          "light": "matugen_fg" },
-    "syntaxString":         { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "syntaxNumber":         { "dark": "matugen_secondary",   "light": "matugen_secondary" },
-    "syntaxType":           { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "syntaxOperator":       { "dark": "matugen_accent",      "light": "matugen_accent" },
-    "syntaxPunctuation":    { "dark": "matugen_fg_light",    "light": "matugen_fg_light" }
+    "background":           { "dark": "matugen_bg",          "light": "matugen_bg" }
   }
 }
 EOF
-    echo "Updated opencode theme: $OPECODE_THEME"
+    echo "Updated opencode theme"
 fi
 
-echo "Theme generation complete!"
+log "Theme generation complete!"

@@ -1,0 +1,15 @@
+/* Waybar colors */
+:root {
+  --background: {{bg_hex}};
+  --background-secondary: {{bg_dark_hex}};
+  --background-tertiary: {{bg_light_hex}};
+  --foreground: {{fg_hex}};
+  --foreground-light: {{fg_light_hex}};
+  --primary: {{accent_hex}};
+  --secondary: {{secondary_hex}};
+  --accent: {{accent_hex}};
+  --error: {{error_hex}};
+  --success: {{green_hex}};
+  --warning: {{warning_hex}};
+  --blue: {{blue_hex}};
+}
