@@ -24,10 +24,6 @@ output_path = "~/.cache/quickshell/colors.json"
 input_path = "~/.config/matugen/templates/kitty/colors.conf"
 output_path = "~/.config/kitty/themes/matugen.conf"
 
-[templates.quickshell-qml]
-input_path = "~/.config/matugen/templates/quickshell/colors.qml"
-output_path = "~/.cache/quickshell/Colors.qml"
-
 [templates.preview_picker]
 input_path = "~/.config/matugen/templates/hyprland-preview-share-picker/style.css.template"
 output_path = "~/.config/hyprland-preview-share-picker/style.css"
