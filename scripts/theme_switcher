@@ -37,6 +37,11 @@ get_rgb() {
     echo "${hex:1:2},${hex:3:2},${hex:5:2}"
 }
 
+get_hex() {
+    local hex="$1"
+    echo "#${hex:0:2}${hex:2:2}${hex:4:2}"
+}
+
 ACCENT=$(get_color "color.accent")
 SECONDARY=$(get_color "color.secondary")
 FG=$(get_color "color.on_surface")
@@ -44,6 +49,16 @@ FG_LIGHT=$(get_color "color.on_surface_variant")
 BG=$(get_color "color.surface")
 BG_DARK=$(get_color "color.surface_variant")
 BG_LIGHT=$(get_color "color.surface_tint")
+ERROR=$(get_color "color.error")
+
+ACCENT_HEX=$(get_hex "$ACCENT")
+SECONDARY_HEX=$(get_hex "$SECONDARY")
+FG_HEX=$(get_hex "$FG")
+FG_LIGHT_HEX=$(get_hex "$FG_LIGHT")
+BG_HEX=$(get_hex "$BG")
+BG_DARK_HEX=$(get_hex "$BG_DARK")
+BG_LIGHT_HEX=$(get_hex "$BG_LIGHT")
+ERROR_HEX=$(get_hex "$ERROR")
 
 ACCENT_RGB=$(get_rgb "$ACCENT")
 SECONDARY_RGB=$(get_rgb "$SECONDARY")
@@ -51,18 +66,28 @@ FG_RGB=$(get_rgb "$FG")
 FG_LIGHT_RGB=$(get_rgb "$FG_LIGHT")
 BG_RGB=$(get_rgb "$BG")
 BG_DARK_RGB=$(get_rgb "$BG_DARK")
+BG_LIGHT_RGB=$(get_rgb "$BG_LIGHT")
+ERROR_RGB=$(get_rgb "$ERROR")
 
 VESKTOP_TEMPLATE="$HOME/.config/matugen/templates/vesktop/quickCss.css.template"
 VESKTOP_OUTPUT="$HOME/.config/vesktop/settings/quickCss.css"
 
 if [[ -f "$VESKTOP_TEMPLATE" ]]; then
-    sed -e "s|{{accent_rgb}}|$ACCENT_RGB|g" \
+    sed -e "s|{{accent_hex}}|$ACCENT_HEX|g" \
+        -e "s|{{accent_rgb}}|$ACCENT_RGB|g" \
+        -e "s|{{secondary_hex}}|$SECONDARY_HEX|g" \
         -e "s|{{secondary_rgb}}|$SECONDARY_RGB|g" \
+        -e "s|{{fg_hex}}|$FG_HEX|g" \
         -e "s|{{fg_rgb}}|$FG_RGB|g" \
+        -e "s|{{fg_light_hex}}|$FG_LIGHT_HEX|g" \
         -e "s|{{fg_light_rgb}}|$FG_LIGHT_RGB|g" \
+        -e "s|{{bg_hex}}|$BG_HEX|g" \
         -e "s|{{bg_rgb}}|$BG_RGB|g" \
+        -e "s|{{bg_dark_hex}}|$BG_DARK_HEX|g" \
         -e "s|{{bg_dark_rgb}}|$BG_DARK_RGB|g" \
+        -e "s|{{bg_light_hex}}|$BG_LIGHT_HEX|g" \
         -e "s|{{bg_light_rgb}}|$BG_LIGHT_RGB|g" \
+        -e "s|{{error_hex}}|$ERROR_HEX|g" \
         "$VESKTOP_TEMPLATE" > "$VESKTOP_OUTPUT"
     echo "Updated Vesktop theme: $VESKTOP_OUTPUT"
 fi
