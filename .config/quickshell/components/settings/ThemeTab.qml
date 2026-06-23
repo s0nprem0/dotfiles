@@ -271,15 +271,15 @@ Rectangle {
                 }
             }
 
-MouseArea {
-                        id: glassMa
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            Theme.setGlassState(!Theme.glassEnabled);
-                        }
-                    }
+            MouseArea {
+                id: glassMa
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    Theme.setGlassState(!Theme.glassEnabled);
+                }
+            }
         }
 
         // ── Divider ──
