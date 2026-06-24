@@ -119,7 +119,7 @@ generate_template() {
 [[ "$DRY_RUN" == "true" ]] && generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template"
 
 if should_generate "vesktop"; then
-    for d in vesktop Equibop equibop Equicord; do
+    for d in vesktop equibop Equicord; do
         [[ -d "$HOME/.config/$d/settings" ]] && \
         generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template" > "$HOME/.config/$d/settings/quickCss.css" && \
         echo "Updated $d theme"
