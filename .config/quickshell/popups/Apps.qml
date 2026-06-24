@@ -16,6 +16,7 @@ Window {
     property string searchText: ""
     property int selectedIndex: 0
     property int _fileSeq: 0
+    property int activeTab: 0
 
     function fuzzyMatch(str, query) {
         if (query === "")
@@ -138,6 +139,17 @@ Window {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--open-file", item.path]);
             } else if (item.typeLabel === "WEB") {
                 Quickshell.execDetached(["xdg-open", item.url]);
+            } else if (item.isIndexAction) {
+                Quickshell.execDetached([Theme.bin("get_apps_list"), "--index-files"]);
+                var idx = root.selectedIndex;
+                var display = root.displayData.slice();
+                display[idx] = {
+                    typeLabel: "INDEX",
+                    name: "INDEXING...",
+                    icon: "󰇚",
+                    comment: "scanning home directory, this may take a moment..."
+                };
+                root.displayData = display;
             } else if (item.exec) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--launch", item.name]);
                 Quickshell.execDetached(["sh", "-c", item.exec]);
@@ -163,10 +175,11 @@ Window {
                     var items = [{ typeLabel: "HEADER", name: "FILES" }];
                     if (results.length === 0) {
                         items.push({
-                            typeLabel: "SEARCH",
-                            name: "NO FILES FOUND",
-                            icon: "󰉋",
-                            comment: "run --index-files first to build index"
+                            typeLabel: "INDEX",
+                            name: "INDEX FILES NOW",
+                            icon: "󰇚",
+                            comment: "scan home directory with fd (excludes .git, node_modules, .cache, target)",
+                            isIndexAction: true
                         });
                     } else {
                         for (let i = 0; i < Math.min(results.length, 50); i++) {
@@ -196,6 +209,7 @@ Window {
     visible: showPopup
     onVisibleChanged: {
         if (visible) {
+            root.activeTab = 0;
             rebuildDisplay();
             searchField.forceActiveFocus();
         } else {
@@ -305,13 +319,6 @@ Window {
                 color: Theme.surface
                 border.width: 0
 
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: 2
-                    color: searchField.activeFocus ? Theme.primary : Theme.surfaceLighter
-                }
-
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 16
@@ -331,7 +338,7 @@ Window {
                         Text {
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
-                            text: "SEARCH APPS, !g, !yt, @files..."
+                            text: root.activeTab === 0 ? "SEARCH APPS, !g, !yt, @files..." : (root.activeTab === 1 ? "SEARCH THE WEB..." : "SEARCH FILES...")
                             color: Theme.muted
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
@@ -351,6 +358,9 @@ Window {
                             clip: true
                             onTextChanged: {
                                 root.searchText = text;
+                                if (text.startsWith("!")) root.activeTab = 1;
+                                else if (text.startsWith("@")) root.activeTab = 2;
+                                else root.activeTab = 0;
                                 searchDebounce.restart();
                             }
                             Keys.onPressed: (event) => {
@@ -365,6 +375,13 @@ Window {
                                     event.accepted = true;
                                 } else if (event.key === Qt.Key_Escape) {
                                     root.showPopup = false;
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Tab) {
+                                    var t = searchField.text.replace(/^[!@]/, "");
+                                    root.activeTab = (root.activeTab + 1) % 3;
+                                    if (root.activeTab === 1) searchField.text = "!" + t;
+                                    else if (root.activeTab === 2) searchField.text = "@" + t;
+                                    else searchField.text = t;
                                     event.accepted = true;
                                 }
                             }
@@ -399,17 +416,119 @@ Window {
                 }
             }
 
+            // ── Row 2.5: Tab Switcher ──
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 32
+                color: Theme.surface
+                visible: AppsService.isLoaded
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 16
+                    spacing: 0
+
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 2
+                            color: root.activeTab === 0 ? Theme.primary : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "APPS"
+                            color: root.activeTab === 0 ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                var t = searchField.text.replace(/^[!@]/, "");
+                                searchField.text = t;
+                                root.activeTab = 0;
+                                searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 2
+                            color: root.activeTab === 1 ? Theme.primary : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "WEB"
+                            color: root.activeTab === 1 ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                var t = searchField.text.replace(/^[!@]/, "");
+                                searchField.text = "!" + t;
+                                root.activeTab = 1;
+                                searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 2
+                            color: root.activeTab === 2 ? Theme.primary : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "FILES"
+                            color: root.activeTab === 2 ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                var t = searchField.text.replace(/^[!@]/, "");
+                                searchField.text = "@" + t;
+                                root.activeTab = 2;
+                                searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── Row 2.5: Active Windows ──
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 80
+                Layout.preferredHeight: 52
                 color: Theme.surface
                 visible: Hyprland.toplevels.length > 0
 
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 6
-                    spacing: 4
+                    spacing: 2
 
                     Text {
                         text: "ACTIVE WINDOWS (" + Hyprland.toplevels.length + ")"
@@ -424,7 +543,7 @@ Window {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         orientation: ListView.Horizontal
-                        spacing: 6
+                        spacing: 4
                         clip: true
                         model: Hyprland.toplevels
 
@@ -439,59 +558,54 @@ Window {
                         delegate: Item {
                             required property var modelData
 
-                            width: 140
+                            width: 36
                             height: ListView.view.height
 
                             Rectangle {
                                 anchors.fill: parent
                                 color: Theme.surfaceLighter
-                                border.width: 1
-                                border.color: Theme.muted
+                                border.width: winMa.containsMouse ? 1 : 0
+                                border.color: winMa.containsMouse ? Theme.primary : "transparent"
 
-                                ColumnLayout {
+                                ScreencopyView {
+                                    id: scrCap
                                     anchors.fill: parent
-                                    spacing: 0
+                                    anchors.margins: 1
+                                    captureSource: modelData
+                                    live: true
+                                    visible: hasContent
+                                }
 
-                                    Item {
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        Layout.margins: 2
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰇄"
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 12
+                                    visible: !scrCap.hasContent
+                                }
 
-                                        ScreencopyView {
-                                            id: scrCap
-                                            anchors.fill: parent
-                                            captureSource: modelData
-                                            live: true
-                                            visible: hasContent
-                                        }
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "󰇄"
-                                            color: Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: 20
-                                            visible: !scrCap.hasContent
-                                        }
-                                    }
+                                Rectangle {
+                                    anchors.top: parent.top
+                                    anchors.left: parent.left
+                                    width: 14
+                                    height: 14
+                                    color: Theme.primary
+                                    visible: modelData.workspace !== undefined
 
                                     Text {
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: 4
-                                        Layout.rightMargin: 4
-                                        Layout.bottomMargin: 4
-                                        text: (modelData.appId || "").toUpperCase()
-                                        color: Theme.fg
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        anchors.centerIn: parent
+                                        text: modelData.workspace ? modelData.workspace.id.toString() : ""
+                                        color: Theme.bg
+                                        font.pixelSize: 7
                                         font.bold: true
-                                        elide: Text.ElideRight
-                                        maximumLineCount: 1
                                     }
                                 }
 
                                 MouseArea {
+                                    id: winMa
                                     anchors.fill: parent
+                                    hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         modelData.activate();

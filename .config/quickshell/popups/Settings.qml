@@ -45,27 +45,27 @@ Window {
     property var sysActions: [{
         "icon": "󰌾",
         "label": "Lock",
-        "cmd": ["hyprlock"],
+        "cmd": [Theme.bin("powerctl.sh"), "lock"],
         "confirm": false
     }, {
         "icon": "󰍃",
         "label": "Logout",
-        "cmd": ["hyprctl", "dispatch", "exit"],
+        "cmd": [Theme.bin("powerctl.sh"), "logout"],
         "confirm": true
     }, {
         "icon": "󰤄",
         "label": "Sleep",
-        "cmd": ["systemctl", "suspend"],
+        "cmd": [Theme.bin("powerctl.sh"), "sleep"],
         "confirm": true
     }, {
         "icon": "󰜉",
         "label": "Reboot",
-        "cmd": ["systemctl", "reboot"],
+        "cmd": [Theme.bin("powerctl.sh"), "reboot"],
         "confirm": true
     }, {
         "icon": "󰐥",
         "label": "Shutdown",
-        "cmd": ["systemctl", "poweroff"],
+        "cmd": [Theme.bin("powerctl.sh"), "poweroff"],
         "confirm": true
     }]
     property var aboutRows: [{
