@@ -47,7 +47,7 @@ MATUGEN_COLORS="$HOME/.cache/quickshell/colors.json"
 
 get_color() { jq -r ".${1}" "$MATUGEN_COLORS"; }
 get_hex() { printf '%s' "${1#\#}"; }
-get_rgb() { local h="${1#\#}"; echo "${h:0:2},${h:2:2},${h:4:2}"; }
+get_rgb() { local h="${1#\#}"; printf '%d,%d,%d' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
 
 # Get colors
 BG=$(get_color "bg")
