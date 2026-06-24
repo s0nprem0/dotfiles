@@ -165,8 +165,8 @@ hl.bind(
   { description = "Kbd backlight cycle down" }
 )
 
-hl.bind("Caps_Lock", qs_helper("lock_osd.sh Caps_Lock"), { description = "Caps Lock indicator" })
-hl.bind("Num_Lock", qs_helper("lock_osd.sh Num_Lock"), { description = "Num Lock indicator" })
+hl.bind("Caps_Lock", qs_helper("lock_osd.sh Caps_Lock"), { locked = true, description = "Caps Lock indicator" })
+hl.bind("Num_Lock", qs_helper("lock_osd.sh Num_Lock"), { locked = true, description = "Num Lock indicator" })
 
 hl.bind("XF86AudioNext", exec("playerctl next"), { locked = true, description = "Media: next" })
 hl.bind("XF86AudioPrev", exec("playerctl previous"), { locked = true, description = "Media: previous" })
