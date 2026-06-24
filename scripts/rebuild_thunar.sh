@@ -459,6 +459,19 @@ progressbar progress {
     border-radius: 6px;
 }
 
+/* ── Spinner ───────────────────────────────── */
+spinner:active {
+    color: @primary_color;
+}
+
+spinner:active > image {
+    color: @primary_color;
+}
+
+spinner:disabled {
+    color: alpha(@fg_color, 0.4);
+}
+
 /* ── Scrollbars ────────────────────────────── */
 scrollbar {
     background-color: transparent;
@@ -1137,6 +1150,19 @@ progressbar trough {
 progressbar progress {
     background-color: @primary_color;
     border-radius: 6px;
+}
+
+/* ── Spinner ───────────────────────────────── */
+spinner:active {
+    color: @primary_color;
+}
+
+spinner:active > image {
+    color: @primary_color;
+}
+
+spinner:disabled {
+    color: alpha(@fg_color, 0.4);
 }
 
 /* ── Scrollbars ────────────────────────────── */
