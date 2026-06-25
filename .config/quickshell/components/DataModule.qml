@@ -16,10 +16,16 @@ Item {
 
     function refresh() {
         proc.running = true;
+        if (!pollTimer.running)
+            pollTimer.start();
     }
 
     visible: false
-    onDataReceived: root.backoffMs = 1000
+    onDataReceived: {
+        root.backoffMs = 1000;
+        if (!pollTimer.running)
+            pollTimer.start();
+    }
     Component.onCompleted: {
         startTimer.interval = 1000 + Math.random() * 2000;
         startTimer.restart();
@@ -77,6 +83,8 @@ Item {
                 root.backoffMs = Math.min(root.backoffMs * 2, 30000);
                 crashRestart.interval = root.backoffMs;
                 proc.running = true;
+                if (!pollTimer.running)
+                    pollTimer.start();
             }
         }
     }
@@ -97,7 +105,9 @@ Item {
     Timer {
         id: startTimer
 
+        interval: 1000 + Math.random() * 2000
         repeat: false
+        running: true
         onTriggered: {
             proc.running = true;
             pollTimer.start();
