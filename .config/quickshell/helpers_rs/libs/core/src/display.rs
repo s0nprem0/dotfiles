@@ -70,7 +70,7 @@ pub fn set_mode(mode: DisplayMode, monitors: &[Monitor]) {
         DisplayMode::Duplicate => {
             let internal_mode = get_preferred_mode(monitors, INTERNAL);
             run_keyword(INTERNAL, &format!("mode {} position 0x0 scale 1", internal_mode));
-            run_keyword(EXTERNAL, &format!("mode {} position 0x0 scale 1 mirror {}", INTERNAL));
+            run_keyword(EXTERNAL, &format!("mode {} position 0x0 scale 1 mirror {}", internal_mode, INTERNAL));
         }
         DisplayMode::External if !has_external => {
             notify("No external display");
@@ -135,7 +135,7 @@ pub fn get_monitors() -> Vec<Monitor> {
 
     for line in output.lines() {
         if line.contains("\"name\"") {
-            let name = extract_string(line, "name");
+            let name = extract_string(line, "name").unwrap_or_default();
             let disabled: bool = line.split("\"disabled\"")
                 .nth(1)
                 .and_then(|s| s.split(':').nth(1))

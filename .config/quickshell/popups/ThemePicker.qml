@@ -25,13 +25,13 @@ PopupPanel {
     }
 
     function applyPreset(file) {
-        applyProc.command = [Theme.bin("apply_preset.sh"), file];
+        applyProc.command = [Theme.bin("apply_preset"), file];
         applyProc.running = true;
     }
 
     Process {
         id: listPresetsProc
-        command: [Theme.bin("list_presets.sh")]
+        command: [Theme.bin("list_presets")]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

@@ -1,5 +1,5 @@
 use std::env;
-use core::{DisplayMode, get_current_mode, get_monitors, set_mode, toggle_mode};
+use helpers_rs::{DisplayMode, get_current_mode, get_monitors, set_mode, toggle_mode};
 
 fn main() {
     let args: Vec<String> = env::args().collect();

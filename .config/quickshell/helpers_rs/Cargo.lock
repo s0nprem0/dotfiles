@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "apply_preset"
+version = "0.1.0"
+dependencies = [
+ "helpers_rs",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "battery_daemon"
 version = "0.1.0"
 dependencies = [
@@ -12,8 +21,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "caffeine"
+version = "0.1.0"
+dependencies = [
+ "helpers_rs",
+ "serde",
+]
+
+[[package]]
 name = "check_daemons"
 version = "0.1.0"
+
+[[package]]
+name = "display_toggle"
+version = "0.1.0"
+dependencies = [
+ "helpers_rs",
+]
 
 [[package]]
 name = "get_apps_list"
@@ -87,6 +111,15 @@ name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "list_presets"
+version = "0.1.0"
+dependencies = [
+ "helpers_rs",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "log_battery"

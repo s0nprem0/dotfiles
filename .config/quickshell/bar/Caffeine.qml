@@ -13,13 +13,13 @@ BarModule {
     tooltipText: root.caffeineActive ? "Caffeine: ON (click to disable)" : "Caffeine: OFF (click to enable)"
 
     function toggleCaffeine() {
-        caffeineToggleProc.command = [Theme.bin("caffeine.sh"), "toggle"];
+        caffeineToggleProc.command = [Theme.bin("caffeine"), "toggle"];
         caffeineToggleProc.running = true;
     }
 
     DataModule {
         id: caffeineData
-        path: Theme.bin("caffeine.sh")
+        path: Theme.bin("caffeine")
         args: ["status"]
         interval: 5000
         onDataReceived: function(j) {

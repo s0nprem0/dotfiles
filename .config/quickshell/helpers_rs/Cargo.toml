@@ -18,4 +18,7 @@ members = [
   "bins/screenshot",
   "bins/mtp_notify",
   "bins/display_toggle",
+  "bins/caffeine",
+  "bins/list_presets",
+  "bins/apply_preset",
 ]
