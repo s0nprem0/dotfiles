@@ -1,0 +1,19 @@
+[Base]
+text               = {{fg_hex}}
+subtext            = {{muted_hex}}
+main               = {{bg_hex}}
+main-elevated      = {{surface_hex}}
+highlight          = {{surface_lighter_hex}}
+highlight-elevated = {{surface_lighter_hex}}
+sidebar            = {{bg_hex}}
+player             = {{surface_hex}}
+card               = {{surface_hex}}
+shadow             = {{bg_hex}}
+selected-row       = {{surface_lighter_hex}}
+button             = {{accent_hex}}
+button-secondary   = {{accent_hex}}
+button-active      = {{accent_hex}}
+tab-active         = {{accent_hex}}
+notification       = {{accent_hex}}
+notification-error = {{error_hex}}
+misc               = {{accent_hex}}

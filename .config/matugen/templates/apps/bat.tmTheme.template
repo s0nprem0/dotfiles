@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Matugen</string>
+    <key>settings</key>
+    <array>
+        <dict>
+            <key>settings</key>
+            <dict>
+                <key>background</key>
+                <string>{{bg_hex}}</string>
+                <key>foreground</key>
+                <string>{{fg_hex}}</string>
+                <key>caret</key>
+                <string>{{accent_hex}}</string>
+                <key>selection</key>
+                <string>{{surface_lighter_hex}}</string>
+                <key>lineHighlight</key>
+                <string>{{surface_hex}}</string>
+                <key>invisibles</key>
+                <string>{{muted_hex}}</string>
+            </dict>
+        </dict>
+    </array>
+    <key>uuid</key>
+    <string>matugen-bat-theme</string>
+</dict>
+</plist>

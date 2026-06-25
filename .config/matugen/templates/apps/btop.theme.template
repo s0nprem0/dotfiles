@@ -1,0 +1,14 @@
+theme_dir = "${USER_CONFIG_DIR}/themes"
+color_theme = "matugen"
+
+[matugen]
+main_bg = "{{bg_hex}}"
+main_fg = "{{fg_hex}}"
+title = "{{accent_hex}}"
+hi_fg = "{{accent_hex}}"
+selected_bg = "{{surface_lighter_hex}}"
+selected_fg = "{{accent_hex}}"
+inactive_fg = "{{muted_hex}}"
+proc_mem = "{{green_hex}}"
+proc_cpu = "{{blue_hex}}"
+proc_old = "{{warning_hex}}"
