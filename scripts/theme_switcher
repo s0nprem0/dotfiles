@@ -14,7 +14,7 @@ usage() {
     echo "  --validate    Check WCAG contrast ratios"
     echo "  --verbose     Show detailed output"
     echo "  --dry-run     Preview changes without writing"
-    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
+    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,supremo,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
     echo "  --reload      Reload quickshell after generation"
     exit 1
 }
@@ -183,6 +183,16 @@ fi
 if should_generate "thunar"; then
     if [[ "$DRY_RUN" == "true" ]]; then
         echo "Would run: rebuild_thunar.sh"
+    else
+        ~/.local/bin/rebuild_thunar.sh 2>/dev/null || "$HOME/.local/share/bin/rebuild_thunar.sh" 2>/dev/null || \
+        bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
+        echo "Warning: rebuild_thunar.sh not found"
+    fi
+fi
+
+if should_generate "supremo"; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "Would run: rebuild_thunar.sh (Supremo)"
     else
         ~/.local/bin/rebuild_thunar.sh 2>/dev/null || "$HOME/.local/share/bin/rebuild_thunar.sh" 2>/dev/null || \
         bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
