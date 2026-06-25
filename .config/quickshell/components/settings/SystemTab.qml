@@ -13,10 +13,10 @@ Rectangle {
     property bool charging: false
     property var sysActions: []
     property bool confirmVisible: false
-    property string pendingAction: ""
+    property var pendingAction: ""
     property string pendingLabel: ""
 
-    signal confirmAction(string action, string label)
+    signal confirmAction(var action, string label)
     signal closeConfirm()
     signal executeAction(var cmd)
 

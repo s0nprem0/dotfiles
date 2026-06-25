@@ -6,6 +6,7 @@ Item {
     id: root
 
     property string path: ""
+    property var args: []
     property int interval: 5000
     property bool hasError: false
     property bool loading: false
@@ -27,7 +28,7 @@ Item {
     Process {
         id: proc
 
-        command: [root.path]
+        command: [root.path].concat(root.args)
         onRunningChanged: {
             if (proc.running) {
                 root.loading = true;

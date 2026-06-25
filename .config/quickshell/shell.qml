@@ -69,6 +69,13 @@ Bar {
             Network {
             }
 
+            Caffeine {
+            }
+
+            ThemePicker {
+                themePickerPopupRef: themePickerPopup
+            }
+
             Settings {
                 settingsPopupRef: settingsPopup
             }
@@ -112,6 +119,7 @@ Bar {
                 case "settings": settingsPopup.showPopup = !settingsPopup.showPopup; break;
                 case "workspace": workspacePopup.showPopup = !workspacePopup.showPopup; break;
                 case "shortcut": shortcutPopup.showPopup = !shortcutPopup.showPopup; break;
+                case "theme-picker": themePickerPopup.showPopup = !themePickerPopup.showPopup; break;
                 case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
                 case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
                 case "presentation": presentationPopup.showPopup = !presentationPopup.showPopup; break;
@@ -166,4 +174,7 @@ Bar {
         id: presentationPopup
     }
 
+    Popups.ThemePicker {
+        id: themePickerPopup
+    }
 }

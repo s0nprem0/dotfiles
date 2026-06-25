@@ -14,7 +14,7 @@ usage() {
     echo "  --validate    Check WCAG contrast ratios"
     echo "  --verbose     Show detailed output"
     echo "  --dry-run     Preview changes without writing"
-    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,opencode,thunar,quickshell)"
+    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
     echo "  --reload      Reload quickshell after generation"
     exit 1
 }
@@ -110,6 +110,7 @@ generate_template() {
         -e "s|{{warning_hex}}|$WARNING_HEX|g" \
         -e "s|{{blue_hex}}|$BLUE_HEX|g" \
         -e "s|{{surface_hex}}|$SURFACE_HEX|g" \
+        -e "s|{{surface_lighter_hex}}|$SURFACE_LIGHTER_HEX|g" \
         -e "s|{{primary_hex}}|$PRIMARY_HEX|g" \
         -e "s|{{muted_hex}}|$MUTED_HEX|g" \
         -e "s|{{muted_rgb}}|$MUTED_RGB|g" \
@@ -187,6 +188,48 @@ if should_generate "thunar"; then
         bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
         echo "Warning: rebuild_thunar.sh not found"
     fi
+fi
+
+if should_generate "spicetify"; then
+    SPICE_DIR="$HOME/.config/spicetify/Themes/wabi"
+    if [[ -d "$SPICE_DIR" ]]; then
+        generate_template "$HOME/.config/matugen/templates/apps/spicetify.ini.template" > "$SPICE_DIR/color.ini" && \
+        echo "Updated spicetify theme"
+    fi
+fi
+
+if should_generate "zathura"; then
+    [[ -d "$HOME/.config/zathura" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/zathurarc.template" > "$HOME/.config/zathura/zathurarc" && \
+    echo "Updated zathura theme"
+fi
+
+if should_generate "bat"; then
+    BAT_DIR="$HOME/.config/bat/themes"
+    mkdir -p "$BAT_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/bat.tmTheme.template" > "$BAT_DIR/matugen.tmTheme" && \
+    echo "Updated bat theme"
+fi
+
+if should_generate "btop"; then
+    BTOP_DIR="$HOME/.config/btop/themes"
+    mkdir -p "$BTOP_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/btop.theme.template" > "$BTOP_DIR/matugen.theme" && \
+    echo "Updated btop theme"
+fi
+
+if should_generate "eza"; then
+    EZA_DIR="$HOME/.config/eza"
+    mkdir -p "$EZA_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/eza_theme.yml.template" > "$EZA_DIR/theme.yml" && \
+    echo "Updated eza theme"
+fi
+
+if should_generate "fastfetch"; then
+    FF_DIR="$HOME/.config/fastfetch"
+    mkdir -p "$FF_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/fastfetch.jsonc.template" > "$FF_DIR/config.jsonc" && \
+    echo "Updated fastfetch theme"
 fi
 
 if [[ "$RELOAD" == "true" ]]; then

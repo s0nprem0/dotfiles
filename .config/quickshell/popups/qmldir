@@ -10,3 +10,4 @@ Shortcut Shortcut.qml
 Tray Tray.qml
 Battery Battery.qml
 PresentationPopup PresentationPopup.qml
+ThemePicker ThemePicker.qml

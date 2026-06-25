@@ -17,7 +17,7 @@ Window {
     property string os: ""
     property string batteryPercent: "--"
     property bool charging: false
-    property string pendingAction: ""
+    property var pendingAction: ""
     property string pendingLabel: ""
     property bool confirmVisible: false
     property string activeProfile: "balanced"
