@@ -71,3 +71,11 @@ The `Apps.qml` popup provides a 5-tab launcher:
 **Tab navigation**: Tab key cycles tabs, prefix keys switch directly.
 
 **GitHub token**: Set `GITHUB_TOKEN` env var for private repo access.
+
+### Helper Backend
+
+The Rust helper (`helpers_rs/bins/get_apps_list`) uses SQLite for storage:
+
+- `--web-search "!g rust"` - Save web search query, returns URL
+- `--open-file "/path/to/file"` - Track file in history
+- `--clear-web-history` / `--clear-file-history` - Clear history tables

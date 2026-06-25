@@ -233,6 +233,7 @@ Window {
                 return;
 
             if (item.isWebAction) {
+                Quickshell.execDetached([Theme.bin("get_apps_list"), "--web-search", item.query]);
                 Quickshell.execDetached(["xdg-open", item.url]);
                 Quickshell.execDetached(["hyprctl", "dispatch", "workspace", "1"]);
             } else if (item.typeLabel === "GIT_REPO") {
@@ -246,6 +247,7 @@ Window {
             } else if (item.typeLabel === "ADD_BOOKMARK") {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--add-bookmark", item.url]);
             } else if (item.typeLabel === "FILE") {
+                Quickshell.execDetached([Theme.bin("get_apps_list"), "--open-file", item.path]);
                 Quickshell.execDetached(["xdg-open", item.path]);
             } else if (item.isIndexAction) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--index-files"]);

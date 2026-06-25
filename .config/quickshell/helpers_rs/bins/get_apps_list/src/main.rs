@@ -77,7 +77,7 @@ impl Storage {
         rusqlite::Connection::open(&self.db_path)
     }
 
-    fn init_db(conn: &rusqlite::Connection) {
+fn init_db(conn: &rusqlite::Connection) {
         let _ = conn.execute(
             "CREATE TABLE IF NOT EXISTS bookmarks (
                 url TEXT PRIMARY KEY,
@@ -100,6 +100,21 @@ impl Storage {
                 description TEXT,
                 updated_at TEXT NOT NULL,
                 stargazers_count INTEGER DEFAULT 0
+            )",
+            [],
+        );
+        let _ = conn.execute(
+            "CREATE TABLE IF NOT EXISTS web_history (
+                query TEXT, engine TEXT, url TEXT, timestamp INTEGER,
+                PRIMARY KEY (query, engine)
+            )",
+            [],
+        );
+        let _ = conn.execute(
+            "CREATE TABLE IF NOT EXISTS file_history (
+                path TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                timestamp INTEGER
             )",
             [],
         );
@@ -129,7 +144,7 @@ impl Storage {
 
     fn add_bookmark(&self, url: &str, name: &str, timestamp: u64) -> bool {
         match self.connection() {
-            Ok(mut conn) => {
+            Ok(conn) => {
                 conn.execute(
                     "INSERT OR REPLACE INTO bookmarks (url, name, timestamp) VALUES (?1, ?2, ?3)",
                     rusqlite::params![url, name, timestamp],
@@ -211,6 +226,91 @@ impl Storage {
             Err(_) => return Vec::new(),
         };
         rows.filter_map(|r| r.ok()).collect()
+    }
+
+    fn load_web_history(&self) -> Vec<WebHistoryItem> {
+        let conn = match self.connection() {
+            Ok(c) => c,
+            Err(_) => return Vec::new(),
+        };
+        let mut stmt = match conn.prepare(
+            "SELECT query, engine, url FROM web_history ORDER BY timestamp DESC LIMIT 50"
+        ) {
+            Ok(s) => s,
+            Err(_) => return Vec::new(),
+        };
+        let rows = match stmt.query_map([], |row| {
+            Ok(WebHistoryItem {
+                query: row.get(0)?,
+                engine: row.get(1)?,
+                url: row.get(2)?,
+            })
+        }) {
+            Ok(r) => r,
+            Err(_) => return Vec::new(),
+        };
+        rows.filter_map(|r| r.ok()).collect()
+    }
+
+    fn add_web_history(&self, item: &WebHistoryItem) -> bool {
+        match self.connection() {
+            Ok(conn) => {
+                let timestamp = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                conn.execute(
+                    "INSERT OR REPLACE INTO web_history (query, engine, url, timestamp) VALUES (?1, ?2, ?3, ?4)",
+                    rusqlite::params![item.query, item.engine, item.url, timestamp],
+                ).is_ok()
+            }
+            Err(_) => false,
+        }
+    }
+
+    fn load_file_history(&self) -> Vec<FileHistoryItem> {
+        let conn = match self.connection() {
+            Ok(c) => c,
+            Err(_) => return Vec::new(),
+        };
+        let mut stmt = match conn.prepare(
+            "SELECT path, name, timestamp FROM file_history ORDER BY timestamp DESC LIMIT 50"
+        ) {
+            Ok(s) => s,
+            Err(_) => return Vec::new(),
+        };
+        let rows = match stmt.query_map([], |row| {
+            Ok(FileHistoryItem {
+                path: row.get(0)?,
+                name: row.get(1)?,
+                timestamp: row.get(2)?,
+            })
+        }) {
+            Ok(r) => r,
+            Err(_) => return Vec::new(),
+        };
+        rows.filter_map(|r| r.ok()).collect()
+    }
+
+    fn add_file_history(&self, path: &str) -> bool {
+        match self.connection() {
+            Ok(conn) => {
+                let timestamp = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                let name = PathBuf::from(path)
+                    .file_name()
+                    .and_then(|f| f.to_str())
+                    .unwrap_or(path)
+                    .to_string();
+                conn.execute(
+                    "INSERT OR REPLACE INTO file_history (path, name, timestamp) VALUES (?1, ?2, ?3)",
+                    rusqlite::params![path, name, timestamp],
+                ).is_ok()
+            }
+            Err(_) => false,
+        }
     }
 
     fn save_git_repos(&self, repos: &[GitRepo]) -> bool {
@@ -369,12 +469,24 @@ fn main() {
 
     if args.len() > 1 {
         match args[1].as_str() {
-            "--clear-history" => {
-                let _ = std::fs::write(cache_dir().join("web_search_history.json"), "[]");
+            "--clear-web-history" => {
+                match storage.connection() {
+                    Ok(conn) => {
+                        let _ = conn.execute("DELETE FROM web_history", []);
+                        println!("{}", serde_json::json!({"status": "cleared"}));
+                    }
+                    Err(e) => eprintln!("Error clearing web history: {}", e),
+                }
                 return;
             }
             "--clear-file-history" => {
-                let _ = std::fs::write(cache_dir().join("file_history.json"), "[]");
+                match storage.connection() {
+                    Ok(conn) => {
+                        let _ = conn.execute("DELETE FROM file_history", []);
+                        println!("{}", serde_json::json!({"status": "cleared"}));
+                    }
+                    Err(e) => eprintln!("Error clearing file history: {}", e),
+                }
                 return;
             }
             "--index-files" => {
@@ -518,9 +630,26 @@ fn main() {
                         println!("{}", serde_json::json!({"status": "fetched", "count": repos.len()}));
                     }
                     Err(e) => {
+                        eprintln!("Error fetching repos: {}", e);
                         println!("{}", serde_json::json!({"status": "error", "message": e.to_string()}));
                     }
                 }
+                return;
+            }
+            "--web-search" if args.len() > 2 => {
+                let query = &args[2];
+                if let Some(item) = parse_web_search(query) {
+                    storage.add_web_history(&item);
+                    println!("{}", serde_json::json!({"status": "added", "query": item.query}));
+                } else {
+                    println!("{}", serde_json::json!({"status": "skipped", "reason": "invalid query"}));
+                }
+                return;
+            }
+            "--open-file" if args.len() > 2 => {
+                let path = &args[2];
+                storage.add_file_history(path);
+                println!("{}", serde_json::json!({"status": "added"}));
                 return;
             }
             _ => {}
@@ -576,10 +705,8 @@ fn main() {
     });
     most_used.truncate(5);
 
-    let history_path = PathBuf::from(&home).join(".cache/quickshell/web_search_history.json");
-    let web_history = helpers_rs::state_file::read_json(&history_path).unwrap_or_default();
-    let file_history_path = PathBuf::from(&home).join(".cache/quickshell/file_history.json");
-    let file_history = helpers_rs::state_file::read_json(&file_history_path).unwrap_or_default();
+    let web_history = storage.load_web_history();
+    let file_history = storage.load_file_history();
 
     let _ = serde_json::to_writer(
         std::io::stdout(),
