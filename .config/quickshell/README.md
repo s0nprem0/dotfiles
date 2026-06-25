@@ -65,6 +65,25 @@ quickshell/
 - **Theme service**: Singleton that manages colors, watches `colors.json` for updates
 - **Popup toggle**: Use `qs ipc call shell togglePopup <name>` for keybindings
 
+## Dependencies
+
+**Core:**
+- `quickshell` (0.3+) - Wayland shell framework
+- `hyprland` - Wayland compositor
+
+**Audio:**
+- `playerctl` - Media player control
+- `wpctl` / `pactl` - Audio control (both supported)
+
+**System:**
+- `brightnessctl` - Screen brightness control
+- `upower` - Battery information
+- `networkmanager` / `nmcli` - Network status
+- `bluez` / `bluetoothctl` - Bluetooth control
+
+**Helpers (Rust):**
+- Rust toolchain for building `helpers_rs/`
+
 ## Apps Popup
 
 The `Apps.qml` popup provides a 5-tab launcher:
