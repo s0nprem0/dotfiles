@@ -19,10 +19,19 @@ quickshell/
 ├── components/                  # Shared QML components
 │   ├── DataModule.qml           # Async data loader
 │   ├── OsdWindow.qml            # On-screen display
-│   └── SlideAnimator.qml        # Animation helper
+│   ├── SlideAnimator.qml        # Animation helper
+│   ├── VolumeSlider.qml         # Reusable volume/slider control
+│   ├── MuteButton.qml           # Mute toggle button
+│   └── DeviceSelector.qml       # Audio device selector dropdown
 ├── popups/                      # Popup windows
 │   ├── PopupPanel.qml           # Base popup container
 │   ├── Apps.qml                 # App launcher (5-tab)
+│   │   └── apps/                # Apps popup components
+│   │       ├── AppsTab.qml      # Applications tab
+│   │       ├── WebTab.qml       # Web search tab
+│   │       ├── FileTab.qml      # File search tab
+│   │       ├── GitTab.qml       # Git repos tab
+│   │       └── BookmarksTab.qml  # Bookmarks tab
 │   ├── Battery.qml              # Battery details
 │   ├── Media.qml                # Media controls
 │   └── ...

@@ -54,6 +54,12 @@ BarModule {
         value: caffeineData.hasError
     }
 
+    Binding {
+        target: root
+        property: "loading"
+        value: caffeineData.loading
+    }
+
     Connections {
         function onClicked(mouse) {
             if (mouse.button === Qt.LeftButton)
