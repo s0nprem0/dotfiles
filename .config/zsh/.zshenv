@@ -45,3 +45,6 @@ fi
 export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 export PATH="$HOME/.cache/.bun/bin:$PATH"
 export PATH="$HOME/.nub/bin:$PATH"
+
+# GITHUB_TOKEN for git repo fetching in apps popup
+export GITHUB_TOKEN="${GITHUB_TOKEN:-}"

@@ -22,7 +22,7 @@ quickshell/
 │   └── SlideAnimator.qml        # Animation helper
 ├── popups/                      # Popup windows
 │   ├── PopupPanel.qml           # Base popup container
-│   ├── Apps.qml                 # App launcher
+│   ├── Apps.qml                 # App launcher (5-tab)
 │   ├── Battery.qml              # Battery details
 │   ├── Media.qml                # Media controls
 │   └── ...
@@ -55,3 +55,19 @@ quickshell/
 - **DataModule**: Wraps external process calls with polling, error handling, and backoff
 - **Theme service**: Singleton that manages colors, watches `colors.json` for updates
 - **Popup toggle**: Use `qs ipc call shell togglePopup <name>` for keybindings
+
+## Apps Popup
+
+The `Apps.qml` popup provides a 5-tab launcher:
+
+| Tab | Prefix | Content |
+|-----|--------|---------|
+| APPS | (none) | Desktop applications |
+| WEB | `!` | Web search history |
+| FILES | `@` | File search via `fd` + `fzf` |
+| GIT | `#` | GitHub repos (requires `GITHUB_TOKEN`) |
+| BMK | `~` | Bookmarks (add/delete) |
+
+**Tab navigation**: Tab key cycles tabs, prefix keys switch directly.
+
+**GitHub token**: Set `GITHUB_TOKEN` env var for private repo access.

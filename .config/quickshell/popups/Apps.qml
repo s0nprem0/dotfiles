@@ -17,6 +17,45 @@ Window {
     property int selectedIndex: 0
     property int _fileSeq: 0
     property int activeTab: 0
+    property var bookmarks: []
+    property var gitRepos: []
+    property bool isFetchingRepos: false
+
+    function buildWebUrl(query) {
+        var q = query.trim();
+        if (!q.startsWith("!")) return "";
+        var searchQuery = "";
+        var searchUrl = "";
+        if (q.startsWith("!youtube")) {
+            searchQuery = q.substring(9).trim();
+            searchUrl = "https://www.youtube.com/results?search_query=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!yt ")) {
+            searchQuery = q.substring(4).trim();
+            searchUrl = "https://www.youtube.com/results?search_query=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!github")) {
+            searchQuery = q.substring(8).trim();
+            searchUrl = "https://github.com/search?q=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!gh ")) {
+            searchQuery = q.substring(4).trim();
+            searchUrl = "https://github.com/search?q=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!wikipedia")) {
+            searchQuery = q.substring(11).trim();
+            searchUrl = "https://en.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!wiki")) {
+            searchQuery = q.substring(6).trim();
+            searchUrl = "https://en.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!google")) {
+            searchQuery = q.substring(8).trim();
+            searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(searchQuery);
+        } else if (q.startsWith("!g ")) {
+            searchQuery = q.substring(3).trim();
+            searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(searchQuery);
+        } else {
+            searchQuery = q.substring(1).trim();
+            searchUrl = "https://duckduckgo.com/?q=" + encodeURIComponent(searchQuery);
+        }
+        return searchUrl;
+    }
 
     function fuzzyMatch(str, query) {
         if (query === "")
@@ -53,66 +92,130 @@ Window {
         var webHistory = AppsService.rawData.web_history || [];
         var filtered = [];
 
-        if (term === "") {
-            if (mostUsed.length > 0) {
-                filtered.push({ typeLabel: "HEADER", name: "MOST USED" });
-                for (let i = 0; i < mostUsed.length; i++) {
-                    let item = Object.assign({}, mostUsed[i]);
+        if (root.activeTab === 0) {
+            if (term === "") {
+                if (mostUsed.length > 0) {
+                    filtered.push({ typeLabel: "HEADER", name: "MOST USED" });
+                    for (let i = 0; i < mostUsed.length; i++) {
+                        let item = Object.assign({}, mostUsed[i]);
+                        item.typeLabel = "APP";
+                        filtered.push(item);
+                    }
+                }
+                filtered.push({ typeLabel: "HEADER", name: "ALL APPS" });
+                for (let i = 0; i < sourceApps.length; i++) {
+                    let item = Object.assign({}, sourceApps[i]);
                     item.typeLabel = "APP";
                     filtered.push(item);
                 }
+            } else {
+                for (let i = 0; i < sourceApps.length; i++) {
+                    let item = sourceApps[i];
+                    if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term)) {
+                        item.typeLabel = "APP";
+                        filtered.push(item);
+                    }
+                }
             }
-            filtered.push({ typeLabel: "HEADER", name: "ALL APPS" });
-            for (let i = 0; i < sourceApps.length; i++) {
-                let item = Object.assign({}, sourceApps[i]);
-                item.typeLabel = "APP";
-                filtered.push(item);
+        } else if (root.activeTab === 1) {
+            if (term.startsWith("!")) {
+                var searchQuery = term.substring(1).trim();
+                if (webHistory.length > 0) {
+                    filtered.push({ typeLabel: "HEADER", name: "WEB HISTORY" });
+                    for (let i = 0; i < webHistory.length; i++) {
+                        filtered.push({
+                            typeLabel: "WEB",
+                            name: webHistory[i].query,
+                            icon: "󰖟",
+                            comment: "via " + webHistory[i].engine,
+                            url: webHistory[i].url
+                        });
+                    }
+                }
+                filtered.push({
+                    typeLabel: "SEARCH",
+                    name: searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
+                    icon: "󰖟",
+                    comment: term,
+                    query: term,
+                    isWebAction: true,
+                    url: buildWebUrl(term)
+                });
             }
-        } else if (term.startsWith("!")) {
-            var searchQuery = term.substring(1).trim();
-            if (webHistory.length > 0) {
-                filtered.push({ typeLabel: "HEADER", name: "WEB HISTORY" });
-                for (let i = 0; i < webHistory.length; i++) {
+        } else if (root.activeTab === 2) {
+            var fileQuery = term.startsWith("@") ? term.substring(1).trim() : term;
+            filtered.push({ typeLabel: "HEADER", name: fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH" });
+            if (fileQuery) {
+                filtered.push({
+                    typeLabel: "SEARCH",
+                    name: "SEARCHING...",
+                    icon: "󰉋",
+                    comment: "@" + fileQuery,
+                    isFileSearch: true,
+                    fileQuery: fileQuery
+                });
+                root.startFileSearch(fileQuery);
+            }
+        } else if (root.activeTab === 3) {
+            if (term === "" || term.startsWith("#")) {
+                var gitQuery = term.startsWith("#") ? term.substring(1).trim() : "";
+                if (root.isFetchingRepos) {
+                    filtered.push({ typeLabel: "HEADER", name: "LOADING REPOS..." });
+                } else if (root.gitRepos.length > 0) {
+                    filtered.push({ typeLabel: "HEADER", name: "YOUR GIT REPOS" });
+                    for (let i = 0; i < root.gitRepos.length; i++) {
+                        let repo = root.gitRepos[i];
+                        if (gitQuery === "" || repo.name.toLowerCase().includes(gitQuery.toLowerCase()) || (repo.description && repo.description.toLowerCase().includes(gitQuery.toLowerCase()))) {
+                            filtered.push({
+                                typeLabel: "GIT_REPO",
+                                name: repo.name,
+                                icon: "󰊢",
+                                comment: repo.description || repo.html_url,
+                                data: repo
+                            });
+                        }
+                    }
+                } else {
+                    filtered.push({ typeLabel: "HEADER", name: "CLICK TO FETCH REPOS" });
                     filtered.push({
-                        typeLabel: "WEB",
-                        name: webHistory[i].query,
-                        icon: "󰖟",
-                        comment: "via " + webHistory[i].engine,
-                        url: webHistory[i].url
+                        typeLabel: "FETCH_REPOS",
+                        name: "FETCH GITHUB REPOS",
+                        icon: "󰊢",
+                        comment: "set GITHUB_TOKEN env var first"
                     });
                 }
             }
-            filtered.push({
-                typeLabel: "SEARCH",
-                name: searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
-                icon: "󰖟",
-                comment: term,
-                query: term,
-                isWebAction: true
-            });
-        } else if (term.startsWith("@")) {
-            var fileQuery = term.substring(1).trim();
-            filtered.push({ typeLabel: "HEADER", name: fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH" });
-            filtered.push({
-                typeLabel: "SEARCH",
-                name: "SEARCHING...",
-                icon: "󰉋",
-                comment: fileQuery ? "@" + fileQuery : "e.g. @report @config",
-                isFileSearch: true,
-                fileQuery: fileQuery
-            });
-            if (fileQuery) {
-                root.startFileSearch(fileQuery);
-            }
-        } else {
-            for (let i = 0; i < sourceApps.length; i++) {
-                let item = sourceApps[i];
-                if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term)) {
-                    item.typeLabel = "APP";
-                    filtered.push(item);
+        } else if (root.activeTab === 4) {
+            var bookmarkQuery = term.startsWith("~") ? term.substring(1).trim() : term;
+            var matchingBookmarks = [];
+            for (let i = 0; i < root.bookmarks.length; i++) {
+                if (bookmarkQuery === "" || root.bookmarks[i].url.toLowerCase().includes(bookmarkQuery.toLowerCase()) || root.bookmarks[i].name.toLowerCase().includes(bookmarkQuery.toLowerCase())) {
+                    matchingBookmarks.push(root.bookmarks[i]);
                 }
             }
+            if (matchingBookmarks.length > 0) {
+                filtered.push({ typeLabel: "HEADER", name: "BOOKMARKS" });
+                for (let i = 0; i < matchingBookmarks.length; i++) {
+                    filtered.push({
+                        typeLabel: "BOOKMARK",
+                        name: matchingBookmarks[i].name,
+                        icon: "󰌹",
+                        comment: matchingBookmarks[i].url,
+                        data: matchingBookmarks[i]
+                    });
+                }
+            }
+            if (bookmarkQuery !== "") {
+                filtered.push({
+                    typeLabel: "ADD_BOOKMARK",
+                    name: "ADD BOOKMARK",
+                    icon: "󰅕",
+                    comment: bookmarkQuery,
+                    url: bookmarkQuery
+                });
+            }
         }
+
         root.displayData = filtered;
         root.selectedIndex = 0;
     }
@@ -130,15 +233,20 @@ Window {
                 return;
 
             if (item.isWebAction) {
-                Quickshell.execDetached([Theme.bin("get_apps_list"), "--web-search", item.query]);
-            } else if (item.isFileSearch) {
-                if (item.fileQuery) {
-                    Quickshell.execDetached([Theme.bin("get_apps_list"), "--search-files", item.fileQuery]);
-                }
-            } else if (item.typeLabel === "FILE") {
-                Quickshell.execDetached([Theme.bin("get_apps_list"), "--open-file", item.path]);
-            } else if (item.typeLabel === "WEB") {
                 Quickshell.execDetached(["xdg-open", item.url]);
+                Quickshell.execDetached(["hyprctl", "dispatch", "workspace", "1"]);
+            } else if (item.typeLabel === "GIT_REPO") {
+                Quickshell.execDetached(["xdg-open", item.data.html_url]);
+                Quickshell.execDetached(["hyprctl", "dispatch", "workspace", "1"]);
+            } else if (item.typeLabel === "BOOKMARK") {
+                Quickshell.execDetached(["xdg-open", item.data.url]);
+                Quickshell.execDetached(["hyprctl", "dispatch", "workspace", "1"]);
+            } else if (item.typeLabel === "FETCH_REPOS") {
+                root.fetchGitRepos();
+            } else if (item.typeLabel === "ADD_BOOKMARK") {
+                Quickshell.execDetached([Theme.bin("get_apps_list"), "--add-bookmark", item.url]);
+            } else if (item.typeLabel === "FILE") {
+                Quickshell.execDetached(["xdg-open", item.path]);
             } else if (item.isIndexAction) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--index-files"]);
                 var idx = root.selectedIndex;
@@ -153,8 +261,6 @@ Window {
             } else if (item.exec) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--launch", item.name]);
                 Quickshell.execDetached(["sh", "-c", item.exec]);
-            } else {
-                return;
             }
             AppsService.refresh();
             root.showPopup = false;
@@ -225,6 +331,62 @@ Window {
         if (event.key === Qt.Key_Escape) {
             root.showPopup = false;
             event.accepted = true;
+        }
+    }
+
+    function loadBookmarks() {
+        getBookmarksProc.command = [Theme.bin("get_apps_list"), "--get-bookmarks"];
+        getBookmarksProc.running = true;
+    }
+
+    function loadGitRepos() {
+        getGitReposProc.command = [Theme.bin("get_apps_list"), "--list-repos"];
+        getGitReposProc.running = true;
+    }
+
+    function fetchGitRepos() {
+        if (root.isFetchingRepos) return;
+        root.isFetchingRepos = true;
+        fetchReposProc.command = [Theme.bin("get_apps_list"), "--fetch-repos"];
+        fetchReposProc.running = true;
+    }
+
+    Process {
+        id: getBookmarksProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.bookmarks = JSON.parse(this.text) || [];
+                } catch (e) {
+                    console.warn("Apps: bookmark parse error:", e);
+                }
+            }
+        }
+    }
+
+    Process {
+        id: getGitReposProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.gitRepos = JSON.parse(this.text) || [];
+                } catch (e) {
+                    console.warn("Apps: git repos parse error:", e);
+                }
+            }
+        }
+    }
+
+    Process {
+        id: fetchReposProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.isFetchingRepos = false;
+                root.loadGitRepos();
+            }
         }
     }
 
@@ -358,9 +520,7 @@ Window {
                             clip: true
                             onTextChanged: {
                                 root.searchText = text;
-                                if (text.startsWith("!")) root.activeTab = 1;
-                                else if (text.startsWith("@")) root.activeTab = 2;
-                                else root.activeTab = 0;
+                                updateTabFromText();
                                 searchDebounce.restart();
                             }
                             Keys.onPressed: (event) => {
@@ -377,11 +537,7 @@ Window {
                                     root.showPopup = false;
                                     event.accepted = true;
                                 } else if (event.key === Qt.Key_Tab) {
-                                    var t = searchField.text.replace(/^[!@]/, "");
-                                    root.activeTab = (root.activeTab + 1) % 3;
-                                    if (root.activeTab === 1) searchField.text = "!" + t;
-                                    else if (root.activeTab === 2) searchField.text = "@" + t;
-                                    else searchField.text = t;
+                                    cycleTab();
                                     event.accepted = true;
                                 }
                             }
@@ -511,6 +667,64 @@ Window {
                                 var t = searchField.text.replace(/^[!@]/, "");
                                 searchField.text = "@" + t;
                                 root.activeTab = 2;
+                                searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 2
+                            color: root.activeTab === 3 ? Theme.primary : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "GIT"
+                            color: root.activeTab === 3 ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                var t = searchField.text.replace(/^[!@]/, "");
+                                searchField.text = "#" + t;
+                                root.activeTab = 3;
+                                searchField.forceActiveFocus();
+                            }
+                        }
+                    }
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 2
+                            color: root.activeTab === 4 ? Theme.primary : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "BMK"
+                            color: root.activeTab === 4 ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                var t = searchField.text.replace(/^[!@]/, "");
+                                searchField.text = "~" + t;
+                                root.activeTab = 4;
                                 searchField.forceActiveFocus();
                             }
                         }
@@ -821,5 +1035,32 @@ Window {
                 }
             }
         }
+    }
+
+    function getTabHint() {
+        if (root.activeTab === 0) return "SEARCH APPS, !g, !yt, @files, #repos, ~bookmarks...";
+        if (root.activeTab === 1) return "SEARCH THE WEB WITH !g, !yt...";
+        if (root.activeTab === 2) return "SEARCH FILES WITH @...";
+        if (root.activeTab === 3) return "SEARCH GIT REPOS WITH #...";
+        return "SEARCH BOOKMARKS WITH ~...";
+    }
+
+    function updateTabFromText() {
+        var t = searchField.text;
+        if (t.startsWith("!")) root.activeTab = 1;
+        else if (t.startsWith("@")) root.activeTab = 2;
+        else if (t.startsWith("#")) root.activeTab = 3;
+        else if (t.startsWith("~")) root.activeTab = 4;
+        else root.activeTab = 0;
+    }
+
+    function cycleTab() {
+        var t = searchField.text.replace(/^[!@#~]/, "");
+        root.activeTab = (root.activeTab + 1) % 5;
+        if (root.activeTab === 0) searchField.text = t;
+        else if (root.activeTab === 1) searchField.text = "!" + t;
+        else if (root.activeTab === 2) searchField.text = "@" + t;
+        else if (root.activeTab === 3) searchField.text = "#" + t;
+        else searchField.text = "~" + t;
     }
 }
