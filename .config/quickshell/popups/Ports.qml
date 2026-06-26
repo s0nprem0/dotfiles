@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import QtQuick.Controls
 
 PopupPanel {
     id: root
@@ -23,8 +24,8 @@ PopupPanel {
     }
 
     anchorSide: "right"
-    panelWidth: 360
-    initialOffset: -360
+    panelWidth: 420
+    initialOffset: -420
     finalInset: 32
     introDuration: 120
     exitDuration: 100
@@ -94,7 +95,7 @@ PopupPanel {
                     text: "Listening Ports"
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize2xl
+                    font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                 }
 
@@ -111,7 +112,7 @@ PopupPanel {
                     text: "Scanning ports…"
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLg
+                    font.pixelSize: Theme.fontSizeMd
                 }
 
                 // Error
@@ -120,7 +121,7 @@ PopupPanel {
                     text: root.errorMsg
                     color: Theme.error
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLg
+                    font.pixelSize: Theme.fontSizeMd
                 }
 
                 // Empty
@@ -129,27 +130,27 @@ PopupPanel {
                     text: "No listening ports found"
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLg
+                    font.pixelSize: Theme.fontSizeMd
                 }
 
                 // Column Headers
                 Rectangle {
                     visible: root.ports.length > 0 && !root.loading
                     width: parent.width
-                    height: 18
+                    height: 24
                     color: Theme.surface
 
                     Row {
                         anchors.fill: parent
-                        anchors.leftMargin: 4
-                        anchors.rightMargin: 4
+                        anchors.leftMargin: 6
+                        anchors.rightMargin: 6
 
                         Text {
                             width: 50
-                            text: "Proto"
+                            text: "Protocol"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXs
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -159,33 +160,33 @@ PopupPanel {
                             text: "Port"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXs
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         Text {
-                            width: 100
+                            width: 120
                             text: "Process"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXs
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         Text {
-                            width: 40
+                            width: 50
                             text: "PID"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXs
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         Text {
-                            width: 40
+                            width: 28
                             text: ""
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -195,27 +196,27 @@ PopupPanel {
                 // Port List
                 ListView {
                     width: parent.width
-                    height: Math.min(contentHeight, 400)
+                    height: Math.min(contentHeight, 500)
                     model: root.ports
                     interactive: true
                     clip: true
 
                     delegate: Rectangle {
                         width: parent.width
-                        height: 20
+                        height: 32
                         color: index % 2 === 0 ? "transparent" : Qt.alpha(Theme.primary, 0.04)
 
                         Row {
                             anchors.fill: parent
-                            anchors.leftMargin: 4
-                            anchors.rightMargin: 4
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
 
                             Text {
                                 width: 50
                                 text: modelData.protocol
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                                font.pixelSize: Theme.fontSizeMd
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
@@ -224,40 +225,58 @@ PopupPanel {
                                 text: modelData.port
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Text {
-                                width: 100
+                                width: 120
                                 text: modelData.process
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                                font.pixelSize: Theme.fontSizeMd
                                 elide: Text.ElideRight
                                 anchors.verticalCenter: parent.verticalCenter
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                }
                             }
 
                             Text {
-                                width: 40
+                                width: 50
                                 text: modelData.pid
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                                font.pixelSize: Theme.fontSizeMd
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
-                            Text {
-                                width: 40
-                                text: "Kill"
-                                color: Theme.error
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
+                            Rectangle {
+                                width: 48
+                                height: 28
+                                color: index % 2 === 0 ? Qt.alpha(Theme.error, 0.08) : Qt.alpha(Theme.error, 0.12)
+                                radius: 0
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Kill"
+                                    color: Theme.error
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeMd
+                                    font.bold: true
+                                }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
+                                    hoverEnabled: true
+                                    onEntered: parent.color = Qt.alpha(Theme.error, 0.2)
+                                    onExited: parent.color = index % 2 === 0 ? Qt.alpha(Theme.error, 0.08) : Qt.alpha(Theme.error, 0.12)
                                     onClicked: root.killProcess(modelData.pid)
                                 }
                             }
@@ -274,7 +293,7 @@ PopupPanel {
                         text: "Refresh"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeLg
+                        font.pixelSize: Theme.fontSizeMd
 
                         MouseArea {
                             anchors.fill: parent
@@ -287,7 +306,7 @@ PopupPanel {
                         text: "Close"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeLg
+                        font.pixelSize: Theme.fontSizeMd
 
                         MouseArea {
                             anchors.fill: parent
