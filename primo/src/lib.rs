@@ -9,7 +9,10 @@ pub mod state_file;
 
 pub use battery::{BatterySnapshot, battery_snapshot, find_battery_dir};
 pub use command::{run_cmd, run_cmd_with_stderr};
-pub use display::{get_current_mode, get_monitors, set_mode, toggle_mode, DisplayMode, Monitor};
+pub use display::{
+    get_current_mode, get_internal_monitors, get_monitor_by_id, get_monitor_by_name,
+    get_monitors, get_primary_monitor, set_mode, toggle_mode, DisplayMode, Monitor,
+};
 pub use external::{
     active_wifi_device, brightnessctl_percent, cidr_to_netmask, find_kbd_backlight_device,
     parse_percent, split_nmcli_t_line, wpctl_get_volume,

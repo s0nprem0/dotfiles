@@ -1,5 +1,5 @@
 use std::env;
-use primo::{DisplayMode, get_current_mode, get_monitors, set_mode, toggle_mode};
+use primo::{DisplayMode, get_monitors, set_mode, toggle_mode};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -15,7 +15,6 @@ fn main() {
         "external" => Ok(DisplayMode::External),
         "internal" => Ok(DisplayMode::Internal),
         "toggle" => {
-            let monitors = get_monitors();
             toggle_mode();
             return;
         }

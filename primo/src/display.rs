@@ -18,24 +18,42 @@ impl Default for DisplayMode {
 #[derive(Debug, Clone)]
 pub struct Monitor {
     pub name: String,
-    pub disabled: bool,
+    pub id: u32,
+    pub x: i32,
+    pub y: i32,
     pub width: u32,
     pub height: u32,
+    pub scale: f64,
+    pub transform: u32,
+    pub transform_label: String,
     pub refresh_rate: Option<f64>,
+    pub disabled: bool,
     pub mirror: Option<String>,
     pub is_internal: bool,
+    pub workspace_id: Option<u32>,
+    pub focused: bool,
+    pub active: bool,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct MonitorRaw {
+    id: u32,
     name: String,
-    disabled: bool,
+    x: i32,
+    y: i32,
     width: u32,
     height: u32,
-    refresh_rate: Option<f64>,
+    scale: f64,
+    transform: u32,
+    refreshRate: Option<f64>,
+    disabled: bool,
     #[serde(rename = "mirrorOf")]
     mirror_of: String,
+    #[serde(rename = "activeWorkspaceId")]
+    active_workspace_id: Option<u32>,
+    focused: bool,
+    active: bool,
 }
 
 fn is_internal_name(name: &str) -> bool {
@@ -43,6 +61,16 @@ fn is_internal_name(name: &str) -> bool {
         || name.starts_with("DSI")
         || name.starts_with("LVDS")
         || name.starts_with("OLED")
+}
+
+fn transform_label(transform: u32) -> String {
+    match transform {
+        0 => "normal".to_string(),
+        1 => "90°".to_string(),
+        2 => "180°".to_string(),
+        3 => "270°".to_string(),
+        _ => format!("unknown({})", transform),
+    }
 }
 
 fn raw_to_monitor(raw: MonitorRaw) -> Monitor {
@@ -53,12 +81,21 @@ fn raw_to_monitor(raw: MonitorRaw) -> Monitor {
     };
     Monitor {
         name: raw.name,
-        disabled: raw.disabled,
+        id: raw.id,
+        x: raw.x,
+        y: raw.y,
         width: raw.width,
         height: raw.height,
-        refresh_rate: raw.refresh_rate,
+        scale: raw.scale,
+        transform: raw.transform,
+        transform_label: transform_label(raw.transform),
+        refresh_rate: raw.refreshRate,
+        disabled: raw.disabled,
         mirror,
         is_internal,
+        workspace_id: raw.active_workspace_id,
+        focused: raw.focused,
+        active: raw.active,
     }
 }
 
@@ -201,7 +238,10 @@ fn notify(message: &str) {
 pub fn get_monitors() -> Vec<Monitor> {
     let output = match Command::new("hyprctl").args(["monitors", "-j"]).output() {
         Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
-        Err(_) => return Vec::new(),
+        Err(e) => {
+            eprintln!("display: failed to run hyprctl: {e}");
+            return Vec::new();
+        }
     };
 
     let raws: Vec<MonitorRaw> = match serde_json::from_str(&output) {
@@ -213,4 +253,24 @@ pub fn get_monitors() -> Vec<Monitor> {
     };
 
     raws.into_iter().map(raw_to_monitor).collect()
+}
+
+pub fn get_primary_monitor(monitors: &[Monitor]) -> Option<&Monitor> {
+    monitors.iter().find(|m| m.focused && !m.disabled)
+}
+
+pub fn get_monitor_by_id(monitors: &[Monitor], id: u32) -> Option<&Monitor> {
+    monitors.iter().find(|m| m.id == id)
+}
+
+pub fn get_monitor_by_name<'a>(monitors: &'a [Monitor], name: &str) -> Option<&'a Monitor> {
+    monitors.iter().find(|m| m.name == name)
+}
+
+pub fn get_internal_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
+    monitors.iter().filter(|m| m.is_internal && !m.disabled).collect()
+}
+
+pub fn get_external_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
+    monitors.iter().filter(|m| !m.is_internal && !m.disabled).collect()
 }
