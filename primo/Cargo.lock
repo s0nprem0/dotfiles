@@ -15,15 +15,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "apply_preset"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -34,15 +25,6 @@ name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
-
-[[package]]
-name = "battery_daemon"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "bitflags"
@@ -63,14 +45,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593"
 
 [[package]]
-name = "caffeine"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
-]
-
-[[package]]
 name = "cc"
 version = "1.2.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -85,13 +59,6 @@ name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
-
-[[package]]
-name = "check_daemons"
-version = "0.1.0"
-dependencies = [
- "primo",
-]
 
 [[package]]
 name = "core-foundation"
@@ -138,13 +105,6 @@ dependencies = [
  "option-ext",
  "redox_users",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "display_toggle"
-version = "0.1.0"
-dependencies = [
- "primo",
 ]
 
 [[package]]
@@ -284,69 +244,6 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "slab",
-]
-
-[[package]]
-name = "get_apps_list"
-version = "0.1.0"
-dependencies = [
- "dirs",
- "primo",
- "reqwest",
- "rusqlite",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "get_audio_status"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "get_battery_status"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "get_bluetooth_status"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
-]
-
-[[package]]
-name = "get_network_status"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
-]
-
-[[package]]
-name = "get_power_profile"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
-]
-
-[[package]]
-name = "get_sys_diagnostics"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
 ]
 
 [[package]]
@@ -699,15 +596,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
-name = "list_presets"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "litemap"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -727,14 +615,6 @@ name = "log"
 version = "0.4.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ceec5bc11778974d1bcb055b18002eba7f4b3518b6a0081b3af5f21666da9ad"
-
-[[package]]
-name = "log_battery"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde_json",
-]
 
 [[package]]
 name = "memchr"
@@ -757,13 +637,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "mtp_notify"
-version = "0.1.0"
-dependencies = [
- "primo",
 ]
 
 [[package]]
@@ -839,15 +712,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
-name = "osdctl"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -871,14 +735,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parse_binds"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -897,15 +753,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
 
 [[package]]
-name = "ports_menu"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "potential_utf"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -918,9 +765,12 @@ dependencies = [
 name = "primo"
 version = "0.1.0"
 dependencies = [
+ "dirs",
+ "reqwest",
  "rusqlite",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -1110,15 +960,6 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
-
-[[package]]
-name = "screenshot"
-version = "0.1.0"
-dependencies = [
- "primo",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "security-framework"

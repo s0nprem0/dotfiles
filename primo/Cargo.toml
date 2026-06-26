@@ -1,24 +1,93 @@
-[workspace]
-resolver = "2"
-members = [
-  "libs/core",
-  "bins/battery_daemon",
-  "bins/check_daemons",
-  "bins/get_apps_list",
-  "bins/get_audio_status",
-  "bins/get_battery_status",
-  "bins/get_bluetooth_status",
-  "bins/get_network_status",
-  "bins/get_power_profile",
-  "bins/get_sys_diagnostics",
-  "bins/log_battery",
-  "bins/osdctl",
-  "bins/parse_binds",
-  "bins/ports_menu",
-  "bins/screenshot",
-  "bins/mtp_notify",
-  "bins/display_toggle",
-  "bins/caffeine",
-  "bins/list_presets",
-  "bins/apply_preset",
-]
+[package]
+name = "primo"
+description = "Rust helpers for Quickshell QML frontend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.31", features = ["bundled", "serde_json"] }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+tokio = { version = "1", features = ["full"] }
+dirs = "5"
+
+[lib]
+name = "primo"
+path = "src/lib.rs"
+
+[[bin]]
+name = "get_apps_list"
+path = "src/bin/status/get_apps_list.rs"
+
+[[bin]]
+name = "get_audio_status"
+path = "src/bin/status/get_audio_status.rs"
+
+[[bin]]
+name = "get_battery_status"
+path = "src/bin/status/get_battery_status.rs"
+
+[[bin]]
+name = "get_bluetooth_status"
+path = "src/bin/status/get_bluetooth_status.rs"
+
+[[bin]]
+name = "get_network_status"
+path = "src/bin/status/get_network_status.rs"
+
+[[bin]]
+name = "get_power_profile"
+path = "src/bin/status/get_power_profile.rs"
+
+[[bin]]
+name = "get_sys_diagnostics"
+path = "src/bin/status/get_sys_diagnostics.rs"
+
+[[bin]]
+name = "osdctl"
+path = "src/bin/utils/osdctl.rs"
+
+[[bin]]
+name = "screenshot"
+path = "src/bin/utils/screenshot.rs"
+
+[[bin]]
+name = "ports_menu"
+path = "src/bin/utils/ports_menu.rs"
+
+[[bin]]
+name = "parse_binds"
+path = "src/bin/utils/parse_binds.rs"
+
+[[bin]]
+name = "display_toggle"
+path = "src/bin/utils/display_toggle.rs"
+
+[[bin]]
+name = "caffeine"
+path = "src/bin/utils/caffeine.rs"
+
+[[bin]]
+name = "log_battery"
+path = "src/bin/utils/log_battery.rs"
+
+[[bin]]
+name = "battery_daemon"
+path = "src/bin/daemons/battery_daemon.rs"
+
+[[bin]]
+name = "check_daemons"
+path = "src/bin/daemons/check_daemons.rs"
+
+[[bin]]
+name = "mtp_notify"
+path = "src/bin/daemons/mtp_notify.rs"
+
+[[bin]]
+name = "list_presets"
+path = "src/bin/theme/list_presets.rs"
+
+[[bin]]
+name = "apply_preset"
+path = "src/bin/theme/apply_preset.rs"
