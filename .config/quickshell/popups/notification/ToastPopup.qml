@@ -190,7 +190,7 @@ Item {
                                             spacing: 8
 
                                             Text {
-                                                text: model.urgency === 2 ? "󰀦" : (model.appIcon && model.appIcon.length === 0 ? IconResolver.nerdFontGlyph(model.appName) : "󰂚")
+                                                text: model.urgency === 2 ? "󰀦" : (!model.appIcon || model.appIcon.length === 0 ? IconResolver.nerdFontGlyph(model.appName) : "󰂚")
                                                 color: toastCard.uColor
                                                 font.family: Theme.fontFamily
                                                 font.pixelSize: 12
@@ -326,19 +326,25 @@ Item {
 
                                     // ── Mechanical Progress Bar ──
                                     Rectangle {
-                                        id: progressBar
-
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: 3
-                                        color: toastCard.uColor
-                                        visible: model.urgency !== 2 // Critical notifications don't timeout
+                                        clip: true
+                                        color: "transparent"
+                                        visible: model.urgency !== 2
 
-                                        NumberAnimation {
-                                            target: progressBar
-                                            property: "width"
-                                            to: 0
-                                            duration: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : 6000
-                                            running: model.urgency !== 2 && !toastDelegate.hovered // Halts mechanically on hover
+                                        Rectangle {
+                                            id: progressBarFill
+                                            width: 0
+                                            height: parent.height
+                                            color: toastCard.uColor
+
+                                            NumberAnimation on width {
+                                                from: progressBarFill.parent.width
+                                                to: 0
+                                                duration: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : 6000
+                                                running: model.urgency !== 2 && !toastDelegate.hovered
+                                            }
+
                                         }
 
                                     }
