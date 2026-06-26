@@ -10,21 +10,21 @@ local scripts = "~/.config/hypr/scripts/"
 local qs_helpers = "~/.config/quickshell/helpers/"
 
 local function exec(cmd)
-  return hl.dsp.exec_cmd(cmd)
+	return hl.dsp.exec_cmd(cmd)
 end
 local function script(file)
-  return exec(scripts .. file)
+	return exec(scripts .. file)
 end
 local function qs_helper(file)
-  return exec(qs_helpers .. file)
+	return exec(qs_helpers .. file)
 end
 
 local function qs_popup(key, popup_name, desc)
-  hl.bind(mainMod .. " + " .. key, exec("qs ipc call shell togglePopup " .. popup_name), { description = desc })
+	hl.bind(mainMod .. " + " .. key, exec("qs ipc call shell togglePopup " .. popup_name), { description = desc })
 end
 
 local function osd_bind(key, args, desc, repeating)
-  hl.bind(key, qs_helper("osdctl " .. args), { repeating = repeating or false, locked = true, description = desc })
+	hl.bind(key, qs_helper("osdctl " .. args), { repeating = repeating or false, locked = true, description = desc })
 end
 
 hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exit(), { description = "Quit Hyprland" })
@@ -54,94 +54,94 @@ hl.bind(mainMod .. " + SHIFT + W", exec("hyprctl kill"), { description = "Force 
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.window.pseudo(), { description = "Toggle pseudo-tile" })
 
 hl.bind(mainMod .. " + F", function()
-  local w = hl.get_active_window()
-  if not w then
-    hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
-    return
-  end
+	local w = hl.get_active_window()
+	if not w then
+		hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+		return
+	end
 
-  local was_floating = w.floating
-  local internal = w.fullscreen or 0
-  local client = w.fullscreen_client or w.fullscreenClient or 0
+	local was_floating = w.floating
+	local internal = w.fullscreen or 0
+	local client = w.fullscreen_client or w.fullscreenClient or 0
 
-  if internal ~= 0 or client ~= 0 then
-    hl.dispatch(hl.dsp.window.fullscreen_state({ internal = 0, client = 0, action = "set" }))
-  end
+	if internal ~= 0 or client ~= 0 then
+		hl.dispatch(hl.dsp.window.fullscreen_state({ internal = 0, client = 0, action = "set" }))
+	end
 
-  hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+	hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
 
-  if not was_floating then
-    hl.exec_cmd("hyprctl dispatch centerwindow")
-  end
+	if not was_floating then
+		hl.exec_cmd("hyprctl dispatch centerwindow")
+	end
 end, { description = "Toggle float" })
 
 hl.bind(
-  mainMod .. " + T",
-  hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }),
-  { description = "Toggle fullscreen" }
+	mainMod .. " + T",
+	hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }),
+	{ description = "Toggle fullscreen" }
 )
 hl.bind(
-  mainMod .. " + M",
-  hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }),
-  { description = "Toggle maximize" }
+	mainMod .. " + M",
+	hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }),
+	{ description = "Toggle maximize" }
 )
 hl.bind(
-  mainMod .. " + SHIFT + F",
-  hl.dsp.window.fullscreen_state({ internal = 2, client = 0, action = "set" }),
-  { description = "FS state: fullscreen" }
+	mainMod .. " + SHIFT + F",
+	hl.dsp.window.fullscreen_state({ internal = 2, client = 0, action = "set" }),
+	{ description = "FS state: fullscreen" }
 )
 hl.bind(
-  mainMod .. " + SHIFT + G",
-  hl.dsp.window.fullscreen_state({ internal = 0, client = 2, action = "set" }),
-  { description = "FS state: maximized" }
+	mainMod .. " + SHIFT + G",
+	hl.dsp.window.fullscreen_state({ internal = 0, client = 2, action = "set" }),
+	{ description = "FS state: maximized" }
 )
 
 hl.bind(
-  mainMod .. " + " .. altMod .. " + D",
-  exec("hyprctl keyword general:layout dwindle"),
-  { description = "Layout: dwindle" }
+	mainMod .. " + " .. altMod .. " + D",
+	exec("hyprctl keyword general:layout dwindle"),
+	{ description = "Layout: dwindle" }
 )
 hl.bind(
-  mainMod .. " + " .. altMod .. " + M",
-  exec("hyprctl keyword general:layout master"),
-  { description = "Layout: master" }
+	mainMod .. " + " .. altMod .. " + M",
+	exec("hyprctl keyword general:layout master"),
+	{ description = "Layout: master" }
 )
 
 local dirs = { "left", "right", "up", "down" }
 for _, dir in ipairs(dirs) do
-  hl.bind(mainMod .. " + " .. dir, hl.dsp.focus({ direction = dir }), { description = "Focus " .. dir })
-  hl.bind(
-    mainMod .. " + SHIFT + " .. dir,
-    hl.dsp.window.move({ direction = dir }),
-    { description = "Move window " .. dir }
-  )
+	hl.bind(mainMod .. " + " .. dir, hl.dsp.focus({ direction = dir }), { description = "Focus " .. dir })
+	hl.bind(
+		mainMod .. " + SHIFT + " .. dir,
+		hl.dsp.window.move({ direction = dir }),
+		{ description = "Move window " .. dir }
+	)
 end
 
 hl.bind(mainMod .. " + bracketleft", exec("hyprctl dispatch cyclenext prev"), { description = "Cycle windows: prev" })
 hl.bind(mainMod .. " + bracketright", exec("hyprctl dispatch cyclenext"), { description = "Cycle windows: next" })
 
 for i = 1, 9 do
-  local ws = tostring(i)
-  hl.bind(mainMod .. " + " .. ws, hl.dsp.focus({ workspace = ws }), { description = "Workspace: " .. ws })
-  hl.bind(
-    mainMod .. " + SHIFT + " .. ws,
-    hl.dsp.window.move({ workspace = ws }),
-    { description = "Move window to workspace " .. ws }
-  )
+	local ws = tostring(i)
+	hl.bind(mainMod .. " + " .. ws, hl.dsp.focus({ workspace = ws }), { description = "Workspace: " .. ws })
+	hl.bind(
+		mainMod .. " + SHIFT + " .. ws,
+		hl.dsp.window.move({ workspace = ws }),
+		{ description = "Move window to workspace " .. ws }
+	)
 end
 
 hl.bind(mainMod .. " + 0", hl.dsp.focus({ workspace = "10" }), { description = "Workspace: 10" })
 hl.bind(
-  mainMod .. " + SHIFT + 0",
-  hl.dsp.window.move({ workspace = "10" }),
-  { description = "Move window to workspace 10" }
+	mainMod .. " + SHIFT + 0",
+	hl.dsp.window.move({ workspace = "10" }),
+	{ description = "Move window to workspace 10" }
 )
 
 hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"), { description = "Toggle scratchpad" })
 hl.bind(
-  mainMod .. " + SHIFT + S",
-  hl.dsp.window.move({ workspace = "special:magic" }),
-  { description = "Move window to scratchpad" }
+	mainMod .. " + SHIFT + S",
+	hl.dsp.window.move({ workspace = "special:magic" }),
+	{ description = "Move window to scratchpad" }
 )
 
 osd_bind("XF86AudioRaiseVolume", "volume up", "Volume up", true)
@@ -155,14 +155,14 @@ osd_bind("XF86MonBrightnessDown", "brightness down", "Brightness down", true)
 osd_bind("XF86KbdBrightnessUp", "kbdbrightness up", "Kbd backlight up", true)
 osd_bind("XF86KbdBrightnessDown", "kbdbrightness down", "Kbd backlight down", true)
 hl.bind(
-  mainMod .. " + " .. altMod .. " + K",
-  qs_helper("osdctl kbdbrightness cycle"),
-  { description = "Kbd backlight cycle up" }
+	mainMod .. " + " .. altMod .. " + K",
+	qs_helper("osdctl kbdbrightness cycle"),
+	{ description = "Kbd backlight cycle up" }
 )
 hl.bind(
-  mainMod .. " + " .. altMod .. " + SHIFT + K",
-  qs_helper("osdctl kbdbrightness cycle-rev"),
-  { description = "Kbd backlight cycle down" }
+	mainMod .. " + " .. altMod .. " + SHIFT + K",
+	qs_helper("osdctl kbdbrightness cycle-rev"),
+	{ description = "Kbd backlight cycle down" }
 )
 
 hl.bind("Caps_Lock", qs_helper("lock_osd.sh Caps_Lock"), { locked = true, description = "Caps Lock indicator" })
@@ -179,22 +179,22 @@ hl.bind(mainMod .. " + Print", qs_helper("screenshot active"), { description = "
 hl.bind(mainMod .. " + SHIFT + X", qs_helper("screenshot ocr"), { description = "Screenshot: OCR region" })
 
 local function zoomfunction(value)
-  local zoomvalue = hl.get_config("cursor:zoom_factor")
-  local new_zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, zoomvalue + value))
-  hl.config({ cursor = { zoom_factor = new_zoom } })
+	local zoomvalue = hl.get_config("cursor:zoom_factor")
+	local new_zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, zoomvalue + value))
+	hl.config({ cursor = { zoom_factor = new_zoom } })
 end
 
 hl.bind(mainMod .. " + Minus", function()
-  zoomfunction(-ZOOM_STEP)
+	zoomfunction(-ZOOM_STEP)
 end, { repeating = true, description = "Zoom out" })
 hl.bind(mainMod .. " + Equal", function()
-  zoomfunction(ZOOM_STEP)
+	zoomfunction(ZOOM_STEP)
 end, { repeating = true, description = "Zoom in" })
 hl.bind(mainMod .. " + code:82", function()
-  zoomfunction(-ZOOM_STEP)
+	zoomfunction(-ZOOM_STEP)
 end, { repeating = true, description = "Zoom out (keypad)" })
 hl.bind(mainMod .. " + code:86", function()
-  zoomfunction(ZOOM_STEP)
+	zoomfunction(ZOOM_STEP)
 end, { repeating = true, description = "Zoom in (keypad)" })
 
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: drag" })
@@ -203,27 +203,5 @@ hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { descr
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { description = "Workspace: prev" })
 
 local monitors = require("monitors")
-
-qs_popup("P", "presentation", "Display: Presentation mode")
-
-hl.bind(mainMod .. " + P", function()
-	monitors.toggle()
-end, { description = "Display: Toggle presentation mode" })
-
-hl.bind(mainMod .. " + " .. altMod .. " + X", function()
-	monitors.set_extend()
-end, { description = "Display: Extend mode" })
-
-hl.bind(mainMod .. " + " .. altMod .. " + Y", function()
-	monitors.set_duplicate()
-end, { description = "Display: Duplicate mode" })
-
-hl.bind(mainMod .. " + " .. altMod .. " + I", function()
-	monitors.set_internal()
-end, { description = "Display: Internal only" })
-
-hl.bind(mainMod .. " + " .. altMod .. " + O", function()
-	monitors.set_external()
-end, { description = "Display: External only" })
 
 qs_popup("p", "presentation", "Display: Open presentation menu")
