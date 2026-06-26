@@ -50,10 +50,6 @@ Window {
         }
     }
 
-    Component.onCompleted: {
-        forceActiveFocus();
-    }
-
     onShowPopupChanged: {
         if (showPopup) {
             DisplayService.refreshMonitors();
@@ -145,7 +141,6 @@ Window {
                             text: modelData.icon
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize2xl
-                            implicitWidth: 28
                         }
 
                         Column {
@@ -176,7 +171,6 @@ Window {
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize2xl
                             font.bold: true
-                            implicitWidth: 16
                         }
                     }
 
