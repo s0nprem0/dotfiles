@@ -4,7 +4,7 @@ use std::process::Command;
 use std::thread;
 use std::time::Duration;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum DisplayMode {
     Extend,
     Duplicate,
@@ -27,6 +27,25 @@ pub struct MonitorSettings {
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct DisplayConfig {
     pub per_monitor: HashMap<String, MonitorSettings>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DisplayProfile {
+    pub name: String,
+    pub description: String,
+    pub mode: DisplayMode,
+    pub monitors: HashMap<String, MonitorSettings>,
+}
+
+impl Default for DisplayProfile {
+    fn default() -> Self {
+        DisplayProfile {
+            name: "default".to_string(),
+            description: "Default configuration".to_string(),
+            mode: DisplayMode::Extend,
+            monitors: HashMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -366,4 +385,40 @@ pub fn set_monitor_transform(_monitors: &[Monitor], name: &str, transform: u32) 
     });
     entry.transform = Some(transform);
     save_display_config(&config)
+}
+
+pub fn get_profiles_path() -> PathBuf {
+    dirs::cache_dir()
+        .unwrap_or_else(|| std::path::PathBuf::from("."))
+        .join("quickshell")
+        .join("display_profiles.json")
+}
+
+pub fn load_profiles() -> HashMap<String, DisplayProfile> {
+    let path = get_profiles_path();
+    if path.exists() {
+        match fs::read_to_string(&path) {
+            Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
+            Err(_) => HashMap::new(),
+        }
+    } else {
+        HashMap::new()
+    }
+}
+
+pub fn save_profiles(profiles: &HashMap<String, DisplayProfile>) -> std::io::Result<()> {
+    let path = get_profiles_path();
+    if let Some(parent) = path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let content = serde_json::to_string_pretty(profiles).unwrap_or_default();
+    fs::write(path, content)
+}
+
+pub fn get_profile<'a>(name: &str, profiles: &'a HashMap<String, DisplayProfile>) -> Option<&'a DisplayProfile> {
+    profiles.get(name)
+}
+
+pub fn apply_profile(profile: &DisplayProfile, monitors: &[Monitor]) {
+    set_mode(profile.mode, monitors);
 }

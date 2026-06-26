@@ -208,6 +208,27 @@ Item {
         }
     }
 
+    function applyProfile(profileName) {
+        var profile = root.profiles[profileName];
+        if (!profile) return false;
+        
+        root.activeProfile = profileName;
+        saveProfiles();
+        root.refreshMonitors();
+        return true;
+    }
+
+    function createProfile(name, description, mode) {
+        var profile = {
+            name: name,
+            description: description || "",
+            mode: mode || "extend",
+            monitors: {}
+        };
+        root.profiles[name] = profile;
+        saveProfiles();
+    }
+
     Connections {
         target: Hyprland
         function onMonitorAdded() { 
