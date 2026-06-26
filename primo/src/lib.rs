@@ -11,11 +11,11 @@ pub use battery::{BatterySnapshot, battery_snapshot, find_battery_dir};
 pub use command::{run_cmd, run_cmd_with_stderr};
 pub use display::{
     get_current_mode, get_current_mode_from, get_internal_monitors, get_monitor_by_id,
-    get_monitor_by_name, get_monitors, get_primary_monitor, get_monitor_scale,
-    get_monitor_transform, get_profiles_path, load_display_config, load_profiles,
-    save_display_config, save_profiles, set_mode, set_mode_verified, set_monitor_scale,
-    set_monitor_transform, get_profile, apply_profile, toggle_mode, DisplayConfig,
-    DisplayMode, DisplayProfile, Monitor, MonitorSettings,
+    get_monitor_by_name, get_monitors, get_monitors_cached, get_primary_monitor,
+    get_monitor_scale, get_monitor_transform, get_profiles_path, load_display_config,
+    load_profiles, save_display_config, save_profiles, set_mode, set_mode_verified,
+    set_monitor_scale, set_monitor_transform, get_profile, apply_profile, toggle_mode,
+    DisplayConfig, DisplayMode, DisplayProfile, Monitor, MonitorSettings,
 };
 pub use external::{
     active_wifi_device, brightnessctl_percent, cidr_to_netmask, find_kbd_backlight_device,

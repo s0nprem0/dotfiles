@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::process::Command;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum DisplayMode {
@@ -324,6 +324,24 @@ pub fn get_internal_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
 
 pub fn get_external_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
     monitors.iter().filter(|m| !m.is_internal && !m.disabled).collect()
+}
+
+use std::sync::{Arc, Mutex};
+
+lazy_static::lazy_static! {
+    static ref MONITOR_CACHE: Arc<Mutex<(Vec<Monitor>, Instant)>> = Arc::new(Mutex::new((Vec::new(), Instant::now())));
+    static ref CACHE_TTL: Duration = Duration::from_millis(100);
+}
+
+pub fn get_monitors_cached() -> Vec<Monitor> {
+    let cache = MONITOR_CACHE.lock().unwrap();
+    if cache.1.elapsed() < *CACHE_TTL {
+        return cache.0.clone();
+    }
+    drop(cache);
+    let fresh = get_monitors();
+    *MONITOR_CACHE.lock().unwrap() = (fresh.clone(), Instant::now());
+    fresh
 }
 
 use std::fs;
