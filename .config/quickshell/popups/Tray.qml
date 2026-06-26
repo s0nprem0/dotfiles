@@ -10,20 +10,20 @@ PopupPanel {
     property var activeItem: null
     property bool showMenu: false
     property real menuX: 0
-    property int menuSelectedIndex: -1
+    property int menuSelectedIndex: 0
     property int trayIndex: -1
     property var activeSubmenu: null
     property bool showSubmenu: false
     property real submenuX: 0
     property real submenuY: 0
     property int submenuSelectedIndex: -1
-    property real menuAnimOpacity: 0
-    property real menuScale: 0.92
+    property int itemHeight: 32
 
     function nextMenuIndex(current, dir) {
         var next = current + dir;
         var children = menuOpener.children.values;
-        while (next >= 0 && next < children.length) {
+        var total = children.length;
+        while (next >= 0 && next < total) {
             if (!children[next].isSeparator)
                 return next;
 
@@ -35,7 +35,8 @@ PopupPanel {
     function nextSubmenuIndex(current, dir) {
         var next = current + dir;
         var children = submenuOpener.children.values;
-        while (next >= 0 && next < children.length) {
+        var total = children.length;
+        while (next >= 0 && next < total) {
             if (!children[next].isSeparator)
                 return next;
 
@@ -48,12 +49,8 @@ PopupPanel {
         root.activeItem = item;
         root.menuX = iconCenterX;
         if (!root.showMenu) {
-            root.menuAnimOpacity = 0;
-            root.menuScale = 0.92;
             root.showMenu = true;
             root.menuSelectedIndex = root.nextMenuIndex(-1, 1);
-            menuCloseAnim.stop();
-            menuOpenAnim.start();
         }
     }
 
@@ -75,11 +72,12 @@ PopupPanel {
     }
 
     function closeMenu() {
-        if (!root.showMenu || menuCloseAnim.running)
-            return ;
-
-        menuOpenAnim.stop();
-        menuCloseAnim.start();
+        if (!root.showMenu)
+            return;
+        root.showMenu = false;
+        root.activeItem = null;
+        root.menuSelectedIndex = -1;
+        root.closeSubmenu();
     }
 
     anchorSide: "right"
@@ -99,55 +97,6 @@ PopupPanel {
         id: submenuOpener
 
         menu: root.activeSubmenu
-    }
-
-    ParallelAnimation {
-        id: menuOpenAnim
-
-        NumberAnimation {
-            target: root
-            property: "menuAnimOpacity"
-            to: 1
-            duration: 150
-            easing.type: Easing.OutCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "menuScale"
-            to: 1
-            duration: 150
-            easing.type: Easing.OutCubic
-        }
-
-    }
-
-    ParallelAnimation {
-        id: menuCloseAnim
-
-        onStopped: {
-            root.showMenu = false;
-            root.activeItem = null;
-            root.menuSelectedIndex = -1;
-            root.closeSubmenu();
-        }
-
-        NumberAnimation {
-            target: root
-            property: "menuAnimOpacity"
-            to: 0
-            duration: 100
-            easing.type: Easing.InCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "menuScale"
-            to: 0.92
-            duration: 100
-            easing.type: Easing.InCubic
-        }
-
     }
 
     contentComponent: Component {
@@ -293,37 +242,32 @@ PopupPanel {
                         if (!root.showMenu || root.menuSelectedIndex < 0 || !menuFlick)
                             return ;
 
-                        var itemH = 23;
+                        var itemH = root.itemHeight;
                         var itemY = root.menuSelectedIndex * itemH;
                         if (itemY < menuFlick.contentY)
                             menuFlick.contentY = itemY;
-                        else if (itemY + 22 > menuFlick.contentY + menuFlick.height)
-                            menuFlick.contentY = itemY + 22 - menuFlick.height;
+                        else if (itemY + itemH > menuFlick.contentY + menuFlick.height)
+                            menuFlick.contentY = itemY + itemH - menuFlick.height;
                     }
 
                     function onSubmenuSelectedIndexChanged() {
                         if (!root.showSubmenu || root.submenuSelectedIndex < 0 || !submenuFlick)
                             return ;
 
-                        var itemH = 23;
+                        var itemH = root.itemHeight;
                         var itemY = root.submenuSelectedIndex * itemH;
                         if (itemY < submenuFlick.contentY)
                             submenuFlick.contentY = itemY;
-                        else if (itemY + 22 > submenuFlick.contentY + submenuFlick.height)
-                            submenuFlick.contentY = itemY + 22 - submenuFlick.height;
+                        else if (itemY + itemH > submenuFlick.contentY + submenuFlick.height)
+                            submenuFlick.contentY = itemY + itemH - submenuFlick.height;
                     }
 
-                    target: root
+target: root
                 }
 
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 0
-
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                    }
 
                     Rectangle {
                         id: trayBar
@@ -333,7 +277,6 @@ PopupPanel {
                         color: Theme.surface
                         border.width: 1
                         border.color: Theme.primary
-                        radius: 4
 
                         Row {
                             id: iconRow
@@ -353,7 +296,6 @@ PopupPanel {
                                     width: 18
                                     height: 18
                                     color: trayIconMouse.containsMouse || index === root.trayIndex ? Theme.primaryAlpha015 : "transparent"
-                                    radius: 2
 
                                     Image {
                                         anchors.fill: parent
@@ -409,12 +351,8 @@ PopupPanel {
                     color: Theme.surface
                     border.width: 1
                     border.color: Theme.primary
-                    radius: 4
                     clip: true
                     z: 10
-                    opacity: root.menuAnimOpacity
-                    scale: root.menuScale
-                    transformOrigin: Item.Bottom
                     anchors.bottom: trayBar.top
                     anchors.bottomMargin: 4
                     x: Math.max(8, Math.min(parent.width - width - 8, root.menuX - width / 2))
@@ -557,12 +495,10 @@ PopupPanel {
                     color: Theme.surface
                     border.width: 1
                     border.color: Theme.primary
-                    radius: 4
                     clip: true
                     z: 11
-                    opacity: root.menuAnimOpacity
-                    scale: root.menuScale
-                    transformOrigin: Item.Bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
                     x: Math.min(root.submenuX, parent.width - width - 4)
                     y: Math.max(0, Math.min(root.submenuY, parent.height - height - 4))
 
