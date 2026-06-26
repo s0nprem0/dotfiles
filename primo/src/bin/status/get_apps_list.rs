@@ -1,4 +1,4 @@
-use primo::cache_dir;
+use primo::{cache_dir, IconResolver};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::Write;
@@ -11,6 +11,7 @@ struct AppInfo {
     exec: String,
     icon: String,
     desktop_id: String,
+    comment: String,
     #[serde(default)]
     count: u32,
 }
@@ -390,79 +391,6 @@ fn parse_web_search(query: &str) -> Option<WebHistoryItem> {
     })
 }
 
-fn parse_desktop_file(path: &PathBuf, desktop_id: &str) -> Option<AppInfo> {
-    let content = std::fs::read_to_string(path).ok()?;
-    let mut name = None;
-    let mut exec = None;
-    let mut icon = None;
-    let mut no_display = false;
-    let mut in_desktop_entry = false;
-
-    for line in content.lines() {
-        let line = line.trim();
-        if line.is_empty() || line.starts_with('#') {
-            continue;
-        }
-
-        if line.starts_with('[') && line.ends_with(']') {
-            in_desktop_entry = line.contains("Desktop Entry");
-            continue;
-        }
-        if !in_desktop_entry {
-            continue;
-        }
-
-        if let Some(pos) = line.find('=') {
-            let key = line[..pos].trim();
-            let val = line[pos + 1..].trim();
-
-            match key {
-                "Name" if name.is_none() => name = Some(val.to_string()),
-                "Exec" if exec.is_none() => {
-                    let cleaned = val
-                        .split_whitespace()
-                        .filter(|arg| !arg.starts_with('%'))
-                        .collect::<Vec<_>>()
-                        .join(" ");
-                    exec = Some(cleaned);
-                }
-                "Icon" if icon.is_none() => icon = Some(val.to_string()),
-                "NoDisplay" => {
-                    if val.eq_ignore_ascii_case("true") {
-                        no_display = true;
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-
-    if no_display {
-        return None;
-    }
-
-    Some(AppInfo {
-        name: name?,
-        exec: exec?,
-        icon: icon.unwrap_or_default(),
-        desktop_id: desktop_id.to_string(),
-        count: 0,
-    })
-}
-
-fn fetch_github_repos(token: Option<&str>) -> Result<Vec<GitRepo>, Box<dyn std::error::Error>> {
-    let client = reqwest::blocking::Client::new();
-    let url = "https://api.github.com/user/repos?per_page=100";
-    
-    let mut req = client.get(url);
-    if let Some(t) = token {
-        req = req.bearer_auth(t);
-    }
-    
-    let repos: Vec<GitRepo> = req.send()?.json()?;
-    Ok(repos)
-}
-
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let storage = Storage::new();
@@ -658,54 +586,48 @@ fn main() {
                 println!("{}", serde_json::json!({"status": "added"}));
                 return;
             }
+            "--resolve-icon" if args.len() > 2 => {
+                let icon_name = &args[2];
+                let mut resolver = IconResolver::new();
+                if let Some(path) = resolver.resolve_icon_path(icon_name) {
+                    println!("{}", serde_json::json!({"path": path.to_string_lossy().to_string()}));
+                } else {
+                    println!("{}", serde_json::json!({"path": null}));
+                }
+                return;
+            }
             _ => {}
         }
     }
 
-    let home = match std::env::var("HOME") {
-        Ok(h) => h,
-        Err(_) => {
-            eprintln!("HOME not set, cannot scan applications");
-            std::process::exit(1);
-        }
-    };
+    let mut resolver = IconResolver::new();
+    
+    let entries = resolver.get_all_entries();
+    
+    let home = std::env::var("HOME").unwrap_or_else(|_| ". ".to_string());
     let usage_path = PathBuf::from(&home).join(".cache/quickshell/app_usage.json");
     let usage_map: HashMap<String, u32> = primo::state_file::read_json(&usage_path).unwrap_or_default();
-    let mut apps: HashMap<String, AppInfo> = HashMap::new();
+    
+    let mut apps: Vec<AppInfo> = entries
+        .into_iter()
+        .filter_map(|entry| {
+            let count = *usage_map.get(&entry.name).unwrap_or(&0);
+            let icon_path = resolve_icon_for_entry(&entry);
+            
+            Some(AppInfo {
+                name: entry.name.clone(),
+                exec: entry.exec.unwrap_or_default(),
+                icon: icon_path,
+                desktop_id: entry.id.to_string(),
+                comment: entry.generic_name.unwrap_or_default(),
+                count,
+            })
+        })
+        .collect();
+    
+    apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
 
-    let paths = [
-        "/usr/share/applications".to_string(),
-        format!("{}/.local/share/applications", home),
-        "/var/lib/flatpak/exports/share/applications".to_string(),
-        format!("{}/.local/share/flatpak/exports/share/applications", home),
-    ];
-
-    for dir_path in &paths {
-        let path = PathBuf::from(dir_path);
-        if !path.exists() {
-            continue;
-        }
-        if let Ok(entries) = std::fs::read_dir(&path) {
-            for entry in entries.flatten() {
-                let p = entry.path();
-                if p.extension().map_or(false, |ext| ext == "desktop") {
-                    if let Some(file_name) = p.file_name().and_then(|f| f.to_str()) {
-                        if let Some(mut app_info) = parse_desktop_file(&p, file_name) {
-                            if let Some(&count) = usage_map.get(&app_info.name) {
-                                app_info.count = count;
-                            }
-                            apps.insert(file_name.to_string(), app_info);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    let mut all_apps: Vec<AppInfo> = apps.into_values().collect();
-    all_apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-
-    let mut most_used: Vec<AppInfo> = all_apps
+    let mut most_used: Vec<AppInfo> = apps
         .iter()
         .filter(|app| app.count > 0)
         .cloned()
@@ -724,9 +646,39 @@ fn main() {
         std::io::stdout(),
         &MainResponse {
             most_used,
-            all_apps,
+            all_apps: apps,
             web_history,
             file_history,
         },
     );
+}
+
+fn resolve_icon_for_entry(entry: &primo::icon::DesktopEntry) -> String {
+    if let Some(ref icon) = entry.icon {
+        if icon.name.starts_with("file://") || icon.name.starts_with('/') {
+            return icon.name.clone();
+        }
+        
+        let mut resolver = IconResolver::new();
+        if let Some(path) = resolver.resolve_icon_path(&icon.name) {
+            return path.to_string_lossy().to_string();
+        }
+        
+        return icon.name.clone();
+    }
+    
+    "application-x-executable".to_string()
+}
+
+fn fetch_github_repos(token: Option<&str>) -> Result<Vec<GitRepo>, Box<dyn std::error::Error>> {
+    let client = reqwest::blocking::Client::new();
+    let url = "https://api.github.com/user/repos?per_page=100";
+    
+    let mut req = client.get(url);
+    if let Some(t) = token {
+        req = req.bearer_auth(t);
+    }
+    
+    let repos: Vec<GitRepo> = req.send()?.json()?;
+    Ok(repos)
 }
