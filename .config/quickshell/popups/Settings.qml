@@ -111,6 +111,12 @@ Window {
         kbdProc.running = true;
     }
 
+    function setChargeLimit(limit) {
+        root.chargeLimit = limit;
+        chargeLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(limit)];
+        chargeLimitProc.running = true;
+    }
+
     function confirmAction(action, label) {
         pendingAction = action;
         pendingLabel = label;
@@ -231,6 +237,10 @@ Window {
 
     Process {
         id: kbdProc
+    }
+    
+    Process {
+        id: chargeLimitProc
     }
 
     // ── UI ──
@@ -415,7 +425,7 @@ Window {
                             }
                         }
 
-                        PowerTab {
+PowerTab {
                             activeProfile: root.activeProfile
                             availableProfiles: root.availableProfiles
                             chargeLimit: root.chargeLimit
@@ -424,11 +434,14 @@ Window {
                             onSetProfile: (p) => {
                                 return root.setProfile(p);
                             }
-                            onBrightnessChanged: (pct) => {
+                            onScreenBrightnessUpdated: (pct) => {
                                 root.setBrightness(pct);
                             }
-                            onKbdChanged: (pct) => {
+                            onKeyboardBrightnessUpdated: (pct) => {
                                 root.setKbdBrightness(pct);
+                            }
+                            onChargeLimitUpdated: (limit) => {
+                                root.setChargeLimit(limit);
                             }
                         }
 

@@ -7,8 +7,13 @@ Rectangle {
 
     property string activeProfile: "balanced"
     property int chargeLimit: 80
+    property int screenBrightness: 80
+    property int kbdBrightness: 50
 
     signal profileSelected(string profile)
+    signal screenBrightnessUpdated(int pct)
+    signal keyboardBrightnessUpdated(int pct)
+    signal chargeLimitUpdated(int limit)
 
     Layout.fillWidth: true
     radius: 0
@@ -92,28 +97,175 @@ Rectangle {
             color: Theme.primaryAlpha03
         }
 
+        Text {
+            text: "Screen Brightness"
+            color: Theme.muted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLg
+        }
+
         RowLayout {
             Layout.fillWidth: true
+            spacing: 8
 
             Text {
-                text: "Battery Charge Limit"
+                text: "\uf0e0"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeLg
+                font.pixelSize: Theme.fontSizeXl
             }
 
-            Item {
+            Rectangle {
                 Layout.fillWidth: true
+                height: 8
+                radius: 4
+                color: Theme.surfaceLighter
+
+                Rectangle {
+                    width: parent.width * (root.screenBrightness / 100)
+                    height: parent.height
+                    radius: 4
+                    color: Theme.primary
+                }
             }
 
             Text {
-                text: root.chargeLimit + "%"
+                text: root.screenBrightness + "%"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXl
+                font.pixelSize: Theme.fontSizeLg
                 font.bold: true
+                Layout.minimumWidth: 36
+                horizontalAlignment: Text.AlignRight
             }
 
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    var pct = Math.round((mouseX / width) * 100);
+                    pct = Math.max(0, Math.min(100, pct));
+                    root.screenBrightnessUpdated(pct);
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Theme.primaryAlpha03
+        }
+
+        Text {
+            text: "Keyboard Brightness"
+            color: Theme.muted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLg
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            Text {
+                text: "\uf021"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeXl
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 8
+                radius: 4
+                color: Theme.surfaceLighter
+
+                Rectangle {
+                    width: parent.width * (root.kbdBrightness / 100)
+                    height: parent.height
+                    radius: 4
+                    color: Theme.primary
+                }
+            }
+
+            Text {
+                text: root.kbdBrightness + "%"
+                color: Theme.primary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeLg
+                font.bold: true
+                Layout.minimumWidth: 36
+                horizontalAlignment: Text.AlignRight
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    var pct = Math.round((mouseX / width) * 100);
+                    pct = Math.max(0, Math.min(100, pct));
+                    root.keyboardBrightnessUpdated(pct);
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Theme.primaryAlpha03
+        }
+
+        Text {
+            text: "Battery Charge Limit"
+            color: Theme.muted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeLg
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            Text {
+                text: "\uf00e"
+                color: Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeXl
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 8
+                radius: 4
+                color: Theme.surfaceLighter
+
+                Rectangle {
+                    width: parent.width * (root.chargeLimit / 100)
+                    height: parent.height
+                    radius: 4
+                    color: root.chargeLimit < 100 ? Theme.warning : Theme.primary
+                }
+            }
+
+            Text {
+                text: root.chargeLimit < 100 ? root.chargeLimit + "%" : "Full"
+                color: root.chargeLimit < 100 ? Theme.primary : Theme.muted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeLg
+                font.bold: root.chargeLimit < 100
+                Layout.minimumWidth: 36
+                horizontalAlignment: Text.AlignRight
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    var pct = Math.round((mouseX / width) * 100);
+                    pct = Math.max(50, Math.min(100, pct));
+                    root.chargeLimitUpdated(pct);
+                }
+            }
         }
 
     }

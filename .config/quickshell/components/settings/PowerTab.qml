@@ -12,8 +12,9 @@ Rectangle {
     property int currentKbd: 50
 
     signal setProfile(string profile)
-    signal brightnessChanged(int pct)
-    signal kbdChanged(int pct)
+    signal screenBrightnessUpdated(int pct)
+    signal keyboardBrightnessUpdated(int pct)
+    signal chargeLimitUpdated(int limit)
 
     color: "transparent"
 
@@ -28,6 +29,15 @@ Rectangle {
             onProfileSelected: (p) => {
                 return root.setProfile(p);
             }
+            onScreenBrightnessUpdated: (pct) => {
+                return root.screenBrightnessUpdated(pct);
+            }
+            onKeyboardBrightnessUpdated: (pct) => {
+                return root.keyboardBrightnessUpdated(pct);
+            }
+            onChargeLimitUpdated: (limit) => {
+                return root.chargeLimitUpdated(limit);
+            }
         }
 
         ModeCard {
@@ -39,10 +49,10 @@ Rectangle {
                 return root.setProfile(p);
             }
             onBrightnessChanged: (pct) => {
-                return root.brightnessChanged(pct);
+                return root.screenBrightnessUpdated(pct);
             }
             onKbdChanged: (pct) => {
-                return root.kbdChanged(pct);
+                return root.keyboardBrightnessUpdated(pct);
             }
         }
 

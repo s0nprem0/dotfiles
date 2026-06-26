@@ -19,6 +19,7 @@ PopupPanel {
     property var sparkline: []
     property string activeProfile: "balanced"
     property var availableProfiles: []
+    property bool daemonRunning: false
     // ── Charge limit ──
     property int chargeLimit: 100
     property bool chargeLimitSupported: false
@@ -179,6 +180,24 @@ PopupPanel {
         id: writeFileCmd
     }
 
+
+    // ── Daemon status Process ──
+    Process {
+        id: daemonStatusProc
+
+        command: ["pgrep", "-f", "battery_daemon"]
+
+        onExited: {
+            root.daemonRunning = (this.exitCode === 0);
+        }
+    }
+
+    Timer {
+        interval: 3000
+        running: root.showPopup
+        repeat: true
+        onTriggered: daemonStatusProc.running = true
+    }
     // ── Battery status Process ──
     Process {
         id: statusProc
@@ -479,6 +498,13 @@ PopupPanel {
                     Layout.fillWidth: true
                 }
 
+                Text {
+                    text: root.daemonRunning ? "●" : "○"
+                    color: root.daemonRunning ? Theme.green : Theme.muted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeSm
+                }
+
                 Rectangle {
                     width: 36
                     height: 18
@@ -587,35 +613,44 @@ PopupPanel {
                     Layout.fillWidth: true
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 22
-                    radius: 4
-                    color: root.chargeLimit < 100 ? Theme.warning : Theme.surfaceLighter
+                RowLayout {
+                    spacing: 4
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.chargeLimit < 100 ? root.chargeLimit + "%" : "Full"
-                        color: root.chargeLimit < 100 ? Theme.bg : Theme.muted
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeSm
-                        font.bold: root.chargeLimit < 100
-                    }
+                    Repeater {
+                        model: [50, 80, 90, 100]
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            var newVal = root.chargeLimit < 100 ? 100 : 80;
-                            root.chargeLimit = newVal;
-                            setLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(newVal)];
-                            setLimitProc.running = true;
-                            root.saveSettings();
+                        delegate: Rectangle {
+                            required property int modelData
+
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 22
+                            radius: 4
+                            color: root.chargeLimit === modelData ? Theme.primary : Theme.surfaceLighter
+                            border.width: 1
+                            border.color: root.chargeLimit === modelData ? Theme.primary : Theme.surfaceLighter
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData === 100 ? "Full" : String(modelData)
+                                color: root.chargeLimit === modelData ? Theme.bg : Theme.muted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                                font.bold: root.chargeLimit === modelData
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    root.chargeLimit = modelData;
+                                    setLimitProc.command = [Theme.bin("set_charge_limit.sh"), String(modelData)];
+                                    setLimitProc.running = true;
+                                    root.saveSettings();
+                                }
+                            }
                         }
                     }
-
                 }
-
             }
 
             Rectangle {
