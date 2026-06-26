@@ -10,6 +10,8 @@ Item {
 
         delegate: Component {
             PanelWindow {
+                // Low
+
                 id: toastPopup
 
                 required property var modelData
@@ -17,11 +19,13 @@ Item {
                 function urgencyColor(urgency) {
                     if (urgency === 2)
                         return Theme.error;
- // Critical
+
+                    // Critical
                     if (urgency === 1)
                         return Theme.primary;
- // Normal
-                    return Theme.muted; // Low
+
+                    // Normal
+                    return Theme.muted;
                 }
 
                 visible: toastRepeater.count > 0
@@ -60,6 +64,7 @@ Item {
                             property real opacityValue: 0
                             property bool closing: false
                             property bool hovered: false
+                            property var liveData: model.notifData || model
 
                             function close() {
                                 if (closing)
@@ -117,9 +122,9 @@ Item {
 
                                 interval: 50
                                 onTriggered: {
-                                    if (NotificationState.service) {
+                                    if (NotificationState.service && model && model.notifId !== undefined)
                                         NotificationState.service.dismissToastById(model.notifId);
-                                    }
+
                                 }
                             }
 
@@ -128,25 +133,29 @@ Item {
 
                                 interval: 50
                                 onTriggered: {
-                                    if (NotificationState.service) {
+                                    if (NotificationState.service && model && model.notifId !== undefined)
                                         NotificationState.service.softDismissToastById(model.notifId);
-                                    }
+
                                 }
                             }
 
                             Timer {
                                 id: dismissTimer
 
-                                interval: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : (model.urgency === 2 ? 8000 : 6000)
-                                running: !toastDelegate.hovered
-                                onTriggered: autoClose()
+                                interval: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 8000) : (liveData.urgency === 2 ? 8000 : 6000)
+                                running: !toastDelegate.hovered && liveData.expireTimeout !== 0
+                                onTriggered: {
+                                    if (model && model.notifId !== undefined)
+                                        autoClose();
+
+                                }
                             }
 
                             // ── Brutalist Notification Card ──
                             Rectangle {
                                 id: toastCard
 
-                                readonly property int urg: model.urgency
+                                readonly property int urg: liveData.urgency
                                 readonly property color uColor: urgencyColor(urg)
 
                                 z: 1
@@ -190,14 +199,14 @@ Item {
                                             spacing: 8
 
                                             Text {
-                                                text: model.urgency === 2 ? "󰀦" : (!model.appIcon || model.appIcon.length === 0 ? IconResolver.nerdFontGlyph(model.appName) : "󰂚")
+                                                text: liveData.urgency === 2 ? "󰀦" : (!liveData.appIcon || liveData.appIcon.length === 0 ? IconResolver.nerdFontGlyph(liveData.appName) : "󰂚")
                                                 color: toastCard.uColor
                                                 font.family: Theme.fontFamily
                                                 font.pixelSize: 12
                                             }
 
                                             Text {
-                                                text: (model.appName || "SYSTEM").toUpperCase()
+                                                text: (liveData.appName || "SYSTEM").toUpperCase()
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
                                                 font.pixelSize: 13
@@ -272,7 +281,7 @@ Item {
                                             spacing: 4
 
                                             Text {
-                                                text: (model.summary || "").toUpperCase() // Force uppercase for summary
+                                                text: (liveData.summary || "").toUpperCase()
                                                 color: Theme.fg
                                                 font.family: Theme.fontFamily
                                                 font.pixelSize: 11
@@ -284,7 +293,7 @@ Item {
                                             }
 
                                             Text {
-                                                text: model.body || ""
+                                                text: liveData.body || ""
                                                 color: Theme.fg
                                                 font.family: Theme.fontFamily
                                                 font.pixelSize: 10
@@ -299,6 +308,23 @@ Item {
                                                 }
                                             }
 
+                                        }
+
+                                    }
+
+                                    // ── Row 2.5: Hint Progress Bar ──
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: 12
+                                        Layout.rightMargin: 12
+                                        height: 4
+                                        color: Qt.alpha(Theme.primary, 0.1)
+                                        visible: liveData.hints && liveData.hints.value !== undefined
+
+                                        Rectangle {
+                                            width: parent.width * Math.min(1, Math.max(0, (liveData.hints.value / (liveData.hints.maximum || 100))))
+                                            height: parent.height
+                                            color: Theme.primary
                                         }
 
                                     }
@@ -330,10 +356,11 @@ Item {
                                         Layout.preferredHeight: 3
                                         clip: true
                                         color: "transparent"
-                                        visible: model.urgency !== 2
+                                        visible: liveData.urgency !== 2
 
                                         Rectangle {
                                             id: progressBarFill
+
                                             width: 0
                                             height: parent.height
                                             color: toastCard.uColor
@@ -341,8 +368,8 @@ Item {
                                             NumberAnimation on width {
                                                 from: progressBarFill.parent.width
                                                 to: 0
-                                                duration: model.expireTimeout > 0 ? Math.min(model.expireTimeout, 8000) : 6000
-                                                running: model.urgency !== 2 && !toastDelegate.hovered
+                                                duration: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 8000) : 6000
+                                                running: liveData.urgency !== 2 && !toastDelegate.hovered
                                             }
 
                                         }
@@ -363,6 +390,14 @@ Item {
                                         else if (mouse.button === Qt.RightButton)
                                             close();
                                     }
+                                }
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 200
+                                        easing.type: Easing.OutCubic
+                                    }
+
                                 }
 
                             }
