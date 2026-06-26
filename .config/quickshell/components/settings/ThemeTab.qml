@@ -210,6 +210,62 @@ RowLayout {
             }
         }
 
+        // ── Glass Effect ──
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            color: glassMa.containsMouse ? Theme.primaryAlpha01 : "transparent"
+            border.width: 1
+            border.color: Theme.primaryAlpha03
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                spacing: 10
+
+                Text {
+                    text: "Glass Effect"
+                    color: Theme.fg
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeMd
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    implicitWidth: 44
+                    implicitHeight: 22
+                    radius: 11
+                    color: Theme.glassEnabled ? Theme.primary : Theme.surfaceLighter
+                    border.width: 1
+                    border.color: Theme.primaryAlpha03
+
+                    Rectangle {
+                        x: Theme.glassEnabled ? parent.width - width - 2 : 2
+                        y: 2
+                        width: parent.height - 4
+                        height: parent.height - 4
+                        radius: width / 2
+                        color: Theme.glassEnabled ? Theme.bg : Theme.muted
+                        Behavior on x { NumberAnimation { duration: 150 } }
+                    }
+                }
+            }
+
+            MouseArea {
+                id: glassMa
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    Theme.glassEnabled = !Theme.glassEnabled;
+                    Quickshell.execDetached(["sh", "-c",
+                        "echo " + (Theme.glassEnabled ? "true" : "false") + " > /tmp/quickshell_glass_state"]);
+                }
+            }
+        }
+
         // ── Divider ──
         Rectangle {
             Layout.fillWidth: true

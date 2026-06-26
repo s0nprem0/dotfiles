@@ -17,6 +17,10 @@ name = "primo"
 path = "src/lib.rs"
 
 [[bin]]
+name = "get_sysmon_status"
+path = "src/bin/status/sysmon.rs"
+
+[[bin]]
 name = "get_apps_list"
 path = "src/bin/status/get_apps_list.rs"
 

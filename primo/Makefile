@@ -7,6 +7,7 @@ BINARIES := \
 	get_audio_status \
 	get_bluetooth_status \
 	get_power_profile \
+	get_sysmon_status \
 	battery_daemon \
 	log_battery \
 	osdctl \

@@ -124,6 +124,7 @@ Bar {
                 case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
                 case "presentation": presentationPopup.showPopup = !presentationPopup.showPopup; break;
                 case "ports": portsPopup.showPopup = !portsPopup.showPopup; break;
+                case "sysmon": sysmonPopup.showPopup = !sysmonPopup.showPopup; break;
             }
         }
     }
@@ -177,6 +178,10 @@ Bar {
 
     Popups.Ports {
         id: portsPopup
+    }
+
+    Popups.Sysmon {
+        id: sysmonPopup
     }
 
     Popups.ThemePicker {

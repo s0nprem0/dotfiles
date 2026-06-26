@@ -65,6 +65,15 @@ Item {
     readonly property string tmpDir: "/tmp/quickshell"
     property bool glassEnabled: true
     property color popupBgColor: glassEnabled ? Qt.rgba(bg.r, bg.g, bg.b, 0.5) : bg
+    property FileView glassState: FileView {
+        path: "file:///tmp/quickshell_glass_state"
+        watchChanges: true
+        onLoaded: {
+            var val = glassState.text().trim();
+            theme.glassEnabled = (val !== "false");
+        }
+        onFileChanged: reload()
+    }
 
     function bin(name) {
         return helperDir + "/" + name;
