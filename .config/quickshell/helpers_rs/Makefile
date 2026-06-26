@@ -1,5 +1,28 @@
 .PHONY: all build update format install
 
+BINARIES := \
+	get_apps_list \
+	get_network_status \
+	get_battery_status \
+	get_audio_status \
+	get_bluetooth_status \
+	get_power_profile \
+	battery_daemon \
+	log_battery \
+	osdctl \
+	screenshot \
+	ports_menu \
+	get_sys_diagnostics \
+	check_daemons \
+	parse_binds \
+	mtp_notify \
+	display_toggle \
+	caffeine \
+	list_presets \
+	apply_preset
+
+HELPER_DIR := ../helpers
+
 all: build install
 
 build:
@@ -13,31 +36,25 @@ format:
 
 install: build
 	@echo "-- Stopping running daemons before install"
-	-pkill -f battery_daemon 2>/dev/null || true
+	-pkill -f battery_daemon >/dev/null 2>&1 || true
+	-pkill -f get_audio_status >/dev/null 2>&1 || true
+
 	@sleep 1
-	mkdir -p ../helpers
-	cd target/release && strip \
-		get_network_status get_battery_status get_audio_status \
-		get_bluetooth_status get_power_profile battery_daemon \
-		log_battery osdctl screenshot ports_menu get_sys_diagnostics \
-		check_daemons parse_binds mtp_notify display_toggle \
-		caffeine list_presets apply_preset 2>/dev/null || true
-	cp target/release/get_apps_list ../helpers/get_apps_list
-	cp target/release/get_network_status ../helpers/get_network_status
-	cp target/release/get_battery_status ../helpers/get_battery_status
-	cp target/release/get_audio_status ../helpers/get_audio_status
-	cp target/release/get_bluetooth_status ../helpers/get_bluetooth_status
-	cp target/release/get_power_profile ../helpers/get_power_profile
-	-cp target/release/battery_daemon ../helpers/battery_daemon
-	cp target/release/log_battery ../helpers/log_battery
-	cp target/release/osdctl ../helpers/osdctl
-	cp target/release/screenshot ../helpers/screenshot
-	cp target/release/ports_menu ../helpers/ports_menu
-	cp target/release/get_sys_diagnostics ../helpers/get_sys_diagnostics
-	cp target/release/check_daemons ../helpers/check_daemons
-	cp target/release/parse_binds ../helpers/parse_binds
-	-cp target/release/mtp_notify ../helpers/mtp_notify
-	cp target/release/display_toggle ../helpers/display_toggle
-	cp target/release/caffeine ../helpers/caffeine
-	cp target/release/list_presets ../helpers/list_presets
-	cp target/release/apply_preset ../helpers/apply_preset
+
+	mkdir -p $(HELPER_DIR)
+
+	@echo "-- Stripping binaries"
+	@for bin in $(BINARIES); do \
+		if [ -f target/release/$$bin ]; then \
+			strip target/release/$$bin || true; \
+		fi; \
+	done
+
+	@echo "-- Installing helpers"
+	@for bin in $(BINARIES); do \
+		if [ -f target/release/$$bin ]; then \
+			cp target/release/$$bin $(HELPER_DIR)/; \
+		fi; \
+	done
+
+	@echo "-- Installation complete"
