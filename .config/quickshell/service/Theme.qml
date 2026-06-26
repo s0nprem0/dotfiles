@@ -65,7 +65,9 @@ Item {
     readonly property string tmpDir: "/tmp/quickshell"
     property bool glassEnabled: true
     property color popupBgColor: glassEnabled ? Qt.rgba(bg.r, bg.g, bg.b, 0.5) : bg
-    property FileView glassState: FileView {
+    property FileView glassState
+
+    glassState: FileView {
         path: "file:///tmp/quickshell_glass_state"
         watchChanges: true
         onLoaded: {
@@ -81,6 +83,84 @@ Item {
 
     function config(path) {
         return home + "/.config/" + path;
+    }
+
+    Component.onCompleted: {
+        var comp = Qt.createComponent("file://" + home + "/.cache/quickshell/Colors.qml");
+        if (comp !== null && comp.status === Component.Ready) {
+            var c = comp.createObject(theme);
+            if (c !== null) {
+                theme.bg = c.bg;
+                theme.fg = c.fg;
+                theme.surface = c.surface;
+                theme.surfaceLighter = c.surfaceLighter;
+                theme.primary = c.primary;
+                theme.muted = c.muted;
+                theme.error = c.error;
+                theme.warning = c.warning;
+                theme.green = c.green;
+                theme.blue = c.blue;
+                theme.tertiary = c.tertiary !== undefined ? c.tertiary : c.surface;
+                c.destroy();
+            }
+        }
+    }
+    FileView {
+        id: colorsWatcher
+
+        path: "file://" + home + "/.cache/quickshell/colors.json"
+        watchChanges: true
+        onLoaded: {
+            var textVal = colorsWatcher.text().trim();
+            if (textVal.length === 0)
+                return ;
+
+            var data;
+            try {
+                data = JSON.parse(textVal);
+            } catch (e) {
+                console.warn("Theme: failed to parse colors.json:", e, "data:", textVal.substring(0, 100));
+                return ;
+            }
+            if (typeof data !== "object" || data === null) {
+                console.warn("Theme: colors.json is not an object:", typeof data);
+                return ;
+            }
+            if (data.bg)
+                theme.bg = data.bg;
+
+            if (data.fg)
+                theme.fg = data.fg;
+
+            if (data.surface)
+                theme.surface = data.surface;
+
+            if (data.surfaceLighter)
+                theme.surfaceLighter = data.surfaceLighter;
+
+            if (data.primary)
+                theme.primary = data.primary;
+
+            if (data.muted)
+                theme.muted = data.muted;
+
+            if (data.error)
+                theme.error = data.error;
+
+            if (data.warning)
+                theme.warning = data.warning;
+
+            if (data.green)
+                theme.green = data.green;
+
+            if (data.blue)
+                theme.blue = data.blue;
+
+            if (data.tertiary)
+                theme.tertiary = data.tertiary;
+
+        }
+        onFileChanged: reload()
     }
 
     Behavior on bg {
@@ -226,61 +306,4 @@ Item {
 
     }
 
-    Component.onCompleted: {
-        var comp = Qt.createComponent("file://" + home + "/.cache/quickshell/Colors.qml");
-        if (comp !== null && comp.status === Component.Ready) {
-            var c = comp.createObject(theme);
-            if (c !== null) {
-                theme.bg = c.bg;
-                theme.fg = c.fg;
-                theme.surface = c.surface;
-                theme.surfaceLighter = c.surfaceLighter;
-                theme.primary = c.primary;
-                theme.muted = c.muted;
-                theme.error = c.error;
-                theme.warning = c.warning;
-                theme.green = c.green;
-                theme.blue = c.blue;
-                theme.tertiary = c.tertiary !== undefined ? c.tertiary : c.surface;
-                c.destroy();
-            }
-        }
-    }
-
-    FileView {
-        id: colorsWatcher
-        path: "file://" + home + "/.cache/quickshell/colors.json"
-        watchChanges: true
-        onLoaded: {
-            var textVal = colorsWatcher.text().trim();
-            if (textVal.length === 0)
-                return ;
-
-            var data;
-            try {
-                data = JSON.parse(textVal);
-            } catch (e) {
-                console.warn("Theme: failed to parse colors.json:", e, "data:", textVal.substring(0, 100));
-                return;
-            }
-
-            if (typeof data !== "object" || data === null) {
-                console.warn("Theme: colors.json is not an object:", typeof data);
-                return;
-            }
-
-            if (data.bg) theme.bg = data.bg;
-            if (data.fg) theme.fg = data.fg;
-            if (data.surface) theme.surface = data.surface;
-            if (data.surfaceLighter) theme.surfaceLighter = data.surfaceLighter;
-            if (data.primary) theme.primary = data.primary;
-            if (data.muted) theme.muted = data.muted;
-            if (data.error) theme.error = data.error;
-            if (data.warning) theme.warning = data.warning;
-            if (data.green) theme.green = data.green;
-            if (data.blue) theme.blue = data.blue;
-            if (data.tertiary) theme.tertiary = data.tertiary;
-        }
-        onFileChanged: reload()
-    }
 }

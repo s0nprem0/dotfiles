@@ -22,15 +22,14 @@ Item {
     property bool showPopup: false
     property Component contentComponent
     property var screenWins: new Map()
-
-    signal beforeOpen()
-    signal afterOpen()
-    signal beforeClose()
-
     property int savedSection: 0
     property int savedSubIndex: 0
     property int progressHeight: 0
     property int progressWidth: 0
+
+    signal beforeOpen()
+    signal afterOpen()
+    signal beforeClose()
 
     function closePopup() {
         root.showPopup = false;
@@ -39,9 +38,9 @@ Item {
     function saveFocusState(sec, sub) {
         root.savedSection = sec;
         root.savedSubIndex = sub;
-        if (FocusState) {
+        if (FocusState)
             FocusState.saveState(root.popupName, sec, sub);
-        }
+
     }
 
     onShowPopupChanged: {
@@ -135,9 +134,15 @@ Item {
                             var maxWidth = parent.width - root.contentMargin * 2;
                             return (root.progressWidth / contentWidth) * maxWidth;
                         }
+
                         Behavior on width {
-                            NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                            NumberAnimation {
+                                duration: 150
+                                easing.type: Easing.InOutQuad
+                            }
+
                         }
+
                     }
 
                     Loader {

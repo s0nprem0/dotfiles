@@ -12,6 +12,7 @@ BarModule {
 
     Text {
         id: clockText
+
         anchors.centerIn: parent
         text: Qt.formatDateTime(new Date(), root.dateFormat)
         color: Theme.fg
@@ -31,7 +32,10 @@ BarModule {
         function onClicked(mouse) {
             if (NotificationState.centerPopup)
                 NotificationState.centerPopup.showPopup = true;
+
         }
+
         target: mA
     }
+
 }

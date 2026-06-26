@@ -16,6 +16,14 @@ QtObject {
     property bool isLoaded: false
     property Process appProc
 
+    function refresh() {
+        appProc.running = true;
+    }
+
+    Component.onCompleted: {
+        refresh();
+    }
+
     appProc: Process {
         command: [Theme.bin("get_apps_list")]
 
@@ -32,11 +40,4 @@ QtObject {
 
     }
 
-    function refresh() {
-        appProc.running = true;
-    }
-
-    Component.onCompleted: {
-        refresh();
-    }
 }

@@ -14,6 +14,7 @@ BarModule {
 
     Text {
         id: themeIcon
+
         anchors.centerIn: parent
         text: "󰸌"
         color: mA.containsMouse ? Theme.primary : Theme.fg
@@ -23,10 +24,12 @@ BarModule {
 
     Connections {
         function onClicked(mouse) {
-            if (mouse.button === Qt.LeftButton && root.themePickerPopupRef) {
+            if (mouse.button === Qt.LeftButton && root.themePickerPopupRef)
                 root.themePickerPopupRef.showPopup = !root.themePickerPopupRef.showPopup;
-            }
+
         }
+
         target: mA
     }
+
 }

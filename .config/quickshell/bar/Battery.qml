@@ -60,6 +60,9 @@ BarModule {
         path: Theme.bin("get_battery_status")
         interval: 60000
         onDataReceived: function(j) {
+            if (!j || typeof j !== "object")
+                return ;
+
             root.pct = j.capacity ?? 0;
             var status = (j.status ?? "").toString().toLowerCase();
             root.charging = status === "charging" || status === "full";

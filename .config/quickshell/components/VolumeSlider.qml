@@ -16,6 +16,21 @@ Item {
 
     implicitWidth: label.length > 0 ? Math.max(120, childrenRect.width) : maxWidth
     implicitHeight: 24
+    Keys.onPressed: function(event) {
+        if (!enabled)
+            return ;
+
+        if (event.key === Qt.Key_Equal || event.key === Qt.Key_Plus) {
+            root.valueChanged(Math.min(1, root.currentValue + 0.05));
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Minus) {
+            root.valueChanged(Math.max(0, root.currentValue - 0.05));
+            event.accepted = true;
+        } else if (event.key === Qt.Key_M) {
+            root.muteToggled(!root.muted);
+            event.accepted = true;
+        }
+    }
 
     Column {
         anchors.fill: parent
@@ -45,6 +60,7 @@ Item {
                 Layout.preferredWidth: 40
                 horizontalAlignment: Text.AlignRight
             }
+
         }
 
         Item {
@@ -67,6 +83,7 @@ Item {
                     width: parent.width * Math.min(1, root.currentValue)
                     color: Theme.primary
                 }
+
             }
 
             MouseArea {
@@ -83,6 +100,7 @@ Item {
                         var v = Math.max(0, Math.min(1, mouse.x / width));
                         if (Math.abs(v - root.currentValue) > 0.02)
                             root.valueChanged(v);
+
                     }
                 }
             }
@@ -95,20 +113,9 @@ Item {
                     root.valueChanged(newVol);
                 }
             }
+
         }
+
     }
 
-    Keys.onPressed: function(event) {
-        if (!enabled) return;
-        if (event.key === Qt.Key_Equal || event.key === Qt.Key_Plus) {
-            root.valueChanged(Math.min(1, root.currentValue + 0.05));
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Minus) {
-            root.valueChanged(Math.max(0, root.currentValue - 0.05));
-            event.accepted = true;
-        } else if (event.key === Qt.Key_M) {
-            root.muteToggled(!root.muted);
-            event.accepted = true;
-        }
-    }
 }

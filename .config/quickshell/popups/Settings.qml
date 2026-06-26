@@ -103,11 +103,7 @@ Window {
 
     function setKbdBrightness(pct) {
         root.currentKbd = pct;
-        kbdProc.command = [
-            "sh", "-c",
-            "dev=$(ls /sys/class/leds/*kbd_backlight 2>/dev/null | head -1) && " +
-            "[ -n \"$dev\" ] && brightnessctl -d \"$(basename \"$dev\")\" set " + pct + "%"
-        ];
+        kbdProc.command = ["sh", "-c", "dev=$(ls /sys/class/leds/*kbd_backlight 2>/dev/null | head -1) && " + "[ -n \"$dev\" ] && brightnessctl -d \"$(basename \"$dev\")\" set " + pct + "%"];
         kbdProc.running = true;
     }
 
@@ -238,7 +234,7 @@ Window {
     Process {
         id: kbdProc
     }
-    
+
     Process {
         id: chargeLimitProc
     }
@@ -369,6 +365,7 @@ Window {
 
                                 MouseArea {
                                     id: tabMa
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
@@ -425,7 +422,7 @@ Window {
                             }
                         }
 
-PowerTab {
+                        PowerTab {
                             activeProfile: root.activeProfile
                             availableProfiles: root.availableProfiles
                             chargeLimit: root.chargeLimit

@@ -11,12 +11,27 @@ Window {
     property bool showPopup: false
     property string currentMode: DisplayService.currentMode
     property int monitorCount: DisplayService.monitorCount
-    property var modes: [
-        { name: "EXTEND", value: "extend", desc: "Two separate screens", icon: "🖥️" },
-        { name: "DUPLICATE", value: "duplicate", desc: "Mirror displays", icon: "🔄" },
-        { name: "EXTERNAL", value: "external", desc: "External only", icon: "📺" },
-        { name: "INTERNAL", value: "internal", desc: "Laptop screen only", icon: "💻" }
-    ]
+    property var modes: [{
+        "name": "EXTEND",
+        "value": "extend",
+        "desc": "Two separate screens",
+        "icon": "🖥️"
+    }, {
+        "name": "DUPLICATE",
+        "value": "duplicate",
+        "desc": "Mirror displays",
+        "icon": "🔄"
+    }, {
+        "name": "EXTERNAL",
+        "value": "external",
+        "desc": "External only",
+        "icon": "📺"
+    }, {
+        "name": "INTERNAL",
+        "value": "internal",
+        "desc": "Laptop screen only",
+        "icon": "💻"
+    }]
 
     function applyMode(mode) {
         var result = Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
@@ -25,7 +40,9 @@ Window {
     }
 
     function cycleMode() {
-        var idx = modes.findIndex(function(m) { return m.value === root.currentMode; });
+        var idx = modes.findIndex(function(m) {
+            return m.value === root.currentMode;
+        });
         var nextIdx = (idx + 1) % modes.length;
         root.applyMode(modes[nextIdx].value);
     }
@@ -38,7 +55,6 @@ Window {
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint
     visible: showPopup
-
     Keys.onPressed: function(event) {
         if (event.key === Qt.Key_Escape) {
             root.showPopup = false;
@@ -49,11 +65,10 @@ Window {
             event.accepted = true;
         }
     }
-
     onShowPopupChanged: {
-        if (showPopup) {
+        if (showPopup)
             DisplayService.refreshMonitors();
-        }
+
     }
 
     Rectangle {
@@ -111,8 +126,11 @@ Window {
                             font.bold: true
                             visible: root.monitorCount > 0
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -126,6 +144,7 @@ Window {
 
                 delegate: Rectangle {
                     required property var modelData
+
                     Layout.fillWidth: true
                     Layout.preferredHeight: 56
                     color: modelData.value === root.currentMode ? Theme.primaryAlpha015 : Theme.surface
@@ -163,6 +182,7 @@ Window {
                                 font.pixelSize: Theme.fontSizeSm
                                 elide: Text.ElideRight
                             }
+
                         }
 
                         Text {
@@ -172,6 +192,7 @@ Window {
                             font.pixelSize: Theme.fontSize2xl
                             font.bold: true
                         }
+
                     }
 
                     MouseArea {
@@ -182,7 +203,9 @@ Window {
                             root.applyMode(modelData.value);
                         }
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -205,7 +228,11 @@ Window {
                     font.bold: true
                     Layout.fillWidth: true
                 }
+
             }
+
         }
+
     }
+
 }

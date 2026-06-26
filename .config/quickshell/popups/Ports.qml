@@ -1,9 +1,9 @@
 import "../service"
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import QtQuick.Controls
 
 PopupPanel {
     id: root
@@ -38,13 +38,15 @@ PopupPanel {
         id: portsProc
 
         command: [Theme.bin("ports_menu"), "--json"]
-        environment: ({ "LANG": "C", "LC_ALL": "C" })
-
+        environment: ({
+            "LANG": "C",
+            "LC_ALL": "C"
+        })
         onExited: function(code) {
             root.loading = false;
-            if (code !== 0) {
+            if (code !== 0)
                 root.errorMsg = "ports_menu exited with code " + code;
-            }
+
         }
 
         stdout: StdioCollector {
@@ -52,7 +54,7 @@ PopupPanel {
                 var text = this.text.trim();
                 if (!text) {
                     root.loading = false;
-                    return;
+                    return ;
                 }
                 try {
                     var data = JSON.parse(text);
@@ -63,15 +65,16 @@ PopupPanel {
                 }
             }
         }
+
     }
 
     Process {
         id: killProc
 
         onExited: function(code) {
-            if (code !== 0) {
+            if (code !== 0)
                 root.errorMsg = "Kill failed with code " + code;
-            }
+
             root.refreshPorts();
         }
     }
@@ -190,7 +193,9 @@ PopupPanel {
                             text: ""
                             anchors.verticalCenter: parent.verticalCenter
                         }
+
                     }
+
                 }
 
                 // Port List
@@ -244,6 +249,7 @@ PopupPanel {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                 }
+
                             }
 
                             Text {
@@ -279,9 +285,13 @@ PopupPanel {
                                     onExited: parent.color = index % 2 === 0 ? Qt.alpha(Theme.error, 0.08) : Qt.alpha(Theme.error, 0.12)
                                     onClicked: root.killProcess(modelData.pid)
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 // Footer
@@ -300,6 +310,7 @@ PopupPanel {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.refreshPorts()
                         }
+
                     }
 
                     Text {
@@ -313,9 +324,15 @@ PopupPanel {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.closePopup()
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

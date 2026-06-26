@@ -11,17 +11,8 @@ PopupPanel {
     property var presets: []
     property string filterText: ""
 
-    panelWidth: 380
-    panelMaxHeight: 520
-    popupName: "theme-picker"
-    anchorSide: "right"
-
     function refresh() {
         listPresetsProc.running = true;
-    }
-
-    onShowPopupChanged: {
-        if (showPopup) refresh();
     }
 
     function applyPreset(file) {
@@ -29,25 +20,41 @@ PopupPanel {
         applyProc.running = true;
     }
 
+    panelWidth: 380
+    panelMaxHeight: 520
+    popupName: "theme-picker"
+    anchorSide: "right"
+    onShowPopupChanged: {
+        if (showPopup)
+            refresh();
+
+    }
+
     Process {
         id: listPresetsProc
+
         command: [Theme.bin("list_presets")]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     var d = JSON.parse(this.text.trim());
                     root.presets = d.presets || [];
-                } catch (e) { console.warn("ThemePicker: parse error", e); }
+                } catch (e) {
+                    console.warn("ThemePicker: parse error", e);
+                }
             }
         }
+
     }
 
     Process {
         id: applyProc
+
         onExited: {
-            if (exitCode === 0) {
+            if (exitCode === 0)
                 Quickshell.execDetached(["pkill", "-SIGUSR1", "quickshell"]);
-            }
+
         }
     }
 
@@ -64,6 +71,7 @@ PopupPanel {
 
         TextField {
             id: searchField
+
             Layout.fillWidth: true
             implicitHeight: 30
             placeholderText: "Filter themes..."
@@ -72,11 +80,13 @@ PopupPanel {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
             onTextChanged: root.filterText = text.toLowerCase()
+
             background: Rectangle {
                 color: Theme.surface
                 border.width: 1
                 border.color: Theme.primary
             }
+
         }
 
         Rectangle {
@@ -92,19 +102,18 @@ PopupPanel {
             clip: true
             interactive: contentHeight > height
 
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
-
             ColumnLayout {
                 id: listColumn
+
                 width: parent.width
                 spacing: 6
 
                 Repeater {
                     model: {
                         var f = root.filterText;
-                        if (!f) return root.presets;
+                        if (!f)
+                            return root.presets;
+
                         return root.presets.filter(function(p) {
                             return p.name.toLowerCase().indexOf(f) >= 0;
                         });
@@ -149,6 +158,7 @@ PopupPanel {
                                     font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontSizeSm
                                 }
+
                             }
 
                             Text {
@@ -157,10 +167,12 @@ PopupPanel {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize3xl
                             }
+
                         }
 
                         MouseArea {
                             id: applyMa
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
@@ -169,9 +181,19 @@ PopupPanel {
                                 root.showPopup = false;
                             }
                         }
+
                     }
+
                 }
+
             }
+
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
+
         }
+
     }
+
 }

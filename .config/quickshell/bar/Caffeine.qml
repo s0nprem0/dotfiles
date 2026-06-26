@@ -9,17 +9,18 @@ BarModule {
 
     property bool caffeineActive: false
 
-    implicitWidth: cafIcon.implicitWidth + 12
-    tooltipText: root.caffeineActive ? "Caffeine: ON (click to disable)" : "Caffeine: OFF (click to enable)"
-
     function toggleCaffeine() {
         root.caffeineActive = !root.caffeineActive;
         caffeineToggleProc.command = [Theme.bin("caffeine"), "toggle"];
         caffeineToggleProc.running = true;
     }
 
+    implicitWidth: cafIcon.implicitWidth + 12
+    tooltipText: root.caffeineActive ? "Caffeine: ON (click to disable)" : "Caffeine: OFF (click to enable)"
+
     DataModule {
         id: caffeineData
+
         path: Theme.bin("caffeine")
         args: ["status"]
         interval: 5000
@@ -30,6 +31,7 @@ BarModule {
 
     Text {
         id: cafIcon
+
         anchors.centerIn: parent
         text: root.caffeineActive ? "" : "󰅶"
         color: root.caffeineActive ? Theme.warning : (mA.containsMouse ? Theme.primary : Theme.muted)
@@ -39,14 +41,18 @@ BarModule {
 
     Process {
         id: caffeineToggleProc
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     var d = JSON.parse(this.text.trim());
                     root.caffeineActive = d.active === true;
-                } catch (e) { console.warn("Caffeine: parse error", e); }
+                } catch (e) {
+                    console.warn("Caffeine: parse error", e);
+                }
             }
         }
+
     }
 
     Binding {
@@ -65,7 +71,10 @@ BarModule {
         function onClicked(mouse) {
             if (mouse.button === Qt.LeftButton)
                 root.toggleCaffeine();
+
         }
+
         target: mA
     }
+
 }

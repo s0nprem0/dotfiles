@@ -68,7 +68,7 @@ PopupPanel {
         onExited: function(code) {
             if (code !== 0) {
                 console.warn("Clipboard: image decode failed with code", code);
-                return;
+                return ;
             }
             cliphistListProc.running = true;
         }
@@ -83,6 +83,7 @@ PopupPanel {
         onExited: function(code) {
             if (code !== 0)
                 console.warn("Clipboard: cliphist list failed with code", code);
+
         }
 
         stdout: StdioCollector {
@@ -113,7 +114,7 @@ PopupPanel {
         onExited: function(code) {
             if (code !== 0) {
                 console.warn("Clipboard: copy failed with code", code);
-                return;
+                return ;
             }
             root.showPopup = false;
         }
@@ -130,7 +131,7 @@ PopupPanel {
         onExited: function(code) {
             if (code !== 0) {
                 console.warn("Clipboard: delete failed with code", code);
-                return;
+                return ;
             }
             refreshClipboard();
         }
@@ -145,7 +146,7 @@ PopupPanel {
         onExited: function(code) {
             if (code !== 0) {
                 console.warn("Clipboard: wipe failed with code", code);
-                return;
+                return ;
             }
             refreshClipboard();
         }

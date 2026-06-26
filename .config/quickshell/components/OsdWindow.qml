@@ -139,22 +139,25 @@ Scope {
         id: win
 
         property bool isShown: root.visibleNow
+        property real animTopMargin: -50
+        property real animOpacity: 0
 
         function getTargetScreen() {
-            if (Quickshell.primaryScreen) return Quickshell.primaryScreen;
-            if (Quickshell.screens.length > 0) return Quickshell.screens[0];
+            if (Quickshell.primaryScreen)
+                return Quickshell.primaryScreen;
+
+            if (Quickshell.screens.length > 0)
+                return Quickshell.screens[0];
+
             return null;
         }
 
         screen: getTargetScreen()
-
         onScreenChanged: {
-            if (!screen && Quickshell.screens.length > 0) {
+            if (!screen && Quickshell.screens.length > 0)
                 screen = Quickshell.screens[0];
-            }
+
         }
-        property real animTopMargin: -50
-        property real animOpacity: 0
         onIsShownChanged: {
             if (isShown) {
                 exitAnim.stop();
@@ -280,17 +283,17 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
-Row {
-                    id: blockSlider
+                    Row {
+                        id: blockSlider
 
-                    property int totalBlocks: 15
-                    property int percentage: OsdUtils.getPercentage(root.message)
-                    property double currentVal: percentage !== -1 ? percentage / 100 : 0
+                        property int totalBlocks: 15
+                        property int percentage: OsdUtils.getPercentage(root.message)
+                        property double currentVal: percentage !== -1 ? percentage / 100 : 0
 
-                    spacing: 1
-                    height: 4
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: percentage !== -1
+                        spacing: 1
+                        height: 4
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: percentage !== -1
 
                         Repeater {
                             model: blockSlider.totalBlocks

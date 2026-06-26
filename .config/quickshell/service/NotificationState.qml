@@ -6,10 +6,10 @@ QtObject {
 
     property bool dnd: false
     property ListModel toastModel
+    property var centerPopup: null
+    property var service: null
 
     toastModel: ListModel {
     }
 
-    property var centerPopup: null
-    property var service: null
 }

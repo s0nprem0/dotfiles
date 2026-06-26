@@ -180,13 +180,11 @@ PopupPanel {
         id: writeFileCmd
     }
 
-
     // ── Daemon status Process ──
     Process {
         id: daemonStatusProc
 
         command: ["pgrep", "-f", "battery_daemon"]
-
         onExited: {
             root.daemonRunning = (this.exitCode === 0);
         }
@@ -199,6 +197,7 @@ PopupPanel {
         onTriggered: daemonStatusProc.running = true
     }
     // ── Battery status Process ──
+
     Process {
         id: statusProc
 
@@ -648,9 +647,13 @@ PopupPanel {
                                     root.saveSettings();
                                 }
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {

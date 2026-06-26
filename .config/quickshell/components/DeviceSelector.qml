@@ -9,14 +9,14 @@ Rectangle {
     property bool enabled: true
     property int maxHeight: 200
 
+    signal deviceSelected(string id, string name)
+
     implicitWidth: 180
     implicitHeight: Math.min(root.maxHeight, Math.max(32, root.devices.length * 28))
     color: root.enabled ? Qt.alpha(Theme.surface, 0.5) : Qt.alpha(Theme.surface, 0.2)
     border.color: root.enabled ? Theme.primaryAlpha03 : Theme.primaryAlpha01
     border.width: 1
     radius: 0
-
-    signal deviceSelected(string id, string name)
 
     ListView {
         id: listView
@@ -29,19 +29,14 @@ Rectangle {
 
         delegate: Rectangle {
             required property string modelData
+            property string deviceId: modelData.split("||")[0]
+            property string deviceName: modelData.split("||")[1] || modelData
 
             width: ListView.view.width - 4
             height: 24
-            color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId
-                ? Theme.primaryAlpha02
-                : hoverArea.containsMouse ? Theme.primaryAlpha008 : "transparent"
-            border.color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId
-                ? Theme.primaryAlpha05
-                : Theme.primaryAlpha01
+            color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId ? Theme.primaryAlpha02 : hoverArea.containsMouse ? Theme.primaryAlpha008 : "transparent"
+            border.color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId ? Theme.primaryAlpha05 : Theme.primaryAlpha01
             border.width: 1
-
-            property string deviceId: modelData.split("||")[0]
-            property string deviceName: modelData.split("||")[1] || modelData
 
             Text {
                 anchors.left: parent.left
@@ -63,6 +58,9 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.deviceSelected(parent.deviceId, parent.deviceName)
             }
+
         }
+
     }
+
 }

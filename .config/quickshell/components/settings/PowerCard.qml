@@ -127,6 +127,7 @@ Rectangle {
                     radius: 4
                     color: Theme.primary
                 }
+
             }
 
             Text {
@@ -149,6 +150,7 @@ Rectangle {
                     root.screenBrightnessUpdated(pct);
                 }
             }
+
         }
 
         Rectangle {
@@ -187,6 +189,7 @@ Rectangle {
                     radius: 4
                     color: Theme.primary
                 }
+
             }
 
             Text {
@@ -209,6 +212,7 @@ Rectangle {
                     root.keyboardBrightnessUpdated(pct);
                 }
             }
+
         }
 
         Rectangle {
@@ -247,6 +251,7 @@ Rectangle {
                     radius: 4
                     color: root.chargeLimit < 100 ? Theme.warning : Theme.primary
                 }
+
             }
 
             Text {
@@ -269,6 +274,7 @@ Rectangle {
                     root.chargeLimitUpdated(pct);
                 }
             }
+
         }
 
     }

@@ -239,11 +239,13 @@ PopupPanel {
     }
 
     Connections {
-        target: DisplayService
         function onMonitorsChanged() {
             if (root.showPopup)
                 root.rebuildVisibleWorkspaceIds();
+
         }
+
+        target: DisplayService
     }
 
     // ── Content ──

@@ -23,7 +23,9 @@ Window {
 
     function buildWebUrl(query) {
         var q = query.trim();
-        if (!q.startsWith("!")) return "";
+        if (!q.startsWith("!"))
+            return "";
+
         var searchQuery = "";
         var searchUrl = "";
         if (q.startsWith("!youtube")) {
@@ -67,6 +69,7 @@ Window {
         for (var i = 0; i < str.length && j < query.length; i++) {
             if (str[i] === query[j])
                 j++;
+
         }
         return j === query.length;
     }
@@ -87,11 +90,11 @@ Window {
 
     function createAppItem(source) {
         return {
-            typeLabel: "APP",
-            name: source.name,
-            icon: source.icon,
-            comment: source.comment,
-            exec: source.exec,
+            "typeLabel": "APP",
+            "name": source.name,
+            "icon": source.icon,
+            "comment": source.comment,
+            "exec": source.exec
         };
     }
 
@@ -99,21 +102,25 @@ Window {
         var sourceApps = AppsService.rawData.all_apps || [];
         var mostUsed = AppsService.rawData.most_used || [];
         var filtered = [];
-
         if (term === "") {
             if (mostUsed.length > 0) {
-                filtered.push({ typeLabel: "HEADER", name: "MOST USED" });
-                for (let i = 0; i < mostUsed.length; i++)
-                    filtered.push(createAppItem(mostUsed[i]));
+                filtered.push({
+                    "typeLabel": "HEADER",
+                    "name": "MOST USED"
+                });
+                for (let i = 0; i < mostUsed.length; i++) filtered.push(createAppItem(mostUsed[i]))
             }
-            filtered.push({ typeLabel: "HEADER", name: "ALL APPS" });
-            for (let i = 0; i < sourceApps.length; i++)
-                filtered.push(createAppItem(sourceApps[i]));
+            filtered.push({
+                "typeLabel": "HEADER",
+                "name": "ALL APPS"
+            });
+            for (let i = 0; i < sourceApps.length; i++) filtered.push(createAppItem(sourceApps[i]))
         } else {
             for (let i = 0; i < sourceApps.length; i++) {
                 let item = sourceApps[i];
                 if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term))
                     filtered.push(createAppItem(item));
+
             }
         }
         return filtered;
@@ -127,25 +134,28 @@ Window {
 
         var searchQuery = term.substring(1).trim();
         if (webHistory.length > 0) {
-            filtered.push({ typeLabel: "HEADER", name: "WEB HISTORY" });
+            filtered.push({
+                "typeLabel": "HEADER",
+                "name": "WEB HISTORY"
+            });
             for (let i = 0; i < webHistory.length; i++) {
                 filtered.push({
-                    typeLabel: "WEB",
-                    name: webHistory[i].query,
-                    icon: "󰖟",
-                    comment: "via " + webHistory[i].engine,
-                    url: webHistory[i].url
+                    "typeLabel": "WEB",
+                    "name": webHistory[i].query,
+                    "icon": "󰖟",
+                    "comment": "via " + webHistory[i].engine,
+                    "url": webHistory[i].url
                 });
             }
         }
         filtered.push({
-            typeLabel: "SEARCH",
-            name: searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
-            icon: "󰖟",
-            comment: term,
-            query: term,
-            isWebAction: true,
-            url: buildWebUrl(term)
+            "typeLabel": "SEARCH",
+            "name": searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
+            "icon": "󰖟",
+            "comment": term,
+            "query": term,
+            "isWebAction": true,
+            "url": buildWebUrl(term)
         });
         return filtered;
     }
@@ -153,15 +163,18 @@ Window {
     function buildTab2(term) {
         var fileQuery = term.startsWith("@") ? term.substring(1).trim() : term;
         var filtered = [];
-        filtered.push({ typeLabel: "HEADER", name: fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH" });
+        filtered.push({
+            "typeLabel": "HEADER",
+            "name": fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH"
+        });
         if (fileQuery) {
             filtered.push({
-                typeLabel: "SEARCH",
-                name: "SEARCHING...",
-                icon: "󰉋",
-                comment: "@" + fileQuery,
-                isFileSearch: true,
-                fileQuery: fileQuery
+                "typeLabel": "SEARCH",
+                "name": "SEARCHING...",
+                "icon": "󰉋",
+                "comment": "@" + fileQuery,
+                "isFileSearch": true,
+                "fileQuery": fileQuery
             });
             root.startFileSearch(fileQuery);
         }
@@ -171,31 +184,41 @@ Window {
     function buildTab3(term) {
         if (term !== "" && !term.startsWith("#"))
             return [];
+
         var gitQuery = term.startsWith("#") ? term.substring(1).trim() : "";
         var filtered = [];
         if (root.isFetchingRepos) {
-            filtered.push({ typeLabel: "HEADER", name: "LOADING REPOS..." });
+            filtered.push({
+                "typeLabel": "HEADER",
+                "name": "LOADING REPOS..."
+            });
         } else if (root.gitRepos.length > 0) {
-            filtered.push({ typeLabel: "HEADER", name: "YOUR GIT REPOS" });
+            filtered.push({
+                "typeLabel": "HEADER",
+                "name": "YOUR GIT REPOS"
+            });
             for (let i = 0; i < root.gitRepos.length; i++) {
                 let repo = root.gitRepos[i];
-                if (gitQuery === "" || repo.name.toLowerCase().includes(gitQuery.toLowerCase()) || (repo.description && repo.description.toLowerCase().includes(gitQuery.toLowerCase()))) {
+                if (gitQuery === "" || repo.name.toLowerCase().includes(gitQuery.toLowerCase()) || (repo.description && repo.description.toLowerCase().includes(gitQuery.toLowerCase())))
                     filtered.push({
-                        typeLabel: "GIT_REPO",
-                        name: repo.name,
-                        icon: "󰊢",
-                        comment: repo.description || repo.html_url,
-                        data: repo
+                        "typeLabel": "GIT_REPO",
+                        "name": repo.name,
+                        "icon": "󰊢",
+                        "comment": repo.description || repo.html_url,
+                        "data": repo
                     });
-                }
+
             }
         } else {
-            filtered.push({ typeLabel: "HEADER", name: "CLICK TO FETCH REPOS" });
             filtered.push({
-                typeLabel: "FETCH_REPOS",
-                name: "FETCH GITHUB REPOS",
-                icon: "󰊢",
-                comment: "set GITHUB_TOKEN env var first"
+                "typeLabel": "HEADER",
+                "name": "CLICK TO FETCH REPOS"
+            });
+            filtered.push({
+                "typeLabel": "FETCH_REPOS",
+                "name": "FETCH GITHUB REPOS",
+                "icon": "󰊢",
+                "comment": "set GITHUB_TOKEN env var first"
             });
         }
         return filtered;
@@ -206,31 +229,34 @@ Window {
         var filtered = [];
         var matchingBookmarks = [];
         for (let i = 0; i < root.bookmarks.length; i++) {
-            if (bookmarkQuery === "" || root.bookmarks[i].url.toLowerCase().includes(bookmarkQuery.toLowerCase()) || root.bookmarks[i].name.toLowerCase().includes(bookmarkQuery.toLowerCase())) {
+            if (bookmarkQuery === "" || root.bookmarks[i].url.toLowerCase().includes(bookmarkQuery.toLowerCase()) || root.bookmarks[i].name.toLowerCase().includes(bookmarkQuery.toLowerCase()))
                 matchingBookmarks.push(root.bookmarks[i]);
-            }
+
         }
         if (matchingBookmarks.length > 0) {
-            filtered.push({ typeLabel: "HEADER", name: "BOOKMARKS" });
+            filtered.push({
+                "typeLabel": "HEADER",
+                "name": "BOOKMARKS"
+            });
             for (let i = 0; i < matchingBookmarks.length; i++) {
                 filtered.push({
-                    typeLabel: "BOOKMARK",
-                    name: matchingBookmarks[i].name,
-                    icon: "󰌹",
-                    comment: matchingBookmarks[i].url,
-                    data: matchingBookmarks[i]
+                    "typeLabel": "BOOKMARK",
+                    "name": matchingBookmarks[i].name,
+                    "icon": "󰌹",
+                    "comment": matchingBookmarks[i].url,
+                    "data": matchingBookmarks[i]
                 });
             }
         }
-        if (bookmarkQuery !== "") {
+        if (bookmarkQuery !== "")
             filtered.push({
-                typeLabel: "ADD_BOOKMARK",
-                name: "ADD BOOKMARK",
-                icon: "󰅕",
-                comment: bookmarkQuery,
-                url: bookmarkQuery
+                "typeLabel": "ADD_BOOKMARK",
+                "name": "ADD BOOKMARK",
+                "icon": "󰅕",
+                "comment": bookmarkQuery,
+                "url": bookmarkQuery
             });
-        }
+
         return filtered;
     }
 
@@ -252,7 +278,7 @@ Window {
         if (root.displayData.length > 0 && root.selectedIndex < root.displayData.length) {
             var item = root.displayData[root.selectedIndex];
             if (item.typeLabel === "HEADER")
-                return;
+                return ;
 
             if (item.isWebAction) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--web-search", item.query]);
@@ -276,10 +302,10 @@ Window {
                 var idx = root.selectedIndex;
                 var display = root.displayData.slice();
                 display[idx] = {
-                    typeLabel: "INDEX",
-                    name: "INDEXING...",
-                    icon: "󰇚",
-                    comment: "scanning home directory, this may take a moment..."
+                    "typeLabel": "INDEX",
+                    "name": "INDEXING...",
+                    "icon": "󰇚",
+                    "comment": "scanning home directory, this may take a moment..."
                 };
                 root.displayData = display;
             } else if (item.exec) {
@@ -291,44 +317,68 @@ Window {
         }
     }
 
-    Process {
-        id: fileSearchProc
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var seq = root._fileSeq;
-                try {
-                    var results = JSON.parse(this.text);
-                    if (!Array.isArray(results) || seq !== root._fileSeq)
-                        return;
+    function loadBookmarks() {
+        getBookmarksProc.command = [Theme.bin("get_apps_list"), "--get-bookmarks"];
+        getBookmarksProc.running = true;
+    }
 
-                    var items = [{ typeLabel: "HEADER", name: "FILES" }];
-                    if (results.length === 0) {
-                        items.push({
-                            typeLabel: "INDEX",
-                            name: "INDEX FILES NOW",
-                            icon: "󰇚",
-                            comment: "scan home directory with fd (excludes .git, node_modules, .cache, target)",
-                            isIndexAction: true
-                        });
-                    } else {
-                        for (let i = 0; i < Math.min(results.length, 50); i++) {
-                            items.push({
-                                typeLabel: "FILE",
-                                name: results[i].name,
-                                icon: "󰉋",
-                                comment: results[i].path,
-                                path: results[i].path
-                            });
-                        }
-                    }
-                    root.displayData = items;
-                    root.selectedIndex = 0;
-                } catch (e) {
-                    console.warn("Apps: file search parse error:", e);
-                }
-            }
-        }
+    function loadGitRepos() {
+        getGitReposProc.command = [Theme.bin("get_apps_list"), "--list-repos"];
+        getGitReposProc.running = true;
+    }
+
+    function fetchGitRepos() {
+        if (root.isFetchingRepos)
+            return ;
+
+        root.isFetchingRepos = true;
+        fetchReposProc.command = [Theme.bin("get_apps_list"), "--fetch-repos"];
+        fetchReposProc.running = true;
+    }
+
+    function getTabHint() {
+        if (root.activeTab === 0)
+            return "SEARCH APPS, !g, !yt, @files, #repos, ~bookmarks...";
+
+        if (root.activeTab === 1)
+            return "SEARCH THE WEB WITH !g, !yt...";
+
+        if (root.activeTab === 2)
+            return "SEARCH FILES WITH @...";
+
+        if (root.activeTab === 3)
+            return "SEARCH GIT REPOS WITH #...";
+
+        return "SEARCH BOOKMARKS WITH ~...";
+    }
+
+    function updateTabFromText() {
+        var t = searchField.text;
+        if (t.startsWith("!"))
+            root.activeTab = 1;
+        else if (t.startsWith("@"))
+            root.activeTab = 2;
+        else if (t.startsWith("#"))
+            root.activeTab = 3;
+        else if (t.startsWith("~"))
+            root.activeTab = 4;
+        else
+            root.activeTab = 0;
+    }
+
+    function cycleTab() {
+        var t = searchField.text.replace(/^[!@#~]/, "");
+        root.activeTab = (root.activeTab + 1) % 5;
+        if (root.activeTab === 0)
+            searchField.text = t;
+        else if (root.activeTab === 1)
+            searchField.text = "!" + t;
+        else if (root.activeTab === 2)
+            searchField.text = "@" + t;
+        else if (root.activeTab === 3)
+            searchField.text = "#" + t;
+        else
+            searchField.text = "~" + t;
     }
 
     title: "System Index"
@@ -347,9 +397,9 @@ Window {
         }
     }
     onActiveChanged: {
-        if (!active && showPopup) {
+        if (!active && showPopup)
             showPopup = false;
-        }
+
     }
     Keys.onPressed: (event) => {
         if (event.key === Qt.Key_Escape) {
@@ -358,26 +408,57 @@ Window {
         }
     }
 
-    function loadBookmarks() {
-        getBookmarksProc.command = [Theme.bin("get_apps_list"), "--get-bookmarks"];
-        getBookmarksProc.running = true;
-    }
+    Process {
+        id: fileSearchProc
 
-    function loadGitRepos() {
-        getGitReposProc.command = [Theme.bin("get_apps_list"), "--list-repos"];
-        getGitReposProc.running = true;
-    }
+        running: false
 
-    function fetchGitRepos() {
-        if (root.isFetchingRepos) return;
-        root.isFetchingRepos = true;
-        fetchReposProc.command = [Theme.bin("get_apps_list"), "--fetch-repos"];
-        fetchReposProc.running = true;
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var seq = root._fileSeq;
+                try {
+                    var results = JSON.parse(this.text);
+                    if (!Array.isArray(results) || seq !== root._fileSeq)
+                        return ;
+
+                    var items = [{
+                        "typeLabel": "HEADER",
+                        "name": "FILES"
+                    }];
+                    if (results.length === 0) {
+                        items.push({
+                            "typeLabel": "INDEX",
+                            "name": "INDEX FILES NOW",
+                            "icon": "󰇚",
+                            "comment": "scan home directory with fd (excludes .git, node_modules, .cache, target)",
+                            "isIndexAction": true
+                        });
+                    } else {
+                        for (let i = 0; i < Math.min(results.length, 50); i++) {
+                            items.push({
+                                "typeLabel": "FILE",
+                                "name": results[i].name,
+                                "icon": "󰉋",
+                                "comment": results[i].path,
+                                "path": results[i].path
+                            });
+                        }
+                    }
+                    root.displayData = items;
+                    root.selectedIndex = 0;
+                } catch (e) {
+                    console.warn("Apps: file search parse error:", e);
+                }
+            }
+        }
+
     }
 
     Process {
         id: getBookmarksProc
+
         running: false
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -387,11 +468,14 @@ Window {
                 }
             }
         }
+
     }
 
     Process {
         id: getGitReposProc
+
         running: false
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -401,22 +485,27 @@ Window {
                 }
             }
         }
+
     }
 
     Process {
         id: fetchReposProc
+
         running: false
+
         stdout: StdioCollector {
             onStreamFinished: {
                 root.isFetchingRepos = false;
                 root.loadGitRepos();
             }
         }
+
     }
 
     // ── Search debounce ──
     Timer {
         id: searchDebounce
+
         interval: 150
         onTriggered: root.rebuildDisplay()
     }
@@ -489,13 +578,17 @@ Window {
 
                         MouseArea {
                             id: closeMa
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.showPopup = false
                         }
+
                     }
+
                 }
+
             }
 
             // ── Row 2: Search Input Block ──
@@ -534,6 +627,7 @@ Window {
 
                         TextInput {
                             id: searchField
+
                             anchors.fill: parent
                             verticalAlignment: TextInput.AlignVCenter
                             color: Theme.fg
@@ -566,6 +660,7 @@ Window {
                                 }
                             }
                         }
+
                     }
 
                     Rectangle {
@@ -584,6 +679,7 @@ Window {
 
                         MouseArea {
                             id: clearMa
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
@@ -592,8 +688,11 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                 }
+
             }
 
             // ── Row 2.5: Tab Switcher ──
@@ -611,12 +710,14 @@ Window {
                     Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 60
+
                         Rectangle {
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: 2
                             color: root.activeTab === 0 ? Theme.primary : "transparent"
                         }
+
                         Text {
                             anchors.centerIn: parent
                             text: "APPS"
@@ -625,6 +726,7 @@ Window {
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -636,16 +738,20 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                     Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 60
+
                         Rectangle {
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: 2
                             color: root.activeTab === 1 ? Theme.primary : "transparent"
                         }
+
                         Text {
                             anchors.centerIn: parent
                             text: "WEB"
@@ -654,6 +760,7 @@ Window {
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -665,16 +772,20 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                     Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 60
+
                         Rectangle {
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: 2
                             color: root.activeTab === 2 ? Theme.primary : "transparent"
                         }
+
                         Text {
                             anchors.centerIn: parent
                             text: "FILES"
@@ -683,6 +794,7 @@ Window {
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -694,16 +806,20 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                     Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 60
+
                         Rectangle {
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: 2
                             color: root.activeTab === 3 ? Theme.primary : "transparent"
                         }
+
                         Text {
                             anchors.centerIn: parent
                             text: "GIT"
@@ -712,6 +828,7 @@ Window {
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -723,16 +840,20 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                     Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 60
+
                         Rectangle {
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: 2
                             color: root.activeTab === 4 ? Theme.primary : "transparent"
                         }
+
                         Text {
                             anchors.centerIn: parent
                             text: "BMK"
@@ -741,6 +862,7 @@ Window {
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -752,8 +874,11 @@ Window {
                                 searchField.forceActiveFocus();
                             }
                         }
+
                     }
+
                 }
+
             }
 
             // ── Row 2.5: Active Windows ──
@@ -787,10 +912,12 @@ Window {
 
                         ScrollBar.horizontal: ScrollBar {
                             policy: ScrollBar.AsNeeded
+
                             contentItem: Rectangle {
                                 implicitHeight: 3
                                 color: Theme.primary
                             }
+
                         }
 
                         delegate: Item {
@@ -807,6 +934,7 @@ Window {
 
                                 ScreencopyView {
                                     id: scrCap
+
                                     anchors.fill: parent
                                     anchors.margins: 1
                                     captureSource: modelData
@@ -838,10 +966,12 @@ Window {
                                         font.pixelSize: Theme.fontSizeXxs
                                         font.bold: true
                                     }
+
                                 }
 
                                 MouseArea {
                                     id: winMa
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
@@ -850,10 +980,15 @@ Window {
                                         root.showPopup = false;
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             // ── System Status States ──
@@ -871,6 +1006,7 @@ Window {
                     font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                 }
+
             }
 
             Rectangle {
@@ -887,6 +1023,7 @@ Window {
                     font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                 }
+
             }
 
             // ── Universal Index List ──
@@ -898,6 +1035,7 @@ Window {
 
                 ListView {
                     id: listView
+
                     anchors.fill: parent
                     anchors.margins: 4
                     clip: true
@@ -907,11 +1045,13 @@ Window {
 
                     ScrollBar.vertical: ScrollBar {
                         policy: listView.contentHeight > listView.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+
                         contentItem: Rectangle {
                             implicitWidth: 4
                             color: Theme.primary
                             radius: 0
                         }
+
                     }
 
                     delegate: Item {
@@ -929,12 +1069,14 @@ Window {
 
                             MouseArea {
                                 id: ma
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: modelData.typeLabel === "HEADER" ? Qt.ArrowCursor : Qt.PointingHandCursor
                                 onEntered: {
                                     if (modelData.typeLabel !== "HEADER")
                                         root.selectedIndex = index;
+
                                 }
                                 onClicked: root.launchSelected()
                             }
@@ -959,6 +1101,7 @@ Window {
 
                                 Item {
                                     id: itemIcon
+
                                     anchors.left: parent.left
                                     anchors.leftMargin: 14
                                     anchors.verticalCenter: parent.verticalCenter
@@ -976,6 +1119,7 @@ Window {
 
                                     Image {
                                         id: imgIcon
+
                                         anchors.centerIn: parent
                                         width: 16
                                         height: 16
@@ -984,10 +1128,12 @@ Window {
                                         sourceSize.width: 16
                                         sourceSize.height: 16
                                     }
+
                                 }
 
                                 Text {
                                     id: enterIndicator
+
                                     anchors.right: parent.right
                                     anchors.rightMargin: 14
                                     anchors.verticalCenter: parent.verticalCenter
@@ -1001,6 +1147,7 @@ Window {
 
                                 Rectangle {
                                     id: typeBadge
+
                                     anchors.right: enterIndicator.visible ? enterIndicator.left : parent.right
                                     anchors.rightMargin: enterIndicator.visible ? 8 : 14
                                     anchors.verticalCenter: parent.verticalCenter
@@ -1019,6 +1166,7 @@ Window {
                                         font.pixelSize: Theme.fontSizeSm
                                         font.bold: true
                                     }
+
                                 }
 
                                 Item {
@@ -1052,39 +1200,21 @@ Window {
                                         elide: Text.ElideRight
                                         visible: modelData.comment !== ""
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
 
-    function getTabHint() {
-        if (root.activeTab === 0) return "SEARCH APPS, !g, !yt, @files, #repos, ~bookmarks...";
-        if (root.activeTab === 1) return "SEARCH THE WEB WITH !g, !yt...";
-        if (root.activeTab === 2) return "SEARCH FILES WITH @...";
-        if (root.activeTab === 3) return "SEARCH GIT REPOS WITH #...";
-        return "SEARCH BOOKMARKS WITH ~...";
-    }
-
-    function updateTabFromText() {
-        var t = searchField.text;
-        if (t.startsWith("!")) root.activeTab = 1;
-        else if (t.startsWith("@")) root.activeTab = 2;
-        else if (t.startsWith("#")) root.activeTab = 3;
-        else if (t.startsWith("~")) root.activeTab = 4;
-        else root.activeTab = 0;
-    }
-
-    function cycleTab() {
-        var t = searchField.text.replace(/^[!@#~]/, "");
-        root.activeTab = (root.activeTab + 1) % 5;
-        if (root.activeTab === 0) searchField.text = t;
-        else if (root.activeTab === 1) searchField.text = "!" + t;
-        else if (root.activeTab === 2) searchField.text = "@" + t;
-        else if (root.activeTab === 3) searchField.text = "#" + t;
-        else searchField.text = "~" + t;
-    }
 }

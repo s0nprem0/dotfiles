@@ -19,6 +19,7 @@ Item {
         proc.running = true;
         if (!pollTimer.running)
             pollTimer.start();
+
     }
 
     visible: false
@@ -26,6 +27,7 @@ Item {
         root.backoffMs = 1000;
         if (!pollTimer.running)
             pollTimer.start();
+
     }
     Component.onCompleted: {
         startTimer.interval = 1000 + Math.random() * 2000;
@@ -64,7 +66,7 @@ Item {
                     root.hasError = true;
                     crashRestart.interval = root.backoffMs;
                     crashRestart.restart();
-                    return;
+                    return ;
                 }
                 try {
                     root.dataReceived(JSON.parse(text));
@@ -107,6 +109,7 @@ Item {
                 proc.running = true;
                 if (!pollTimer.running)
                     pollTimer.start();
+
             }
         }
     }

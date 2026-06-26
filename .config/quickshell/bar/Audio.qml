@@ -58,7 +58,9 @@ BarModule {
         path: Theme.bin("get_audio_status")
         interval: 30000
         onDataReceived: function(j) {
-            if (!j) return;
+            if (!j || typeof j !== "object")
+                return ;
+
             root.vol = j.default_sink ? (j.default_sink.volume ?? 0) : (j.volume ?? 0);
             root.isMuted = j.default_sink ? (j.default_sink.muted ?? false) : (j.muted ?? false);
             if (j.default_source) {
