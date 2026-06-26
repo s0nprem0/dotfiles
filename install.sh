@@ -212,9 +212,9 @@ fi
 # ──────────────────────────────────────────────
 # 7. Build quickshell helpers
 # ──────────────────────────────────────────────
-if [[ -f "$DOTFILES/.config/quickshell/helpers_rs/Makefile" ]]; then
+if [[ -f "$DOTFILES/primo/Makefile" ]]; then
   info "Building quickshell Rust helpers ..."
-  make -C "$DOTFILES/.config/quickshell/helpers_rs" all || warn "quickshell helpers build failed"
+  make -C "$DOTFILES/primo" all || warn "quickshell helpers build failed"
   ok "quickshell helpers built"
 fi
 

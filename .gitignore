@@ -46,7 +46,7 @@ logs/
 *.dvi
 *.aux
 
-# Compiled Rust helpers (built from helpers_rs/)
+# Compiled Rust helpers (built from primo/)
 .config/quickshell/helpers/*
 !.config/quickshell/helpers/*.sh
 

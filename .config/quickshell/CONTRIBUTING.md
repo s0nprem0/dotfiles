@@ -25,8 +25,8 @@
 ### Building Rust Helpers
 
 ```bash
-cd helpers_rs
-make all  # Build and install to ../helpers/
+cd ../primo
+make all  # Build and install to ~/.config/quickshell/helpers/
 ```
 
 ## Architecture

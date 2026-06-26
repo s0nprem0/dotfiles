@@ -82,7 +82,7 @@ quickshell/
 - `bluez` / `bluetoothctl` - Bluetooth control
 
 **Helpers (Rust):**
-- Rust toolchain for building `helpers_rs/`
+- Rust toolchain for building `primo/`
 
 ## Apps Popup
 
@@ -102,7 +102,7 @@ The `Apps.qml` popup provides a 5-tab launcher:
 
 ### Helper Backend
 
-The Rust helper (`helpers_rs/bins/get_apps_list`) uses SQLite for storage:
+The Rust helper (`primo/bins/get_apps_list`) uses SQLite for storage:
 
 - `--web-search "!g rust"` - Save web search query, returns URL
 - `--open-file "/path/to/file"` - Track file in history

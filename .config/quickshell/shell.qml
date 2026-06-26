@@ -123,6 +123,7 @@ Bar {
                 case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
                 case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
                 case "presentation": presentationPopup.showPopup = !presentationPopup.showPopup; break;
+                case "ports": portsPopup.showPopup = !portsPopup.showPopup; break;
             }
         }
     }
@@ -172,6 +173,10 @@ Bar {
 
     Popups.PresentationPopup {
         id: presentationPopup
+    }
+
+    Popups.Ports {
+        id: portsPopup
     }
 
     Popups.ThemePicker {

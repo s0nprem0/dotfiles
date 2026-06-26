@@ -1,7 +1,0 @@
-[package]
-name = "display_toggle"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-helpers_rs = { path = "../../libs/core" }

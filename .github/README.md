@@ -17,7 +17,7 @@ Personal dotfiles managed with a custom deploy script.
 | `zsh/`          | Zsh shell config                    |
 | `matugen/`      | Material color generator            |
 | `ranger/`       | Ranger file manager                 |
-| `helpers_rs/`   | Rust source for quickshell helpers  |
+| `primo/`        | Rust source for quickshell helpers  |
 
 ## Usage
 

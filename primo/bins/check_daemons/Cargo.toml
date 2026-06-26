@@ -1,0 +1,7 @@
+[package]
+name = "check_daemons"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+primo = { path = "../../libs/core" }
