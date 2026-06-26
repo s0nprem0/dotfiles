@@ -1,5 +1,7 @@
 use serde::Deserialize;
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DisplayMode {
@@ -101,6 +103,10 @@ fn raw_to_monitor(raw: MonitorRaw) -> Monitor {
 
 pub fn get_current_mode() -> DisplayMode {
     let monitors = get_monitors();
+    get_current_mode_from(&monitors)
+}
+
+pub fn get_current_mode_from(monitors: &[Monitor]) -> DisplayMode {
     let internal_on = monitors.iter().any(|m| m.is_internal && !m.disabled);
     let external_on = monitors.iter().any(|m| !m.is_internal && !m.disabled);
 
@@ -206,6 +212,20 @@ pub fn set_mode(mode: DisplayMode, monitors: &[Monitor]) {
     }
 
     notify(&format!("Display: {:?}", mode));
+}
+
+pub fn set_mode_verified(mode: DisplayMode, monitors: &[Monitor]) -> Result<(), String> {
+    set_mode(mode, monitors);
+    
+    thread::sleep(Duration::from_millis(100));
+    
+    let new_mode = get_current_mode_from(monitors);
+    
+    if new_mode == mode {
+        Ok(())
+    } else {
+        Err(format!("Mode verification failed: expected {:?}, got {:?}", mode, new_mode))
+    }
 }
 
 fn run_keyword(output: &str, args: &str) {
