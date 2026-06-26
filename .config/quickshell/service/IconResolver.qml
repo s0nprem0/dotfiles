@@ -6,7 +6,7 @@ QtObject {
     function resolveDesktopIcon(name) {
         if (!name)
             return "";
-
+        
         var substitutions = {
             "code": "visual-studio-code",
             "code-url-handler": "visual-studio-code",
@@ -23,6 +23,7 @@ QtObject {
             "wezterm": "org.wezfurlong.wezterm",
             "zen": "zen-browser"
         };
+        
         var lower = name.toLowerCase();
         if (substitutions[name] && Quickshell.iconPath(substitutions[name], true))
             return substitutions[name];
@@ -47,26 +48,57 @@ QtObject {
         if (Quickshell.iconPath(kebab, true))
             return kebab;
 
-        return "";
+        return "application-x-executable";
     }
 
     function nerdFontGlyph(appName) {
         var name = (appName || "").toLowerCase();
         var glyphs = {
-            "discord": "󰙯",
-            "firefox": "󰈹",
-            "spotify": "󰓇",
-            "telegram": "",
-            "whatsapp": "󰖣",
-            "signal": "󰋽",
-            "slack": "󰒱"
+            "discord": "\ue96f",
+            "firefox": "\ue189",
+            "spotify": "\ue107",
+            "telegram": "\ue0c7",
+            "whatsapp": "\ue663",
+            "signal": "\ue2bd",
+            "slack": "\ue191"
         };
         for (var key in glyphs) {
             if (name.includes(key))
                 return glyphs[key];
 
         }
-        return "󰂚";
+        return "\ue08a";
     }
 
+    function resolveWithFallback(iconName, wmClass, exec, desktopId, flatpakId, snapId) {
+        if (!iconName)
+            iconName = "";
+        
+        var candidates = [];
+        
+        if (desktopId)
+            candidates.push(desktopId);
+        if (flatpakId)
+            candidates.push(flatpakId);
+        if (snapId)
+            candidates.push(snapId);
+        if (wmClass)
+            candidates.push(wmClass);
+        if (exec)
+            candidates.push(exec);
+        
+        for (var i = 0; i < candidates.length; i++) {
+            var resolved = resolveDesktopIcon(candidates[i]);
+            if (resolved)
+                return resolved;
+        }
+        
+        if (iconName && iconName.indexOf("/") !== 0) {
+            var direct = resolveDesktopIcon(iconName);
+            if (direct)
+                return direct;
+        }
+        
+        return "application-x-executable";
+    }
 }
