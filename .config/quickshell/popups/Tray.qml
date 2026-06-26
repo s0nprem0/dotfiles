@@ -156,53 +156,59 @@ PopupPanel {
             focus: true
             implicitWidth: root.panelWidth - root.contentMargin * 2
             implicitHeight: Math.max(contentLayout.implicitHeight, 300)
-            Keys.onPressed: (event) => {
-                if (root.showMenu) {
-                    if (root.showSubmenu) {
-                        switch (event.key) {
-                        case Qt.Key_Up:
-                            root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, -1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Down:
-                            root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, 1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Return:
-                        case Qt.Key_Space:
-                            {
-                                var subChildren = submenuOpener.children.values;
-                                if (root.submenuSelectedIndex >= 0 && root.submenuSelectedIndex < subChildren.length) {
-                                    var subEntry = subChildren[root.submenuSelectedIndex];
-                                    if (subEntry.enabled && !subEntry.isSeparator) {
-                                        subEntry.triggered();
-                                        root.closePopup();
-                                    }
-                                }
+
+            ColumnLayout {
+                id: contentLayout
+                anchors.fill: parent
+                spacing: 0
+
+                Keys.onPressed: (event) => {
+                    if (root.showMenu) {
+                        if (root.showSubmenu) {
+                            switch (event.key) {
+                            case Qt.Key_Up:
+                                root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, -1);
                                 event.accepted = true;
                                 break;
-                            };
-                        case Qt.Key_Escape:
-                        case Qt.Key_Left:
-                            root.closeSubmenu();
-                            event.accepted = true;
-                            break;
-                        }
-                    } else {
-                        switch (event.key) {
-                        case Qt.Key_Up:
-                            root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, -1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Down:
-                            root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, 1);
-                            event.accepted = true;
-                            break;
-                        case Qt.Key_Return:
-                        case Qt.Key_Space:
-                            {
-                                var children = menuOpener.children.values;
-                                if (root.menuSelectedIndex >= 0 && root.menuSelectedIndex < children.length) {
+                            case Qt.Key_Down:
+                                root.submenuSelectedIndex = root.nextSubmenuIndex(root.submenuSelectedIndex, 1);
+                                event.accepted = true;
+                                break;
+                            case Qt.Key_Return:
+                            case Qt.Key_Space:
+                                {
+                                    var subChildren = submenuOpener.children.values;
+                                    if (root.submenuSelectedIndex >= 0 && root.submenuSelectedIndex < subChildren.length) {
+                                        var subEntry = subChildren[root.submenuSelectedIndex];
+                                        if (subEntry.enabled && !subEntry.isSeparator) {
+                                            subEntry.triggered();
+                                            root.closePopup();
+                                        }
+                                    }
+                                    event.accepted = true;
+                                    break;
+                                }
+                            case Qt.Key_Escape:
+                            case Qt.Key_Left:
+                                root.closeSubmenu();
+                                event.accepted = true;
+                                break;
+                            }
+                        } else {
+                            switch (event.key) {
+                            case Qt.Key_Up:
+                                root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, -1);
+                                event.accepted = true;
+                                break;
+                            case Qt.Key_Down:
+                                root.menuSelectedIndex = root.nextMenuIndex(root.menuSelectedIndex, 1);
+                                event.accepted = true;
+                                break;
+                            case Qt.Key_Return:
+                            case Qt.Key_Space:
+                                {
+                                    var children = menuOpener.children.values;
+                                    if (root.menuSelectedIndex >= 0 && root.menuSelectedIndex < children.length) {
                                     var entry = children[root.menuSelectedIndex];
                                     if (entry.enabled && !entry.isSeparator) {
                                         if (entry.hasChildren) {
@@ -702,5 +708,7 @@ PopupPanel {
         }
 
     }
+
+}
 
 }

@@ -140,7 +140,8 @@ Rectangle {
             }
 
             MouseArea {
-                anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     var pct = Math.round((mouseX / width) * 100);
@@ -199,7 +200,8 @@ Rectangle {
             }
 
             MouseArea {
-                anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     var pct = Math.round((mouseX / width) * 100);
@@ -258,7 +260,8 @@ Rectangle {
             }
 
             MouseArea {
-                anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     var pct = Math.round((mouseX / width) * 100);
