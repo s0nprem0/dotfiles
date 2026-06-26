@@ -142,10 +142,17 @@ Scope {
 
         function getTargetScreen() {
             if (Quickshell.primaryScreen) return Quickshell.primaryScreen;
-            return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null;
+            if (Quickshell.screens.length > 0) return Quickshell.screens[0];
+            return null;
         }
 
         screen: getTargetScreen()
+
+        onScreenChanged: {
+            if (!screen && Quickshell.screens.length > 0) {
+                screen = Quickshell.screens[0];
+            }
+        }
         property real animTopMargin: -50
         property real animOpacity: 0
         onIsShownChanged: {
