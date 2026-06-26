@@ -79,7 +79,8 @@ struct MonitorRaw {
     height: u32,
     scale: f64,
     transform: u32,
-    refreshRate: Option<f64>,
+    #[serde(rename = "refreshRate")]
+    refresh_rate: Option<f64>,
     disabled: bool,
     #[serde(rename = "mirrorOf")]
     mirror_of: String,
@@ -122,7 +123,7 @@ fn raw_to_monitor(raw: MonitorRaw) -> Monitor {
         scale: raw.scale,
         transform: raw.transform,
         transform_label: transform_label(raw.transform),
-        refresh_rate: raw.refreshRate,
+        refresh_rate: raw.refresh_rate,
         disabled: raw.disabled,
         mirror,
         is_internal,
@@ -250,7 +251,8 @@ pub fn set_mode_verified(mode: DisplayMode, monitors: &[Monitor]) -> Result<(), 
     
     thread::sleep(Duration::from_millis(100));
     
-    let new_mode = get_current_mode_from(monitors);
+    let fresh_monitors = get_monitors();
+    let new_mode = get_current_mode_from(&fresh_monitors);
     
     if new_mode == mode {
         Ok(())
@@ -375,12 +377,12 @@ pub fn save_display_config(config: &DisplayConfig) -> std::io::Result<()> {
     fs::write(path, content)
 }
 
-pub fn get_monitor_scale(_monitors: &[Monitor], name: &str) -> f64 {
+pub fn get_monitor_scale(name: &str) -> f64 {
     let config = load_display_config();
     config.per_monitor.get(name).and_then(|s| s.scale).unwrap_or(1.0)
 }
 
-pub fn set_monitor_scale(_monitors: &[Monitor], name: &str, scale: f64) -> std::io::Result<()> {
+pub fn set_monitor_scale(name: &str, scale: f64) -> std::io::Result<()> {
     let mut config = load_display_config();
     let entry = config.per_monitor.entry(name.to_string()).or_insert(MonitorSettings {
         scale: None,
@@ -390,12 +392,12 @@ pub fn set_monitor_scale(_monitors: &[Monitor], name: &str, scale: f64) -> std::
     save_display_config(&config)
 }
 
-pub fn get_monitor_transform(_monitors: &[Monitor], name: &str) -> Option<u32> {
+pub fn get_monitor_transform(name: &str) -> Option<u32> {
     let config = load_display_config();
     config.per_monitor.get(name).and_then(|s| s.transform)
 }
 
-pub fn set_monitor_transform(_monitors: &[Monitor], name: &str, transform: u32) -> std::io::Result<()> {
+pub fn set_monitor_transform(name: &str, transform: u32) -> std::io::Result<()> {
     let mut config = load_display_config();
     let entry = config.per_monitor.entry(name.to_string()).or_insert(MonitorSettings {
         scale: None,
@@ -439,4 +441,96 @@ pub fn get_profile<'a>(name: &str, profiles: &'a HashMap<String, DisplayProfile>
 
 pub fn apply_profile(profile: &DisplayProfile, monitors: &[Monitor]) {
     set_mode(profile.mode, monitors);
+    
+    for (name, settings) in &profile.monitors {
+        if let Some(scale) = settings.scale {
+            let _ = set_monitor_scale(name, scale);
+        }
+        if let Some(transform) = settings.transform {
+            let _ = set_monitor_transform(name, transform);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_monitor(name: &str, is_internal: bool, disabled: bool, mirror: Option<&str>) -> Monitor {
+        Monitor {
+            name: name.to_string(),
+            id: 0,
+            x: 0,
+            y: 0,
+            width: 1920,
+            height: 1080,
+            scale: 1.0,
+            transform: 0,
+            transform_label: "normal".to_string(),
+            refresh_rate: Some(60.0),
+            disabled,
+            mirror: mirror.map(|s| s.to_string()),
+            is_internal,
+            workspace_id: None,
+            focused: false,
+            active: true,
+        }
+    }
+
+    #[test]
+    fn detects_external_only_mode() {
+        let monitors = vec![make_monitor("HDMI-A-1", false, false, None)];
+        assert_eq!(get_current_mode_from(&monitors), DisplayMode::External);
+    }
+
+    #[test]
+    fn detects_internal_only_mode() {
+        let monitors = vec![make_monitor("eDP-1", true, false, None)];
+        assert_eq!(get_current_mode_from(&monitors), DisplayMode::Internal);
+    }
+
+    #[test]
+    fn detects_extend_mode() {
+        let monitors = vec![
+            make_monitor("eDP-1", true, false, None),
+            make_monitor("HDMI-A-1", false, false, None),
+        ];
+        assert_eq!(get_current_mode_from(&monitors), DisplayMode::Extend);
+    }
+
+    #[test]
+    fn detects_duplicate_mode() {
+        let monitors = vec![
+            make_monitor("eDP-1", true, false, None),
+            make_monitor("HDMI-A-1", false, false, Some("eDP-1")),
+        ];
+        assert_eq!(get_current_mode_from(&monitors), DisplayMode::Duplicate);
+    }
+
+    #[test]
+    fn detects_disabled_internal_as_external() {
+        let monitors = vec![
+            make_monitor("eDP-1", true, true, None),
+            make_monitor("HDMI-A-1", false, false, None),
+        ];
+        assert_eq!(get_current_mode_from(&monitors), DisplayMode::External);
+    }
+
+    #[test]
+    fn transform_label_returns_correct_strings() {
+        assert_eq!(transform_label(0), "normal");
+        assert_eq!(transform_label(1), "90°");
+        assert_eq!(transform_label(2), "180°");
+        assert_eq!(transform_label(3), "270°");
+        assert_eq!(transform_label(99), "unknown(99)");
+    }
+
+    #[test]
+    fn is_internal_name_detects_known_prefixes() {
+        assert!(is_internal_name("eDP-1"));
+        assert!(is_internal_name("DSI-1"));
+        assert!(is_internal_name("LVDS-1"));
+        assert!(is_internal_name("OLED-1"));
+        assert!(!is_internal_name("HDMI-A-1"));
+    }
 }
