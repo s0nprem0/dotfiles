@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
@@ -15,6 +16,17 @@ impl Default for DisplayMode {
     fn default() -> Self {
         DisplayMode::Extend
     }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct MonitorSettings {
+    pub scale: Option<f64>,
+    pub transform: Option<u32>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct DisplayConfig {
+    pub per_monitor: HashMap<String, MonitorSettings>,
 }
 
 #[derive(Debug, Clone)]
@@ -293,4 +305,65 @@ pub fn get_internal_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
 
 pub fn get_external_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
     monitors.iter().filter(|m| !m.is_internal && !m.disabled).collect()
+}
+
+use std::fs;
+use std::path::PathBuf;
+
+pub fn get_config_path() -> PathBuf {
+    dirs::cache_dir()
+        .unwrap_or_else(|| std::path::PathBuf::from("."))
+        .join("quickshell")
+        .join("display_config.json")
+}
+
+pub fn load_display_config() -> DisplayConfig {
+    let path = get_config_path();
+    if path.exists() {
+        match fs::read_to_string(&path) {
+            Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
+            Err(_) => DisplayConfig::default(),
+        }
+    } else {
+        DisplayConfig::default()
+    }
+}
+
+pub fn save_display_config(config: &DisplayConfig) -> std::io::Result<()> {
+    let path = get_config_path();
+    if let Some(parent) = path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let content = serde_json::to_string_pretty(config).unwrap_or_default();
+    fs::write(path, content)
+}
+
+pub fn get_monitor_scale(_monitors: &[Monitor], name: &str) -> f64 {
+    let config = load_display_config();
+    config.per_monitor.get(name).and_then(|s| s.scale).unwrap_or(1.0)
+}
+
+pub fn set_monitor_scale(_monitors: &[Monitor], name: &str, scale: f64) -> std::io::Result<()> {
+    let mut config = load_display_config();
+    let entry = config.per_monitor.entry(name.to_string()).or_insert(MonitorSettings {
+        scale: None,
+        transform: None,
+    });
+    entry.scale = Some(scale);
+    save_display_config(&config)
+}
+
+pub fn get_monitor_transform(_monitors: &[Monitor], name: &str) -> Option<u32> {
+    let config = load_display_config();
+    config.per_monitor.get(name).and_then(|s| s.transform)
+}
+
+pub fn set_monitor_transform(_monitors: &[Monitor], name: &str, transform: u32) -> std::io::Result<()> {
+    let mut config = load_display_config();
+    let entry = config.per_monitor.entry(name.to_string()).or_insert(MonitorSettings {
+        scale: None,
+        transform: None,
+    });
+    entry.transform = Some(transform);
+    save_display_config(&config)
 }

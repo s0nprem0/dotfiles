@@ -159,6 +159,55 @@ Item {
         stateFile.write(JSON.stringify(data, null, 2));
     }
 
+    function getMonitorScale(name) {
+        var config = loadMonitorSettings();
+        return config[name] && config[name].scale || 1.0;
+    }
+
+    function setMonitorScale(name, scale) {
+        var config = loadMonitorSettings();
+        if (!config[name]) config[name] = {};
+        config[name].scale = scale;
+        saveMonitorSettings(config);
+    }
+
+    function getMonitorTransform(name) {
+        var config = loadMonitorSettings();
+        return config[name] && config[name].transform || 0;
+    }
+
+    function setMonitorTransform(name, transform) {
+        var config = loadMonitorSettings();
+        if (!config[name]) config[name] = {};
+        config[name].transform = transform;
+        saveMonitorSettings(config);
+    }
+
+    readonly property string monitorSettingsPath: "file://" + Theme.cacheDir + "/monitor_settings.json"
+
+    FileView {
+        id: monitorSettingsFile
+        path: root.monitorSettingsPath
+        watchChanges: true
+    }
+
+    function loadMonitorSettings() {
+        try {
+            return JSON.parse(monitorSettingsFile.text || "{}");
+        } catch (e) {
+            console.warn("DisplayService: Failed to parse monitor settings:", e);
+            return {};
+        }
+    }
+
+    function saveMonitorSettings(config) {
+        try {
+            monitorSettingsFile.write(JSON.stringify(config, null, 2));
+        } catch (e) {
+            console.warn("DisplayService: Failed to save monitor settings:", e);
+        }
+    }
+
     Connections {
         target: Hyprland
         function onMonitorAdded() { 
