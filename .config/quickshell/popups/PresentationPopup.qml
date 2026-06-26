@@ -11,37 +11,34 @@ Window {
     property bool showPopup: false
     property string currentMode: DisplayService.currentMode
     property int monitorCount: DisplayService.monitorCount
+    property int selectedModeIndex: 0
+
     property var modes: [{
         "name": "EXTEND",
         "value": "extend",
-        "desc": "Two separate screens",
-        "icon": "🖥️"
+        "desc": "Two separate screens"
     }, {
         "name": "DUPLICATE",
         "value": "duplicate",
-        "desc": "Mirror displays",
-        "icon": "🔄"
+        "desc": "Mirror displays"
     }]
 
     function applyMode(mode) {
-        var result = Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
+        Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
         root.showPopup = false;
         DisplayService.refreshMonitors();
     }
 
     function cycleMode() {
-        var idx = modes.findIndex(function(m) {
-            return m.value === root.currentMode;
-        });
-        var nextIdx = (idx + 1) % modes.length;
-        root.applyMode(modes[nextIdx].value);
+        root.selectedModeIndex = (root.selectedModeIndex + 1) % root.modes.length;
+        root.applyMode(root.modes[root.selectedModeIndex].value);
     }
 
     title: "DISPLAY MODE"
     minimumWidth: 320
-    minimumHeight: 280
+    minimumHeight: 200
     width: 320
-    height: 280
+    height: 200
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint
     visible: showPopup
@@ -56,173 +53,105 @@ Window {
         }
     }
     onShowPopupChanged: {
-        if (showPopup)
+        if (showPopup) {
             DisplayService.refreshMonitors();
-
+            var idx = root.modes.findIndex(function(m) { return m.value === root.currentMode; });
+            root.selectedModeIndex = idx >= 0 ? idx : 0;
+        }
     }
 
     Rectangle {
         anchors.fill: parent
         anchors.margins: 8
         color: Theme.surface
-        border.width: 2
-        border.color: Theme.primary
 
-        ColumnLayout {
+        Column {
             anchors.fill: parent
             spacing: 0
 
             Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 48
+                width: parent.width
+                height: 36
                 color: Theme.primary
-                border.width: 1
-                border.color: Theme.primary
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 8
-
-                    Text {
-                        text: "🖥️"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize2xl
-                    }
-
-                    Text {
-                        text: "DISPLAY MODE"
-                        color: Theme.bg
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize3xl
-                        font.bold: true
-                        Layout.fillWidth: true
-                    }
-
-                    Rectangle {
-                        implicitWidth: monitorCount > 0 ? 24 : 0
-                        implicitHeight: 24
-                        color: Theme.primary
-                        border.width: 1
-                        border.color: Theme.bg
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: root.monitorCount
-                            color: Theme.bg
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeSm
-                            font.bold: true
-                            visible: root.monitorCount > 0
-                        }
-
-                    }
-
+                Text {
+                    anchors.centerIn: parent
+                    text: "DISPLAY MODE"
+                    color: Theme.bg
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSize3xl
+                    font.bold: true
                 }
-
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 2
-                color: Theme.primaryAlpha02
             }
 
             Repeater {
-                model: modes
+                model: root.modes
 
                 delegate: Rectangle {
                     required property var modelData
 
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 56
+                    width: parent.width
+                    height: 36
                     color: modelData.value === root.currentMode ? Theme.primary : Theme.surface
-                    border.width: 1
-                    border.color: Theme.primary
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: 12
+                        anchors.leftMargin: 16
+                        anchors.rightMargin: 16
                         spacing: 12
 
                         Text {
-                            text: modelData.icon
+                            text: modelData.name
+                            color: modelData.value === root.currentMode ? Theme.bg : Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize2xl
-                        }
-
-                        Column {
-                            Layout.fillWidth: true
-                            spacing: 2
-
-                            Text {
-                                text: modelData.name
-                                color: modelData.value === root.currentMode ? Theme.bg : Theme.fg
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeXl
-                                font.bold: true
-                                Layout.fillWidth: true
-                            }
-
-                            Text {
-                                text: modelData.desc
-                                color: Theme.muted
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                elide: Text.ElideRight
-                            }
-
-                        }
-
-                        Text {
-                            text: modelData.value === root.currentMode ? "✓" : ">"
-                            color: modelData.value === root.currentMode ? Theme.primary : Theme.muted
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize2xl
+                            font.pixelSize: Theme.fontSizeXl
                             font.bold: true
                         }
 
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        Text {
+                            text: modelData.desc
+                            color: Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeSm
+                        }
+
+                        Text {
+                            text: modelData.value === root.currentMode ? "[active]" : ">"
+                            color: modelData.value === root.currentMode ? Theme.primary : Theme.muted
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeSm
+                            font.bold: true
+                        }
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.applyMode(modelData.value);
-                        }
+                        onClicked: root.applyMode(modelData.value)
                     }
-
                 }
-
             }
 
             Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 2
-                color: Theme.primaryAlpha02
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 32
-                spacing: 4
-                anchors.bottomMargin: 8
+                width: parent.width
+                height: 24
+                color: Theme.surfaceLighter
 
                 Text {
+                    anchors.centerIn: parent
                     text: "SPACE/ENTER: CYCLE  ESC: CLOSE"
                     color: Theme.muted
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeSm
                     font.bold: true
-                    Layout.fillWidth: true
                 }
-
             }
-
         }
-
     }
 
 }
