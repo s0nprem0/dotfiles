@@ -1,6 +1,6 @@
+use helpers_rs::state_file::atomic_write_json;
 use helpers_rs::{find_kbd_backlight_device, run_cmd};
 use serde::Serialize;
-use std::fs;
 use std::path::PathBuf;
 
 #[derive(Serialize)]
@@ -37,13 +37,7 @@ fn clear_state() {
 }
 
 fn persist_state(state: &State) {
-    let path = state_file();
-    if let Some(parent) = path.parent() {
-        let _ = fs::create_dir_all(parent);
-    }
-    if let Ok(json) = serde_json::to_string(state) {
-        let _ = fs::write(&path, json);
-    }
+    let _ = atomic_write_json(&state_file(), state);
 }
 
 fn brightness_value() -> String {

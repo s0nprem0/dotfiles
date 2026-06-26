@@ -3,14 +3,6 @@ use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
 
 fn notify(title: &str, message: &str) {
-    let osdctl = helpers_rs::home_dir().join(".config/quickshell/helpers/osdctl");
-
-    if osdctl.exists() {
-        let _ = Command::new(&osdctl)
-            .args(["show", &format!("{}: {}", title, message), "good", "3000"])
-            .status();
-    }
-
     let _ = Command::new("notify-send")
         .args(["-a", "Device Manager", title, message, "-u", "normal"])
         .status();

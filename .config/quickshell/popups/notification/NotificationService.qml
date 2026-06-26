@@ -29,6 +29,7 @@ Item {
             n.close();
             service.dismissToastById(id);
             service.notifList = service.notifList.slice();
+            service.recalcTrackedCount();
             return ;
         }
         // Already closed — remove from history
@@ -52,6 +53,7 @@ Item {
             service.dismissToastById(ids[i]);
         }
         service.notifList = service.notifList.slice();
+        service.recalcTrackedCount();
     }
 
     function clearAll() {
@@ -62,6 +64,7 @@ Item {
         }
         toastModel.clear();
         service.notifList = service.notifList.slice();
+        service.trackedCount = 0;
     }
 
     function clearHistory() {
@@ -85,6 +88,7 @@ Item {
 
         toastModel.remove(index, 1);
         service.notifList = service.notifList.slice();
+        service.recalcTrackedCount();
     }
 
     function dismissToastById(id) {
@@ -96,6 +100,7 @@ Item {
 
                 toastModel.remove(i, 1);
                 service.notifList = service.notifList.slice();
+                service.recalcTrackedCount();
                 return ;
             }
         }
@@ -123,7 +128,6 @@ Item {
     }
 
     visible: false
-    onNotifListChanged: service.recalcTrackedCount()
     onDndChanged: {
         if (typeof NotificationState !== "undefined")
             NotificationState.dnd = dnd;
@@ -169,6 +173,7 @@ Item {
                 stale.destroy();
             }
             service.notifList = list;
+            service.recalcTrackedCount();
             if (!service.dnd || notification.urgency === 2) {
                 // ── Group by app: replace existing toast from same app ──
                 var groupCount = 1;

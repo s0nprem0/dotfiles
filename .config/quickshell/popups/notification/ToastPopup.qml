@@ -50,8 +50,9 @@ Item {
                     id: toastColumn
 
                     anchors.fill: parent
-                    anchors.margins: 4
-                    spacing: 2 // Mechanical, blocky gaps between toasts
+                    anchors.leftMargin: 4
+                    anchors.rightMargin: 4
+                    spacing: 2
 
                     Repeater {
                         id: toastRepeater
@@ -110,9 +111,8 @@ Item {
                                 hardClose();
                             }
 
-                            width: toastColumn.width - 8
+                            width: parent.width
                             height: toastCard.height
-                            anchors.horizontalCenter: parent.horizontalCenter
                             Component.onCompleted: {
                                 opacityValue = 1;
                             }
