@@ -21,16 +21,6 @@ Window {
         "value": "duplicate",
         "desc": "Mirror displays",
         "icon": "🔄"
-    }, {
-        "name": "EXTERNAL",
-        "value": "external",
-        "desc": "External only",
-        "icon": "📺"
-    }, {
-        "name": "INTERNAL",
-        "value": "internal",
-        "desc": "Laptop screen only",
-        "icon": "💻"
     }]
 
     function applyMode(mode) {

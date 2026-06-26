@@ -4,7 +4,7 @@ Usage:
 - DisplayService.monitorsById - Object lookup by monitor ID
 - DisplayService.monitorCount - Number of monitors
 - DisplayService.primaryMonitorId - ID of focused monitor
-- DisplayService.currentMode - "extend"|"duplicate"|"external"|"internal"
+- DisplayService.currentMode - "extend"|"duplicate"
 - DisplayService.refreshMonitors() - Force refresh
 - DisplayService.getMonitor(id) - Get monitor by ID
 */
@@ -57,25 +57,9 @@ Item {
     }
 
     function updateCurrentMode() {
-        var internalOn = false;
-        var externalOn = false;
-        for (var i = 0; i < root.monitors.length; i++) {
-            var m = root.monitors[i];
-            if (m.disabled)
-                continue;
-
-            if (m.name.startsWith("eDP") || m.name.startsWith("DSI") || m.name.startsWith("LVDS") || m.name.startsWith("OLED"))
-                internalOn = true;
-            else
-                externalOn = true;
-        }
         var newMode = "extend";
-        if (!internalOn && externalOn)
-            newMode = "external";
-        else if (internalOn && externalOn)
-            newMode = "extend";
-        else if (internalOn && !externalOn)
-            newMode = "internal";
+        if (root.monitorCount < 2)
+            newMode = "duplicate";
         if (newMode !== root.currentMode) {
             root.currentMode = newMode;
             root.modeChanged();
