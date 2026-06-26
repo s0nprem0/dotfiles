@@ -125,7 +125,7 @@ Rectangle {
         Text {
             text: "CURRENT WALLPAPER"
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
             color: Theme.primary
             font.bold: true
         }
@@ -164,7 +164,7 @@ RowLayout {
                         text: root.currentMode === "preset" ? "Preset: " + root.modeName : "Wallpaper"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         font.bold: true
                         Layout.fillWidth: true
                         elide: Text.ElideRight
@@ -197,7 +197,7 @@ RowLayout {
                 text: "󰉋  Browse Wallpaper"
                 color: browseMa.containsMouse ? Theme.bg : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 font.bold: true
             }
 
@@ -221,7 +221,7 @@ RowLayout {
         Text {
             text: "PRESETS"
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
             color: Theme.primary
             font.bold: true
         }
@@ -256,7 +256,7 @@ RowLayout {
                             text: "󰸉"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                         }
 
                         Text {
@@ -265,7 +265,7 @@ RowLayout {
                             text: "Auto (wallpaper-based)"
                             color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                             Layout.fillWidth: true
                             elide: Text.ElideRight
@@ -277,7 +277,7 @@ RowLayout {
                             text: root.currentMode === "wallpaper" ? "active" : ""
                             color: Theme.green
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                         }
                     }
 
@@ -314,14 +314,14 @@ delegate: Rectangle {
                                             text: modelData.variant === "light" ? "󰖨" : "󰖔"
                                             color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 12
+                                            font.pixelSize: Theme.fontSizeXl
                                         }
 
                                         Text {
                                             text: modelData.name
                                             color: isActive || ma.containsMouse ? (ma.containsMouse ? Theme.bg : Theme.primary) : Theme.fg
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 10
+                                            font.pixelSize: Theme.fontSizeMd
                                             font.bold: true
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight

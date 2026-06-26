@@ -115,7 +115,7 @@ PopupPanel {
                     text: "󰞍  Emoji Picker"
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontSize2xl
                     font.bold: true
                 }
 
@@ -137,7 +137,7 @@ PopupPanel {
                         verticalAlignment: TextInput.AlignVCenter
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSizeXl
                         onTextChanged: {
                             root.searchQuery = text;
                             root.filterEmojis();
@@ -147,7 +147,7 @@ PopupPanel {
                             text: "Search emoji..."
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                             visible: searchInput.text === ""
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -176,7 +176,7 @@ PopupPanel {
                             text: root.allEmojis.length === 0 ? "Loading..." : "No matches"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontSizeLg
                             visible: root.filteredEmojis.length === 0
                         }
 
@@ -189,7 +189,7 @@ PopupPanel {
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData.char
-                                font.pixelSize: 18
+                                font.pixelSize: Theme.fontSize5xl
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }

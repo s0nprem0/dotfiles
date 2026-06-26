@@ -28,7 +28,7 @@ Rectangle {
             text: "Power"
             color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 14
+            font.pixelSize: Theme.fontSize3xl
             font.bold: true
         }
 
@@ -36,7 +36,7 @@ Rectangle {
             text: "Power Mode"
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
         }
 
         RowLayout {
@@ -69,7 +69,7 @@ Rectangle {
                         text: modelData.label
                         color: root.activeProfile === modelData.profile ? Theme.bg : Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
                         font.bold: root.activeProfile === modelData.profile
                     }
 
@@ -99,7 +99,7 @@ Rectangle {
                 text: "Battery Charge Limit"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
             }
 
             Item {
@@ -110,7 +110,7 @@ Rectangle {
                 text: root.chargeLimit + "%"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
                 font.bold: true
             }
 

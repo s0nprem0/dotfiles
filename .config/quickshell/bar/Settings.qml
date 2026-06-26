@@ -20,7 +20,7 @@ BarModule {
         text: "󰒓"
         color: Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontSizeLg
     }
 
 }

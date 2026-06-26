@@ -1,7 +1,5 @@
+use serde::Deserialize;
 use std::process::Command;
-
-const INTERNAL: &str = "eDP-1";
-const EXTERNAL: &str = "HDMI-A-1";
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DisplayMode {
@@ -17,15 +15,74 @@ impl Default for DisplayMode {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Monitor {
+    pub name: String,
+    pub disabled: bool,
+    pub width: u32,
+    pub height: u32,
+    pub refresh_rate: Option<f64>,
+    pub mirror: Option<String>,
+    pub is_internal: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MonitorRaw {
+    name: String,
+    disabled: bool,
+    width: u32,
+    height: u32,
+    refresh_rate: Option<f64>,
+    #[serde(rename = "mirrorOf")]
+    mirror_of: String,
+}
+
+fn is_internal_name(name: &str) -> bool {
+    name.starts_with("eDP")
+        || name.starts_with("DSI")
+        || name.starts_with("LVDS")
+        || name.starts_with("OLED")
+}
+
+fn raw_to_monitor(raw: MonitorRaw) -> Monitor {
+    let is_internal = is_internal_name(&raw.name);
+    let mirror = match raw.mirror_of.as_str() {
+        "none" | "" => None,
+        other => Some(other.to_string()),
+    };
+    Monitor {
+        name: raw.name,
+        disabled: raw.disabled,
+        width: raw.width,
+        height: raw.height,
+        refresh_rate: raw.refresh_rate,
+        mirror,
+        is_internal,
+    }
+}
+
 pub fn get_current_mode() -> DisplayMode {
     let monitors = get_monitors();
-    let internal_on = monitors.iter().any(|m| m.name == INTERNAL && !m.disabled);
-    let external_on = monitors.iter().any(|m| m.name == EXTERNAL && !m.disabled);
+    let internal_on = monitors.iter().any(|m| m.is_internal && !m.disabled);
+    let external_on = monitors.iter().any(|m| !m.is_internal && !m.disabled);
 
     if !internal_on && external_on {
         DisplayMode::External
     } else if internal_on && external_on {
-        if monitors.iter().any(|m| m.name == EXTERNAL && m.mirror.as_deref() == Some(INTERNAL)) {
+        let internal_names: Vec<&str> = monitors
+            .iter()
+            .filter(|m| m.is_internal)
+            .map(|m| m.name.as_str())
+            .collect();
+        let in_duplicate = monitors.iter().any(|m| {
+            !m.is_internal
+                && !m.disabled
+                && m.mirror
+                    .as_deref()
+                    .is_some_and(|mirrored| internal_names.contains(&mirrored))
+        });
+        if in_duplicate {
             DisplayMode::Duplicate
         } else {
             DisplayMode::Extend
@@ -37,9 +94,17 @@ pub fn get_current_mode() -> DisplayMode {
     }
 }
 
+fn find_internal(monitors: &[Monitor]) -> Option<&Monitor> {
+    monitors.iter().find(|m| m.is_internal && !m.disabled)
+}
+
+fn find_external(monitors: &[Monitor]) -> Option<&Monitor> {
+    monitors.iter().find(|m| !m.is_internal && !m.disabled)
+}
+
 pub fn toggle_mode() {
     let monitors = get_monitors();
-    let has_external = monitors.iter().any(|m| m.name == EXTERNAL && !m.disabled);
+    let has_external = find_external(&monitors).is_some();
     let current = get_current_mode();
 
     let next = match current {
@@ -54,13 +119,17 @@ pub fn toggle_mode() {
 }
 
 pub fn set_mode(mode: DisplayMode, monitors: &[Monitor]) {
-    let has_external = monitors.iter().any(|m| m.name == EXTERNAL && !m.disabled);
+    let internal_name = find_internal(monitors).map(|m| m.name.as_str());
+    let external_name = find_external(monitors).map(|m| m.name.as_str());
+    let has_external = external_name.is_some();
 
     match mode {
         DisplayMode::Extend => {
-            run_keyword(INTERNAL, "mode preferred position auto scale 1");
-            if has_external {
-                run_keyword(EXTERNAL, "mode preferred position auto-right scale 1");
+            if let Some(name) = internal_name {
+                run_keyword(name, "mode preferred position auto scale 1");
+            }
+            if let Some(name) = external_name {
+                run_keyword(name, "mode preferred position auto-right scale 1");
             }
         }
         DisplayMode::Duplicate if !has_external => {
@@ -68,21 +137,34 @@ pub fn set_mode(mode: DisplayMode, monitors: &[Monitor]) {
             return;
         }
         DisplayMode::Duplicate => {
-            let internal_mode = get_preferred_mode(monitors, INTERNAL);
-            run_keyword(INTERNAL, &format!("mode {} position 0x0 scale 1", internal_mode));
-            run_keyword(EXTERNAL, &format!("mode {} position 0x0 scale 1 mirror {}", internal_mode, INTERNAL));
+            let int_name = internal_name.unwrap_or_default();
+            let ext_name = external_name.unwrap_or_default();
+            let preferred = get_preferred_mode(monitors, int_name);
+            run_keyword(int_name, &format!("mode {} position 0x0 scale 1", preferred));
+            run_keyword(
+                ext_name,
+                &format!("mode {} position 0x0 scale 1 mirror {}", preferred, int_name),
+            );
         }
         DisplayMode::External if !has_external => {
             notify("No external display");
             return;
         }
         DisplayMode::External => {
-            run_keyword(INTERNAL, "disabled true");
-            run_keyword(EXTERNAL, "mode preferred position 0x0 scale 1");
+            if let Some(name) = internal_name {
+                run_keyword(name, "disabled true");
+            }
+            if let Some(name) = external_name {
+                run_keyword(name, "mode preferred position 0x0 scale 1");
+            }
         }
         DisplayMode::Internal => {
-            run_keyword(INTERNAL, "mode preferred position auto scale 1");
-            run_keyword(EXTERNAL, "disabled true");
+            if let Some(name) = internal_name {
+                run_keyword(name, "mode preferred position auto scale 1");
+            }
+            if let Some(name) = external_name {
+                run_keyword(name, "disabled true");
+            }
         }
     }
 
@@ -96,7 +178,8 @@ fn run_keyword(output: &str, args: &str) {
 }
 
 fn get_preferred_mode(monitors: &[Monitor], name: &str) -> String {
-    monitors.iter()
+    monitors
+        .iter()
         .find(|m| m.name == name)
         .and_then(|m| {
             if m.width > 0 {
@@ -115,70 +198,19 @@ fn notify(message: &str) {
         .status();
 }
 
-#[derive(Debug)]
-pub struct Monitor {
-    pub name: String,
-    pub disabled: bool,
-    pub width: u32,
-    pub height: u32,
-    pub refresh_rate: Option<f64>,
-    pub mirror: Option<String>,
-}
-
 pub fn get_monitors() -> Vec<Monitor> {
     let output = match Command::new("hyprctl").args(["monitors", "-j"]).output() {
         Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
         Err(_) => return Vec::new(),
     };
 
-    let mut monitors = Vec::new();
-
-    for line in output.lines() {
-        if line.contains("\"name\"") {
-            let name = extract_string(line, "name").unwrap_or_default();
-            let disabled: bool = line.split("\"disabled\"")
-                .nth(1)
-                .and_then(|s| s.split(':').nth(1))
-                .and_then(|s| s.trim().trim_end_matches(',').parse().ok())
-                .unwrap_or(false);
-            let width: u32 = line.split("\"width\"")
-                .nth(1)
-                .and_then(|s| s.split(':').nth(1))
-                .and_then(|s| s.split(',').next())
-                .and_then(|s| s.trim().parse().ok())
-                .unwrap_or(0);
-            let height: u32 = line.split("\"height\"")
-                .nth(1)
-                .and_then(|s| s.split(':').nth(1))
-                .and_then(|s| s.split(',').next())
-                .and_then(|s| s.trim().parse().ok())
-                .unwrap_or(0);
-            let refresh_rate: Option<f64> = line.split("\"refreshRate\"")
-                .nth(1)
-                .and_then(|s| s.split(':').nth(1))
-                .and_then(|s| s.split(',').next())
-                .and_then(|s| s.trim().parse().ok());
-            let mirror = extract_string(line, "mirror").into_iter().next();
-
-            monitors.push(Monitor {
-                name,
-                disabled,
-                width,
-                height,
-                refresh_rate,
-                mirror: mirror.filter(|s| !s.is_empty()),
-            });
+    let raws: Vec<MonitorRaw> = match serde_json::from_str(&output) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("display: failed to parse hyprctl JSON: {e}");
+            return Vec::new();
         }
-    }
+    };
 
-    monitors
-}
-
-fn extract_string(line: &str, key: &str) -> Option<String> {
-    let start = line.find(&format!("\"{}\"", key))?;
-    let rest = &line[start + key.len() + 3..];
-    let value_start = rest.find(':')? + 1;
-    let value = rest[value_start..].trim_start();
-    let end = value.find('"')?;
-    Some(value[..end].to_string())
+    raws.into_iter().map(raw_to_monitor).collect()
 }

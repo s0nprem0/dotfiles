@@ -26,6 +26,20 @@ Item {
     readonly property string success: green
     readonly property string info: blue
     readonly property real barOpacity: 0.65
+    readonly property int fontSizeXxs: 7
+    readonly property int fontSizeXs: 8
+    readonly property int fontSizeSm: 9
+    readonly property int fontSizeMd: 10
+    readonly property int fontSizeLg: 11
+    readonly property int fontSizeXl: 12
+    readonly property int fontSize2xl: 13
+    readonly property int fontSize3xl: 14
+    readonly property int fontSize4xl: 16
+    readonly property int fontSize5xl: 18
+    readonly property int fontSize6xl: 20
+    readonly property int fontSize7xl: 24
+    readonly property int fontSize8xl: 28
+    readonly property int fontSize9xl: 36
     readonly property int barHeight: 38
     readonly property string home: Quickshell.env("HOME")
     readonly property string helperDir: home + "/.config/quickshell/helpers"

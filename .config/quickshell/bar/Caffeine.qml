@@ -33,7 +33,7 @@ BarModule {
         text: root.caffeineActive ? "" : "󰅶"
         color: root.caffeineActive ? Theme.warning : (mA.containsMouse ? Theme.primary : Theme.muted)
         font.family: Theme.fontFamily
-        font.pixelSize: 13
+        font.pixelSize: Theme.fontSize2xl
     }
 
     Process {

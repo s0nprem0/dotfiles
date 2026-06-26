@@ -342,7 +342,7 @@ PopupPanel {
                                 text: root.toRoman(wsCell.wsId)
                                 color: isActive ? Theme.bg : Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 font.bold: true
                             }
 
@@ -452,7 +452,7 @@ PopupPanel {
                                         text: winPreview.modelData.class || winPreview.modelData.initialClass || ""
                                         color: Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 7
+                                        font.pixelSize: Theme.fontSizeXxs
                                         elide: Text.ElideRight
                                         width: parent.width - 4
                                         horizontalAlignment: Text.AlignHCenter
@@ -550,7 +550,7 @@ PopupPanel {
                                             text: winPreview.modelData.title
                                             color: Theme.fg
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 9
+                                            font.pixelSize: Theme.fontSizeSm
                                             width: parent.width - 8
                                             elide: Text.ElideRight
                                             horizontalAlignment: Text.AlignHCenter
@@ -607,7 +607,7 @@ PopupPanel {
                                 text: "empty"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 opacity: 0.5
                                 visible: {
                                     var count = 0;

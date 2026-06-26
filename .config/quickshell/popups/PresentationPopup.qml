@@ -97,7 +97,7 @@ Window {
                     text: "DISPLAY MODE"
                     color: Theme.bg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.fontSize3xl
                     font.bold: true
                 }
             }
@@ -128,7 +128,7 @@ Window {
                             text: modelData.name
                             color: modelData.value === root.currentMode ? Theme.bg : Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                             font.bold: true
                             Layout.fillWidth: true
                         }
@@ -146,7 +146,7 @@ Window {
                                 text: ">"
                                 color: modelData.value === root.currentMode ? Theme.bg : Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontSize3xl
                                 font.bold: true
                             }
                         }
@@ -178,7 +178,7 @@ Window {
                     text: "[SPACE/ENTER] CYCLE"
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     font.bold: true
                 }
 
@@ -186,7 +186,7 @@ Window {
                     text: "ESC CLOSE"
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     font.bold: true
                     Layout.alignment: Qt.AlignRight
                 }

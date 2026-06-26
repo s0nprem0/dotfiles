@@ -96,7 +96,7 @@ BarModule {
             }
             color: root.networkConnected ? Theme.fg : Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
         }
 
         Text {
@@ -104,7 +104,7 @@ BarModule {
             visible: root.vpnConnected
             color: Theme.green
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.fontSizeMd
         }
 
         Text {
@@ -124,7 +124,7 @@ BarModule {
             visible: text.length > 0
             color: root.networkConnected ? Qt.alpha(Theme.fg, 0.7) : Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
             elide: Text.ElideRight
             Layout.maximumWidth: 120
         }

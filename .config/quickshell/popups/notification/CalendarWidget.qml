@@ -66,7 +66,7 @@ RowLayout {
                 }
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
                 font.bold: true
 
                 MouseArea {
@@ -82,7 +82,7 @@ RowLayout {
                 text: ""
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
 
                 MouseArea {
                     anchors.fill: parent
@@ -99,7 +99,7 @@ RowLayout {
                 text: ""
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
 
                 MouseArea {
                     anchors.fill: parent
@@ -120,7 +120,7 @@ RowLayout {
                 text: root.showCalendar ? "" : ""
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
 
                 MouseArea {
                     anchors.fill: parent
@@ -149,7 +149,7 @@ RowLayout {
                     color: Theme.primary
                     opacity: 0.5
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     font.bold: true
                 }
 
@@ -181,7 +181,7 @@ RowLayout {
                         color: modelData.isToday ? Theme.bg : Theme.primary
                         opacity: modelData.isToday ? 1 : (modelData.isCurrentMonth ? 0.85 : 0.3)
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: modelData.isToday
                     }
 
@@ -208,7 +208,7 @@ RowLayout {
                 text: root.hourStr + ":" + root.minStr
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 20
+                font.pixelSize: Theme.fontSize6xl
                 font.bold: true
             }
 
@@ -216,7 +216,7 @@ RowLayout {
                 text: root.ampmStr
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 2
             }
@@ -228,7 +228,7 @@ RowLayout {
             color: Theme.primary
             opacity: 0.75
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             Layout.alignment: Qt.AlignHCenter
         }
 

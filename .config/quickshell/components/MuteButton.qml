@@ -13,7 +13,7 @@ Text {
     text: root.muted ? root.icon : root.altIcon
     color: root.iconColor
     font.family: Theme.fontFamily
-    font.pixelSize: 11
+    font.pixelSize: Theme.fontSizeLg
     renderType: Text.NativeRendering
     opacity: root.muted ? 0.5 : 1.0
     cursorShape: Qt.PointingHandCursor

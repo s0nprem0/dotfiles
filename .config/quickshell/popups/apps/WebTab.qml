@@ -117,7 +117,7 @@ Item {
                         text: modelData.icon || "󰣇"
                         color: root.selectedIndex === index ? Theme.bg : Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontSize3xl
                     }
 
                     Text {
@@ -127,7 +127,7 @@ Item {
                         text: modelData.name || ""
                         color: root.selectedIndex === index ? Theme.bg : Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         font.bold: true
                         elide: Text.ElideRight
                     }

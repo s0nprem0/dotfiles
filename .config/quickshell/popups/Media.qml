@@ -487,7 +487,7 @@ PopupPanel {
                         text: "󰝚 Now Playing"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
                         font.bold: true
                         anchors.verticalCenter: parent.verticalCenter
                         renderType: Text.NativeRendering
@@ -503,7 +503,7 @@ PopupPanel {
                         color: Theme.primary
                         opacity: 0.5
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
                         anchors.verticalCenter: parent.verticalCenter
                         renderType: Text.NativeRendering
 
@@ -532,7 +532,7 @@ PopupPanel {
                     color: Theme.primary
                     opacity: 0.5
                     font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSizeXl
                     horizontalAlignment: Text.AlignHCenter
                     renderType: Text.NativeRendering
                 }
@@ -553,7 +553,7 @@ PopupPanel {
                             color: Theme.primary
                             opacity: 0.5
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontSizeLg
                             renderType: Text.NativeRendering
                         }
 
@@ -579,7 +579,7 @@ PopupPanel {
                                     text: modelData
                                     color: modelData === root.playerName ? Theme.primary : playerBtnMa.containsMouse ? Theme.primary : Qt.alpha(Theme.primary, 0.5)
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 10
+                                    font.pixelSize: Theme.fontSizeMd
                                     renderType: Text.NativeRendering
                                 }
 
@@ -628,7 +628,7 @@ PopupPanel {
                             text: (root.sysMuted ? "󰝟" : (root.isBtSink ? "󰋋" : "󰕾")) + " Output: " + (root.sysMuted ? "Muted" : Math.round(root.sysVol) + "%")
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                             renderType: Text.NativeRendering
@@ -645,7 +645,7 @@ PopupPanel {
                             text: root.sysMuted ? "Unmute" : "Mute"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             anchors.verticalCenter: parent.verticalCenter
                             renderType: Text.NativeRendering
 
@@ -721,7 +721,7 @@ PopupPanel {
                                 color: Theme.primary
                                 opacity: 0.5
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                                 renderType: Text.NativeRendering
@@ -763,7 +763,7 @@ PopupPanel {
                                         text: parent.sinkName
                                         color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight
                                         maximumLineCount: 1
                                         renderType: Text.NativeRendering
@@ -794,7 +794,7 @@ PopupPanel {
                                 color: Theme.primary
                                 opacity: 0.5
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                                 renderType: Text.NativeRendering
@@ -835,7 +835,7 @@ PopupPanel {
                                         text: parent.srcName
                                         color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight
                                         maximumLineCount: 1
                                         renderType: Text.NativeRendering
@@ -870,7 +870,7 @@ PopupPanel {
                                 text: (root.micMuted ? "󰍭" : "󰍬") + " Input: " + (root.micMuted ? "Muted" : Math.round(root.micVol) + "%")
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                                 renderType: Text.NativeRendering
@@ -887,7 +887,7 @@ PopupPanel {
                                 text: root.micMuted ? "Unmute" : "Mute"
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 anchors.verticalCenter: parent.verticalCenter
                                 renderType: Text.NativeRendering
 
@@ -974,7 +974,7 @@ PopupPanel {
                         color: Theme.primary
                         opacity: 0.5
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: true
                         renderType: Text.NativeRendering
                     }
@@ -1007,7 +1007,7 @@ PopupPanel {
                                         color: Theme.primary
                                         opacity: 0.7
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight
                                         Layout.alignment: Qt.AlignVCenter
                                         renderType: Text.NativeRendering
@@ -1017,7 +1017,7 @@ PopupPanel {
                                         text: parent.parent.parent.appMuted ? "Muted" : parent.parent.parent.appVol + "%"
                                         color: parent.parent.parent.appMuted ? Theme.muted : Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 8
+                                        font.pixelSize: Theme.fontSizeXs
                                         Layout.alignment: Qt.AlignVCenter
                                         renderType: Text.NativeRendering
                                     }
@@ -1033,7 +1033,7 @@ PopupPanel {
                                         text: appRef.appMuted ? "Unmute" : "Mute"
                                         color: Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 8
+                                        font.pixelSize: Theme.fontSizeXs
                                         Layout.alignment: Qt.AlignVCenter
                                         renderType: Text.NativeRendering
 
@@ -1124,7 +1124,7 @@ PopupPanel {
                         color: Theme.primary
                         opacity: 0.5
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: true
                         renderType: Text.NativeRendering
                     }
@@ -1138,7 +1138,7 @@ PopupPanel {
                             color: Theme.primary
                             opacity: 0.6
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             renderType: Text.NativeRendering
                         }
 
@@ -1147,7 +1147,7 @@ PopupPanel {
                             color: Theme.primary
                             opacity: 0.6
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             renderType: Text.NativeRendering
                         }
 
@@ -1156,7 +1156,7 @@ PopupPanel {
                             color: Theme.primary
                             opacity: 0.4
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             elide: Text.ElideRight
                             renderType: Text.NativeRendering
                             visible: root.diagnostics ? !!root.diagnostics.output_desc : false
@@ -1184,7 +1184,7 @@ PopupPanel {
                         color: Theme.primary
                         opacity: 0.5
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: true
                         renderType: Text.NativeRendering
                     }
@@ -1197,7 +1197,7 @@ PopupPanel {
                             text: "󰙣 Prev"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             anchors.verticalCenter: parent.verticalCenter
                             renderType: Text.NativeRendering
 
@@ -1214,7 +1214,7 @@ PopupPanel {
                             text: "󰐊 " + (root.playerStatus === "Playing" ? "Pause" : "Play")
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                             renderType: Text.NativeRendering
@@ -1232,7 +1232,7 @@ PopupPanel {
                             text: "󰙡 Next"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             anchors.verticalCenter: parent.verticalCenter
                             renderType: Text.NativeRendering
 

@@ -48,7 +48,7 @@ BarModule {
         }
         color: NotificationState.dnd ? Theme.muted : (notifCount > 0 ? Theme.primary : Theme.fg)
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontSizeLg
     }
 
     Rectangle {
@@ -71,7 +71,7 @@ BarModule {
             text: notifCount > 99 ? "99+" : notifCount.toString()
             color: Theme.bg
             font.family: Theme.fontFamily
-            font.pixelSize: 7
+            font.pixelSize: Theme.fontSizeXxs
             font.bold: true
         }
 

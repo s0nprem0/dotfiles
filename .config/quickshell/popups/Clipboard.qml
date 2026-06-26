@@ -189,7 +189,7 @@ PopupPanel {
                         text: "󰅈  Clipboard"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontSize2xl
                         font.bold: true
                     }
 
@@ -201,7 +201,7 @@ PopupPanel {
                         text: "clear all"
                         color: clearBtn.containsMouse ? Theme.error : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
 
                         MouseArea {
                             id: clearBtn
@@ -235,7 +235,7 @@ PopupPanel {
                         verticalAlignment: TextInput.AlignVCenter
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSizeXl
                         clip: true // Prevent character bleeding on long queries
                         onTextChanged: {
                             root.searchQuery = text;
@@ -257,7 +257,7 @@ PopupPanel {
                             text: "Search clipboard..."
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                             visible: searchInput.text === ""
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -285,7 +285,7 @@ PopupPanel {
                             text: root.searchQuery ? "No matches" : "Clipboard is empty"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontSizeLg
                             visible: root.filteredEntries.length === 0
                         }
 
@@ -322,7 +322,7 @@ PopupPanel {
                                 text: root.isImageEntry(modelData) ? "󰉦" : "󰅈"
                                 color: root.selectedIndex === index ? Theme.primary : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontSizeLg
                             }
 
                             Item {
@@ -346,7 +346,7 @@ PopupPanel {
                                     text: root.getEntryText(modelData)
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.fontSizeLg
                                     elide: Text.ElideRight
                                     wrapMode: Text.NoWrap
                                     verticalAlignment: Text.AlignVCenter

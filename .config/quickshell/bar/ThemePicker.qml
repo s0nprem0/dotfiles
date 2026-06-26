@@ -18,7 +18,7 @@ BarModule {
         text: "󰸌"
         color: mA.containsMouse ? Theme.primary : Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: 14
+        font.pixelSize: Theme.fontSize3xl
     }
 
     Connections {

@@ -82,7 +82,7 @@ BarModule {
         text: root.hasConnected ? "󰂯" : "󰂲"
         color: root.hasConnected ? Theme.primary : Theme.muted
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontSizeLg
     }
 
 }

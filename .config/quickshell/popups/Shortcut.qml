@@ -98,7 +98,7 @@ PopupPanel {
                         text: "Keybindings"
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontSize2xl
                         font.bold: true
                     }
 
@@ -123,7 +123,7 @@ PopupPanel {
                                 verticalAlignment: TextInput.AlignVCenter
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontSizeLg
                                 selectByMouse: true
                                 onTextChanged: {
                                     root.searchText = text;
@@ -134,7 +134,7 @@ PopupPanel {
                             Text {
                                 text: "⌫"
                                 color: Theme.muted
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontSize3xl
                                 visible: searchField.text !== ""
 
                                 MouseArea {
@@ -155,7 +155,7 @@ PopupPanel {
                     Text {
                         text: root.searchText ? (root.filteredCount + "/" + root.rawData.length) : root.filteredCount + ""
                         color: Theme.muted
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         font.family: Theme.fontFamily
                     }
 
@@ -174,7 +174,7 @@ PopupPanel {
                 text: "No matching shortcuts found"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
             }
 
             // Copy toast
@@ -198,7 +198,7 @@ PopupPanel {
                     text: ""
                     color: Theme.bg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontSizeMd
                     font.bold: true
                 }
 
@@ -265,7 +265,7 @@ PopupPanel {
                             text: modelData.category || ""
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                             opacity: 0.85
                         }
@@ -317,7 +317,7 @@ PopupPanel {
                                     text: modelData.keys || ""
                                     color: Theme.bg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 9
+                                    font.pixelSize: Theme.fontSizeSm
                                     font.bold: true
                                 }
 
@@ -327,7 +327,7 @@ PopupPanel {
                                 text: modelData.description || ""
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontSizeLg
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }

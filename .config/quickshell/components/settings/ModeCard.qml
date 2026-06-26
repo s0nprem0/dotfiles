@@ -46,7 +46,7 @@ Rectangle {
                 text: root.cardTitle
                 color: root.active ? Theme.primary : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
                 font.bold: true
             }
 
@@ -58,7 +58,7 @@ Rectangle {
                 text: root.active ? "\u25cf Active" : ""
                 color: Theme.green
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 visible: root.active
             }
 
@@ -73,7 +73,7 @@ Rectangle {
                 text: "Profile:"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 Layout.minimumWidth: 48
             }
 
@@ -97,7 +97,7 @@ Rectangle {
                         text: modelData.label
                         color: modelData.val === root.currentProfile ? Theme.bg : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: modelData.val === root.currentProfile
                     }
 
@@ -122,7 +122,7 @@ Rectangle {
                 text: "\u2600"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
             }
 
             Item {
@@ -161,7 +161,7 @@ Rectangle {
                 text: root.currentBrightness + "%"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 Layout.minimumWidth: 36
                 horizontalAlignment: Text.AlignRight
             }
@@ -177,7 +177,7 @@ Rectangle {
                 text: "\u2328"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
             }
 
             Item {
@@ -216,7 +216,7 @@ Rectangle {
                 text: root.currentKbd + "%"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 Layout.minimumWidth: 36
                 horizontalAlignment: Text.AlignRight
             }

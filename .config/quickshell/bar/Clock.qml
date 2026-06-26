@@ -1,22 +1,22 @@
+import "../components"
 import "../service"
 import QtQuick
 
-Item {
+BarModule {
     id: root
 
     readonly property string dateFormat: "ddd MMM d HH:mm"
 
-    width: clockText.implicitWidth + 16
-    height: 28
+    implicitWidth: clockText.implicitWidth + 16
+    tooltipText: ""
 
     Text {
         id: clockText
-
         anchors.centerIn: parent
         text: Qt.formatDateTime(new Date(), root.dateFormat)
         color: Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontSizeLg
         font.bold: true
     }
 
@@ -27,25 +27,11 @@ Item {
         onTriggered: clockText.text = Qt.formatDateTime(new Date(), root.dateFormat)
     }
 
-    MouseArea {
-        id: mA
-
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: {
+    Connections {
+        function onClicked(mouse) {
             if (NotificationState.centerPopup)
                 NotificationState.centerPopup.showPopup = true;
-
         }
+        target: mA
     }
-
-    Rectangle {
-        anchors.fill: parent
-        color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : "transparent"
-        border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : "transparent"
-        border.width: 1
-        z: -1
-    }
-
 }

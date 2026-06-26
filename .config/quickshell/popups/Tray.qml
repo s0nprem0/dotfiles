@@ -477,7 +477,7 @@ PopupPanel {
                                             return "";
                                         }
                                         color: Theme.fg
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         horizontalAlignment: Text.AlignHCenter
                                     }
 
@@ -495,7 +495,7 @@ PopupPanel {
                                         text: modelData.text.replace(/&/g, "")
                                         color: modelData.enabled ? Theme.fg : Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: Theme.fontSizeMd
                                         elide: Text.ElideRight
                                         Layout.fillWidth: true
                                     }
@@ -504,7 +504,7 @@ PopupPanel {
                                         text: "▸"
                                         visible: modelData.hasChildren
                                         color: modelData.enabled ? Theme.fg : Theme.muted
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         Layout.alignment: Qt.AlignVCenter
                                     }
 
@@ -624,7 +624,7 @@ PopupPanel {
                                             return "";
                                         }
                                         color: Theme.fg
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         horizontalAlignment: Text.AlignHCenter
                                     }
 
@@ -642,7 +642,7 @@ PopupPanel {
                                         text: modelData.text.replace(/&/g, "")
                                         color: modelData.enabled ? Theme.fg : Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: Theme.fontSizeMd
                                         elide: Text.ElideRight
                                         Layout.fillWidth: true
                                     }
@@ -651,7 +651,7 @@ PopupPanel {
                                         text: "▸"
                                         visible: modelData.hasChildren
                                         color: modelData.enabled ? Theme.fg : Theme.muted
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         Layout.alignment: Qt.AlignVCenter
                                     }
 

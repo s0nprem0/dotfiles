@@ -18,7 +18,7 @@ Rectangle {
         Text {
             text: "NETWORK TOOLS"
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             color: Theme.primary
             font.bold: true
         }
@@ -40,7 +40,7 @@ Rectangle {
                     text: "󰤨"
                     color: nwMa.containsMouse ? Theme.bg : Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontSize4xl
                 }
 
                 ColumnLayout {
@@ -51,7 +51,7 @@ Rectangle {
                         text: "WIFI MANAGER"
                         color: nwMa.containsMouse ? Theme.bg : Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: true
                     }
 
@@ -59,7 +59,7 @@ Rectangle {
                         text: "LAUNCH IMPALA"
                         color: nwMa.containsMouse ? Theme.bg : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: Theme.fontSizeXs
                         font.bold: true
                     }
 
@@ -69,7 +69,7 @@ Rectangle {
                     text: "OPEN >"
                     color: nwMa.containsMouse ? Theme.bg : Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     font.bold: true
                 }
 

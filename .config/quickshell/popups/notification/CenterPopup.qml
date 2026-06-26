@@ -482,7 +482,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: "♫"
                                             color: Theme.muted
-                                            font.pixelSize: 14
+                                            font.pixelSize: Theme.fontSize3xl
                                             visible: !root.localArtUrl || artImage.status === Image.Error
                                         }
 
@@ -498,7 +498,7 @@ Item {
                                             text: root.mediaData ? root.mediaData.title || "Unknown" : ""
                                             color: Theme.primary
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 9
+                                            font.pixelSize: Theme.fontSizeSm
                                             font.bold: true
                                             elide: Text.ElideRight
                                             maximumLineCount: 1
@@ -509,7 +509,7 @@ Item {
                                             text: root.mediaData ? root.mediaData.artist || "" : ""
                                             color: Theme.muted
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 8
+                                            font.pixelSize: Theme.fontSizeXs
                                             elide: Text.ElideRight
                                             maximumLineCount: 1
                                         }
@@ -527,7 +527,7 @@ Item {
                                                 text: ""
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 14
+                                                font.pixelSize: Theme.fontSize3xl
                                                 visible: root.mediaData && root.mediaData.status === "Playing"
 
                                                 MouseArea {
@@ -548,7 +548,7 @@ Item {
                                                 text: root.mediaData && root.mediaData.status === "Playing" ? "" : ""
                                                 color: root.mediaData && root.mediaData.status === "Playing" ? Theme.green : Theme.muted
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 14
+                                                font.pixelSize: Theme.fontSize3xl
 
                                                 MouseArea {
                                                     anchors.fill: parent
@@ -568,7 +568,7 @@ Item {
                                                 text: ""
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 14
+                                                font.pixelSize: Theme.fontSize3xl
                                                 visible: root.mediaData && root.mediaData.status === "Playing"
 
                                                 MouseArea {
@@ -592,7 +592,7 @@ Item {
                                             text: root.currentMediaSource || ""
                                             color: root.mediaSources.length > 1 ? Theme.primary : Theme.muted
                                             font.family: Theme.fontFamily
-                                            font.pixelSize: 7
+                                            font.pixelSize: Theme.fontSizeXxs
                                             visible: root.currentMediaSource.length > 0
 
                                             MouseArea {
@@ -629,7 +629,7 @@ Item {
                                     text: "Active"
                                     color: !root.showHistory ? Theme.primary : Theme.muted
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 10
+                                    font.pixelSize: Theme.fontSizeMd
                                     font.bold: !root.showHistory
                                 }
 
@@ -657,7 +657,7 @@ Item {
                                     text: "History"
                                     color: root.showHistory ? Theme.primary : Theme.muted
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 10
+                                    font.pixelSize: Theme.fontSizeMd
                                     font.bold: root.showHistory
                                 }
 

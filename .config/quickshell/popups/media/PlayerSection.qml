@@ -52,7 +52,7 @@ Item {
                     text: "󰎆"
                     color: Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 20
+                    font.pixelSize: Theme.fontSize6xl
                     visible: !mediaRoot.artUrl || artImage.status === Image.Error
                     renderType: Text.NativeRendering
                 }
@@ -73,7 +73,7 @@ Item {
                         text: mediaRoot.title || "No Track"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
                         font.bold: true
                         elide: Text.ElideRight
                         renderType: Text.NativeRendering
@@ -113,7 +113,7 @@ Item {
                     color: Theme.primary
                     opacity: 0.6
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     elide: Text.ElideRight
                     renderType: Text.NativeRendering
                 }
@@ -134,7 +134,7 @@ Item {
                         text: mediaRoot.playerStatus || ""
                         color: mediaRoot.playerStatus === "Playing" ? Theme.green : mediaRoot.playerStatus === "Paused" ? Theme.warning : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: Theme.fontSizeXs
                         font.bold: true
                         renderType: Text.NativeRendering
                     }
@@ -157,7 +157,7 @@ Item {
                 text: "󰒝"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: 0.5
                 renderType: Text.NativeRendering
@@ -179,7 +179,7 @@ Item {
                 text: "prev"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Theme.fontSizeSm
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
 
@@ -198,7 +198,7 @@ Item {
                 text: mediaRoot.playerStatus === "Playing" ? "pause" : "play"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Theme.fontSizeSm
                 font.bold: true
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
@@ -218,7 +218,7 @@ Item {
                 text: "next"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Theme.fontSizeSm
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
 
@@ -237,7 +237,7 @@ Item {
                 text: "stop"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Theme.fontSizeSm
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: 0.6
                 renderType: Text.NativeRendering
@@ -257,7 +257,7 @@ Item {
                 text: "󰑘"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: 0.5
                 renderType: Text.NativeRendering
@@ -279,7 +279,7 @@ Item {
                 text: "󰑖"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 anchors.verticalCenter: parent.verticalCenter
                 visible: mediaRoot.availablePlayers.length > 1
                 opacity: 0.5
@@ -314,7 +314,7 @@ Item {
                 color: Theme.primary
                 opacity: 0.5
                 font.family: Theme.fontFamily
-                font.pixelSize: 8
+                font.pixelSize: Theme.fontSizeXs
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
             }
@@ -358,7 +358,7 @@ Item {
                 color: Theme.primary
                 opacity: 0.5
                 font.family: Theme.fontFamily
-                font.pixelSize: 8
+                font.pixelSize: Theme.fontSizeXs
                 anchors.verticalCenter: parent.verticalCenter
                 renderType: Text.NativeRendering
             }
@@ -378,7 +378,7 @@ Item {
                     text: "󰕾 Volume: " + Math.round(mediaRoot.volume * 100) + "%"
                     color: Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontSizeMd
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                     renderType: Text.NativeRendering
@@ -395,7 +395,7 @@ Item {
                     text: mediaRoot.volume === 0 ? "Unmute" : "Mute"
                     color: Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontSizeSm
                     anchors.verticalCenter: parent.verticalCenter
                     renderType: Text.NativeRendering
 

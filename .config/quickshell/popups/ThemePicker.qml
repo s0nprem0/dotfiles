@@ -58,7 +58,7 @@ PopupPanel {
             text: "THEME PRESETS"
             color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSizeXl
             font.bold: true
         }
 
@@ -70,7 +70,7 @@ PopupPanel {
             color: Theme.fg
             placeholderTextColor: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
             onTextChanged: root.filterText = text.toLowerCase()
             background: Rectangle {
                 color: Theme.surface
@@ -139,7 +139,7 @@ PopupPanel {
                                     text: modelData.name || "Unknown"
                                     color: Theme.fg
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.fontSizeLg
                                     font.bold: true
                                 }
 
@@ -147,7 +147,7 @@ PopupPanel {
                                     text: (modelData.variant || "dark").toUpperCase()
                                     color: Theme.muted
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 9
+                                    font.pixelSize: Theme.fontSizeSm
                                 }
                             }
 
@@ -155,7 +155,7 @@ PopupPanel {
                                 text: "󰄬"
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontSize3xl
                             }
                         }
 

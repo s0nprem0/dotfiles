@@ -253,7 +253,7 @@ Scope {
                         text: OsdUtils.getIcon(root.message)
                         color: root.getIconColor(root.message)
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         renderType: Text.NativeRendering
                         anchors.verticalCenter: parent.verticalCenter
                         visible: text !== ""
@@ -263,7 +263,7 @@ Scope {
                         text: OsdUtils.getPrefix(root.message)
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         renderType: Text.NativeRendering
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -297,7 +297,7 @@ Row {
                         text: OsdUtils.getPercentText(root.message)
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         renderType: Text.NativeRendering
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -315,7 +315,7 @@ Row {
                         text: OsdUtils.getIcon(root.message)
                         color: root.getIconColor(root.message)
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         renderType: Text.NativeRendering
                         visible: text !== ""
                         anchors.verticalCenter: parent.verticalCenter
@@ -327,7 +327,7 @@ Row {
                         text: root.message
                         color: Theme.fg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         renderType: Text.NativeRendering
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -370,7 +370,7 @@ Row {
                             text: "󰎆"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             visible: !artImage.visible
                             renderType: Text.NativeRendering
                         }
@@ -391,7 +391,7 @@ Row {
                                 text: root.osdMedia ? root.osdMedia.title : ""
                                 color: Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: Theme.fontSizeXs
                                 font.bold: true
                                 elide: Text.ElideRight
                                 renderType: Text.NativeRendering
@@ -429,7 +429,7 @@ Row {
                             color: Theme.primary
                             opacity: 0.6
                             font.family: Theme.fontFamily
-                            font.pixelSize: 7
+                            font.pixelSize: Theme.fontSizeXxs
                             elide: Text.ElideRight
                             renderType: Text.NativeRendering
                         }

@@ -17,7 +17,7 @@ Rectangle {
         Text {
             text: "ABOUT"
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             color: Theme.primary
             font.bold: true
         }
@@ -48,7 +48,7 @@ Rectangle {
                             Layout.preferredWidth: 56
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                         }
 
@@ -63,7 +63,7 @@ Rectangle {
                             text: modelData.value.toUpperCase()
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                         }
 

@@ -58,7 +58,7 @@ ColumnLayout {
             text: root.showHistory ? "History" : "Notifications"
             color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.fontSizeMd
             font.bold: true
             opacity: 0.6
         }
@@ -67,7 +67,7 @@ ColumnLayout {
             text: "(" + root.notificationItems.length + ")"
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
         }
 
         Item {
@@ -78,7 +78,7 @@ ColumnLayout {
             text: root.showHistory ? "Clear" : "Dismiss Selected (" + root.selectionCount() + ")"
             color: root.selectionCount() > 0 ? Theme.error : Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             font.bold: root.selectionCount() > 0
             visible: root.showHistory ? (NotificationState.service && root.notificationItems.length > 0) : root.selectionCount() > 0
 
@@ -111,7 +111,7 @@ ColumnLayout {
             text: root.selectionCount() > 0 && root.selectionCount() < root.notificationItems.length ? "Select All" : "Select None"
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             visible: root.selectionCount() > 0
 
             MouseArea {
@@ -129,7 +129,7 @@ ColumnLayout {
             text: "Clear All"
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             visible: !root.showHistory && root.selectionCount() === 0 && root.notificationItems.length > 0
 
             MouseArea {
@@ -147,7 +147,7 @@ ColumnLayout {
             text: "🔇 DND"
             color: Theme.error
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             font.bold: true
             visible: NotificationState.dnd
 
@@ -290,7 +290,7 @@ ColumnLayout {
                                     text: notif.appName || ""
                                     color: Theme.muted
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
+                                    font.pixelSize: Theme.fontSizeXs
                                     font.bold: true
                                     elide: Text.ElideRight
                                 }
@@ -299,7 +299,7 @@ ColumnLayout {
                                     text: "󰃁"
                                     color: Theme.primary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 8
+                                    font.pixelSize: Theme.fontSizeXs
                                     visible: notif.expireTimeout === 0
                                 }
 
@@ -309,7 +309,7 @@ ColumnLayout {
                                 text: notif.summary
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                                 wrapMode: Text.Wrap
                                 Layout.fillWidth: true
@@ -319,7 +319,7 @@ ColumnLayout {
                                 text: notif.timeStr || ""
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 7
+                                font.pixelSize: Theme.fontSizeXxs
                                 Layout.alignment: Qt.AlignTop
                             }
 
@@ -336,7 +336,7 @@ ColumnLayout {
                                 text: "✕"
                                 color: closeMa.containsMouse ? Theme.error : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                             }
 
                             MouseArea {
@@ -362,7 +362,7 @@ ColumnLayout {
                                 text: "⏰"
                                 color: snoozeMa.containsMouse ? Theme.primary : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                             }
 
                             MouseArea {
@@ -393,7 +393,7 @@ ColumnLayout {
                                 text: notif.body
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 textFormat: Text.StyledText
                                 wrapMode: Text.Wrap
                                 Layout.fillWidth: true
@@ -471,7 +471,7 @@ ColumnLayout {
                             text: root.expandedNotifIds[notif.id] ? "less" : "more"
                             color: Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             font.bold: true
 
                             MouseArea {
@@ -511,7 +511,7 @@ ColumnLayout {
             text: root.showHistory ? "No history" : "No notifications"
             color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 9
+            font.pixelSize: Theme.fontSizeSm
             opacity: 0.4
         }
 

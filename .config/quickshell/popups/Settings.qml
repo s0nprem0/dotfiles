@@ -260,14 +260,14 @@ Window {
                         text: "󰒓"
                         color: Theme.bg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.fontSize4xl
                     }
 
                     Text {
                         text: "SYSTEM SETTINGS"
                         color: Theme.bg
                         font.family: Theme.fontFamily
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontSize3xl
                         font.bold: true
                         Layout.fillWidth: true
                     }
@@ -284,7 +284,7 @@ Window {
                             text: "✕"
                             color: closeMa.containsMouse ? Theme.primary : Theme.bg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                             font.bold: true
                         }
 
@@ -343,14 +343,14 @@ Window {
                                         text: modelData.icon
                                         color: index === root.currentTab ? Theme.bg : Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 16
+                                        font.pixelSize: Theme.fontSize4xl
                                     }
 
                                     Text {
                                         text: modelData.label
                                         color: index === root.currentTab ? Theme.bg : Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontSizeLg
                                         font.bold: true
                                         Layout.fillWidth: true
                                     }

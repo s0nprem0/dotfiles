@@ -297,7 +297,7 @@ PopupPanel {
                     text: root.statusIcon
                     color: root.isCharging ? Theme.green : Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 36
+                    font.pixelSize: Theme.fontSize9xl
                 }
 
                 ColumnLayout {
@@ -311,7 +311,7 @@ PopupPanel {
                             text: root.capacity + "%"
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 24
+                            font.pixelSize: Theme.fontSize7xl
                             font.bold: true
                         }
 
@@ -319,7 +319,7 @@ PopupPanel {
                             text: "\u00b7  " + root.powerDraw.toFixed(1) + "W"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontSizeLg
                             Layout.alignment: Qt.AlignBottom
                             anchors.bottomMargin: 4
                         }
@@ -338,7 +338,7 @@ PopupPanel {
                         }
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                     }
 
                 }
@@ -366,7 +366,7 @@ PopupPanel {
                             text: root.health.toFixed(0) + "%"
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontSize3xl
                             font.bold: true
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -375,7 +375,7 @@ PopupPanel {
                             text: "Health"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             Layout.alignment: Qt.AlignHCenter
                         }
 
@@ -397,7 +397,7 @@ PopupPanel {
                             text: root.timeRemaining
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontSize3xl
                             font.bold: true
                             Layout.alignment: Qt.AlignHCenter
                         }
@@ -406,7 +406,7 @@ PopupPanel {
                             text: root.isCharging ? "Until Full" : "Remaining"
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.fontSizeXs
                             Layout.alignment: Qt.AlignHCenter
                         }
 
@@ -472,7 +472,7 @@ PopupPanel {
                     text: "\u26a1 Battery Automations"
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                     Layout.fillWidth: true
                 }
@@ -574,14 +574,14 @@ PopupPanel {
                     text: "\uf0e7"
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontSizeMd
                 }
 
                 Text {
                     text: "Charge Limit"
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontSizeMd
                     Layout.fillWidth: true
                 }
 
@@ -596,7 +596,7 @@ PopupPanel {
                         text: root.chargeLimit < 100 ? root.chargeLimit + "%" : "Full"
                         color: root.chargeLimit < 100 ? Theme.bg : Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: root.chargeLimit < 100
                     }
 
@@ -630,7 +630,7 @@ PopupPanel {
                 text: "Power Mode Override"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 font.bold: true
                 opacity: 0.6
             }
@@ -672,7 +672,7 @@ PopupPanel {
                                 text: modelData.val === "performance" ? "\uf0e7" : modelData.val === "power-saver" ? "\uf0ae" : "\uf2dc"
                                 color: root.activeProfile === modelData.val ? Theme.bg : Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontSize3xl
                                 Layout.alignment: Qt.AlignHCenter
                             }
 
@@ -680,7 +680,7 @@ PopupPanel {
                                 text: modelData.label
                                 color: root.activeProfile === modelData.val ? Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.7) : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: Theme.fontSizeXs
                                 Layout.alignment: Qt.AlignHCenter
                             }
 
@@ -713,7 +713,7 @@ PopupPanel {
                 text: "Power Actions"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontSizeMd
                 font.bold: true
                 opacity: 0.6
             }
@@ -756,7 +756,7 @@ PopupPanel {
                                 text: modelData.icon
                                 color: parent.parent.destructive ? Theme.error : Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.fontSize4xl
                                 Layout.alignment: Qt.AlignHCenter
                             }
 
@@ -764,7 +764,7 @@ PopupPanel {
                                 text: modelData.label
                                 color: parent.parent.destructive ? Theme.error : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: Theme.fontSizeXs
                                 Layout.alignment: Qt.AlignHCenter
                             }
 

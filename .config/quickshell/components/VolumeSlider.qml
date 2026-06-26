@@ -32,7 +32,7 @@ Item {
                 color: Theme.primary
                 opacity: 0.7
                 font.family: Theme.fontFamily
-                font.pixelSize: 8
+                font.pixelSize: Theme.fontSizeXs
                 font.bold: true
                 Layout.fillWidth: true
             }
@@ -41,7 +41,7 @@ Item {
                 text: root.muted ? "Muted" : Math.round(root.currentValue * 100) + "%"
                 color: root.muted ? Theme.muted : Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 8
+                font.pixelSize: Theme.fontSizeXs
                 Layout.preferredWidth: 40
                 horizontalAlignment: Text.AlignRight
             }

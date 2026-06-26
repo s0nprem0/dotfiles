@@ -85,137 +85,159 @@ Window {
         }
     }
 
-    function rebuildDisplay() {
-        var term = root.searchText.trim();
+    function createAppItem(source) {
+        return {
+            typeLabel: "APP",
+            name: source.name,
+            icon: source.icon,
+            comment: source.comment,
+            exec: source.exec,
+        };
+    }
+
+    function buildTab0(term) {
         var sourceApps = AppsService.rawData.all_apps || [];
         var mostUsed = AppsService.rawData.most_used || [];
-        var webHistory = AppsService.rawData.web_history || [];
         var filtered = [];
 
-        if (root.activeTab === 0) {
-            if (term === "") {
-                if (mostUsed.length > 0) {
-                    filtered.push({ typeLabel: "HEADER", name: "MOST USED" });
-                    for (let i = 0; i < mostUsed.length; i++) {
-                        let item = Object.assign({}, mostUsed[i]);
-                        item.typeLabel = "APP";
-                        filtered.push(item);
-                    }
-                }
-                filtered.push({ typeLabel: "HEADER", name: "ALL APPS" });
-                for (let i = 0; i < sourceApps.length; i++) {
-                    let item = Object.assign({}, sourceApps[i]);
-                    item.typeLabel = "APP";
-                    filtered.push(item);
-                }
-            } else {
-                for (let i = 0; i < sourceApps.length; i++) {
-                    let item = sourceApps[i];
-                    if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term)) {
-                        item.typeLabel = "APP";
-                        filtered.push(item);
-                    }
-                }
+        if (term === "") {
+            if (mostUsed.length > 0) {
+                filtered.push({ typeLabel: "HEADER", name: "MOST USED" });
+                for (let i = 0; i < mostUsed.length; i++)
+                    filtered.push(createAppItem(mostUsed[i]));
             }
-        } else if (root.activeTab === 1) {
-            if (term.startsWith("!")) {
-                var searchQuery = term.substring(1).trim();
-                if (webHistory.length > 0) {
-                    filtered.push({ typeLabel: "HEADER", name: "WEB HISTORY" });
-                    for (let i = 0; i < webHistory.length; i++) {
-                        filtered.push({
-                            typeLabel: "WEB",
-                            name: webHistory[i].query,
-                            icon: "󰖟",
-                            comment: "via " + webHistory[i].engine,
-                            url: webHistory[i].url
-                        });
-                    }
-                }
+            filtered.push({ typeLabel: "HEADER", name: "ALL APPS" });
+            for (let i = 0; i < sourceApps.length; i++)
+                filtered.push(createAppItem(sourceApps[i]));
+        } else {
+            for (let i = 0; i < sourceApps.length; i++) {
+                let item = sourceApps[i];
+                if (fuzzyMatch(item.name, term) || fuzzyMatch(item.comment, term))
+                    filtered.push(createAppItem(item));
+            }
+        }
+        return filtered;
+    }
+
+    function buildTab1(term) {
+        var webHistory = AppsService.rawData.web_history || [];
+        var filtered = [];
+        if (!term.startsWith("!"))
+            return filtered;
+
+        var searchQuery = term.substring(1).trim();
+        if (webHistory.length > 0) {
+            filtered.push({ typeLabel: "HEADER", name: "WEB HISTORY" });
+            for (let i = 0; i < webHistory.length; i++) {
                 filtered.push({
-                    typeLabel: "SEARCH",
-                    name: searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
+                    typeLabel: "WEB",
+                    name: webHistory[i].query,
                     icon: "󰖟",
-                    comment: term,
-                    query: term,
-                    isWebAction: true,
-                    url: buildWebUrl(term)
-                });
-            }
-        } else if (root.activeTab === 2) {
-            var fileQuery = term.startsWith("@") ? term.substring(1).trim() : term;
-            filtered.push({ typeLabel: "HEADER", name: fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH" });
-            if (fileQuery) {
-                filtered.push({
-                    typeLabel: "SEARCH",
-                    name: "SEARCHING...",
-                    icon: "󰉋",
-                    comment: "@" + fileQuery,
-                    isFileSearch: true,
-                    fileQuery: fileQuery
-                });
-                root.startFileSearch(fileQuery);
-            }
-        } else if (root.activeTab === 3) {
-            if (term === "" || term.startsWith("#")) {
-                var gitQuery = term.startsWith("#") ? term.substring(1).trim() : "";
-                if (root.isFetchingRepos) {
-                    filtered.push({ typeLabel: "HEADER", name: "LOADING REPOS..." });
-                } else if (root.gitRepos.length > 0) {
-                    filtered.push({ typeLabel: "HEADER", name: "YOUR GIT REPOS" });
-                    for (let i = 0; i < root.gitRepos.length; i++) {
-                        let repo = root.gitRepos[i];
-                        if (gitQuery === "" || repo.name.toLowerCase().includes(gitQuery.toLowerCase()) || (repo.description && repo.description.toLowerCase().includes(gitQuery.toLowerCase()))) {
-                            filtered.push({
-                                typeLabel: "GIT_REPO",
-                                name: repo.name,
-                                icon: "󰊢",
-                                comment: repo.description || repo.html_url,
-                                data: repo
-                            });
-                        }
-                    }
-                } else {
-                    filtered.push({ typeLabel: "HEADER", name: "CLICK TO FETCH REPOS" });
-                    filtered.push({
-                        typeLabel: "FETCH_REPOS",
-                        name: "FETCH GITHUB REPOS",
-                        icon: "󰊢",
-                        comment: "set GITHUB_TOKEN env var first"
-                    });
-                }
-            }
-        } else if (root.activeTab === 4) {
-            var bookmarkQuery = term.startsWith("~") ? term.substring(1).trim() : term;
-            var matchingBookmarks = [];
-            for (let i = 0; i < root.bookmarks.length; i++) {
-                if (bookmarkQuery === "" || root.bookmarks[i].url.toLowerCase().includes(bookmarkQuery.toLowerCase()) || root.bookmarks[i].name.toLowerCase().includes(bookmarkQuery.toLowerCase())) {
-                    matchingBookmarks.push(root.bookmarks[i]);
-                }
-            }
-            if (matchingBookmarks.length > 0) {
-                filtered.push({ typeLabel: "HEADER", name: "BOOKMARKS" });
-                for (let i = 0; i < matchingBookmarks.length; i++) {
-                    filtered.push({
-                        typeLabel: "BOOKMARK",
-                        name: matchingBookmarks[i].name,
-                        icon: "󰌹",
-                        comment: matchingBookmarks[i].url,
-                        data: matchingBookmarks[i]
-                    });
-                }
-            }
-            if (bookmarkQuery !== "") {
-                filtered.push({
-                    typeLabel: "ADD_BOOKMARK",
-                    name: "ADD BOOKMARK",
-                    icon: "󰅕",
-                    comment: bookmarkQuery,
-                    url: bookmarkQuery
+                    comment: "via " + webHistory[i].engine,
+                    url: webHistory[i].url
                 });
             }
         }
+        filtered.push({
+            typeLabel: "SEARCH",
+            name: searchQuery ? "SEARCH \"" + searchQuery.toUpperCase() + "\"" : "EXECUTE WEB QUERY",
+            icon: "󰖟",
+            comment: term,
+            query: term,
+            isWebAction: true,
+            url: buildWebUrl(term)
+        });
+        return filtered;
+    }
 
+    function buildTab2(term) {
+        var fileQuery = term.startsWith("@") ? term.substring(1).trim() : term;
+        var filtered = [];
+        filtered.push({ typeLabel: "HEADER", name: fileQuery ? "SEARCHING: " + fileQuery.toUpperCase() : "FILE SEARCH" });
+        if (fileQuery) {
+            filtered.push({
+                typeLabel: "SEARCH",
+                name: "SEARCHING...",
+                icon: "󰉋",
+                comment: "@" + fileQuery,
+                isFileSearch: true,
+                fileQuery: fileQuery
+            });
+            root.startFileSearch(fileQuery);
+        }
+        return filtered;
+    }
+
+    function buildTab3(term) {
+        if (term !== "" && !term.startsWith("#"))
+            return [];
+        var gitQuery = term.startsWith("#") ? term.substring(1).trim() : "";
+        var filtered = [];
+        if (root.isFetchingRepos) {
+            filtered.push({ typeLabel: "HEADER", name: "LOADING REPOS..." });
+        } else if (root.gitRepos.length > 0) {
+            filtered.push({ typeLabel: "HEADER", name: "YOUR GIT REPOS" });
+            for (let i = 0; i < root.gitRepos.length; i++) {
+                let repo = root.gitRepos[i];
+                if (gitQuery === "" || repo.name.toLowerCase().includes(gitQuery.toLowerCase()) || (repo.description && repo.description.toLowerCase().includes(gitQuery.toLowerCase()))) {
+                    filtered.push({
+                        typeLabel: "GIT_REPO",
+                        name: repo.name,
+                        icon: "󰊢",
+                        comment: repo.description || repo.html_url,
+                        data: repo
+                    });
+                }
+            }
+        } else {
+            filtered.push({ typeLabel: "HEADER", name: "CLICK TO FETCH REPOS" });
+            filtered.push({
+                typeLabel: "FETCH_REPOS",
+                name: "FETCH GITHUB REPOS",
+                icon: "󰊢",
+                comment: "set GITHUB_TOKEN env var first"
+            });
+        }
+        return filtered;
+    }
+
+    function buildTab4(term) {
+        var bookmarkQuery = term.startsWith("~") ? term.substring(1).trim() : term;
+        var filtered = [];
+        var matchingBookmarks = [];
+        for (let i = 0; i < root.bookmarks.length; i++) {
+            if (bookmarkQuery === "" || root.bookmarks[i].url.toLowerCase().includes(bookmarkQuery.toLowerCase()) || root.bookmarks[i].name.toLowerCase().includes(bookmarkQuery.toLowerCase())) {
+                matchingBookmarks.push(root.bookmarks[i]);
+            }
+        }
+        if (matchingBookmarks.length > 0) {
+            filtered.push({ typeLabel: "HEADER", name: "BOOKMARKS" });
+            for (let i = 0; i < matchingBookmarks.length; i++) {
+                filtered.push({
+                    typeLabel: "BOOKMARK",
+                    name: matchingBookmarks[i].name,
+                    icon: "󰌹",
+                    comment: matchingBookmarks[i].url,
+                    data: matchingBookmarks[i]
+                });
+            }
+        }
+        if (bookmarkQuery !== "") {
+            filtered.push({
+                typeLabel: "ADD_BOOKMARK",
+                name: "ADD BOOKMARK",
+                icon: "󰅕",
+                comment: bookmarkQuery,
+                url: bookmarkQuery
+            });
+        }
+        return filtered;
+    }
+
+    function rebuildDisplay() {
+        var term = root.searchText.trim();
+        var builders = [buildTab0, buildTab1, buildTab2, buildTab3, buildTab4];
+        var filtered = builders[root.activeTab](term);
         root.displayData = filtered;
         root.selectedIndex = 0;
     }
@@ -429,14 +451,14 @@ Window {
                         text: "󰀻"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontSize2xl
                     }
 
                     Text {
                         text: "SYSTEM INDEX"
                         color: Theme.primary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontSizeLg
                         font.bold: true
                         Layout.fillWidth: true
                     }
@@ -445,7 +467,7 @@ Window {
                         text: (AppsService.rawData.all_apps ? AppsService.rawData.all_apps.length : "0") + " INDEXED"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontSizeMd
                         font.bold: true
                     }
 
@@ -461,7 +483,7 @@ Window {
                             anchors.centerIn: parent
                             text: "✕"
                             color: closeMa.containsMouse ? Theme.bg : Theme.fg
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
 
@@ -492,7 +514,7 @@ Window {
                     Text {
                         text: ""
                         color: searchField.activeFocus ? Theme.primary : Theme.muted
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontSize3xl
                     }
 
                     Item {
@@ -505,7 +527,7 @@ Window {
                             text: root.activeTab === 0 ? "SEARCH APPS, !g, !yt, @files..." : (root.activeTab === 1 ? "SEARCH THE WEB..." : "SEARCH FILES...")
                             color: Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontSizeLg
                             font.bold: true
                             visible: searchField.text === ""
                         }
@@ -516,7 +538,7 @@ Window {
                             verticalAlignment: TextInput.AlignVCenter
                             color: Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeXl
                             font.bold: true
                             selectByMouse: true
                             clip: true
@@ -557,7 +579,7 @@ Window {
                             anchors.centerIn: parent
                             text: "󰅖"
                             color: clearMa.containsMouse ? Theme.bg : Theme.muted
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontSize3xl
                         }
 
                         MouseArea {
@@ -600,7 +622,7 @@ Window {
                             text: "APPS"
                             color: root.activeTab === 0 ? Theme.primary : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
                         MouseArea {
@@ -629,7 +651,7 @@ Window {
                             text: "WEB"
                             color: root.activeTab === 1 ? Theme.primary : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
                         MouseArea {
@@ -658,7 +680,7 @@ Window {
                             text: "FILES"
                             color: root.activeTab === 2 ? Theme.primary : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
                         MouseArea {
@@ -687,7 +709,7 @@ Window {
                             text: "GIT"
                             color: root.activeTab === 3 ? Theme.primary : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
                         MouseArea {
@@ -716,7 +738,7 @@ Window {
                             text: "BMK"
                             color: root.activeTab === 4 ? Theme.primary : Theme.muted
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontSizeMd
                             font.bold: true
                         }
                         MouseArea {
@@ -750,7 +772,7 @@ Window {
                         text: "ACTIVE WINDOWS (" + Hyprland.toplevels.length + ")"
                         color: Theme.muted
                         font.family: Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.fontSizeSm
                         font.bold: true
                         leftPadding: 6
                     }
@@ -797,7 +819,7 @@ Window {
                                     text: "󰇄"
                                     color: Theme.muted
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.fontSizeXl
                                     visible: !scrCap.hasContent
                                 }
 
@@ -813,7 +835,7 @@ Window {
                                         anchors.centerIn: parent
                                         text: modelData.workspace ? modelData.workspace.id.toString() : ""
                                         color: Theme.bg
-                                        font.pixelSize: 7
+                                        font.pixelSize: Theme.fontSizeXxs
                                         font.bold: true
                                     }
                                 }
@@ -846,7 +868,7 @@ Window {
                     text: "WAITING FOR BACKEND..."
                     color: Theme.muted
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                 }
             }
@@ -862,7 +884,7 @@ Window {
                     text: "NO MATCHES FOUND"
                     color: Theme.error
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                 }
             }
@@ -925,7 +947,7 @@ Window {
                                 text: modelData.name || ""
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: Theme.fontSizeSm
                                 font.bold: true
                                 visible: modelData.typeLabel === "HEADER"
                             }
@@ -948,7 +970,7 @@ Window {
                                         text: modelData.icon || "󰣇"
                                         color: root.selectedIndex === index ? Theme.bg : Theme.primary
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 16
+                                        font.pixelSize: Theme.fontSize4xl
                                         visible: imgIcon.status === Image.Error || modelData.typeLabel !== "APP"
                                     }
 
@@ -972,7 +994,7 @@ Window {
                                     text: "↵"
                                     visible: root.selectedIndex === index
                                     color: Theme.bg
-                                    font.pixelSize: 16
+                                    font.pixelSize: Theme.fontSize4xl
                                     font.bold: true
                                     width: visible ? 16 : 0
                                 }
@@ -994,7 +1016,7 @@ Window {
                                         text: modelData.typeLabel || "SYS"
                                         color: root.selectedIndex === index ? Theme.primary : Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         font.bold: true
                                     }
                                 }
@@ -1014,7 +1036,7 @@ Window {
                                         text: (modelData.name || "").toUpperCase()
                                         color: root.selectedIndex === index ? Theme.bg : Theme.fg
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontSizeLg
                                         font.bold: true
                                         elide: Text.ElideRight
                                     }
@@ -1026,7 +1048,7 @@ Window {
                                         text: (modelData.comment || "")
                                         color: root.selectedIndex === index ? Qt.alpha(Theme.bg, 0.7) : Theme.muted
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 9
+                                        font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight
                                         visible: modelData.comment !== ""
                                     }

@@ -39,7 +39,7 @@ Rectangle {
         Text {
             text: "ACTIONS"
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontSizeLg
             color: Theme.primary
             font.bold: true
         }
@@ -71,14 +71,14 @@ Rectangle {
                             text: modelData.icon
                             color: ma.containsMouse ? Theme.bg : Theme.primary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 20
+                            font.pixelSize: Theme.fontSize6xl
                         }
 
                         Text {
                             text: modelData.label
                             color: ma.containsMouse ? Theme.bg : Theme.fg
                             font.family: Theme.fontFamily
-                            font.pixelSize: 9
+                            font.pixelSize: Theme.fontSizeSm
                             font.bold: true
                             elide: Text.ElideRight
                         }
@@ -131,7 +131,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         color: Theme.error
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSizeXl
                         font.bold: true
                     }
 
@@ -151,7 +151,7 @@ Rectangle {
                                 text: "CANCEL"
                                 color: Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                             }
 
@@ -172,7 +172,7 @@ Rectangle {
                                 text: "CONFIRM"
                                 color: Theme.bg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                             }
 

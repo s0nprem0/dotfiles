@@ -50,7 +50,7 @@ Rectangle {
                 text: parent.deviceName
                 color: parent.color === Qt.alpha(Theme.primary, 0.2) ? Theme.primary : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 9
+                font.pixelSize: Theme.fontSizeSm
                 elide: Text.ElideRight
             }
 

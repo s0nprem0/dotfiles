@@ -33,7 +33,7 @@ Rectangle {
         text: root.action.label || "unknown"
         color: Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: 9
+        font.pixelSize: Theme.fontSizeSm
     }
 
     MouseArea {

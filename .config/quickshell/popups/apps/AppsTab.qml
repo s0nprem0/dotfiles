@@ -33,7 +33,7 @@ Item {
             implicitHeight: 28
             color: Theme.fg
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSizeXl
             font.bold: true
             selectByMouse: true
             clip: true
@@ -126,7 +126,7 @@ Item {
                                 text: modelData.icon || "󰣇"
                                 color: root.selectedIndex === index ? Theme.bg : Theme.primary
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontSize3xl
                                 visible: imgIcon.status === Image.Error || modelData.typeLabel !== "APP"
                             }
 
@@ -150,7 +150,7 @@ Item {
                             text: "↵"
                             visible: root.selectedIndex === index
                             color: Theme.bg
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontSize3xl
                             font.bold: true
                             width: visible ? 16 : 0
                         }
@@ -170,7 +170,7 @@ Item {
                                 text: (modelData.name || "").toUpperCase()
                                 color: root.selectedIndex === index ? Theme.bg : Theme.fg
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontSizeMd
                                 font.bold: true
                                 elide: Text.ElideRight
                             }
@@ -182,7 +182,7 @@ Item {
                                 text: (modelData.comment || "")
                                 color: root.selectedIndex === index ? Qt.alpha(Theme.bg, 0.7) : Theme.muted
                                 font.family: Theme.fontFamily
-                                font.pixelSize: 8
+                                font.pixelSize: Theme.fontSizeXs
                                 elide: Text.ElideRight
                                 visible: modelData.comment !== ""
                             }

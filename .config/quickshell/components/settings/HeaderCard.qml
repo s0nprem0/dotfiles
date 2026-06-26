@@ -40,7 +40,7 @@ Rectangle {
                     text: "󰣇"
                     color: Theme.bg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 28
+                    font.pixelSize: Theme.fontSize8xl
                 }
 
             }
@@ -53,7 +53,7 @@ Rectangle {
                     text: root.hostname.toUpperCase()
                     color: Theme.primary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontSize4xl
                     font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -63,7 +63,7 @@ Rectangle {
                     text: root.os.toUpperCase()
                     color: Theme.fg
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontSizeLg
                     font.bold: true
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -87,7 +87,7 @@ Rectangle {
                 text: root.charging ? "󱐋 " + root.batteryPercent + "%" : "󰁹 " + root.batteryPercent + "%"
                 color: root.charging ? Theme.green : Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
                 font.bold: true
             }
 
@@ -95,14 +95,14 @@ Rectangle {
                 text: "•"
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
             }
 
             Text {
                 text: root.charging ? "CHARGING" : "DISCHARGING"
                 color: root.charging ? Theme.green : Theme.fg
                 font.family: Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontSizeLg
                 font.bold: true
             }
 
@@ -114,7 +114,7 @@ Rectangle {
                 text: "󰔚 " + root.uptime.toUpperCase()
                 color: Theme.primary
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSizeXl
                 font.bold: true
             }
 

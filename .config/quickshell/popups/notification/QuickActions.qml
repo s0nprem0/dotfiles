@@ -36,21 +36,21 @@ ColumnLayout {
             text: "󰔄 " + root.diagCpu
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 7
+            font.pixelSize: Theme.fontSizeXxs
         }
 
         Text {
             text: root.diagMem
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 7
+            font.pixelSize: Theme.fontSizeXxs
         }
 
         Text {
             text: root.diagDisk
             color: Theme.muted
             font.family: Theme.fontFamily
-            font.pixelSize: 7
+            font.pixelSize: Theme.fontSizeXxs
         }
 
         Item {
@@ -61,7 +61,7 @@ ColumnLayout {
             text: root.timeShort24h
             color: Theme.primary
             font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontSize2xl
             font.bold: true
         }
 
@@ -82,7 +82,7 @@ ColumnLayout {
                 text: root.audioMuted ? "󰝟" : "󰕾"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 16
+                font.pixelSize: Theme.fontSize4xl
             }
 
             MouseArea {
@@ -110,7 +110,7 @@ ColumnLayout {
                 text: root.wifiEnabled ? "󰖩" : "󰖪"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 16
+                font.pixelSize: Theme.fontSize4xl
             }
 
             MouseArea {
@@ -135,7 +135,7 @@ ColumnLayout {
                 text: root.btEnabled ? "󰂯" : "󰂲"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 16
+                font.pixelSize: Theme.fontSize4xl
             }
 
             MouseArea {
@@ -162,7 +162,7 @@ ColumnLayout {
                 text: "󰃠"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 16
+                font.pixelSize: Theme.fontSize4xl
             }
 
             MouseArea {
@@ -206,7 +206,7 @@ ColumnLayout {
                 text: "󰹑"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontSize3xl
             }
 
             MouseArea {
@@ -231,7 +231,7 @@ ColumnLayout {
                 text: "󰆟"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontSize3xl
             }
 
             MouseArea {
@@ -256,7 +256,7 @@ ColumnLayout {
                 text: "󰖲"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontSize3xl
             }
 
             MouseArea {
@@ -281,7 +281,7 @@ ColumnLayout {
                 text: "󰭎"
                 color: Theme.muted
                 font.family: Theme.fontFamily
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontSize3xl
             }
 
             MouseArea {

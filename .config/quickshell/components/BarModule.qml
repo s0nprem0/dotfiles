@@ -40,7 +40,7 @@ Rectangle {
             anchors.centerIn: parent
             color: Theme.fg
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.fontSizeMd
         }
 
         Behavior on opacity {

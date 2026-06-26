@@ -202,14 +202,14 @@ Item {
                                                 text: liveData.urgency === 2 ? "󰀦" : (!liveData.appIcon || liveData.appIcon.length === 0 ? IconResolver.nerdFontGlyph(liveData.appName) : "󰂚")
                                                 color: toastCard.uColor
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 12
+                                                font.pixelSize: Theme.fontSizeXl
                                             }
 
                                             Text {
                                                 text: (liveData.appName || "SYSTEM").toUpperCase()
                                                 color: Theme.primary
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 13
+                                                font.pixelSize: Theme.fontSize2xl
                                                 font.bold: true
                                                 Layout.fillWidth: true
                                             }
@@ -218,7 +218,7 @@ Item {
                                                 text: "󰃁"
                                                 color: toastCard.uColor
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 10
+                                                font.pixelSize: Theme.fontSizeMd
                                                 visible: liveData.expireTimeout === 0
                                                 anchors.verticalCenter: parent.verticalCenter
                                             }
@@ -234,7 +234,7 @@ Item {
                                                     anchors.centerIn: parent
                                                     text: "✕"
                                                     color: closeMa.containsMouse ? Theme.bg : Theme.muted
-                                                    font.pixelSize: 10
+                                                    font.pixelSize: Theme.fontSizeMd
                                                     font.bold: true
                                                 }
 
@@ -293,7 +293,7 @@ Item {
                                                 text: (liveData.summary || "").toUpperCase()
                                                 color: Theme.fg
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 11
+                                                font.pixelSize: Theme.fontSizeLg
                                                 font.bold: true
                                                 elide: Text.ElideRight
                                                 wrapMode: Text.Wrap
@@ -305,7 +305,7 @@ Item {
                                                 text: liveData.body || ""
                                                 color: Theme.fg
                                                 font.family: Theme.fontFamily
-                                                font.pixelSize: 10
+                                                font.pixelSize: Theme.fontSizeMd
                                                 textFormat: Text.StyledText
                                                 elide: Text.ElideRight
                                                 wrapMode: Text.Wrap
