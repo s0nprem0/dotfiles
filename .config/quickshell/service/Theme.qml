@@ -20,6 +20,7 @@ Item {
     property color tertiary: "#271d1c"
     readonly property string surfaceContainer: surface
     readonly property string surfaceHover: surfaceLighter
+    readonly property string surfaceHighlight: surfaceLighter
     readonly property string border: surfaceLighter
     readonly property string textDisabled: fg + "80"
     readonly property string textAccent: primary
@@ -40,6 +41,10 @@ Item {
     readonly property int fontSize7xl: 24
     readonly property int fontSize8xl: 28
     readonly property int fontSize9xl: 36
+    readonly property int settingsWidth: 720
+    readonly property int settingsHeight: 560
+    readonly property int settingsMinWidth: 640
+    readonly property int settingsMinHeight: 520
     readonly property int barHeight: 38
     readonly property string home: Quickshell.env("HOME")
     readonly property string helperDir: home + "/.config/quickshell/helpers"

@@ -37,7 +37,7 @@ PopupPanel {
                 try {
                     var d = JSON.parse(this.text.trim());
                     root.presets = d.presets || [];
-                } catch (_) {}
+                } catch (e) { console.warn("ThemePicker: parse error", e); }
             }
         }
     }

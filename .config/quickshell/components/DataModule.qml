@@ -11,6 +11,7 @@ Item {
     property bool hasError: false
     property bool loading: false
     property int backoffMs: 1000
+    property int processTimeoutMs: 15000
 
     signal dataReceived(var json)
 
@@ -40,10 +41,14 @@ Item {
                 root.loading = true;
                 root.hasError = false;
                 root.backoffMs = 1000;
+                killTimer.restart();
+            } else {
+                killTimer.stop();
             }
         }
         onExited: function(code) {
             root.loading = false;
+            killTimer.stop();
             if (code !== 0) {
                 root.hasError = true;
                 crashRestart.interval = root.backoffMs;
@@ -72,6 +77,23 @@ Item {
             }
         }
 
+    }
+
+    Timer {
+        id: killTimer
+
+        interval: root.processTimeoutMs
+        repeat: false
+        onTriggered: {
+            if (proc.running) {
+                console.warn("DataModule: process timeout for", root.path);
+                proc.running = false;
+                root.hasError = true;
+                root.loading = false;
+                crashRestart.interval = root.backoffMs;
+                crashRestart.restart();
+            }
+        }
     }
 
     Timer {

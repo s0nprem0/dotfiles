@@ -123,10 +123,10 @@ Window {
     }
 
     title: "Quickshell Settings"
-    minimumWidth: 640
-    minimumHeight: 520
-    width: 720
-    height: 560
+    minimumWidth: Theme.settingsMinWidth
+    minimumHeight: Theme.settingsMinHeight
+    width: Theme.settingsWidth
+    height: Theme.settingsHeight
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint
     visible: showPopup

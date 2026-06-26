@@ -13,6 +13,7 @@ BarModule {
     tooltipText: root.caffeineActive ? "Caffeine: ON (click to disable)" : "Caffeine: OFF (click to enable)"
 
     function toggleCaffeine() {
+        root.caffeineActive = !root.caffeineActive;
         caffeineToggleProc.command = [Theme.bin("caffeine"), "toggle"];
         caffeineToggleProc.running = true;
     }
@@ -43,7 +44,7 @@ BarModule {
                 try {
                     var d = JSON.parse(this.text.trim());
                     root.caffeineActive = d.active === true;
-                } catch (_) {}
+                } catch (e) { console.warn("Caffeine: parse error", e); }
             }
         }
     }

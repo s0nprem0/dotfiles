@@ -2,3 +2,6 @@
 name = "check_daemons"
 version = "0.1.0"
 edition = "2024"
+
+[dependencies]
+helpers_rs = { path = "../../libs/core" }

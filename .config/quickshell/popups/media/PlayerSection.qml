@@ -332,7 +332,7 @@ Item {
                     color: Theme.surface
 
                     Rectangle {
-                        width: parent.width * Math.min(1, mediaRoot.position / (mediaRoot.trackLength / 1e+06))
+                        width: parent.width * Math.min(1, mediaRoot.position / mediaRoot.trackLength)
                         height: parent.height
                         color: Theme.primary
                     }
@@ -344,7 +344,7 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         var frac = Math.max(0, Math.min(1, mouse.x / width));
-                        var secs = frac * (mediaRoot.trackLength / 1e+06);
+                        var secs = frac * mediaRoot.trackLength;
                         mediaRoot.playerCtl(["position", secs.toFixed(1)]);
                     }
                 }
@@ -354,7 +354,7 @@ Item {
             Text {
                 id: seekTimeEnd
 
-                text: mediaRoot.formatTime(mediaRoot.trackLength / 1e+06)
+                text: mediaRoot.formatTime(mediaRoot.trackLength)
                 color: Theme.primary
                 opacity: 0.5
                 font.family: Theme.fontFamily

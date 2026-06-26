@@ -262,7 +262,7 @@ PopupPanel {
                     root.playerStatus = m.status || "";
                     root.artist = m.artist || "";
                     root.title = m.title || "";
-                    root.trackLength = (m.length || 0) * 1e+06;
+                    root.trackLength = m.length || 0;
                     root.position = m.position || 0;
                     root.volume = m.volume || 0;
                     var newArt = m.art_url || "";
@@ -366,8 +366,8 @@ PopupPanel {
             if (root.playerStatus === "Playing") {
                 var newPos = root.position + 0.5;
                 if (root.trackLength > 0) {
-                    if (newPos > root.trackLength / 1e+06)
-                        newPos = root.trackLength / 1e+06;
+                    if (newPos > root.trackLength)
+                        newPos = root.trackLength;
 
                 } else if (newPos > 3600) {
                     newPos = 3600;

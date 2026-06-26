@@ -64,7 +64,11 @@ PopupPanel {
 
         command: [Theme.bin("decode_clipboard_images.sh")]
         running: false
-        onExited: {
+        onExited: function(code) {
+            if (code !== 0) {
+                console.warn("Clipboard: image decode failed with code", code);
+                return;
+            }
             cliphistListProc.running = true;
         }
     }
@@ -75,6 +79,10 @@ PopupPanel {
 
         command: ["cliphist", "list"]
         running: false
+        onExited: function(code) {
+            if (code !== 0)
+                console.warn("Clipboard: cliphist list failed with code", code);
+        }
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -101,7 +109,11 @@ PopupPanel {
 
         command: ["sh", "-c", "d=$(printf '%s' \"$1\" | cliphist decode); printf '%s' \"$d\" | wl-copy && notify-send -t 1000 -h string:x-canonical-private-synchronous:clip-notify -a clipboard -i edit-copy \"copied\" \"$(printf '%s' \"$d\" | head -c 50)\"", "_", entryLine]
         running: false
-        onExited: {
+        onExited: function(code) {
+            if (code !== 0) {
+                console.warn("Clipboard: copy failed with code", code);
+                return;
+            }
             root.showPopup = false;
         }
     }
@@ -114,7 +126,11 @@ PopupPanel {
 
         command: ["sh", "-c", "printf '%s' \"$1\" | cliphist delete && id=$(printf '%s' \"$1\" | cut -f1) && rm -f \"" + Theme.tmpDir + "/clip_${id}.png\"", "_", entryLine]
         running: false
-        onExited: {
+        onExited: function(code) {
+            if (code !== 0) {
+                console.warn("Clipboard: delete failed with code", code);
+                return;
+            }
             refreshClipboard();
         }
     }
@@ -125,7 +141,11 @@ PopupPanel {
 
         command: ["sh", "-c", "cliphist wipe && rm -f \"" + Theme.tmpDir + "/clip_*.png\""]
         running: false
-        onExited: {
+        onExited: function(code) {
+            if (code !== 0) {
+                console.warn("Clipboard: wipe failed with code", code);
+                return;
+            }
             refreshClipboard();
         }
     }

@@ -9,7 +9,7 @@ fn notify(title: &str, message: &str) {
 }
 
 fn main() {
-    let mut child = Command::new("udevadm")
+    let mut child = match Command::new("udevadm")
         .args([
             "monitor",
             "--udev",
@@ -19,9 +19,19 @@ fn main() {
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
-        .expect("Failed to start udevadm monitor");
+    {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("mtp_notify: failed to start udevadm monitor: {e}");
+            eprintln!("mtp_notify: is udevadm installed and in PATH?");
+            std::process::exit(1);
+        }
+    };
 
-    let stdout = child.stdout.take().expect("Failed to capture stdout");
+    let Some(stdout) = child.stdout.take() else {
+        eprintln!("mtp_notify: failed to capture stdout");
+        std::process::exit(1);
+    };
     let reader = BufReader::new(stdout);
 
     let mut props = HashMap::<String, String>::new();

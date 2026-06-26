@@ -22,24 +22,7 @@ Window {
     }
 
     function applyMode(mode) {
-        if (mode === "extend") {
-            qs.exec("hyprctl", ["output", "eDP-1", "enable", "true"]);
-            qs.exec("hyprctl", ["output", "eDP-1", "preferred"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "enable", "true"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "preferred"]);
-        } else if (mode === "duplicate") {
-            qs.exec("hyprctl", ["output", "eDP-1", "preferred"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "preferred"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "mirror", "eDP-1"]);
-        } else if (mode === "external") {
-            qs.exec("hyprctl", ["output", "eDP-1", "disable"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "enable"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "preferred"]);
-        } else if (mode === "internal") {
-            qs.exec("hyprctl", ["output", "eDP-1", "enable"]);
-            qs.exec("hyprctl", ["output", "eDP-1", "preferred"]);
-            qs.exec("hyprctl", ["output", "HDMI-A-1", "disable"]);
-        }
+        Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
         setCurrentMode(mode);
         showPopup = false;
     }

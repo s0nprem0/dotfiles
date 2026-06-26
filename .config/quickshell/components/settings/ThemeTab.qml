@@ -75,7 +75,7 @@ Rectangle {
                     var data = JSON.parse(this.text);
                     if (Array.isArray(data))
                         root.presets = data;
-                } catch (e) {}
+                } catch (e) { console.warn("ThemeTab: preset list parse error", e); }
             }
         }
     }

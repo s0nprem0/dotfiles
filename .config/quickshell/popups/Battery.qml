@@ -116,6 +116,7 @@ PopupPanel {
             root.batKbd = j.bat_kbd_brightness ?? 33;
             root.lowKbd = j.low_kbd_brightness ?? 0;
         } catch (e) {
+            console.warn("Battery: settings parse error", e);
         }
     }
 
@@ -215,6 +216,7 @@ PopupPanel {
                     root.activeProfile = j.active ?? "balanced";
                     root.availableProfiles = j.available ?? [];
                 } catch (e) {
+                    console.warn("Battery: profile parse error", e);
                 }
             }
         }

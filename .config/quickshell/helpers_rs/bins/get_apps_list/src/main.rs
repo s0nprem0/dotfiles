@@ -490,7 +490,13 @@ fn main() {
                 return;
             }
             "--index-files" => {
-                let home = std::env::var("HOME").expect("HOME not set");
+                let home = match std::env::var("HOME") {
+                    Ok(h) => h,
+                    Err(_) => {
+                        eprintln!("HOME not set, skipping file indexing");
+                        return;
+                    }
+                };
                 let out = Command::new("fd")
                     .args([
                         "--type", "f",
@@ -656,7 +662,13 @@ fn main() {
         }
     }
 
-    let home = std::env::var("HOME").expect("HOME not set");
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => {
+            eprintln!("HOME not set, cannot scan applications");
+            std::process::exit(1);
+        }
+    };
     let usage_path = PathBuf::from(&home).join(".cache/quickshell/app_usage.json");
     let usage_map: HashMap<String, u32> = helpers_rs::state_file::read_json(&usage_path).unwrap_or_default();
     let mut apps: HashMap<String, AppInfo> = HashMap::new();

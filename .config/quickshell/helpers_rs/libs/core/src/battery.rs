@@ -47,6 +47,7 @@ pub fn battery_snapshot() -> BatterySnapshot {
 
     let mut total_now = 0.0;
     let mut total_full = 0.0;
+    let mut total_full_design = 0.0;
     let mut total_power = 0.0;
     let mut is_charging = false;
     let mut battery_found = false;
@@ -60,15 +61,18 @@ pub fn battery_snapshot() -> BatterySnapshot {
             battery_found = true;
 
             let energy_full = parse_num(&path.join("energy_full"));
+            let energy_full_design = parse_num(&path.join("energy_full_design"));
             let energy_now = parse_num(&path.join("energy_now"));
             let power_now = parse_num(&path.join("power_now"));
 
             if energy_full > 0.0 {
                 total_full += energy_full;
+                total_full_design += energy_full_design;
                 total_now += energy_now;
                 total_power += power_now;
             } else {
                 total_full += parse_num(&path.join("charge_full"));
+                total_full_design += parse_num(&path.join("charge_full_design"));
                 total_now += parse_num(&path.join("charge_now"));
                 let voltage = parse_num(&path.join("voltage_now"));
                 let current = parse_num(&path.join("current_now"));
@@ -105,6 +109,7 @@ pub fn battery_snapshot() -> BatterySnapshot {
         capacity,
         status: final_status,
         full: total_full,
+        full_design: total_full_design,
         now: total_now,
         power_w: total_power / 1e6,
         rate: total_power,

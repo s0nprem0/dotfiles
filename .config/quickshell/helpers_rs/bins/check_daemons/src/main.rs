@@ -1,9 +1,10 @@
+use helpers_rs::quickshell_dir;
 use std::process::Command;
 
 struct Daemon {
     name: &'static str,
     process_name: &'static str,
-    start_command: &'static str,
+    start_command: Box<dyn Fn() -> String>,
 }
 
 fn is_running(process_name: &str) -> bool {
@@ -17,6 +18,10 @@ fn is_running(process_name: &str) -> bool {
 
 fn start(cmd: &str) -> bool {
     Command::new("bash").arg("-c").arg(cmd).spawn().is_ok()
+}
+
+fn box_cmd(cmd: &'static str) -> Box<dyn Fn() -> String> {
+    Box::new(move || cmd.to_string())
 }
 
 fn notify(started: &[String], restarted: &[String]) {
@@ -45,32 +50,34 @@ fn main() {
         Daemon {
             name: "Quickshell",
             process_name: "quickshell",
-            start_command: "uwsm app -- qs",
+            start_command: box_cmd("uwsm app -- qs"),
         },
         Daemon {
             name: "Hyprpaper",
             process_name: "hyprpaper",
-            start_command: "uwsm app -- hyprpaper",
+            start_command: box_cmd("uwsm app -- hyprpaper"),
         },
         Daemon {
             name: "Battery Daemon",
             process_name: "battery_daemon",
-            start_command: "uwsm app -- ~/.config/quickshell/helpers/battery_daemon",
+            start_command: Box::new(|| {
+                format!("uwsm app -- {}", quickshell_dir().join("helpers/battery_daemon").display())
+            }),
         },
         Daemon {
             name: "Hypridle",
             process_name: "hypridle",
-            start_command: "uwsm app -- hypridle",
+            start_command: box_cmd("uwsm app -- hypridle"),
         },
         Daemon {
             name: "Clipboard (text)",
             process_name: "wl-paste --type text --watch cliphist store",
-            start_command: "uwsm app -- ~/.config/hypr/scripts/cliphist.sh store",
+            start_command: box_cmd("uwsm app -- ~/.config/hypr/scripts/cliphist.sh store"),
         },
         Daemon {
             name: "Clipboard (image)",
             process_name: "wl-paste --type image --watch cliphist store",
-            start_command: "uwsm app -- ~/.config/hypr/scripts/cliphist.sh store",
+            start_command: box_cmd("uwsm app -- ~/.config/hypr/scripts/cliphist.sh store"),
         },
     ];
 
@@ -82,7 +89,7 @@ fn main() {
             continue;
         }
         eprintln!("{} not running, starting...", d.name);
-        if start(d.start_command) {
+        if start(&(d.start_command)()) {
             started.push(d.name.to_string());
             eprintln!("{} started successfully", d.name);
         } else {
