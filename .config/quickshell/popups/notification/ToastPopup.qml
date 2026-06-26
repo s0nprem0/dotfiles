@@ -214,6 +214,15 @@ Item {
                                                 Layout.fillWidth: true
                                             }
 
+                                            Text {
+                                                text: "󰃁"
+                                                color: toastCard.uColor
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 10
+                                                visible: liveData.expireTimeout === 0
+                                                anchors.verticalCenter: parent.verticalCenter
+                                            }
+
                                             // Sharp Close Button
                                             Rectangle {
                                                 implicitWidth: 20

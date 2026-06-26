@@ -280,15 +280,29 @@ ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 1
 
-                            Text {
-                                text: notif.appName || ""
-                                color: Theme.muted
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 8
-                                font.bold: true
-                                elide: Text.ElideRight
+                            RowLayout {
                                 Layout.fillWidth: true
-                                visible: text.length > 0
+                                spacing: 4
+                                visible: (notif.appName || "").length > 0
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: notif.appName || ""
+                                    color: Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 8
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    text: "󰃁"
+                                    color: Theme.primary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 8
+                                    visible: notif.expireTimeout === 0
+                                }
+
                             }
 
                             Text {
@@ -302,7 +316,7 @@ ColumnLayout {
                             }
 
                             Text {
-                                text: notif.time ? notif.timeStr : ""
+                                text: notif.timeStr || ""
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 7
