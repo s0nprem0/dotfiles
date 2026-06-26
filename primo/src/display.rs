@@ -82,11 +82,12 @@ struct MonitorRaw {
     #[serde(rename = "refreshRate")]
     refresh_rate: Option<f64>,
     disabled: bool,
-    #[serde(rename = "mirrorOf")]
+    #[serde(rename = "mirrorOf", default)]
     mirror_of: String,
     #[serde(rename = "activeWorkspaceId")]
     active_workspace_id: Option<u32>,
     focused: bool,
+    #[serde(default)]
     active: bool,
 }
 
@@ -262,8 +263,26 @@ pub fn set_mode_verified(mode: DisplayMode, monitors: &[Monitor]) -> Result<(), 
 }
 
 fn run_keyword(output: &str, args: &str) {
+    let lua_cmd = if args == "disabled true" {
+        format!("hl.monitor({{ output = \"{}\", disabled = true }})", output)
+    } else if args == "disabled false" {
+        format!("hl.monitor({{ output = \"{}\", disabled = false }})", output)
+    } else if args.starts_with("mode ") {
+        let parts: Vec<&str> = args.split_whitespace().collect();
+        let mode = parts.get(1).unwrap_or(&"preferred");
+        
+        if args.contains("mirror") {
+            let mirror_idx = parts.iter().position(|&p| p == "mirror").unwrap_or(0);
+            let mirror = parts.get(mirror_idx + 1).unwrap_or(&"");
+            format!("hl.monitor({{ output = \"{}\", mode = \"{}\", mirror = \"{}\" }})", output, mode, mirror)
+        } else {
+            format!("hl.monitor({{ output = \"{}\", mode = \"{}\" }})", output, mode)
+        }
+    } else {
+        format!("hl.monitor({{ output = \"{}\", disabled = false }})", output)
+    };
     let _ = Command::new("hyprctl")
-        .args(["keyword", &format!("monitor.{}.{}", output, args)])
+        .args(["eval", &lua_cmd])
         .status();
 }
 
