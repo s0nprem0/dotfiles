@@ -57,7 +57,6 @@ BarModule {
         visible: notifCount > 0 && !NotificationState.dnd
         width: badgeText.implicitWidth + 6
         height: 12
-        radius: 6
         color: Theme.error
         anchors.right: parent.right
         anchors.top: parent.top

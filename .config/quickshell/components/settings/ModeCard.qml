@@ -27,7 +27,6 @@ Rectangle {
 
     Layout.fillWidth: true
     implicitHeight: content.implicitHeight + 16
-    radius: 6
     color: root.active ? Theme.primaryAlpha008 : Theme.surface
     border.width: 1
     border.color: root.active ? Theme.primaryAlpha03 : Theme.surfaceLighter
@@ -89,7 +88,6 @@ Rectangle {
 
                     Layout.preferredWidth: 52
                     height: 28
-                    radius: 4
                     color: modelData.val === root.currentProfile ? Theme.primary : Theme.surfaceLighter
 
                     Text {

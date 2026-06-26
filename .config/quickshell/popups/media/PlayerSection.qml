@@ -125,7 +125,6 @@ Item {
                     Rectangle {
                         height: 4
                         width: 4
-                        radius: 2
                         anchors.verticalCenter: parent.verticalCenter
                         color: mediaRoot.playerStatus === "Playing" ? Theme.green : mediaRoot.playerStatus === "Paused" ? Theme.warning : Theme.muted
                     }

@@ -140,6 +140,7 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 width: parent.width
                 height: 32
+                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.85)
 
                 RowLayout {
                     anchors.fill: parent
@@ -171,19 +172,6 @@ Rectangle {
 
                         }
 
-                    }
-
-                }
-
-                gradient: Gradient {
-                    GradientStop {
-                        position: 0
-                        color: "transparent"
-                    }
-
-                    GradientStop {
-                        position: 1
-                        color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.85)
                     }
 
                 }
@@ -246,7 +234,6 @@ Rectangle {
                 Rectangle {
                     implicitWidth: 44
                     implicitHeight: 22
-                    radius: 11
                     color: Theme.glassEnabled ? Theme.primary : Theme.surfaceLighter
                     border.width: 1
                     border.color: Theme.primaryAlpha03
@@ -256,7 +243,6 @@ Rectangle {
                         y: 2
                         width: parent.height - 4
                         height: parent.height - 4
-                        radius: width / 2
                         color: Theme.glassEnabled ? Theme.bg : Theme.muted
 
                         Behavior on x {

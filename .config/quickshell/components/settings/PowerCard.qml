@@ -118,13 +118,11 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 height: 8
-                radius: 4
                 color: Theme.surfaceLighter
 
                 Rectangle {
                     width: parent.width * (root.screenBrightness / 100)
                     height: parent.height
-                    radius: 4
                     color: Theme.primary
                 }
 
@@ -180,13 +178,11 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 height: 8
-                radius: 4
                 color: Theme.surfaceLighter
 
                 Rectangle {
                     width: parent.width * (root.kbdBrightness / 100)
                     height: parent.height
-                    radius: 4
                     color: Theme.primary
                 }
 
@@ -242,13 +238,11 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 height: 8
-                radius: 4
                 color: Theme.surfaceLighter
 
                 Rectangle {
                     width: parent.width * (root.chargeLimit / 100)
                     height: parent.height
-                    radius: 4
                     color: root.chargeLimit < 100 ? Theme.warning : Theme.primary
                 }
 
