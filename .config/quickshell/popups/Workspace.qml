@@ -9,14 +9,12 @@ import Quickshell.Wayland
 PopupPanel {
     id: root
 
-    // ── Hyprland state ──
     property var windowList: []
     property var windowByAddress: ({
     })
     property var activeWorkspaceId: 1
-    property var monitors: []
-    property var monitorById: ({
-    })
+    property var monitors: DisplayService.monitors
+    property var monitorById: DisplayService.monitorsById
     property string activeWindowAddress: ""
     property var visibleWorkspaceIds: [1]
     // ── Drag state ──
@@ -152,7 +150,6 @@ PopupPanel {
 
     function updateAll() {
         getClients.running = true;
-        getMonitors.running = true;
         getActiveWorkspace.running = true;
         getActiveWindow.running = true;
     }
@@ -187,28 +184,6 @@ PopupPanel {
                     root.rebuildVisibleWorkspaceIds();
                 } catch (e) {
                     console.warn("Workspace: clients parse error", e);
-                }
-            }
-        }
-
-    }
-
-    Process {
-        id: getMonitors
-
-        command: ["hyprctl", "monitors", "-j"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    var parsed = JSON.parse(this.text);
-                    root.monitors = parsed;
-                    var temp = {
-                    };
-                    for (var i = 0; i < parsed.length; i++) temp[parsed[i].id] = parsed[i]
-                    root.monitorById = temp;
-                } catch (e) {
-                    console.warn("Workspace: monitors parse error", e);
                 }
             }
         }
@@ -261,6 +236,14 @@ PopupPanel {
         }
 
         target: Hyprland
+    }
+
+    Connections {
+        target: DisplayService
+        function onMonitorsChanged() {
+            if (root.showPopup)
+                root.rebuildVisibleWorkspaceIds();
+        }
     }
 
     // ── Content ──

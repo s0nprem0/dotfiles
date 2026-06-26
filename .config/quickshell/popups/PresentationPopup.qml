@@ -9,7 +9,7 @@ Window {
     id: root
 
     property bool showPopup: false
-    property string currentMode: "extend"
+    property string currentMode: DisplayService.currentMode
     property var modes: [
         { name: "EXTEND", value: "extend", desc: "Two separate screens" },
         { name: "DUPLICATE", value: "duplicate", desc: "Mirror displays" },
@@ -17,14 +17,10 @@ Window {
         { name: "INTERNAL", value: "internal", desc: "Laptop screen only" }
     ]
 
-    function setCurrentMode(mode) {
-        root.currentMode = mode;
-    }
-
     function applyMode(mode) {
-        Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
-        setCurrentMode(mode);
-        showPopup = false;
+        var result = Quickshell.execDetached([Theme.bin("display_toggle"), mode]);
+        root.showPopup = false;
+        DisplayService.refreshMonitors();
     }
 
     title: "DISPLAY MODE"
@@ -56,6 +52,7 @@ Window {
     onShowPopupChanged: {
         if (showPopup) {
             forceActiveFocus();
+            DisplayService.refreshMonitors();
         }
     }
 

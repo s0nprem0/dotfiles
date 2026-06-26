@@ -139,11 +139,21 @@ Scope {
         id: win
 
         property bool isShown: root.visibleNow
+
+        function getTargetScreen() {
+            if (DisplayService.primaryMonitorId) {
+                var monitor = DisplayService.getMonitor(DisplayService.primaryMonitorId);
+                if (monitor && !monitor.disabled) {
+                    return monitor;
+                }
+            }
+            if (Quickshell.primaryScreen) return Quickshell.primaryScreen;
+            return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null;
+        }
+
+        screen: getTargetScreen()
         property real animTopMargin: -50
         property real animOpacity: 0
-
-        // Bind directly to the primary screen to ensure only ONE OSD exists
-        screen: Quickshell.primaryScreen
         onIsShownChanged: {
             if (isShown) {
                 exitAnim.stop();
