@@ -294,9 +294,11 @@ RowLayout {
                 spacing: 8
 
                 header: Rectangle {
+                    id: headerRect
                     width: presetList.width
                     height: 32
-                    color: autoMa.containsMouse ? Theme.primary : (root.currentMode === "wallpaper" ? Theme.primaryAlpha015 : "transparent")
+                    property bool containsMouse: false
+                    color: headerRect.containsMouse ? Theme.primary : (root.currentMode === "wallpaper" ? Theme.primaryAlpha015 : "transparent")
                     border.width: 1
                     border.color: root.currentMode === "wallpaper" ? Theme.primary : Theme.primaryAlpha03
 
@@ -307,29 +309,31 @@ RowLayout {
                         spacing: 10
 
                         Text {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "󰸉"
-                            color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
+                            text: "\uf099"
+                            color: root.currentMode === "wallpaper" || headerRect.containsMouse ? (headerRect.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeXl
                         }
 
                         Text {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
                             text: "Auto (wallpaper-based)"
-                            color: root.currentMode === "wallpaper" || autoMa.containsMouse ? (autoMa.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
+                            color: root.currentMode === "wallpaper" || headerRect.containsMouse ? (headerRect.containsMouse ? Theme.bg : Theme.primary) : Theme.muted
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeMd
                             font.bold: true
-                            Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
 
                         Text {
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.preferredWidth: 80
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
                             text: root.currentMode === "wallpaper" ? "active" : ""
                             color: Theme.green
                             font.family: Theme.fontFamily
@@ -337,17 +341,18 @@ RowLayout {
                         }
                     }
 
-                    MouseArea {
-                        id: autoMa
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (root.wallpaperPath)
-                                root.applyWallpaper(root.wallpaperPath);
-                        }
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onPressed: headerRect.containsMouse = true
+                    onReleased: headerRect.containsMouse = false
+                    onClicked: {
+                        if (root.wallpaperPath)
+                            root.applyWallpaper(root.wallpaperPath);
                     }
                 }
+            }
 
 delegate: Rectangle {
                                     required property var modelData

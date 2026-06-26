@@ -217,8 +217,8 @@ RowLayout {
                 color: Theme.primary
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeMd
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 2
+                Layout.alignment: Qt.AlignBottom
+                Layout.bottomMargin: 2
             }
 
         }

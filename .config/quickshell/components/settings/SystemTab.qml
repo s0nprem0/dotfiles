@@ -108,7 +108,8 @@ Rectangle {
         // ── Confirm dialog overlay ──
         Rectangle {
             visible: root.confirmVisible
-            anchors.fill: parent
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             z: 10
             color: Qt.rgba(0, 0, 0, 0.7)
 
