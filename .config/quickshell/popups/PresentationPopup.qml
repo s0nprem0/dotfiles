@@ -65,7 +65,7 @@ Window {
         anchors.fill: parent
         anchors.margins: 8
         color: Theme.surface
-        border.width: 6
+        border.width: 2
         border.color: Theme.primary
 
         ColumnLayout {
@@ -76,7 +76,8 @@ Window {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
                 color: Theme.primary
-                anchors.topMargin: 8
+                border.width: 1
+                border.color: Theme.primary
 
                 RowLayout {
                     anchors.fill: parent
@@ -102,15 +103,14 @@ Window {
                     Rectangle {
                         implicitWidth: monitorCount > 0 ? 24 : 0
                         implicitHeight: 24
-                        radius: 12
-                        color: Theme.bg
+                        color: Theme.primary
                         border.width: 1
-                        border.color: Theme.primary
+                        border.color: Theme.bg
 
                         Text {
                             anchors.centerIn: parent
                             text: root.monitorCount
-                            color: Theme.primary
+                            color: Theme.bg
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeSm
                             font.bold: true
@@ -126,7 +126,7 @@ Window {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 2
-                color: Theme.bg
+                color: Theme.primaryAlpha02
             }
 
             Repeater {
@@ -137,9 +137,9 @@ Window {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: 56
-                    color: modelData.value === root.currentMode ? Theme.primaryAlpha015 : Theme.surface
+                    color: modelData.value === root.currentMode ? Theme.primary : Theme.surface
                     border.width: 1
-                    border.color: modelData.value === root.currentMode ? Theme.primary : Theme.surfaceLighter
+                    border.color: Theme.primary
 
                     RowLayout {
                         anchors.fill: parent
@@ -167,7 +167,7 @@ Window {
 
                             Text {
                                 text: modelData.desc
-                                color: modelData.value === root.currentMode ? Theme.muted : Theme.muted
+                                color: Theme.muted
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeSm
                                 elide: Text.ElideRight
@@ -201,7 +201,7 @@ Window {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 2
-                color: Theme.bg
+                color: Theme.primaryAlpha02
             }
 
             RowLayout {
