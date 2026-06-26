@@ -183,6 +183,23 @@ Item {
         saveMonitorSettings(config);
     }
 
+    function getLogicalGeometry(monitor) {
+        if (!monitor) return { x: 0, y: 0, width: 1920, height: 1080 };
+        return {
+            x: Math.round(monitor.x / monitor.scale),
+            y: Math.round(monitor.y / monitor.scale),
+            width: Math.round(monitor.width / monitor.scale),
+            height: Math.round(monitor.height / monitor.scale)
+        };
+    }
+
+    function getLogicalPrimaryGeometry() {
+        if (!root.primaryMonitorId) return { x: 0, y: 0, width: 1920, height: 1080 };
+        var monitor = root.getMonitor(root.primaryMonitorId);
+        if (!monitor) return { x: 0, y: 0, width: 1920, height: 1080 };
+        return root.getLogicalGeometry(monitor);
+    }
+
     readonly property string monitorSettingsPath: "file://" + Theme.cacheDir + "/monitor_settings.json"
 
     FileView {
