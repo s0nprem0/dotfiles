@@ -141,12 +141,6 @@ Scope {
         property bool isShown: root.visibleNow
 
         function getTargetScreen() {
-            if (DisplayService.primaryMonitorId) {
-                var monitor = DisplayService.getMonitor(DisplayService.primaryMonitorId);
-                if (monitor && !monitor.disabled) {
-                    return monitor;
-                }
-            }
             if (Quickshell.primaryScreen) return Quickshell.primaryScreen;
             return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null;
         }

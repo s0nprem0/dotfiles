@@ -21,6 +21,10 @@ Item {
     property var profiles: ({})
     property string activeProfile: ""
 
+    signal monitorsDataChanged()
+    signal modeChanged()
+    signal primaryMonitorChanged()
+
     Process {
         id: monitorProc
 
@@ -39,16 +43,21 @@ Item {
                     }
                     root.monitorsById = temp;
 
-                    root.primaryMonitorId = "";
+                    var newPrimaryId = "";
                     for (var j = 0; j < data.length; j++) {
                         if (data[j].focused) {
-                            root.primaryMonitorId = data[j].id;
+                            newPrimaryId = data[j].id;
                             break;
                         }
+                    }
+                    if (newPrimaryId !== root.primaryMonitorId) {
+                        root.primaryMonitorId = newPrimaryId;
+                        root.primaryMonitorChanged();
                     }
 
                     updateCurrentMode();
                     loadProfiles();
+                    root.monitorsDataChanged();
                 } catch (e) {
                     console.warn("DisplayService: Failed to parse monitors:", e);
                 }
@@ -117,14 +126,18 @@ Item {
             }
         }
 
+        var newMode = "extend";
         if (!internalOn && externalOn) {
-            root.currentMode = "external";
+            newMode = "external";
         } else if (internalOn && externalOn) {
-            root.currentMode = "extend";
+            newMode = "extend";
         } else if (internalOn && !externalOn) {
-            root.currentMode = "internal";
-        } else {
-            root.currentMode = "extend";
+            newMode = "internal";
+        }
+
+        if (newMode !== root.currentMode) {
+            root.currentMode = newMode;
+            root.modeChanged();
         }
     }
 
@@ -148,14 +161,22 @@ Item {
 
     Connections {
         target: Hyprland
-        function onMonitorAdded() { root.refreshMonitors() }
-        function onMonitorRemoved() { root.refreshMonitors() }
-        function onMonitorLayoutChanged() { root.refreshMonitors() }
+        function onMonitorAdded() { 
+            console.log("DisplayService: monitor added, refreshing");
+            root.refreshMonitors(); 
+        }
+        function onMonitorRemoved() { 
+            console.log("DisplayService: monitor removed, refreshing");
+            root.refreshMonitors(); 
+        }
+        function onMonitorLayoutChanged() { 
+            console.log("DisplayService: monitor layout changed, refreshing");
+            root.refreshMonitors(); 
+        }
     }
 
     Component.onCompleted: {
         refreshMonitors();
-        Theme.binChanged.connect(refreshMonitors);
     }
 
     onActiveProfileChanged: saveProfiles();

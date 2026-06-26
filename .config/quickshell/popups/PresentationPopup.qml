@@ -51,7 +51,6 @@ Window {
 
     onShowPopupChanged: {
         if (showPopup) {
-            forceActiveFocus();
             DisplayService.refreshMonitors();
         }
     }
