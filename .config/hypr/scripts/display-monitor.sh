@@ -29,6 +29,14 @@ set_mode() {
 			hyprctl keyword monitor eDP-1 disabled false
 			hyprctl keyword monitor HDMI-A-1 disabled false
 			;;
+		duplicate)
+			hyprctl keyword monitor eDP-1 disabled false
+			hyprctl keyword monitor HDMI-A-1 disabled false
+			;;
+		internal)
+			hyprctl keyword monitor eDP-1 disabled false
+			hyprctl keyword monitor HDMI-A-1 disabled true
+			;;
 	esac
 	
 	notify-send -t 1000 "Display: $mode"
