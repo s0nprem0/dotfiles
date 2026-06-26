@@ -13,8 +13,8 @@ Rectangle {
     property bool error: false
 
     height: 28
-    color: root.error ? Qt.alpha("#e06c75", 0.3) : mA.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.surface, 0.4)
-    border.color: mA.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)
+    color: root.error ? Qt.alpha("#e06c75", 0.3) : mA.containsMouse ? Theme.primaryAlpha02 : Qt.alpha(Theme.surface, 0.4)
+    border.color: mA.containsMouse ? Theme.primaryAlpha03 : Theme.primaryAlpha01
     border.width: 1
 
     Rectangle {
@@ -29,7 +29,7 @@ Rectangle {
         width: tooltipLabel.width + 12
         radius: 0
         color: Qt.alpha(Theme.surface, 0.9)
-        border.color: Qt.alpha(Theme.primary, 0.2)
+        border.color: Theme.primaryAlpha02
         border.width: 1
         opacity: (mA.containsMouse && root.tooltipVisible) ? 1 : 0
         visible: opacity > 0

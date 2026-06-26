@@ -568,16 +568,16 @@ PopupPanel {
                                 height: 20
                                 width: playerLabel.implicitWidth + 12
                                 radius: 0
-                                color: modelData === root.playerName ? Qt.alpha(Theme.primary, 0.25) : playerBtnMa.containsMouse ? Qt.alpha(Theme.primary, 0.1) : "transparent"
+                                color: modelData === root.playerName ? Theme.primaryAlpha025 : playerBtnMa.containsMouse ? Theme.primaryAlpha01 : "transparent"
                                 border.width: modelData === root.playerName ? 1 : playerBtnMa.containsMouse ? 1 : 0
-                                border.color: Qt.alpha(Theme.primary, 0.4)
+                                border.color: Theme.primaryAlpha04
 
                                 Text {
                                     id: playerLabel
 
                                     anchors.centerIn: parent
                                     text: modelData
-                                    color: modelData === root.playerName ? Theme.primary : playerBtnMa.containsMouse ? Theme.primary : Qt.alpha(Theme.primary, 0.5)
+                                    color: modelData === root.playerName ? Theme.primary : playerBtnMa.containsMouse ? Theme.primary : Theme.primaryAlpha05
                                     font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontSizeMd
                                     renderType: Text.NativeRendering
@@ -752,16 +752,16 @@ PopupPanel {
                                     height: 20
                                     width: deviceLabel.implicitWidth + 10
                                     radius: 0
-                                    color: isActive ? Qt.alpha(Theme.primary, 0.2) : chipHover.containsMouse ? Qt.alpha(Theme.primary, 0.08) : "transparent"
+                                    color: isActive ? Theme.primaryAlpha02 : chipHover.containsMouse ? Theme.primaryAlpha008 : "transparent"
                                     border.width: 1
-                                    border.color: isActive ? Qt.alpha(Theme.primary, 0.5) : chipHover.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.primary, 0.1)
+                                    border.color: isActive ? Theme.primaryAlpha05 : chipHover.containsMouse ? Theme.primaryAlpha02 : Theme.primaryAlpha01
 
                                     Text {
                                         id: deviceLabel
 
                                         anchors.centerIn: parent
                                         text: parent.sinkName
-                                        color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
+                                        color: parent.isActive ? Theme.primary : Theme.primaryAlpha06
                                         font.family: Theme.fontFamily
                                         font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight
@@ -824,16 +824,16 @@ PopupPanel {
                                     height: 20
                                     width: srcLabel.implicitWidth + 10
                                     radius: 0
-                                    color: isActive ? Qt.alpha(Theme.primary, 0.2) : srcHover.containsMouse ? Qt.alpha(Theme.primary, 0.08) : "transparent"
+                                    color: isActive ? Theme.primaryAlpha02 : srcHover.containsMouse ? Theme.primaryAlpha008 : "transparent"
                                     border.width: 1
-                                    border.color: isActive ? Qt.alpha(Theme.primary, 0.5) : srcHover.containsMouse ? Qt.alpha(Theme.primary, 0.2) : Qt.alpha(Theme.primary, 0.1)
+                                    border.color: isActive ? Theme.primaryAlpha05 : srcHover.containsMouse ? Theme.primaryAlpha02 : Theme.primaryAlpha01
 
                                     Text {
                                         id: srcLabel
 
                                         anchors.centerIn: parent
                                         text: parent.srcName
-                                        color: parent.isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.6)
+                                        color: parent.isActive ? Theme.primary : Theme.primaryAlpha06
                                         font.family: Theme.fontFamily
                                         font.pixelSize: Theme.fontSizeSm
                                         elide: Text.ElideRight

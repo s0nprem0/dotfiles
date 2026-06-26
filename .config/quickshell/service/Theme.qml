@@ -27,6 +27,19 @@ Item {
     readonly property string success: green
     readonly property string info: blue
     readonly property real barOpacity: 0.65
+    readonly property color primaryAlpha005: Qt.alpha(primary, 0.05)
+    readonly property color primaryAlpha008: Qt.alpha(primary, 0.08)
+    readonly property color primaryAlpha01: Qt.alpha(primary, 0.1)
+    readonly property color primaryAlpha012: Qt.alpha(primary, 0.12)
+    readonly property color primaryAlpha015: Qt.alpha(primary, 0.15)
+    readonly property color primaryAlpha018: Qt.alpha(primary, 0.18)
+    readonly property color primaryAlpha02: Qt.alpha(primary, 0.2)
+    readonly property color primaryAlpha025: Qt.alpha(primary, 0.25)
+    readonly property color primaryAlpha03: Qt.alpha(primary, 0.3)
+    readonly property color primaryAlpha035: Qt.alpha(primary, 0.35)
+    readonly property color primaryAlpha04: Qt.alpha(primary, 0.4)
+    readonly property color primaryAlpha05: Qt.alpha(primary, 0.5)
+    readonly property color primaryAlpha06: Qt.alpha(primary, 0.6)
     readonly property int fontSizeXxs: 7
     readonly property int fontSizeXs: 8
     readonly property int fontSizeSm: 9

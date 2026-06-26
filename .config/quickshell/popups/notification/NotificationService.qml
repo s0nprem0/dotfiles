@@ -14,7 +14,8 @@ Item {
     property alias server: notifServer
 
     function findNotification(id) {
-        for (var i = 0; i < service.notifList.length; i++) {
+        var nLen = service.notifList.length;
+        for (var i = 0; i < nLen; i++) {
             var n = service.notifList[i];
             if (!n.closed && n.notification && n.notification.id === id)
                 return n;
@@ -57,7 +58,8 @@ Item {
     }
 
     function clearAll() {
-        for (var i = 0; i < service.notifList.length; i++) {
+        var caLen = service.notifList.length;
+        for (var i = 0; i < caLen; i++) {
             if (!service.notifList[i].closed)
                 service.notifList[i].close();
 
@@ -119,7 +121,8 @@ Item {
 
     function recalcTrackedCount() {
         var count = 0;
-        for (var i = 0; i < service.notifList.length; i++) {
+        var rcLen = service.notifList.length;
+        for (var i = 0; i < rcLen; i++) {
             if (!service.notifList[i].closed)
                 count++;
 
@@ -207,7 +210,8 @@ Item {
         repeat: true
         running: service.trackedCount > 0
         onTriggered: {
-            for (var i = 0; i < service.notifList.length; i++) service.notifList[i].updateTimeStr()
+            var tickLen = service.notifList.length;
+            for (var i = 0; i < tickLen; i++) service.notifList[i].updateTimeStr()
         }
     }
 

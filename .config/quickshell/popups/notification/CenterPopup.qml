@@ -86,13 +86,15 @@ Item {
 
     onShowPopupChanged: {
         if (showPopup) {
-            for (var i = 0; i < variantRepeater.instances.length; i++) {
+            var instLen = variantRepeater.instances.length;
+            for (var i = 0; i < instLen; i++) {
                 var w = variantRepeater.instances[i];
                 if (w)
                     w.visible = true;
 
             }
-            for (var i = 0; i < root.notificationItems.length; i++) root.notificationItems[i].unread = false
+            var notifLen = root.notificationItems.length;
+            for (var i = 0; i < notifLen; i++) root.notificationItems[i].unread = false
             slide.show = true;
             pollTimer.running = true;
             clockTimer.running = true;
@@ -309,7 +311,8 @@ Item {
         introDuration: 140
         exitDuration: 120
         onExitCompleted: {
-            for (var i = 0; i < variantRepeater.instances.length; i++) {
+            var instLen = variantRepeater.instances.length;
+            for (var i = 0; i < instLen; i++) {
                 var w = variantRepeater.instances[i];
                 if (w)
                     w.visible = false;
@@ -318,7 +321,7 @@ Item {
         }
     }
 
-    // ─── Popup Windows (per‑screen) ───────────────────────────────
+    // ── Popup Windows (per‑screen) ──
     Variants {
         id: variantRepeater
 
@@ -353,7 +356,8 @@ Item {
                 }
 
                 function markAllRead() {
-                    for (var i = 0; i < root.notificationItems.length; i++) root.notificationItems[i].unread = false
+                    var miLen = root.notificationItems.length;
+                    for (var i = 0; i < miLen; i++) root.notificationItems[i].unread = false
                 }
 
                 visible: false
@@ -446,7 +450,7 @@ Item {
                             onShowCalendarChanged: win.showCalendar = calendarWidget.showCalendar
                         }
 
-                        // ─── Now Playing ──────────────────────────
+                        // ── Now Playing ──
                         Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: root.mediaData ? 56 : 0
@@ -455,7 +459,7 @@ Item {
 
                             Rectangle {
                                 anchors.fill: parent
-                                color: Qt.alpha(Theme.primary, 0.05)
+                                color: Theme.primaryAlpha005
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -467,7 +471,7 @@ Item {
                                         Layout.preferredHeight: 36
                                         color: Theme.surface
                                         border.width: 1
-                                        border.color: Qt.alpha(Theme.primary, 0.2)
+                                        border.color: Theme.primaryAlpha02
 
                                         Image {
                                             id: artImage
@@ -613,7 +617,7 @@ Item {
 
                         }
 
-                        // ─── Active / History Tabs ──────────────────
+                        // ── Active / History Tabs ──
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 8
@@ -621,7 +625,7 @@ Item {
                             Rectangle {
                                 Layout.fillWidth: true
                                 height: 28
-                                color: !root.showHistory ? Qt.alpha(Theme.primary, 0.12) : "transparent"
+                                color: !root.showHistory ? Theme.primaryAlpha012 : "transparent"
                                 radius: 4
 
                                 Text {
@@ -649,7 +653,7 @@ Item {
                             Rectangle {
                                 Layout.fillWidth: true
                                 height: 28
-                                color: root.showHistory ? Qt.alpha(Theme.primary, 0.12) : "transparent"
+                                color: root.showHistory ? Theme.primaryAlpha012 : "transparent"
                                 radius: 4
 
                                 Text {

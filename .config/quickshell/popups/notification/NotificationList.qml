@@ -34,7 +34,8 @@ ColumnLayout {
 
     function toggleSelectAll() {
         var all = true;
-        for (var i = 0; i < root.notificationItems.length; i++) {
+        var niLen = root.notificationItems.length;
+        for (var i = 0; i < niLen; i++) {
             if (!root.selectedIds[root.notificationItems[i].id]) {
                 all = false;
                 break;
@@ -190,7 +191,7 @@ ColumnLayout {
                 width: ListView.view.width
                 height: notifContent.implicitHeight + 12
                 clip: true
-                color: mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.08) : Theme.surface
+                color: mouseArea.containsMouse ? Theme.primaryAlpha008 : Theme.surface
                 border.width: 0
                 border.color: ListView.isCurrentItem ? Theme.primary : (modelData.urgency === 2 ? Theme.error : Theme.surfaceLighter)
                 radius: 0
@@ -431,7 +432,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         height: 4
                         radius: 0
-                        color: Qt.alpha(Theme.primary, 0.1)
+                        color: Theme.primaryAlpha01
                         visible: notif.hints && notif.hints.value !== undefined
 
                         Rectangle {

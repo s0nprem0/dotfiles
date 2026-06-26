@@ -42,7 +42,8 @@ PopupPanel {
             filteredEntries = rawEntries;
         } else {
             var temp = [];
-            for (var i = 0; i < rawEntries.length; i++) {
+            var rawLen = rawEntries.length;
+            for (var i = 0; i < rawLen; i++) {
                 if (getEntryText(rawEntries[i]).toLowerCase().indexOf(query) !== -1)
                     temp.push(rawEntries[i]);
 
@@ -312,7 +313,7 @@ PopupPanel {
                         delegate: Rectangle {
                             width: entryList.width
                             height: root.isImageEntry(modelData) ? 44 : 26
-                            color: root.selectedIndex === index ? Qt.alpha(Theme.primary, 0.12) : "transparent"
+                            color: root.selectedIndex === index ? Theme.primaryAlpha012 : "transparent"
                             radius: 4
 
                             MouseArea {

@@ -23,7 +23,7 @@ PanelWindow {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 2
-            color: Qt.alpha(Theme.primary, 0.35)
+            color: Theme.primaryAlpha035
         }
 
     }

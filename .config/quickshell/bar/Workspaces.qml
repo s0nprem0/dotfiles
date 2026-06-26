@@ -61,7 +61,7 @@ BarModule {
                     if (isUrgent)
                         return Qt.alpha(Theme.warning, 0.25);
                     if (isActive)
-                        return Qt.alpha(Theme.primary, 0.12);
+                        return Theme.primaryAlpha012;
                     if (mouseArea.containsMouse)
                         return Qt.alpha(Theme.fg, 0.08);
                     return "transparent";

@@ -327,7 +327,7 @@ Item {
                                         Layout.leftMargin: 12
                                         Layout.rightMargin: 12
                                         height: 4
-                                        color: Qt.alpha(Theme.primary, 0.1)
+                                        color: Theme.primaryAlpha01
                                         visible: liveData.hints && liveData.hints.value !== undefined
 
                                         Rectangle {

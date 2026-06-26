@@ -67,7 +67,8 @@ PopupPanel {
         var activeId = Math.max(1, root.activeWorkspaceId);
         var maxId = activeId;
         map[activeId] = true;
-        for (var i = 0; i < root.windowList.length; i++) {
+        var winLen = root.windowList.length;
+        for (var i = 0; i < winLen; i++) {
             var win = root.windowList[i];
             var wsId = (win && win.workspace) ? win.workspace.id : -1;
             if (wsId > 0) {
@@ -115,7 +116,8 @@ PopupPanel {
     }
 
     function findHoveredWorkspace(container, globalX, globalY, repeater) {
-        for (var i = 0; i < root.visibleWorkspaceIds.length; i++) {
+        var wsLen = root.visibleWorkspaceIds.length;
+        for (var i = 0; i < wsLen; i++) {
             var cell = repeater.itemAt(i);
             if (cell) {
                 var cp = container.mapToItem(cell, globalX, globalY);
@@ -315,10 +317,10 @@ PopupPanel {
 
                         implicitWidth: 166
                         implicitHeight: 100
-                        color: root.hoveredWorkspaceId === wsId ? Qt.alpha(Theme.primary, 0.18) : isActive ? Qt.alpha(Theme.primary, 0.1) : Qt.alpha(Theme.surface, 0.5)
+                        color: root.hoveredWorkspaceId === wsId ? Theme.primaryAlpha018 : isActive ? Theme.primaryAlpha01 : Qt.alpha(Theme.surface, 0.5)
                         radius: 6
                         border.width: isActive ? 1 : 0
-                        border.color: isActive ? Qt.alpha(Theme.primary, 0.4) : "transparent"
+                        border.color: isActive ? Theme.primaryAlpha04 : "transparent"
                         scale: root.hoveredWorkspaceId === wsId && root.dragActive ? 1.04 : 1
 
                         // ── Roman numeral badge ──
@@ -332,7 +334,7 @@ PopupPanel {
                             radius: 4
                             color: isActive ? Theme.primary : Theme.surface
                             border.width: 1
-                            border.color: isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
+                            border.color: isActive ? Theme.primary : Theme.primaryAlpha03
                             z: 10
 
                             Text {
@@ -541,7 +543,7 @@ PopupPanel {
                                         radius: 3
                                         color: Qt.alpha(Theme.surface, 0.95)
                                         border.width: 1
-                                        border.color: Qt.alpha(Theme.primary, 0.2)
+                                        border.color: Theme.primaryAlpha02
 
                                         Text {
                                             id: tooltipText
@@ -611,7 +613,8 @@ PopupPanel {
                                 opacity: 0.5
                                 visible: {
                                     var count = 0;
-                                    for (var i = 0; i < root.windowList.length; i++) {
+                                    var wlLen2 = root.windowList.length;
+                                    for (var i = 0; i < wlLen2; i++) {
                                         if (root.windowList[i].workspace && root.windowList[i].workspace.id === wsCell.wsId)
                                             count++;
 

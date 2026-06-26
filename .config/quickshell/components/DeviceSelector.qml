@@ -12,7 +12,7 @@ Rectangle {
     implicitWidth: 180
     implicitHeight: Math.min(root.maxHeight, Math.max(32, root.devices.length * 28))
     color: root.enabled ? Qt.alpha(Theme.surface, 0.5) : Qt.alpha(Theme.surface, 0.2)
-    border.color: root.enabled ? Qt.alpha(Theme.primary, 0.3) : Qt.alpha(Theme.primary, 0.1)
+    border.color: root.enabled ? Theme.primaryAlpha03 : Theme.primaryAlpha01
     border.width: 1
     radius: 0
 
@@ -33,11 +33,11 @@ Rectangle {
             width: ListView.view.width - 4
             height: 24
             color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId
-                ? Qt.alpha(Theme.primary, 0.2)
-                : hoverArea.containsMouse ? Qt.alpha(Theme.primary, 0.08) : "transparent"
+                ? Theme.primaryAlpha02
+                : hoverArea.containsMouse ? Theme.primaryAlpha008 : "transparent"
             border.color: modelData.indexOf("||" + root.activeId + "||") !== -1 || modelData === root.activeId
-                ? Qt.alpha(Theme.primary, 0.5)
-                : Qt.alpha(Theme.primary, 0.1)
+                ? Theme.primaryAlpha05
+                : Theme.primaryAlpha01
             border.width: 1
 
             property string deviceId: modelData.split("||")[0]
@@ -48,7 +48,7 @@ Rectangle {
                 anchors.leftMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
                 text: parent.deviceName
-                color: parent.color === Qt.alpha(Theme.primary, 0.2) ? Theme.primary : Theme.fg
+                color: parent.color === Theme.primaryAlpha02 ? Theme.primary : Theme.fg
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeSm
                 elide: Text.ElideRight

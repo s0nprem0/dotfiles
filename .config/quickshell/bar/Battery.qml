@@ -32,9 +32,9 @@ BarModule {
             return Qt.alpha(Theme.green, 0.4);
 
         if (mA.containsMouse)
-            return Qt.alpha(Theme.primary, 0.3);
+            return Theme.primaryAlpha03;
 
-        return Qt.alpha(Theme.primary, 0.1);
+        return Theme.primaryAlpha01;
     }
     acceptedButtons: Qt.LeftButton
     tooltipText: {

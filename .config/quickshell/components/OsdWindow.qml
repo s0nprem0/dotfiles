@@ -17,7 +17,8 @@ Scope {
     property string osdCurrentMediaSource: ""
 
     function osdMediaSourceIndex() {
-        for (var i = 0; i < root.osdMediaSources.length; i++) {
+        var srcLen = root.osdMediaSources.length;
+        for (var i = 0; i < srcLen; i++) {
             if (root.osdMediaSources[i].name === root.osdCurrentMediaSource)
                 return i;
 
@@ -133,7 +134,7 @@ Scope {
 
     }
 
-    // Removed Variants model to prevent duplicate windows on multiple monitors
+    // Single PanelWindow — OSD shows on the focused monitor
     PanelWindow {
         id: win
 

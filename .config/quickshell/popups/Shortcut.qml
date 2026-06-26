@@ -15,7 +15,8 @@ PopupPanel {
     function rebuildDisplay() {
         var term = root.searchText.toLowerCase().trim();
         var filtered = [];
-        for (var i = 0; i < root.rawData.length; i++) {
+        var rawLen = root.rawData.length;
+        for (var i = 0; i < rawLen; i++) {
             var item = root.rawData[i];
             if (term === "" || item.keys.toLowerCase().indexOf(term) >= 0 || item.description.toLowerCase().indexOf(term) >= 0 || item.category.toLowerCase().indexOf(term) >= 0)
                 filtered.push(item);

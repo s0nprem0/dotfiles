@@ -346,7 +346,7 @@ PopupPanel {
 
                                 width: 18
                                 height: 18
-                                color: trayIconMouse.containsMouse || index === root.trayIndex ? Qt.alpha(Theme.primary, 0.15) : "transparent"
+                                color: trayIconMouse.containsMouse || index === root.trayIndex ? Theme.primaryAlpha015 : "transparent"
                                 radius: 2
 
                                 Image {
@@ -444,7 +444,7 @@ PopupPanel {
                                         return "transparent";
 
                                     if (menuMouse.containsMouse || index === root.menuSelectedIndex)
-                                        return Qt.alpha(Theme.primary, 0.15);
+                                        return Theme.primaryAlpha015;
 
                                     return "transparent";
                                 }
@@ -591,7 +591,7 @@ PopupPanel {
                                         return "transparent";
 
                                     if (submenuMouse.containsMouse || index === root.submenuSelectedIndex)
-                                        return Qt.alpha(Theme.primary, 0.15);
+                                        return Theme.primaryAlpha015;
 
                                     return "transparent";
                                 }

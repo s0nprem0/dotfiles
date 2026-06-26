@@ -214,7 +214,7 @@ RowLayout {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Qt.alpha(Theme.primary, 0.2)
+            color: Theme.primaryAlpha02
         }
 
         // ── Presets ──
@@ -240,9 +240,9 @@ RowLayout {
                 header: Rectangle {
                     width: presetList.width
                     height: 32
-                    color: autoMa.containsMouse ? Theme.primary : (root.currentMode === "wallpaper" ? Qt.alpha(Theme.primary, 0.15) : "transparent")
+                    color: autoMa.containsMouse ? Theme.primary : (root.currentMode === "wallpaper" ? Theme.primaryAlpha015 : "transparent")
                     border.width: 1
-                    border.color: root.currentMode === "wallpaper" ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
+                    border.color: root.currentMode === "wallpaper" ? Theme.primary : Theme.primaryAlpha03
 
                     RowLayout {
                         anchors.fill: parent
@@ -300,9 +300,9 @@ delegate: Rectangle {
 
                                     width: presetList.width
                                     height: 48
-                                    color: ma.containsMouse ? Theme.primary : (isActive ? Qt.alpha(Theme.primary, 0.15) : "transparent")
+                                    color: ma.containsMouse ? Theme.primary : (isActive ? Theme.primaryAlpha015 : "transparent")
                                     border.width: 1
-                                    border.color: isActive ? Theme.primary : Qt.alpha(Theme.primary, 0.3)
+                                    border.color: isActive ? Theme.primary : Theme.primaryAlpha03
 
                                     RowLayout {
                                         anchors.fill: parent

@@ -14,7 +14,7 @@ Rectangle {
     radius: 0
     color: Theme.surface
     border.width: 1
-    border.color: Qt.alpha(Theme.primary, 0.3)
+    border.color: Theme.primaryAlpha03
     implicitHeight: content.implicitHeight + 24
 
     ColumnLayout {
@@ -89,7 +89,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Qt.alpha(Theme.primary, 0.3)
+            color: Theme.primaryAlpha03
         }
 
         RowLayout {

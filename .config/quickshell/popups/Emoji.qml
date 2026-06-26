@@ -18,7 +18,8 @@ PopupPanel {
             filteredEmojis = allEmojis;
         } else {
             var temp = [];
-            for (var i = 0; i < allEmojis.length; i++) {
+            var emojiLen = allEmojis.length;
+            for (var i = 0; i < emojiLen; i++) {
                 if (allEmojis[i].name.indexOf(query) !== -1)
                     temp.push(allEmojis[i]);
 
@@ -183,7 +184,7 @@ PopupPanel {
                         delegate: Rectangle {
                             width: gridView.cellWidth - 2
                             height: gridView.cellHeight - 2
-                            color: root.selectedIndex === index ? Qt.alpha(Theme.primary, 0.15) : "transparent"
+                            color: root.selectedIndex === index ? Theme.primaryAlpha015 : "transparent"
                             radius: 4
 
                             Text {

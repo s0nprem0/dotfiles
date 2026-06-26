@@ -82,7 +82,7 @@ PopupPanel {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Qt.alpha(Theme.primary, 0.3)
+            color: Theme.primaryAlpha03
         }
 
         Flickable {
@@ -117,7 +117,7 @@ PopupPanel {
                         implicitHeight: 44
                         color: applyMa.containsMouse ? Theme.surfaceLighter : "transparent"
                         border.width: 1
-                        border.color: applyMa.containsMouse ? Theme.primary : Qt.alpha(Theme.primary, 0.2)
+                        border.color: applyMa.containsMouse ? Theme.primary : Theme.primaryAlpha02
 
                         RowLayout {
                             anchors.fill: parent

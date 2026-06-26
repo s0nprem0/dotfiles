@@ -28,9 +28,9 @@ Rectangle {
     Layout.fillWidth: true
     implicitHeight: content.implicitHeight + 16
     radius: 6
-    color: root.active ? Qt.alpha(Theme.primary, 0.08) : Theme.surface
+    color: root.active ? Theme.primaryAlpha008 : Theme.surface
     border.width: 1
-    border.color: root.active ? Qt.alpha(Theme.primary, 0.3) : Theme.surfaceLighter
+    border.color: root.active ? Theme.primaryAlpha03 : Theme.surfaceLighter
 
     ColumnLayout {
         id: content

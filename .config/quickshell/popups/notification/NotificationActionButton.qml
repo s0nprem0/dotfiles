@@ -18,10 +18,10 @@ Rectangle {
 
     implicitHeight: root.btnHeight
     implicitWidth: label.implicitWidth + 10
-    color: mouseArea.containsMouse || activeFocus ? Qt.alpha(Theme.primary, 0.2) : Theme.surfaceLighter
+    color: mouseArea.containsMouse || activeFocus ? Theme.primaryAlpha02 : Theme.surfaceLighter
     radius: root.btnRadius
     border.width: activeFocus ? 2 : 1
-    border.color: activeFocus ? Theme.primary : (mouseArea.containsMouse ? Qt.alpha(Theme.primary, 0.4) : Qt.alpha(Theme.primary, 0.15))
+    border.color: activeFocus ? Theme.primary : (mouseArea.containsMouse ? Theme.primaryAlpha04 : Theme.primaryAlpha015)
     focusPolicy: Qt.TabFocus
     Keys.onReturnPressed: invokeAction()
     Keys.onSpacePressed: invokeAction()
