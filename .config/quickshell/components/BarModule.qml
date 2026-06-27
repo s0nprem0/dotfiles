@@ -12,9 +12,10 @@ Rectangle {
     property bool loading: false
     property bool error: false
 
-    height: 28
-    color: root.error ? Qt.alpha("#e06c75", 0.3) : mA.containsMouse ? Theme.primaryAlpha02 : Qt.alpha(Theme.surface, 0.4)
-    border.color: mA.containsMouse ? Theme.primaryAlpha03 : Theme.primaryAlpha01
+    height: 32
+    implicitWidth: 28
+    color: root.error ? Qt.alpha(Theme.error, 0.25) : mA.containsMouse ? Theme.primaryAlpha01 : Qt.alpha(Theme.surface, 0.4)
+    border.color: mA.containsMouse ? Theme.primaryAlpha025 : Theme.primaryAlpha01
     border.width: 1
 
     Rectangle {

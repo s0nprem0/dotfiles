@@ -1,3 +1,4 @@
+import "../components"
 import "../service"
 import QtQuick
 import QtQuick.Layouts
@@ -409,124 +410,37 @@ PopupPanel {
                             Repeater {
                                 model: menuOpener.children
 
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    required property int index
-
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: modelData.isSeparator ? 6 : 22
-                                    color: {
-                                        if (modelData.isSeparator)
-                                            return "transparent";
-
-                                        if (menuMouse.containsMouse || index === root.menuSelectedIndex)
-                                            return Theme.primaryAlpha015;
-
-                                        return "transparent";
-                                    }
-
-                                    Rectangle {
-                                        visible: modelData.isSeparator
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        height: 1
-                                        color: Theme.muted
-                                    }
-
-                                    RowLayout {
-                                        visible: !modelData.isSeparator
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 6
-                                        anchors.rightMargin: 6
-                                        spacing: 6
-
-                                        Text {
-                                            width: 12
-                                            text: {
-                                                if (modelData.buttonType === 1 || modelData.buttonType === 2)
-                                                    return modelData.checkState === Qt.Checked ? "✓" : "";
-
-                                                if (modelData.icon)
-                                                    return "";
-
-                                                return "";
-                                            }
-                                            color: Theme.fg
-                                            font.pixelSize: Theme.fontSizeSm
-                                            horizontalAlignment: Text.AlignHCenter
-                                        }
-
-                                        Image {
-                                            width: 12
-                                            height: 12
-                                            source: modelData.icon
-                                            visible: modelData.icon !== "" && status !== Image.Error
-                                            fillMode: Image.PreserveAspectFit
-                                            sourceSize.width: 12
-                                            sourceSize.height: 12
-                                        }
-
-                                        Text {
-                                            text: modelData.text.replace(/&/g, "")
-                                            color: modelData.enabled ? Theme.fg : Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Theme.fontSizeMd
-                                            elide: Text.ElideRight
-                                            Layout.fillWidth: true
-                                        }
-
-                                        Text {
-                                            text: "▸"
-                                            visible: modelData.hasChildren
-                                            color: modelData.enabled ? Theme.fg : Theme.muted
-                                            font.pixelSize: Theme.fontSizeSm
-                                            Layout.alignment: Qt.AlignVCenter
-                                        }
-
-                                    }
-
-                                    MouseArea {
-                                        id: menuMouse
-
-                                        anchors.fill: parent
-                                        hoverEnabled: modelData.enabled && !modelData.isSeparator
-                                        acceptedButtons: Qt.LeftButton
-                                        onEntered: {
-                                            if (modelData.enabled && !modelData.isSeparator) {
-                                                root.menuSelectedIndex = index;
-                                                submenuHoverTimer.stop();
-                                                if (modelData.hasChildren) {
-                                                    submenuHoverTimer.targetIndex = index;
-                                                    submenuHoverTimer.restart();
-                                                } else {
-                                                    submenuHoverTimer.targetIndex = -1;
-                                                    root.closeSubmenu();
-                                                }
-                                            }
-                                        }
-                                        onExited: {
-                                            if (submenuHoverTimer.targetIndex === index)
-                                                submenuHoverTimer.stop();
-                                        }
-                                        onClicked: {
-                                            if (modelData.enabled && !modelData.isSeparator) {
-                                                submenuHoverTimer.stop();
-                                                if (modelData.hasChildren) {
-                                                    var subX = menuContent.x + menuContent.width;
-                                                    var subY = menuContent.y + 4 + index * root.itemHeight - menuFlick.contentY;
-                                                    root.openSubmenu(modelData, subX, subY);
-                                                } else {
-                                                    modelData.triggered();
-                                                    root.showMenu = false;
-                                                    root.showSubmenu = false;
-                                                    root.closePopup();
-                                                }
-                                            }
+                                delegate: QsMenuDelegate {
+                                    isSelected: index === root.menuSelectedIndex
+                                    itemHeight: root.itemHeight
+                                    onHovered: {
+                                        root.menuSelectedIndex = index;
+                                        submenuHoverTimer.stop();
+                                        if (modelData.hasChildren) {
+                                            submenuHoverTimer.targetIndex = index;
+                                            submenuHoverTimer.restart();
+                                        } else {
+                                            submenuHoverTimer.targetIndex = -1;
+                                            root.closeSubmenu();
                                         }
                                     }
-
+                                    onExited: {
+                                        if (submenuHoverTimer.targetIndex === index)
+                                            submenuHoverTimer.stop();
+                                    }
+                                    onClicked: {
+                                        submenuHoverTimer.stop();
+                                        if (modelData.hasChildren) {
+                                            var subX = menuContent.x + menuContent.width;
+                                            var subY = menuContent.y + 4 + index * root.itemHeight - menuFlick.contentY;
+                                            root.openSubmenu(modelData, subX, subY);
+                                        } else {
+                                            modelData.triggered();
+                                            root.showMenu = false;
+                                            root.showSubmenu = false;
+                                            root.closePopup();
+                                        }
+                                    }
                                 }
 
                             }
@@ -570,111 +484,24 @@ PopupPanel {
                             Repeater {
                                 model: submenuOpener.children
 
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    required property int index
-
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: modelData.isSeparator ? 6 : 22
-                                    color: {
-                                        if (modelData.isSeparator)
-                                            return "transparent";
-
-                                        if (submenuMouse.containsMouse || index === root.submenuSelectedIndex)
-                                            return Theme.primaryAlpha015;
-
-                                        return "transparent";
+                                delegate: QsMenuDelegate {
+                                    isSelected: index === root.submenuSelectedIndex
+                                    itemHeight: root.itemHeight
+                                    onHovered: {
+                                        root.submenuSelectedIndex = index;
                                     }
-
-                                    Rectangle {
-                                        visible: modelData.isSeparator
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        height: 1
-                                        color: Theme.muted
-                                    }
-
-                                    RowLayout {
-                                        visible: !modelData.isSeparator
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 6
-                                        anchors.rightMargin: 6
-                                        spacing: 6
-
-                                        Text {
-                                            width: 12
-                                            text: {
-                                                if (modelData.buttonType === 1 || modelData.buttonType === 2)
-                                                    return modelData.checkState === Qt.Checked ? "✓" : "";
-
-                                                if (modelData.icon)
-                                                    return "";
-
-                                                return "";
-                                            }
-                                            color: Theme.fg
-                                            font.pixelSize: Theme.fontSizeSm
-                                            horizontalAlignment: Text.AlignHCenter
-                                        }
-
-                                        Image {
-                                            width: 12
-                                            height: 12
-                                            source: modelData.icon
-                                            visible: modelData.icon !== "" && status !== Image.Error
-                                            fillMode: Image.PreserveAspectFit
-                                            sourceSize.width: 12
-                                            sourceSize.height: 12
-                                        }
-
-                                        Text {
-                                            text: modelData.text.replace(/&/g, "")
-                                            color: modelData.enabled ? Theme.fg : Theme.muted
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Theme.fontSizeMd
-                                            elide: Text.ElideRight
-                                            Layout.fillWidth: true
-                                        }
-
-                                        Text {
-                                            text: "▸"
-                                            visible: modelData.hasChildren
-                                            color: modelData.enabled ? Theme.fg : Theme.muted
-                                            font.pixelSize: Theme.fontSizeSm
-                                            Layout.alignment: Qt.AlignVCenter
-                                        }
-
-                                    }
-
-                                    MouseArea {
-                                        id: submenuMouse
-
-                                        anchors.fill: parent
-                                        hoverEnabled: modelData.enabled && !modelData.isSeparator
-                                        acceptedButtons: Qt.LeftButton
-                                        onEntered: {
-                                            if (modelData.enabled && !modelData.isSeparator)
-                                                root.submenuSelectedIndex = index;
-
-                                        }
-                                        onClicked: {
-                                            if (modelData.enabled && !modelData.isSeparator) {
-                                                if (modelData.hasChildren) {
-                                                    var subX = submenuContent.x + submenuContent.width;
-                                                    var subY = submenuContent.y + 4 + index * root.itemHeight - submenuFlick.contentY;
-                                                    root.openSubmenu(modelData, subX, subY);
-                                                } else {
-                                                    modelData.triggered();
-                                                    root.showMenu = false;
-                                                    root.showSubmenu = false;
-                                                    root.closePopup();
-                                                }
-                                            }
+                                    onClicked: {
+                                        if (modelData.hasChildren) {
+                                            var subX = submenuContent.x + submenuContent.width;
+                                            var subY = submenuContent.y + 4 + index * root.itemHeight - submenuFlick.contentY;
+                                            root.openSubmenu(modelData, subX, subY);
+                                        } else {
+                                            modelData.triggered();
+                                            root.showMenu = false;
+                                            root.showSubmenu = false;
+                                            root.closePopup();
                                         }
                                     }
-
                                 }
 
                             }
