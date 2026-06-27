@@ -10,6 +10,21 @@ import "service"
 Bar {
     Component.onCompleted: {
         NotificationState.centerPopup = centerPopup;
+        PopupManager.register("apps", appsPopup);
+        PopupManager.register("network", networkPopup);
+        PopupManager.register("clipboard", clipboardPopup);
+        PopupManager.register("media", mediaPopup);
+        PopupManager.register("battery", batteryPopup);
+        PopupManager.register("emoji", emojiPopup);
+        PopupManager.register("settings", settingsPopup);
+        PopupManager.register("workspace", workspacePopup);
+        PopupManager.register("shortcut", shortcutPopup);
+        PopupManager.register("tray", trayPopup);
+        PopupManager.register("theme-picker", themePickerPopup);
+        PopupManager.register("notifications", centerPopup);
+        PopupManager.register("presentation", presentationPopup);
+        PopupManager.register("ports", portsPopup);
+        PopupManager.register("sysmon", sysmonPopup);
     }
 
     RowLayout {
@@ -109,23 +124,7 @@ Bar {
     IpcHandler {
         target: "shell"
         function togglePopup(name: string): void {
-            switch (name) {
-                case "apps": appsPopup.showPopup = !appsPopup.showPopup; break;
-                case "clipboard": clipboardPopup.showPopup = !clipboardPopup.showPopup; break;
-                case "emoji": emojiPopup.showPopup = !emojiPopup.showPopup; break;
-                case "media": mediaPopup.showPopup = !mediaPopup.showPopup; break;
-                case "network": networkPopup.showPopup = !networkPopup.showPopup; break;
-                case "battery": batteryPopup.showPopup = !batteryPopup.showPopup; break;
-                case "settings": settingsPopup.showPopup = !settingsPopup.showPopup; break;
-                case "workspace": workspacePopup.showPopup = !workspacePopup.showPopup; break;
-                case "shortcut": shortcutPopup.showPopup = !shortcutPopup.showPopup; break;
-                case "theme-picker": themePickerPopup.showPopup = !themePickerPopup.showPopup; break;
-                case "notifications": centerPopup.showPopup = !centerPopup.showPopup; break;
-                case "tray": trayPopup.showPopup = !trayPopup.showPopup; break;
-                case "presentation": presentationPopup.showPopup = !presentationPopup.showPopup; break;
-                case "ports": portsPopup.showPopup = !portsPopup.showPopup; break;
-                case "sysmon": sysmonPopup.showPopup = !sysmonPopup.showPopup; break;
-            }
+            PopupManager.toggle(name);
         }
     }
 
@@ -136,24 +135,29 @@ Bar {
 
     Popups.Network {
         id: networkPopup
+        popupName: "network"
     }
 
     Popups.Clipboard {
         id: clipboardPopup
+        popupName: "clipboard"
     }
 
     Popups.Media {
         id: mediaPopup
+        popupName: "media"
 
         audioBarRef: audioModule
     }
 
     Popups.Battery {
         id: batteryPopup
+        popupName: "battery"
     }
 
     Popups.Emoji {
         id: emojiPopup
+        popupName: "emoji"
     }
 
     Popups.Settings {
@@ -162,14 +166,17 @@ Bar {
 
     Popups.Workspace {
         id: workspacePopup
+        popupName: "workspace"
     }
 
     Popups.Shortcut {
         id: shortcutPopup
+        popupName: "shortcut"
     }
 
     Popups.Tray {
         id: trayPopup
+        popupName: "tray"
     }
 
     Popups.PresentationPopup {
@@ -178,13 +185,16 @@ Bar {
 
     Popups.Ports {
         id: portsPopup
+        popupName: "ports"
     }
 
     Popups.Sysmon {
         id: sysmonPopup
+        popupName: "sysmon"
     }
 
     Popups.ThemePicker {
         id: themePickerPopup
+        popupName: "theme-picker"
     }
 }
