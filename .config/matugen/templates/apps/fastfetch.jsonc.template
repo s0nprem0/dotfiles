@@ -6,10 +6,10 @@
   "display": {
     "separator": " -> ",
     "color": {
-      "keys": "{{accent_hex}}",
-      "title": "{{accent_hex}}",
-      "separator": "{{muted_hex}}",
-      "description": "{{fg_hex}}"
+      "keys": "#{{accent_hex}}",
+      "title": "#{{accent_hex}}",
+      "separator": "#{{muted_hex}}",
+      "description": "#{{fg_hex}}"
     }
   },
   "modules": [
