@@ -7,35 +7,19 @@ import Quickshell.Hyprland
 BarModule {
     id: root
 
-    property var wsMap: ({
-    })
-    property var workspaceIds: ([])
+    property var wsMap: ({})
+    property var workspaceIds: [1, 2, 3, 4, 5]
 
-    function refreshWorkspaces() {
-        let map = {
-        };
-        let ids = [];
-        for (const ws of Hyprland.workspaces.values) {
+    function refreshMap() {
+        var map = {};
+        for (const ws of Hyprland.workspaces.values)
             map[ws.id] = ws;
-            ids.push(ws.id);
-        }
-        ids.sort((a, b) => {
-            return a - b;
-        });
         wsMap = map;
-        workspaceIds = ids;
     }
 
     tooltipText: ""
     implicitWidth: wsRow.implicitWidth + 8
-    Component.onCompleted: root.refreshWorkspaces()
-
-    Timer {
-        id: debounceTimer
-
-        interval: 150
-        onTriggered: root.refreshWorkspaces()
-    }
+    Component.onCompleted: root.refreshMap()
 
     RowLayout {
         id: wsRow
@@ -54,10 +38,9 @@ BarModule {
                 required property int modelData
                 readonly property int wsId: modelData
                 readonly property var ws: root.wsMap[wsId]
-                readonly property bool exists: ws != null
-                readonly property bool isFocused: exists && Hyprland.focusedWorkspace && ws.id === Hyprland.focusedWorkspace.id
-                readonly property bool isActive: exists && ws.windows > 0
-                readonly property bool isUrgent: exists && ws.urgent
+                readonly property bool isFocused: ws != null && Hyprland.focusedWorkspace && ws.id === Hyprland.focusedWorkspace.id
+                readonly property bool isActive: ws != null && ws.windows > 0
+                readonly property bool isUrgent: ws != null && ws.urgent
 
                 implicitWidth: 24
                 implicitHeight: 24
@@ -86,7 +69,7 @@ BarModule {
                         if (isFocused)
                             return Theme.bg;
 
-                        if (exists)
+                        if (ws != null)
                             return Theme.fg;
 
                         return Qt.alpha(Theme.fg, 0.4);
@@ -101,7 +84,7 @@ BarModule {
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     height: 2
-                    visible: exists && !isFocused
+                    visible: ws != null && !isFocused
                     color: isActive ? Theme.primary : Qt.alpha(Theme.fg, 0.35)
                 }
 
@@ -145,9 +128,8 @@ BarModule {
 
     Connections {
         function onRawEvent(event) {
-            const refreshEvents = ["workspacev2", "createworkspacev2", "destroyworkspacev2", "moveworkspacev2"];
-            if (refreshEvents.includes(event.name))
-                debounceTimer.restart();
+            if (["workspacev2", "createworkspacev2", "destroyworkspacev2", "moveworkspacev2"].includes(event.name))
+                root.refreshMap();
 
         }
 
