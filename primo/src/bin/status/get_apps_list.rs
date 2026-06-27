@@ -1,4 +1,4 @@
-use primo::{cache_dir, IconResolver};
+use primo::{cache_dir, icon::DesktopEntry, IconResolver};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::Write;
@@ -586,6 +586,18 @@ fn main() {
                 println!("{}", serde_json::json!({"status": "added"}));
                 return;
             }
+            "--launch" if args.len() > 2 => {
+                let app_name = &args[2];
+                let mut resolver = IconResolver::new();
+                let entries = resolver.get_all_entries();
+                if let Some(entry) = entries.iter().find(|e| e.name == *app_name) {
+                    if let Some(exec) = &entry.exec {
+                        let cmd = expand_exec_line(exec, entry);
+                        let _ = Command::new("sh").args(["-c", &cmd]).spawn();
+                    }
+                }
+                return;
+            }
             "--resolve-icon" if args.len() > 2 => {
                 let icon_name = &args[2];
                 let mut resolver = IconResolver::new();
@@ -668,6 +680,49 @@ fn resolve_icon_for_entry(entry: &primo::icon::DesktopEntry) -> String {
     }
     
     "application-x-executable".to_string()
+}
+
+fn expand_exec_line(exec: &str, entry: &DesktopEntry) -> String {
+    let mut result = String::new();
+    let mut chars = exec.chars().peekable();
+
+    while let Some(c) = chars.next() {
+        if c != '%' {
+            result.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('f') | Some('F') | Some('u') | Some('U') => {}
+            Some('i') => {
+                if let Some(ref icon) = entry.icon {
+                    if !result.is_empty() && !result.ends_with(' ') {
+                        result.push(' ');
+                    }
+                    result.push_str(&format!("--icon \"{}\"", icon.name));
+                }
+            }
+            Some('c') => {
+                result.push_str(&entry.name);
+            }
+            Some('k') => {
+                if let Some(s) = entry.path.to_str() {
+                    result.push_str(s);
+                }
+            }
+            Some('%') => {
+                result.push('%');
+            }
+            Some(other) => {
+                result.push('%');
+                result.push(other);
+            }
+            None => {
+                result.push('%');
+            }
+        }
+    }
+
+    result
 }
 
 fn fetch_github_repos(token: Option<&str>) -> Result<Vec<GitRepo>, Box<dyn std::error::Error>> {
