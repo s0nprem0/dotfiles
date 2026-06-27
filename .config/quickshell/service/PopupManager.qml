@@ -8,8 +8,8 @@ Item {
     property string activePopupName: ""
     property var activePopup: null
 
-    signal popupToggled(string name, bool visible)
-    signal activePopupChanged(string name)
+    signal popupToggled(string name, bool isVisible)
+    signal activePopupSwitched(string name)
 
     function register(name, popupItem) {
         root.popups[name] = popupItem;
@@ -37,7 +37,7 @@ Item {
         root.activePopupName = name;
         root.activePopup = popup;
         root.popupToggled(name, true);
-        root.activePopupChanged(name);
+        root.activePopupSwitched(name);
     }
 
     function closeActive() {
@@ -53,6 +53,6 @@ Item {
         root.activePopupName = "";
         root.activePopup = null;
         root.popupToggled(name, false);
-        root.activePopupChanged("");
+        root.activePopupSwitched("");
     }
 }
