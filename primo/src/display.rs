@@ -347,12 +347,12 @@ pub fn get_external_monitors(monitors: &[Monitor]) -> Vec<&Monitor> {
     monitors.iter().filter(|m| !m.is_internal && !m.disabled).collect()
 }
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 
-lazy_static::lazy_static! {
-    static ref MONITOR_CACHE: Arc<Mutex<(Vec<Monitor>, Instant)>> = Arc::new(Mutex::new((Vec::new(), Instant::now())));
-    static ref CACHE_TTL: Duration = Duration::from_millis(100);
-}
+static MONITOR_CACHE: LazyLock<Arc<Mutex<(Vec<Monitor>, Instant)>>> = LazyLock::new(|| {
+    Arc::new(Mutex::new((Vec::new(), Instant::now())))
+});
+static CACHE_TTL: LazyLock<Duration> = LazyLock::new(|| Duration::from_millis(100));
 
 pub fn get_monitors_cached() -> Vec<Monitor> {
     let cache = MONITOR_CACHE.lock().unwrap();

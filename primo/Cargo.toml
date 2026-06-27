@@ -4,14 +4,16 @@ description = "Rust helpers for Quickshell QML frontend"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = ["app-list"]
+app-list = ["rusqlite", "reqwest"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rusqlite = { version = "0.31", features = ["bundled", "serde_json"] }
-reqwest = { version = "0.12", features = ["json", "blocking"] }
-tokio = { version = "1", features = ["full"] }
+rusqlite = { version = "0.31", features = ["bundled", "serde_json"], optional = true }
+reqwest = { version = "0.12", features = ["json", "blocking"], optional = true }
 dirs = "5"
-lazy_static = "1"
 
 [lib]
 name = "primo"
@@ -24,6 +26,7 @@ path = "src/bin/status/sysmon.rs"
 [[bin]]
 name = "get_apps_list"
 path = "src/bin/status/get_apps_list.rs"
+required-features = ["app-list"]
 
 [[bin]]
 name = "get_audio_status"
