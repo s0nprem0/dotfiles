@@ -25,8 +25,6 @@ Item {
     visible: false
     onDataReceived: {
         root.backoffMs = 1000;
-        if (!pollTimer.running)
-            pollTimer.start();
 
     }
     Component.onCompleted: {

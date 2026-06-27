@@ -200,7 +200,7 @@ Item {
                     "notifData": data,
                     "groupCount": groupCount
                 });
-                while (toastModel.count > service.maxToasts)toastModel.remove(service.maxToasts, 1)
+                while (toastModel.count > service.maxToasts) toastModel.remove(service.maxToasts, 1);
             }
         }
     }

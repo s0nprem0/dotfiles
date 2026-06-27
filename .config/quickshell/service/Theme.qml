@@ -105,10 +105,18 @@ Item {
             }
         }
     }
+    Timer {
+        id: colorsDebounce
+
+        interval: 100
+        onTriggered: colorsWatcher.reload()
+    }
+
     FileView {
         id: colorsWatcher
 
         path: "file://" + home + "/.cache/quickshell/colors.json"
+        blockLoading: true
         watchChanges: true
         onLoaded: {
             var textVal = colorsWatcher.text().trim();
@@ -160,7 +168,7 @@ Item {
                 theme.tertiary = data.tertiary;
 
         }
-        onFileChanged: reload()
+        onFileChanged: colorsDebounce.restart()
     }
 
     Behavior on bg {

@@ -179,7 +179,7 @@ Window {
     Process {
         id: batteryProc
 
-        command: ["sh", "-c", "for p in /sys/class/power_supply/BAT*/capacity; do [ -f \"$p\" ] && { cat \"$p\" && cat \"${p%capacity}status\"; break; }; done 2>/dev/null || printf '%s\\n' '--' 'Unknown'"]
+        command: ["sh", "-c", "for p in /sys/class/power_supply/*/capacity; do [ -f \"$p\" ] && { cat \"$p\" && cat \"${p%capacity}status\"; break; }; done 2>/dev/null || printf '%s\\n' '--' 'Unknown'"]
 
         stdout: StdioCollector {
             onStreamFinished: {
