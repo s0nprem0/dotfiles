@@ -180,136 +180,73 @@ Item {
     }
 
     Behavior on fg {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 30
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on surface {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 60
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on surfaceLighter {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 90
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on primary {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 120
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on muted {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 150
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on error {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 180
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on warning {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 210
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on green {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 240
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
 
     Behavior on blue {
-        SequentialAnimation {
-            PauseAnimation {
-                duration: 270
-            }
-
-            ColorAnimation {
-                duration: 100
-                easing.type: Easing.InOutQuad
-            }
-
+        ColorAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
         }
 
     }
