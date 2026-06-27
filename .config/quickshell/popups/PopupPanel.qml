@@ -28,6 +28,7 @@ Item {
     property int progressWidth: 0
     property string prevActiveWindowAddress: ""
     property var focusedScreen: null
+    property bool popupIntroDone: false
 
     signal beforeOpen()
     signal afterOpen()
@@ -59,6 +60,7 @@ Item {
 
     onShowPopupChanged: {
         if (root.showPopup) {
+            root.popupIntroDone = false;
             root.prevActiveWindowAddress = Hyprland.activeWindow
                 ? Hyprland.activeWindow.address : "";
             root.focusedScreen = root.getFocusedScreen();
@@ -178,7 +180,7 @@ Item {
                 }
 
                 HyprlandFocusGrab {
-                    active: root.showPopup && !slide.closing
+                    active: root.showPopup && root.popupIntroDone && !slide.closing
                     windows: [win]
                     onCleared: popupCloseCheck.restart()
                 }
@@ -210,7 +212,7 @@ Item {
         slideTo: root.finalInset
         introDuration: root.introDuration
         exitDuration: root.exitDuration
-        onIntroCompleted: root.afterOpen()
+        onIntroCompleted: { root.afterOpen(); root.popupIntroDone = true; }
         onExitCompleted: {
             for (var w of root.screenWins.values()) {
                 if (w)

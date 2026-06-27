@@ -31,9 +31,9 @@ Item {
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
-    property int visibleWindowCount: 0
     property string prevActiveWindowAddress: ""
     property var focusedScreen: null
+    property bool popupIntroDone: false
 
     function refreshNotifications() {
         if (!NotificationState.service)
@@ -111,6 +111,7 @@ Item {
 
     onShowPopupChanged: {
         if (showPopup) {
+            root.popupIntroDone = false;
             root.prevActiveWindowAddress = Hyprland.activeWindow
                 ? Hyprland.activeWindow.address : "";
             root.focusedScreen = root.getFocusedScreen();
@@ -336,6 +337,7 @@ Item {
         slideTo: 48
         introDuration: 140
         exitDuration: 120
+        onIntroCompleted: root.popupIntroDone = true
         onExitCompleted: {
             var instLen = variantRepeater.instances.length;
             for (var i = 0; i < instLen; i++) {
@@ -390,9 +392,6 @@ Item {
                 onVisibleChanged: {
                     if (visible) {
                         refreshNotifications();
-                        root.visibleWindowCount++;
-                    } else {
-                        root.visibleWindowCount--;
                     }
                 }
                 screen: modelData
@@ -412,7 +411,7 @@ Item {
                 }
 
                 HyprlandFocusGrab {
-                    active: win.visible && !slide.closing
+                    active: win.visible && root.popupIntroDone && !slide.closing
                     windows: [win]
                     onCleared: popupCloseCheck.restart()
                 }
