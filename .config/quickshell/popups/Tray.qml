@@ -19,6 +19,13 @@ PopupPanel {
     property int submenuSelectedIndex: -1
     property int itemHeight: 23
 
+    function iconCenterX(index) {
+        var count = SystemTray.items.length;
+        var rowWidth = count * 18 + Math.max(0, count - 1) * 8;
+        var rowLeft = (trayBar.width - rowWidth) / 2;
+        return rowLeft + index * (18 + 8) + 9;
+    }
+
     function nextMenuIndex(current, dir) {
         var next = current + dir;
         var children = menuOpener.children.values;
@@ -99,6 +106,25 @@ PopupPanel {
         menu: root.activeSubmenu
     }
 
+    Timer {
+        id: submenuHoverTimer
+
+        interval: 200
+        property int targetIndex: -1
+        onTriggered: {
+            if (!root.showMenu || targetIndex < 0)
+                return;
+
+            var children = menuOpener.children.values;
+            var entry = children[targetIndex];
+            if (entry && entry.hasChildren) {
+                var subX = menuContent.x + menuContent.width;
+                var subY = menuContent.y + 4 + targetIndex * root.itemHeight - menuFlick.contentY;
+                root.openSubmenu(entry, subX, subY);
+            }
+        }
+    }
+
     contentComponent: Component {
         FocusScope {
             anchors.fill: parent
@@ -106,11 +132,20 @@ PopupPanel {
             implicitWidth: root.panelWidth - root.contentMargin * 2
             implicitHeight: Math.max(contentLayout.implicitHeight, 300)
 
+            MouseArea {
+                anchors.fill: parent
+                visible: root.showMenu
+                z: 0
+                onClicked: root.closeMenu()
+                onPressed: root.closeMenu()
+            }
+
             ColumnLayout {
                 id: contentLayout
 
                 anchors.fill: parent
                 spacing: 0
+                z: 1
                 Keys.onPressed: (event) => {
                     if (root.showMenu) {
                         if (root.showSubmenu) {
@@ -220,7 +255,8 @@ PopupPanel {
                                 var item = SystemTray.items.values[root.trayIndex];
                                 if (item) {
                                     if (item.hasMenu) {
-                                        root.openMenuItem(item, trayBar.width / 2);
+                                        var cx = root.iconCenterX(root.trayIndex);
+                                        root.openMenuItem(item, cx);
                                     } else {
                                         item.activate();
                                         root.closePopup();
@@ -262,7 +298,7 @@ PopupPanel {
                             submenuFlick.contentY = itemY + itemH - submenuFlick.height;
                     }
 
-target: root
+                target: root
                 }
 
                 ColumnLayout {
@@ -315,16 +351,14 @@ target: root
                                         acceptedButtons: Qt.LeftButton | Qt.RightButton
                                         onClicked: (mouse) => {
                                             root.trayIndex = index;
+                                            var cp = trayIconItem.mapToItem(contentLayout, mouse.x, 0);
                                             if (mouse.button === Qt.RightButton) {
-                                                if (modelData.hasMenu) {
-                                                    var center = trayIconItem.mapToItem(menuContent.parent, trayIconItem.width / 2, 0);
-                                                    root.openMenuItem(modelData, center.x);
-                                                }
+                                                if (modelData.hasMenu)
+                                                    root.openMenuItem(modelData, cp.x);
                                             } else {
-                                                if (modelData.hasMenu && modelData.onlyMenu) {
-                                                    var center = trayIconItem.mapToItem(menuContent.parent, trayIconItem.width / 2, 0);
-                                                    root.openMenuItem(modelData, center.x);
-                                                } else {
+                                                if (modelData.hasMenu && modelData.onlyMenu)
+                                                    root.openMenuItem(modelData, cp.x);
+                                                else {
                                                     modelData.activate();
                                                     root.closePopup();
                                                 }
@@ -353,8 +387,7 @@ target: root
                     border.color: Theme.primary
                     clip: true
                     z: 10
-                    anchors.bottom: trayBar.top
-                    anchors.bottomMargin: 4
+                    anchors.top: trayBar.top
                     x: Math.max(8, Math.min(parent.width - width - 8, root.menuX - width / 2))
 
                     Flickable {
@@ -460,8 +493,26 @@ target: root
                                         anchors.fill: parent
                                         hoverEnabled: modelData.enabled && !modelData.isSeparator
                                         acceptedButtons: Qt.LeftButton
+                                        onEntered: {
+                                            if (modelData.enabled && !modelData.isSeparator) {
+                                                root.menuSelectedIndex = index;
+                                                submenuHoverTimer.stop();
+                                                if (modelData.hasChildren) {
+                                                    submenuHoverTimer.targetIndex = index;
+                                                    submenuHoverTimer.restart();
+                                                } else {
+                                                    submenuHoverTimer.targetIndex = -1;
+                                                    root.closeSubmenu();
+                                                }
+                                            }
+                                        }
+                                        onExited: {
+                                            if (submenuHoverTimer.targetIndex === index)
+                                                submenuHoverTimer.stop();
+                                        }
                                         onClicked: {
                                             if (modelData.enabled && !modelData.isSeparator) {
+                                                submenuHoverTimer.stop();
                                                 if (modelData.hasChildren) {
                                                     var subX = menuContent.x + menuContent.width;
                                                     var subY = menuContent.y + 4 + index * root.itemHeight - menuFlick.contentY;
@@ -497,8 +548,6 @@ target: root
                     border.color: Theme.primary
                     clip: true
                     z: 11
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
                     x: Math.min(root.submenuX, parent.width - width - 4)
                     y: Math.max(0, Math.min(root.submenuY, parent.height - height - 4))
 
@@ -605,6 +654,11 @@ target: root
                                         anchors.fill: parent
                                         hoverEnabled: modelData.enabled && !modelData.isSeparator
                                         acceptedButtons: Qt.LeftButton
+                                        onEntered: {
+                                            if (modelData.enabled && !modelData.isSeparator)
+                                                root.submenuSelectedIndex = index;
+
+                                        }
                                         onClicked: {
                                             if (modelData.enabled && !modelData.isSeparator) {
                                                 if (modelData.hasChildren) {
@@ -629,16 +683,6 @@ target: root
 
                     }
 
-                }
-
-                MouseArea {
-                    anchors.top: parent.top
-                    anchors.bottom: trayBar.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    visible: root.showMenu
-                    z: 9
-                    onClicked: root.closeMenu()
                 }
 
             }
