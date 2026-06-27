@@ -11,7 +11,6 @@ BarModule {
     property bool hasConnected: false
     property string btTooltip: ""
 
-    opacity: btEnabled ? 1 : 0.4
     implicitWidth: btText.implicitWidth + 12
     acceptedButtons: Qt.LeftButton
     tooltipText: root.btTooltip
@@ -80,7 +79,7 @@ BarModule {
 
         anchors.centerIn: parent
         text: root.hasConnected ? "󰂯" : "󰂲"
-        color: root.hasConnected ? Theme.primary : Theme.muted
+        color: root.btEnabled && root.hasConnected ? Theme.primary : Theme.muted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
         renderType: Text.NativeRendering
