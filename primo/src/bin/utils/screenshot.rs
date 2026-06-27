@@ -54,11 +54,11 @@ impl Screenshot {
                 "sh",
                 &[
                     "-c",
-                    &format!("grim {} '{}' && wl-copy < '{}'", geom_arg, qpath, qpath),
+                    &format!("grim {} {} && wl-copy < {}", geom_arg, qpath, qpath),
                 ],
             )
         } else if self.save {
-            run_cmd("sh", &["-c", &format!("grim {} '{}'", geom_arg, qpath)])
+            run_cmd("sh", &["-c", &format!("grim {} {}", geom_arg, qpath)])
         } else if self.copy {
             run_cmd("sh", &["-c", &format!("grim {} - | wl-copy", geom_arg)])
         } else {
@@ -115,7 +115,7 @@ fn screenshot_dir() -> PathBuf {
 }
 
 fn timestamp() -> String {
-    run_cmd("date", &["+%Y%m%d_%H%M%S"]).unwrap_or_else(|| "unknown".to_string())
+    run_cmd("date", &["+%Y%m%d_%H%M%S_%3N"]).unwrap_or_else(|| "unknown".to_string())
 }
 
 fn notify(summary: &str, body: &str) {
@@ -124,10 +124,12 @@ fn notify(summary: &str, body: &str) {
     }
 }
 
-// Escape a string for safe use inside single quotes in a shell command.
-// Replaces each ' with '\'' (end quote, escaped quote, reopen quote).
 fn sh_single_quote(s: &str) -> String {
+    if s.is_empty() {
+        return "''".to_string();
+    }
     let mut out = String::with_capacity(s.len() + 4);
+    out.push('\'');
     for ch in s.chars() {
         if ch == '\'' {
             out.push_str("'\\''");
@@ -135,17 +137,18 @@ fn sh_single_quote(s: &str) -> String {
             out.push(ch);
         }
     }
+    out.push('\'');
     out
 }
 
 fn grim_geometry_arg(geometry: &Option<String>) -> String {
     match geometry {
-        Some(g) => format!("-g '{}'", sh_single_quote(g)),
+        Some(g) => format!("-g {}", sh_single_quote(g)),
         None => String::new(),
     }
 }
 
-fn handle_ocr() {
+fn handle_ocr(save: bool, copy: bool) {
     let region = match run_cmd("slurp", &[]) {
         Some(g) => g,
         None => {
@@ -154,7 +157,7 @@ fn handle_ocr() {
         }
     };
 
-    let geom_arg = format!("-g '{}'", sh_single_quote(&region));
+    let geom_arg = format!("-g {}", sh_single_quote(&region));
     let text = match run_cmd(
         "sh",
         &[
@@ -174,14 +177,30 @@ fn handle_ocr() {
         return;
     }
 
-    let _ = run_cmd("wl-copy", &[&text]);
+    if copy {
+        let _ = run_cmd("wl-copy", &[&text]);
+    }
+
+    if save {
+        let dir = screenshot_dir();
+        let _ = fs::create_dir_all(&dir);
+        let path = dir.join(format!("ocr_{}.txt", timestamp()));
+        let _ = fs::write(&path, &text);
+    }
 
     let preview = if text.len() > 100 {
         format!("{}...", &text[..100])
     } else {
         text.clone()
     };
-    notify("OCR Captured", &preview);
+
+    let suffix = match (save, copy) {
+        (true, true) => " (copied & saved)",
+        (true, false) => " (saved)",
+        (false, true) => " (copied)",
+        (false, false) => "",
+    };
+    notify("OCR Captured", &format!("{}{}", preview, suffix));
 }
 
 fn main() {
@@ -208,7 +227,7 @@ fn main() {
         .unwrap_or(ScreenshotMode::Full);
 
     if matches!(mode, ScreenshotMode::Ocr) {
-        handle_ocr();
+        handle_ocr(save, copy);
         return;
     }
 

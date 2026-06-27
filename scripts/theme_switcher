@@ -45,9 +45,30 @@ matugen image "$WALLPAPER" --prefer darkness --quiet || { echo "Error: matugen f
 MATUGEN_COLORS="$HOME/.cache/quickshell/colors.json"
 [[ ! -f "$MATUGEN_COLORS" ]] && { echo "Error: colors.json not found" >&2; exit 1; }
 
-get_color() { jq -r ".${1}" "$MATUGEN_COLORS"; }
+get_color() { jq -r ".${1} // empty" "$MATUGEN_COLORS"; }
 get_hex() { printf '%s' "${1#\#}"; }
 get_rgb() { local h="${1#\#}"; printf '%d,%d,%d' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
+
+blend_toward() {
+    local c1="${1#\#}" c2="${2#\#}" weight="$3"
+    local r1=$((0x${c1:0:2})) g1=$((0x${c1:2:2})) b1=$((0x${c1:4:2}))
+    local r2=$((0x${c2:0:2})) g2=$((0x${c2:2:2})) b2=$((0x${c2:4:2}))
+    local w=$weight n=$((100 - weight))
+    printf '%02x%02x%02x' $(( (r1 * n + r2 * w) / 100 )) $(( (g1 * n + g2 * w) / 100 ))
+}
+
+darken() {
+    local hex="${1#\#}" factor="$2"
+    local r=$((0x${hex:0:2})) g=$((0x${hex:2:2})) b=$((0x${hex:4:2}))
+    local f=$((100 - factor))
+    printf '%02x%02x%02x' $((r * f / 100)) $((g * f / 100)) $((b * f / 100))
+}
+
+lighten() {
+    local hex="${1#\#}" factor="$2"
+    local r=$((0x${hex:0:2})) g=$((0x${hex:2:2})) b=$((0x${hex:4:2}))
+    printf '%02x%02x%02x' $((r + (255 - r) * factor / 100)) $((g + (255 - g) * factor / 100)) $((b + (255 - b) * factor / 100))
+}
 
 # Get colors
 BG=$(get_color "bg")
@@ -82,11 +103,11 @@ WARNING_RGB=$(get_rgb "$WARNING")
 BLUE_RGB=$(get_rgb "$BLUE")
 
 # Derived values
-SECONDARY="$FG"; SECONDARY_HEX="$FG_HEX"; SECONDARY_RGB="$FG_RGB"
-BG_DARK="$SURFACE"; BG_DARK_HEX="$SURFACE_HEX"; BG_DARK_RGB="$SURFACE_RGB"
-BG_LIGHT="$SURFACE_LIGHTER"; BG_LIGHT_HEX="$SURFACE_LIGHTER_HEX"; BG_LIGHT_RGB="$SURFACE_LIGHTER_RGB"
-FG_LIGHT="$FG"; FG_LIGHT_HEX="$FG_HEX"; FG_LIGHT_RGB="$FG_RGB"
-MUTED="$FG"; MUTED_HEX="$FG_HEX"; MUTED_RGB="$FG_RGB"
+SECONDARY=$(lighten "$PRIMARY" 25); SECONDARY_HEX=$(get_hex "$SECONDARY"); SECONDARY_RGB=$(get_rgb "$SECONDARY")
+BG_DARK=$(darken "$SURFACE" 15); BG_DARK_HEX=$(get_hex "$BG_DARK"); BG_DARK_RGB=$(get_rgb "$BG_DARK")
+BG_LIGHT=$(lighten "$SURFACE_LIGHTER" 25); BG_LIGHT_HEX=$(get_hex "$BG_LIGHT"); BG_LIGHT_RGB=$(get_rgb "$BG_LIGHT")
+FG_LIGHT=$(blend_toward "$FG" "$BG" 20); FG_LIGHT_HEX=$(get_hex "$FG_LIGHT"); FG_LIGHT_RGB=$(get_rgb "$FG_LIGHT")
+MUTED=$(blend_toward "$FG" "$BG" 40); MUTED_HEX=$(get_hex "$MUTED"); MUTED_RGB=$(get_rgb "$MUTED")
 
 should_generate() { [[ -z "$APPS" ]] || echo "$APPS" | grep -q "$1"; }
 
@@ -242,7 +263,7 @@ if should_generate "fastfetch"; then
     echo "Updated fastfetch theme"
 fi
 
-if [[ "$RELOAD" == "true" ]]; then
+if [[ "$RELOAD" == "true" ]] && [[ "$DRY_RUN" != "true" ]]; then
     log "Reloading quickshell..."
     quickshell --reload 2>/dev/null || echo "Warning: Failed to reload quickshell"
 fi
