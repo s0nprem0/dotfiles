@@ -19,6 +19,7 @@ BarModule {
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
         font.bold: true
+        renderType: Text.NativeRendering
     }
 
     Timer {

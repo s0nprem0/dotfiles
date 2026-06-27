@@ -283,6 +283,7 @@ BarModule {
             color: root.isMuted ? Theme.muted : Theme.fg
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
+            renderType: Text.NativeRendering
         }
 
         Text {
@@ -292,6 +293,7 @@ BarModule {
             color: root.isMuted ? Theme.muted : Qt.alpha(Theme.fg, 0.7)
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
+            renderType: Text.NativeRendering
         }
 
     }

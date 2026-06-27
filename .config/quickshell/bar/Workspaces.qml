@@ -77,6 +77,7 @@ BarModule {
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLg
                     font.bold: isFocused
+                    renderType: Text.NativeRendering
                 }
 
                 Rectangle {

@@ -49,6 +49,7 @@ BarModule {
         color: NotificationState.dnd ? Theme.muted : (notifCount > 0 ? Theme.primary : Theme.fg)
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
+        renderType: Text.NativeRendering
     }
 
     Rectangle {
@@ -72,6 +73,7 @@ BarModule {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeXxs
             font.bold: true
+            renderType: Text.NativeRendering
         }
 
     }

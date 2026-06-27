@@ -101,6 +101,7 @@ BarModule {
         }
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
+        renderType: Text.NativeRendering
     }
 
 }

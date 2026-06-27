@@ -30,6 +30,7 @@ BarModule {
         color: Theme.fg
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
+        renderType: Text.NativeRendering
     }
 
 }

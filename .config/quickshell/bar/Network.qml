@@ -97,6 +97,7 @@ BarModule {
             color: root.networkConnected ? Theme.fg : Theme.muted
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
+            renderType: Text.NativeRendering
         }
 
         Text {
@@ -105,6 +106,7 @@ BarModule {
             color: Theme.green
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeMd
+            renderType: Text.NativeRendering
         }
 
         Text {
@@ -126,6 +128,7 @@ BarModule {
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
             elide: Text.ElideRight
+            renderType: Text.NativeRendering
             Layout.maximumWidth: 120
         }
     }

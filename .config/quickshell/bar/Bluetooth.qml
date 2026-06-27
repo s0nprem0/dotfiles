@@ -83,6 +83,7 @@ BarModule {
         color: root.hasConnected ? Theme.primary : Theme.muted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
+        renderType: Text.NativeRendering
     }
 
 }

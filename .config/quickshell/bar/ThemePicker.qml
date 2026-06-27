@@ -20,6 +20,7 @@ BarModule {
         color: mA.containsMouse ? Theme.primary : Theme.fg
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize3xl
+        renderType: Text.NativeRendering
     }
 
     Connections {

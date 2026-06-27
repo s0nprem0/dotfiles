@@ -153,6 +153,7 @@ BarModule {
             color: root.battCritical ? Theme.error : root.battWarning ? Theme.warning : (root.charging ? Theme.green : Theme.fg)
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
+            renderType: Text.NativeRendering
         }
 
         Text {
@@ -162,6 +163,7 @@ BarModule {
             color: Qt.alpha(Theme.fg, 0.7)
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeLg
+            renderType: Text.NativeRendering
         }
 
     }

@@ -55,6 +55,7 @@ BarModule {
         color: root.hasItems ? Theme.fg : Theme.muted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeLg
+        renderType: Text.NativeRendering
     }
 
 }

@@ -37,6 +37,7 @@ BarModule {
         color: root.caffeineActive ? Theme.warning : (mA.containsMouse ? Theme.primary : Theme.muted)
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize2xl
+        renderType: Text.NativeRendering
     }
 
     Process {

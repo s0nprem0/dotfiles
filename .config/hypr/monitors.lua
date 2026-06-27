@@ -5,7 +5,7 @@ hl.monitor({
 	output = INTERNAL,
 	mode = "preferred",
 	position = "auto",
-	scale = 1.0,
+	scale = 1.25,
 })
 
 hl.monitor({
