@@ -86,8 +86,10 @@ Item {
 
     function getFocusedScreen() {
         var cursorPos = Quickshell.cursorPosition;
+        if (!cursorPos)
+            return Quickshell.primaryScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
         for (var s of Quickshell.screens) {
-            if (cursorPos.x >= s.x && cursorPos.x < s.x + s.width
+            if (s && cursorPos.x >= s.x && cursorPos.x < s.x + s.width
                 && cursorPos.y >= s.y && cursorPos.y < s.y + s.height)
                 return s;
         }
