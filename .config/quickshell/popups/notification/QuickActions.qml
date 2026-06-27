@@ -14,11 +14,11 @@ ColumnLayout {
     signal muteToggled()
 
     Layout.fillWidth: true
-    spacing: 4
+    spacing: 6
 
     RowLayout {
         Layout.fillWidth: true
-        spacing: 12
+        spacing: 8
 
         Item {
             Layout.preferredWidth: 28
@@ -140,7 +140,7 @@ ColumnLayout {
 
     RowLayout {
         Layout.fillWidth: true
-        spacing: 12
+        spacing: 8
         visible: true
         Layout.topMargin: 4
 

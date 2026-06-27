@@ -429,7 +429,7 @@ Item {
 
                         anchors.fill: parent
                         anchors.margins: 16
-                        spacing: 12
+                        spacing: 8
 
                         // ── Header: Clock + Diagnostics ──
                         Item {
@@ -438,7 +438,7 @@ Item {
 
                             RowLayout {
                                 anchors.fill: parent
-                                spacing: 12
+                        spacing: 8
 
                                 ColumnLayout {
                                     spacing: 0
@@ -526,6 +526,130 @@ Item {
                             showCalendar: win.showCalendar
                             onCalendarMonthOffsetChanged: win.calendarMonthOffset = calendarWidget.calendarMonthOffset
                             onShowCalendarChanged: win.showCalendar = calendarWidget.showCalendar
+                        }
+
+                        // ── Active / History Tabs ──
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 28
+                                color: !root.showHistory ? Theme.primaryAlpha012 : "transparent"
+                                radius: 4
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Active"
+                                    color: !root.showHistory ? Theme.primary : Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeMd
+                                    font.bold: !root.showHistory
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.showHistory = false;
+                                        root.selectedIds = ({
+                                        });
+                                        root.refreshNotifications();
+                                    }
+                                }
+
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 28
+                                color: root.showHistory ? Theme.primaryAlpha012 : "transparent"
+                                radius: 4
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "History"
+                                    color: root.showHistory ? Theme.primary : Theme.muted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeMd
+                                    font.bold: root.showHistory
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.showHistory = true;
+                                        root.selectedIds = ({
+                                        });
+                                        root.refreshNotifications();
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                        NotificationList {
+                            id: notifListComp
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            notificationItems: root.notificationItems
+                            showHistory: root.showHistory
+                            selectedIds: root.selectedIds
+                            expandedNotifIds: root.expandedNotifIds
+                            onShowHistoryChanged: {
+                                root.showHistory = notifListComp.showHistory;
+                                root.selectedIds = ({
+                                });
+                                root.refreshNotifications();
+                            }
+                            onSelectedIdsChanged: root.selectedIds = notifListComp.selectedIds
+                            onExpandedNotifIdsChanged: root.expandedNotifIds = notifListComp.expandedNotifIds
+                            onDismissSelected: (ids) => {
+                                if (NotificationState.service) {
+                                    NotificationState.service.dismissSelected(ids);
+                                    root.selectedIds = ({
+                                    });
+                                }
+                            }
+                            onClearAll: {
+                                if (NotificationState.service)
+                                    NotificationState.service.clearAll();
+
+                            }
+                            onClearHistory: {
+                                if (NotificationState.service)
+                                    NotificationState.service.clearHistory();
+
+                            }
+                            onToggleDnd: {
+                                if (NotificationState.service)
+                                    NotificationState.service.toggleDnd();
+
+                            }
+                            onDismissNotification: (id) => {
+                                if (NotificationState.service)
+                                    NotificationState.service.dismissNotification(id);
+
+                            }
+                        }
+
+                        QuickActions {
+                            id: quickActions
+
+                            Layout.fillWidth: true
+                            audioMuted: root.audioMuted
+                            wifiEnabled: root.wifiEnabled
+                            btEnabled: root.btEnabled
+                            onToggleNetworkPopup: {
+                                if (NetworkState.popup)
+                                    NetworkState.popup.showPopup = !NetworkState.popup.showPopup;
+
+                            }
+                            onMuteToggled: root.audioMuted = !root.audioMuted
                         }
 
                         // ── Now Playing ──
@@ -693,130 +817,6 @@ Item {
 
                             }
 
-                        }
-
-                        // ── Active / History Tabs ──
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 28
-                                color: !root.showHistory ? Theme.primaryAlpha012 : "transparent"
-                                radius: 4
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Active"
-                                    color: !root.showHistory ? Theme.primary : Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeMd
-                                    font.bold: !root.showHistory
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        root.showHistory = false;
-                                        root.selectedIds = ({
-                                        });
-                                        root.refreshNotifications();
-                                    }
-                                }
-
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 28
-                                color: root.showHistory ? Theme.primaryAlpha012 : "transparent"
-                                radius: 4
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "History"
-                                    color: root.showHistory ? Theme.primary : Theme.muted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeMd
-                                    font.bold: root.showHistory
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        root.showHistory = true;
-                                        root.selectedIds = ({
-                                        });
-                                        root.refreshNotifications();
-                                    }
-                                }
-
-                            }
-
-                        }
-
-                        NotificationList {
-                            id: notifListComp
-
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            notificationItems: root.notificationItems
-                            showHistory: root.showHistory
-                            selectedIds: root.selectedIds
-                            expandedNotifIds: root.expandedNotifIds
-                            onShowHistoryChanged: {
-                                root.showHistory = notifListComp.showHistory;
-                                root.selectedIds = ({
-                                });
-                                root.refreshNotifications();
-                            }
-                            onSelectedIdsChanged: root.selectedIds = notifListComp.selectedIds
-                            onExpandedNotifIdsChanged: root.expandedNotifIds = notifListComp.expandedNotifIds
-                            onDismissSelected: (ids) => {
-                                if (NotificationState.service) {
-                                    NotificationState.service.dismissSelected(ids);
-                                    root.selectedIds = ({
-                                    });
-                                }
-                            }
-                            onClearAll: {
-                                if (NotificationState.service)
-                                    NotificationState.service.clearAll();
-
-                            }
-                            onClearHistory: {
-                                if (NotificationState.service)
-                                    NotificationState.service.clearHistory();
-
-                            }
-                            onToggleDnd: {
-                                if (NotificationState.service)
-                                    NotificationState.service.toggleDnd();
-
-                            }
-                            onDismissNotification: (id) => {
-                                if (NotificationState.service)
-                                    NotificationState.service.dismissNotification(id);
-
-                            }
-                        }
-
-                        QuickActions {
-                            id: quickActions
-
-                            Layout.fillWidth: true
-                            audioMuted: root.audioMuted
-                            wifiEnabled: root.wifiEnabled
-                            btEnabled: root.btEnabled
-                            onToggleNetworkPopup: {
-                                if (NetworkState.popup)
-                                    NetworkState.popup.showPopup = !NetworkState.popup.showPopup;
-
-                            }
-                            onMuteToggled: root.audioMuted = !root.audioMuted
                         }
 
                     }

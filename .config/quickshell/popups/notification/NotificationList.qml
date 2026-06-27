@@ -55,22 +55,6 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
 
-        Text {
-            text: root.showHistory ? "History" : "Notifications"
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeMd
-            font.bold: true
-            opacity: 0.6
-        }
-
-        Text {
-            text: "(" + root.notificationItems.length + ")"
-            color: Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeSm
-        }
-
         Item {
             Layout.fillWidth: true
         }
