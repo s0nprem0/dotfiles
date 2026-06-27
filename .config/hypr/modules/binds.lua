@@ -205,6 +205,4 @@ hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { descrip
 local monitors = require("monitors")
 
 qs_popup("p", "power", "Power menu")
-qs_popup("d", "presentation", "Display: Toggle modes")
-
-hl.bind(mainMod .. " + D", qs_helper("display_toggle toggle"), { description = "Display: Toggle mode" })
+qs_popup("p", "presentation", "Display: Toggle modes")

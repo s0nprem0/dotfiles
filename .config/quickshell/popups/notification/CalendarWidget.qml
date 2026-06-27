@@ -2,16 +2,11 @@ import "../../service"
 import QtQuick
 import QtQuick.Layouts
 
-RowLayout {
+ColumnLayout {
     id: root
 
     property int calendarMonthOffset: 0
     property bool showCalendar: false
-    property string hourStr: ""
-    property string minStr: ""
-    property string secStr: ""
-    property string ampmStr: ""
-    property string uptimeStr: ""
 
     function getCalendarDays(offset) {
         var date = new Date();
@@ -46,13 +41,7 @@ RowLayout {
         return days;
     }
 
-    spacing: 20
-
-    ColumnLayout {
-        id: calendarCol
-
-        Layout.preferredWidth: 140
-        spacing: 6
+    spacing: 6
 
         RowLayout {
             spacing: 8
@@ -190,48 +179,5 @@ RowLayout {
             }
 
         }
-
-    }
-
-    ColumnLayout {
-        id: clockCol
-
-        Layout.fillWidth: true
-        spacing: 2
-        Layout.alignment: Qt.AlignVCenter
-
-        RowLayout {
-            spacing: 4
-            Layout.alignment: Qt.AlignHCenter
-
-            Text {
-                text: root.hourStr + ":" + root.minStr
-                color: Theme.primary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize6xl
-                font.bold: true
-            }
-
-            Text {
-                text: root.ampmStr
-                color: Theme.primary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeMd
-                Layout.alignment: Qt.AlignBottom
-                Layout.bottomMargin: 2
-            }
-
-        }
-
-        Text {
-            text: root.uptimeStr
-            color: Theme.primary
-            opacity: 0.75
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeSm
-            Layout.alignment: Qt.AlignHCenter
-        }
-
-    }
 
 }

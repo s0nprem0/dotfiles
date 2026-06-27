@@ -13,7 +13,6 @@ Item {
     property bool showPopup: false
     property string hourStr: ""
     property string minStr: ""
-    property string secStr: ""
     property string ampmStr: ""
     property string uptimeStr: ""
     property var expandedNotifIds: ({
@@ -32,7 +31,6 @@ Item {
     property string diagCpu: ""
     property string diagMem: ""
     property string diagDisk: ""
-    property string timeShort24h: ""
     property int visibleWindowCount: 0
 
     function refreshNotifications() {
@@ -134,9 +132,7 @@ Item {
             hours = hours % 12 || 12;
             root.hourStr = hours.toString().padStart(2, " ");
             root.minStr = now.getMinutes().toString().padStart(2, "0");
-            root.secStr = now.getSeconds().toString().padStart(2, "0");
             root.ampmStr = ampm;
-            root.timeShort24h = now.getHours().toString().padStart(2, "0") + ":" + root.minStr;
         }
     }
 
@@ -333,7 +329,7 @@ Item {
 
                 required property var modelData
                 property int calendarMonthOffset: 0
-                property bool showCalendar: true
+                property bool showCalendar: false
                 property int selectedNotifIndex: -1
 
                 function selectNext() {
@@ -433,7 +429,94 @@ Item {
 
                         anchors.fill: parent
                         anchors.margins: 16
-                        spacing: 16
+                        spacing: 12
+
+                        // ── Header: Clock + Diagnostics ──
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 48
+
+                            RowLayout {
+                                anchors.fill: parent
+                                spacing: 12
+
+                                ColumnLayout {
+                                    spacing: 0
+
+                                    RowLayout {
+                                        spacing: 4
+
+                                        Text {
+                                            text: root.hourStr + ":" + root.minStr
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontSize4xl
+                                            font.bold: true
+                                        }
+
+                                        Text {
+                                            text: root.ampmStr
+                                            color: Theme.primary
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontSizeSm
+                                            Layout.alignment: Qt.AlignBottom
+                                            Layout.bottomMargin: 2
+                                        }
+
+                                    }
+
+                                    Text {
+                                        text: root.uptimeStr
+                                        color: Theme.primary
+                                        opacity: 0.75
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXxs
+                                    }
+
+                                }
+
+                                Item {
+                                    Layout.fillWidth: true
+                                }
+
+                                RowLayout {
+                                    spacing: 6
+                                    visible: root.diagCpu !== ""
+                                    Layout.alignment: Qt.AlignBottom
+
+                                    Text {
+                                        text: "󰔄"
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeSm
+                                    }
+
+                                    Text {
+                                        text: root.diagCpu
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXxs
+                                    }
+
+                                    Text {
+                                        text: root.diagMem
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXxs
+                                    }
+
+                                    Text {
+                                        text: root.diagDisk
+                                        color: Theme.muted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXxs
+                                    }
+
+                                }
+
+                            }
+
+                        }
 
                         CalendarWidget {
                             id: calendarWidget
@@ -441,11 +524,6 @@ Item {
                             Layout.fillWidth: true
                             calendarMonthOffset: win.calendarMonthOffset
                             showCalendar: win.showCalendar
-                            hourStr: root.hourStr
-                            minStr: root.minStr
-                            secStr: root.secStr
-                            ampmStr: root.ampmStr
-                            uptimeStr: root.uptimeStr
                             onCalendarMonthOffsetChanged: win.calendarMonthOffset = calendarWidget.calendarMonthOffset
                             onShowCalendarChanged: win.showCalendar = calendarWidget.showCalendar
                         }
@@ -733,10 +811,6 @@ Item {
                             audioMuted: root.audioMuted
                             wifiEnabled: root.wifiEnabled
                             btEnabled: root.btEnabled
-                            diagCpu: root.diagCpu
-                            diagMem: root.diagMem
-                            diagDisk: root.diagDisk
-                            timeShort24h: root.timeShort24h
                             onToggleNetworkPopup: {
                                 if (NetworkState.popup)
                                     NetworkState.popup.showPopup = !NetworkState.popup.showPopup;

@@ -9,63 +9,12 @@ ColumnLayout {
     property bool audioMuted: false
     property bool wifiEnabled: false
     property bool btEnabled: false
-    property string diagCpu: ""
-    property string diagMem: ""
-    property string diagDisk: ""
-    property string timeShort24h: ""
 
     signal toggleNetworkPopup()
     signal muteToggled()
 
     Layout.fillWidth: true
     spacing: 4
-
-    Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Theme.primary
-        opacity: 0.15
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 8
-        visible: root.diagCpu !== ""
-
-        Text {
-            text: "󰔄 " + root.diagCpu
-            color: Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeXxs
-        }
-
-        Text {
-            text: root.diagMem
-            color: Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeXxs
-        }
-
-        Text {
-            text: root.diagDisk
-            color: Theme.muted
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeXxs
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        Text {
-            text: root.timeShort24h
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize2xl
-            font.bold: true
-        }
-
-    }
 
     RowLayout {
         Layout.fillWidth: true
