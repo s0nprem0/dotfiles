@@ -449,6 +449,36 @@ PopupPanel {
 
                     }
 
+                    // Bottom scroll indicator for menu
+                    Rectangle {
+                        property real fadeBottom: menuFlick.contentHeight - menuFlick.height
+                        visible: fadeBottom > 0
+                        height: 14
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        opacity: fadeBottom > 0 ? Math.max(0, (fadeBottom - menuFlick.contentY) / fadeBottom) : 0
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 1.0; color: Theme.surface }
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+
+                    // Top scroll indicator for menu
+                    Rectangle {
+                        height: 14
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        opacity: menuFlick.contentY > 0 ? Math.min(1, menuFlick.contentY / 20) : 0
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: Theme.surface }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+
                 }
 
                 Rectangle {
@@ -508,6 +538,36 @@ PopupPanel {
 
                         }
 
+                    }
+
+                    // Bottom scroll indicator for submenu
+                    Rectangle {
+                        property real fadeBottom: submenuFlick.contentHeight - submenuFlick.height
+                        visible: fadeBottom > 0
+                        height: 14
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        opacity: fadeBottom > 0 ? Math.max(0, (fadeBottom - submenuFlick.contentY) / fadeBottom) : 0
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 1.0; color: Theme.surface }
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+
+                    // Top scroll indicator for submenu
+                    Rectangle {
+                        height: 14
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        opacity: submenuFlick.contentY > 0 ? Math.min(1, submenuFlick.contentY / 20) : 0
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: Theme.surface }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
                     }
 
                 }
