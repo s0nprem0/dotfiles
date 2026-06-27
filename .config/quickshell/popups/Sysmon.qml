@@ -1,3 +1,4 @@
+import "../components"
 import "../service"
 import QtQuick
 import QtQuick.Layouts
@@ -156,11 +157,8 @@ PopupPanel {
                     font.bold: true
                 }
 
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.15
                 }
 
                 // Loading
@@ -458,11 +456,8 @@ PopupPanel {
                 }
 
                 // ── Footer ──
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.15
                 }
 
                 Row {

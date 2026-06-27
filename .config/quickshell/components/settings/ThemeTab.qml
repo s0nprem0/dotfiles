@@ -1,3 +1,4 @@
+import "../../components"
 import "../../service"
 import QtQuick
 import QtQuick.Controls
@@ -273,10 +274,8 @@ Rectangle {
         }
 
         // ── Divider ──
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Theme.primaryAlpha02
         }
 
         // ── Presets ──

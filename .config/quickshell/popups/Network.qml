@@ -1,3 +1,4 @@
+import "../components"
 import "../service"
 import QtQuick
 import Quickshell
@@ -340,11 +341,8 @@ PopupPanel {
 
                 }
 
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.15
                 }
 
                 // ── Section 2: Quick Toggles ──
@@ -384,11 +382,8 @@ PopupPanel {
 
                 }
 
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.15
                 }
 
                 // ── Section 3: Connection Details ──

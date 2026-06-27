@@ -1,3 +1,4 @@
+import "../components"
 import "../components/settings"
 import "../service"
 import QtQuick
@@ -656,11 +657,8 @@ PopupPanel {
 
             }
 
-            Rectangle {
+            Separator {
                 Layout.fillWidth: true
-                height: 1
-                color: Theme.primary
-                opacity: 0.15
             }
 
             // ───────────────────────────────────────────────────────────
@@ -739,11 +737,8 @@ PopupPanel {
 
             }
 
-            Rectangle {
+            Separator {
                 Layout.fillWidth: true
-                height: 1
-                color: Theme.primary
-                opacity: 0.15
             }
 
             // ───────────────────────────────────────────────────────────

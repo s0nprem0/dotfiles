@@ -1,3 +1,4 @@
+import "../../components"
 import "../../service"
 import QtQuick
 import QtQuick.Layouts
@@ -52,10 +53,8 @@ Rectangle {
                             font.bold: true
                         }
 
-                        Rectangle {
+                        Separator {
                             Layout.fillWidth: true
-                            height: 1
-                            color: Theme.primary
                             Layout.alignment: Qt.AlignVCenter
                         }
 

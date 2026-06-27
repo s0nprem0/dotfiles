@@ -1,3 +1,4 @@
+import "../components"
 import "../service"
 import QtQuick
 import QtQuick.Layouts
@@ -246,16 +247,13 @@ PopupPanel {
                         visible: modelData.isHeader
                         color: "transparent"
 
-                        Rectangle {
+                        Separator {
                             anchors.top: parent.top
                             anchors.topMargin: 4
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.right: parent.right
                             anchors.rightMargin: 6
-                            height: 1
-                            color: Theme.primary
-                            opacity: 0.15
                         }
 
                         Text {

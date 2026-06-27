@@ -517,11 +517,8 @@ PopupPanel {
 
                 }
 
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.25
                 }
 
                 // ── No Player State ──
@@ -609,11 +606,8 @@ PopupPanel {
                     mediaRoot: root
                 }
 
-                Rectangle {
+                Separator {
                     width: parent.width
-                    height: 1
-                    color: Theme.primary
-                    opacity: 0.25
                 }
 
                 // ── System Volume ──
@@ -1112,11 +1106,8 @@ PopupPanel {
                     spacing: 4
                     visible: root.diagnostics ? !!(root.diagnostics.pipewire_version || root.diagnostics.sample_rate) : false
 
-                    Rectangle {
+                    Separator {
                         width: parent.width
-                        height: 1
-                        color: Theme.primary
-                        opacity: 0.25
                     }
 
                     Text {
@@ -1172,11 +1163,8 @@ PopupPanel {
                     spacing: 6
                     visible: root.isBtSink && root.hasPlayer
 
-                    Rectangle {
+                    Separator {
                         width: parent.width
-                        height: 1
-                        color: Theme.primary
-                        opacity: 0.25
                     }
 
                     Text {

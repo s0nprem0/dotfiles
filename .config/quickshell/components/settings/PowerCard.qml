@@ -1,3 +1,4 @@
+import "../../components"
 import "../../service"
 import QtQuick
 import QtQuick.Layouts
@@ -91,10 +92,8 @@ Rectangle {
 
         }
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Theme.primaryAlpha03
         }
 
         Text {
@@ -151,10 +150,8 @@ Rectangle {
 
         }
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Theme.primaryAlpha03
         }
 
         Text {
@@ -211,10 +208,8 @@ Rectangle {
 
         }
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Theme.primaryAlpha03
         }
 
         Text {
