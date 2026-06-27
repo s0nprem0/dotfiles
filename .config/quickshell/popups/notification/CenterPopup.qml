@@ -33,6 +33,7 @@ Item {
     property string diagDisk: ""
     property int visibleWindowCount: 0
     property string prevActiveWindowAddress: ""
+    property var focusedScreen: null
 
     function refreshNotifications() {
         if (!NotificationState.service)
@@ -83,15 +84,39 @@ Item {
         root.showPopup = false;
     }
 
+    function getFocusedScreen() {
+        var cursorPos = Quickshell.cursorPosition;
+        for (var s of Quickshell.screens) {
+            if (cursorPos.x >= s.x && cursorPos.x < s.x + s.width
+                && cursorPos.y >= s.y && cursorPos.y < s.y + s.height)
+                return s;
+        }
+        return Quickshell.primaryScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
+    }
+
+    function evaluatePopupVisibility() {
+        if (!root.showPopup)
+            return;
+        root.focusedScreen = root.getFocusedScreen();
+        var instLen = variantRepeater.instances.length;
+        for (var i = 0; i < instLen; i++) {
+            var w = variantRepeater.instances[i];
+            if (w)
+                w.visible = w.screen === root.focusedScreen;
+
+        }
+    }
+
     onShowPopupChanged: {
         if (showPopup) {
             root.prevActiveWindowAddress = Hyprland.activeWindow
                 ? Hyprland.activeWindow.address : "";
+            root.focusedScreen = root.getFocusedScreen();
             var instLen = variantRepeater.instances.length;
             for (var i = 0; i < instLen; i++) {
                 var w = variantRepeater.instances[i];
                 if (w)
-                    w.visible = true;
+                    w.visible = w.screen === root.focusedScreen;
 
             }
             var notifLen = root.notificationItems.length;
@@ -840,6 +865,14 @@ Item {
 
         }
 
+    }
+
+    Connections {
+        target: Hyprland
+        enabled: root.showPopup
+        function onMonitorAdded() { root.evaluatePopupVisibility(); }
+        function onMonitorRemoved() { root.evaluatePopupVisibility(); }
+        function onMonitorLayoutChanged() { root.evaluatePopupVisibility(); }
     }
 
 }

@@ -27,6 +27,7 @@ Item {
     property int progressHeight: 0
     property int progressWidth: 0
     property string prevActiveWindowAddress: ""
+    property var focusedScreen: null
 
     signal beforeOpen()
     signal afterOpen()
@@ -34,6 +35,16 @@ Item {
 
     function closePopup() {
         root.showPopup = false;
+    }
+
+    function getFocusedScreen() {
+        var cursorPos = Quickshell.cursorPosition;
+        for (var s of Quickshell.screens) {
+            if (cursorPos.x >= s.x && cursorPos.x < s.x + s.width
+                && cursorPos.y >= s.y && cursorPos.y < s.y + s.height)
+                return s;
+        }
+        return Quickshell.primaryScreen || (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
     }
 
     function saveFocusState(sec, sub) {
@@ -48,9 +59,10 @@ Item {
         if (root.showPopup) {
             root.prevActiveWindowAddress = Hyprland.activeWindow
                 ? Hyprland.activeWindow.address : "";
+            root.focusedScreen = root.getFocusedScreen();
             for (var w of screenWins.values()) {
                 if (w)
-                    w.visible = true;
+                    w.visible = w.screen === root.focusedScreen;
 
             }
             root.beforeOpen();
@@ -201,6 +213,35 @@ Item {
             for (var w of root.screenWins.values()) {
                 if (w)
                     w.visible = false;
+
+            }
+        }
+    }
+
+    Connections {
+        target: Hyprland
+        enabled: root.showPopup
+        function onMonitorAdded() {
+            root.focusedScreen = root.getFocusedScreen();
+            for (var w of root.screenWins.values()) {
+                if (w)
+                    w.visible = w.screen === root.focusedScreen && root.showPopup;
+
+            }
+        }
+        function onMonitorRemoved() {
+            root.focusedScreen = root.getFocusedScreen();
+            for (var w of root.screenWins.values()) {
+                if (w)
+                    w.visible = w.screen === root.focusedScreen && root.showPopup;
+
+            }
+        }
+        function onMonitorLayoutChanged() {
+            root.focusedScreen = root.getFocusedScreen();
+            for (var w of root.screenWins.values()) {
+                if (w)
+                    w.visible = w.screen === root.focusedScreen && root.showPopup;
 
             }
         }
