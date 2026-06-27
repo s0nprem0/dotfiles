@@ -16,6 +16,7 @@ Item {
 
     implicitWidth: label.length > 0 ? Math.max(120, childrenRect.width) : maxWidth
     implicitHeight: 24
+    focus: true
     Keys.onPressed: function(event) {
         if (!enabled)
             return ;
@@ -106,7 +107,7 @@ Item {
             }
 
             WheelHandler {
-                acceptedDevices: PointerDevice.Mouse
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onWheel: function(event) {
                     var delta = event.angleDelta.y / 120;
                     var newVol = Math.max(0, Math.min(1, root.currentValue + delta * 0.05));

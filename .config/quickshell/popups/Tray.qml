@@ -17,7 +17,7 @@ PopupPanel {
     property real submenuX: 0
     property real submenuY: 0
     property int submenuSelectedIndex: -1
-    property int itemHeight: 32
+    property int itemHeight: 23
 
     function nextMenuIndex(current, dir) {
         var next = current + dir;
@@ -162,7 +162,7 @@ PopupPanel {
                                         if (entry.enabled && !entry.isSeparator) {
                                             if (entry.hasChildren) {
                                                 var subX = menuContent.x + menuContent.width;
-                                                var subY = menuContent.y + 4 + root.menuSelectedIndex * 23 - menuFlick.contentY;
+                                                var subY = menuContent.y + 4 + root.menuSelectedIndex * root.itemHeight - menuFlick.contentY;
                                                 root.openSubmenu(entry, subX, subY);
                                             } else {
                                                 entry.triggered();
@@ -189,7 +189,7 @@ PopupPanel {
                                         var entry = children[root.menuSelectedIndex];
                                         if (entry.hasChildren) {
                                             var subX = menuContent.x + menuContent.width;
-                                            var subY = menuContent.y + 4 + root.menuSelectedIndex * 23 - menuFlick.contentY;
+                                            var subY = menuContent.y + 4 + root.menuSelectedIndex * root.itemHeight - menuFlick.contentY;
                                             root.openSubmenu(entry, subX, subY);
                                         } else {
                                             root.closeMenu();
@@ -464,7 +464,7 @@ target: root
                                             if (modelData.enabled && !modelData.isSeparator) {
                                                 if (modelData.hasChildren) {
                                                     var subX = menuContent.x + menuContent.width;
-                                                    var subY = menuContent.y + 4 + index * 23 - menuFlick.contentY;
+                                                    var subY = menuContent.y + 4 + index * root.itemHeight - menuFlick.contentY;
                                                     root.openSubmenu(modelData, subX, subY);
                                                 } else {
                                                     modelData.triggered();
@@ -609,7 +609,7 @@ target: root
                                             if (modelData.enabled && !modelData.isSeparator) {
                                                 if (modelData.hasChildren) {
                                                     var subX = submenuContent.x + submenuContent.width;
-                                                    var subY = submenuContent.y + 4 + index * 23 - submenuFlick.contentY;
+                                                    var subY = submenuContent.y + 4 + index * root.itemHeight - submenuFlick.contentY;
                                                     root.openSubmenu(modelData, subX, subY);
                                                 } else {
                                                     modelData.triggered();

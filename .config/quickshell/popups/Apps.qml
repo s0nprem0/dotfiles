@@ -310,7 +310,6 @@ Window {
                 root.displayData = display;
             } else if (item.exec) {
                 Quickshell.execDetached([Theme.bin("get_apps_list"), "--launch", item.name]);
-                Quickshell.execDetached(["sh", "-c", item.exec]);
             }
             AppsService.refresh();
             root.showPopup = false;

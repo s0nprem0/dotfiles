@@ -87,6 +87,8 @@ Window {
         uptimeProc.running = true;
         batteryProc.running = true;
         profileProc.running = true;
+        brightnessReadProc.running = true;
+        kbdReadProc.running = true;
     }
 
     function setProfile(profile) {
@@ -237,6 +239,38 @@ Window {
 
     Process {
         id: chargeLimitProc
+    }
+
+    Process {
+        id: brightnessReadProc
+
+        command: ["sh", "-c", "brightnessctl -m 2>/dev/null | head -1 | cut -d',' -f7 | cut -d'.' -f1 || echo 80"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var val = parseInt((this.text || "").trim());
+                if (!isNaN(val))
+                    root.currentBrightness = val;
+
+            }
+        }
+
+    }
+
+    Process {
+        id: kbdReadProc
+
+        command: ["sh", "-c", "dev=$(ls /sys/class/leds/*kbd_backlight 2>/dev/null | head -1); [ -n \"$dev\" ] && brightnessctl -d \"$(basename \"$dev\")\" -m 2>/dev/null | head -1 | cut -d',' -f7 | cut -d'.' -f1 || echo 0"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var val = parseInt((this.text || "").trim());
+                if (!isNaN(val))
+                    root.currentKbd = val;
+
+            }
+        }
+
     }
 
     // ── UI ──

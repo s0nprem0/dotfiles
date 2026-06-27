@@ -142,7 +142,7 @@ Item {
                             Timer {
                                 id: dismissTimer
 
-                                interval: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 8000) : (liveData.urgency === 2 ? 8000 : 6000)
+                                interval: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 30000) : (liveData.urgency === 2 ? 8000 : 6000)
                                 running: !toastDelegate.hovered && liveData.expireTimeout !== 0
                                 onTriggered: {
                                     if (model && model.notifId !== undefined)
@@ -377,7 +377,7 @@ Item {
                                             NumberAnimation on width {
                                                 from: progressBarFill.parent.width
                                                 to: 0
-                                                duration: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 8000) : 6000
+                                                duration: liveData.expireTimeout > 0 ? Math.min(liveData.expireTimeout, 30000) : 6000
                                                 running: liveData.urgency !== 2 && !toastDelegate.hovered
                                             }
 
