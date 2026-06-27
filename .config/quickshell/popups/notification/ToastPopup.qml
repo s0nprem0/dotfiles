@@ -198,11 +198,28 @@ Item {
                                             anchors.rightMargin: 4
                                             spacing: 8
 
-                                            Text {
-                                                text: liveData.urgency === 2 ? "󰀦" : (!liveData.appIcon || liveData.appIcon.length === 0 ? IconResolver.nerdFontGlyph(liveData.appName) : "󰂚")
-                                                color: toastCard.uColor
-                                                font.family: Theme.fontFamily
-                                                font.pixelSize: Theme.fontSizeXl
+                                            Item {
+                                                implicitWidth: 24
+                                                implicitHeight: 24
+
+                                                property string resolvedIcon: liveData.appIcon && liveData.appIcon.length > 0 ? IconResolver.resolveDesktopIcon(liveData.appIcon) : ""
+
+                                                Image {
+                                                    anchors.fill: parent
+                                                    source: parent.resolvedIcon
+                                                    visible: parent.resolvedIcon.length > 0 && status === Image.Ready
+                                                    fillMode: Image.PreserveAspectFit
+                                                    asynchronous: true
+                                                }
+
+                                                Text {
+                                                    anchors.centerIn: parent
+                                                    text: liveData.urgency === 2 ? "󰀦" : IconResolver.nerdFontGlyph(liveData.appName)
+                                                    color: toastCard.uColor
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: Theme.fontSizeXl
+                                                    visible: parent.resolvedIcon.length === 0
+                                                }
                                             }
 
                                             Text {
