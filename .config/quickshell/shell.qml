@@ -22,7 +22,6 @@ Bar {
         PopupManager.register("tray", trayPopup);
         PopupManager.register("theme-picker", themePickerPopup);
         PopupManager.register("notifications", centerPopup);
-        PopupManager.register("presentation", presentationPopup);
         PopupManager.register("ports", portsPopup);
         PopupManager.register("sysmon", sysmonPopup);
     }
@@ -177,10 +176,6 @@ Bar {
     Popups.Tray {
         id: trayPopup
         popupName: "tray"
-    }
-
-    Popups.PresentationPopup {
-        id: presentationPopup
     }
 
     Popups.Ports {

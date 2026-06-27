@@ -69,10 +69,6 @@ name = "parse_binds"
 path = "src/bin/utils/parse_binds.rs"
 
 [[bin]]
-name = "display_toggle"
-path = "src/bin/utils/display_toggle.rs"
-
-[[bin]]
 name = "caffeine"
 path = "src/bin/utils/caffeine.rs"
 

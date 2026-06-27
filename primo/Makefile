@@ -17,7 +17,6 @@ BINARIES := \
 	check_daemons \
 	parse_binds \
 	mtp_notify \
-	display_toggle \
 	caffeine \
 	list_presets \
 	apply_preset
