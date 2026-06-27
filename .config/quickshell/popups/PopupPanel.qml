@@ -26,6 +26,7 @@ Item {
     property int savedSubIndex: 0
     property int progressHeight: 0
     property int progressWidth: 0
+    property string prevActiveWindowAddress: ""
 
     signal beforeOpen()
     signal afterOpen()
@@ -45,6 +46,8 @@ Item {
 
     onShowPopupChanged: {
         if (root.showPopup) {
+            root.prevActiveWindowAddress = Hyprland.activeWindow
+                ? Hyprland.activeWindow.address : "";
             for (var w of screenWins.values()) {
                 if (w)
                     w.visible = true;
@@ -163,7 +166,21 @@ Item {
                 HyprlandFocusGrab {
                     active: root.showPopup && !slide.closing
                     windows: [win]
-                    onCleared: root.closePopup()
+                    onCleared: popupCloseCheck.restart()
+                }
+
+                Timer {
+                    id: popupCloseCheck
+                    interval: 60
+                    repeat: false
+                    onTriggered: {
+                        if (!root.showPopup || slide.closing)
+                            return;
+
+                        if (Hyprland.activeWindow !== null
+                            && Hyprland.activeWindow.address !== root.prevActiveWindowAddress)
+                            root.closePopup();
+                    }
                 }
 
             }

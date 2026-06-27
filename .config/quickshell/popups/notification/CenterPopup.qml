@@ -32,6 +32,7 @@ Item {
     property string diagMem: ""
     property string diagDisk: ""
     property int visibleWindowCount: 0
+    property string prevActiveWindowAddress: ""
 
     function refreshNotifications() {
         if (!NotificationState.service)
@@ -84,6 +85,8 @@ Item {
 
     onShowPopupChanged: {
         if (showPopup) {
+            root.prevActiveWindowAddress = Hyprland.activeWindow
+                ? Hyprland.activeWindow.address : "";
             var instLen = variantRepeater.instances.length;
             for (var i = 0; i < instLen; i++) {
                 var w = variantRepeater.instances[i];
@@ -382,12 +385,22 @@ Item {
                 }
 
                 HyprlandFocusGrab {
-                    active: win.visible
+                    active: win.visible && !slide.closing
                     windows: [win]
-                    onCleared: {
-                        if (root.showPopup)
-                            root.closePopup();
+                    onCleared: popupCloseCheck.restart()
+                }
 
+                Timer {
+                    id: popupCloseCheck
+                    interval: 60
+                    repeat: false
+                    onTriggered: {
+                        if (!root.showPopup || slide.closing)
+                            return;
+
+                        if (Hyprland.activeWindow !== null
+                            && Hyprland.activeWindow.address !== root.prevActiveWindowAddress)
+                            root.closePopup();
                     }
                 }
 
