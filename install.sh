@@ -2,16 +2,25 @@
 set -euo pipefail
 
 # ──────────────────────────────────────────────
-# Arch Linux dotfiles installer
+# Arch Linux / WSL dotfiles installer
 # Installs packages, deploys symlinks, sets up
 # shell, services, and builds quickshell helpers.
+# Pass --wsl to skip compositor/hardware packages.
 #
-# Usage:  ./install.sh
+# Usage:  ./install.sh [--wsl]
 # ──────────────────────────────────────────────
 
 DOTFILES="${DOTFILES:-$HOME/dotfiles}"
 # Set REPO to your fork if cloning from a different location
 REPO="${REPO:-https://github.com/jllyn/dotfiles}"
+
+WSL_MODE=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --wsl) WSL_MODE=true; shift ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
 
 # ── XDG base directories ──
 if [[ -z "${XDG_CONFIG_HOME:-}" ]]; then
@@ -95,6 +104,33 @@ AUR_PKGS=(
   hyprland-preview-share-picker # GTK4 screen/window share picker
 )
 
+if $WSL_MODE; then
+  WSL_SKIP_PACMAN=(
+    hyprland hyprlock hypridle hyprpolkitagent
+    hyprpaper
+    pipewire wireplumber pipewire-pulse easyeffects pavucontrol
+    bluez bluez-utils blueman
+    networkmanager iw iwd
+    grim slurp wl-clipboard
+    brightnessctl power-profiles-daemon thermald
+    udisks2 gvfs-mtp
+    powertop wlogout
+    xdg-desktop-portal-hyprland
+    polkit-kde-agent
+    rofi
+    quickshell
+    cliphist
+  )
+  WSL_SKIP_AUR=(
+    uwsm
+    udiskie
+    hyprland-preview-share-picker
+  )
+  remove_items PACMAN_PKGS "${WSL_SKIP_PACMAN[@]}"
+  remove_items AUR_PKGS "${WSL_SKIP_AUR[@]}"
+  info "WSL mode: filtered out compositor/hardware packages"
+fi
+
 # ──────────────────────────────────────────────
 # Helper functions
 # ──────────────────────────────────────────────
@@ -106,6 +142,24 @@ info() { printf "\033[1;34m==>\033[0m %s\n" "$*"; }
 ok() { printf "\033[1;32m  ✓\033[0m %s\n" "$*"; }
 warn() { printf "\033[1;33m  !\033[0m %s\n" "$*"; }
 err() { printf "\033[1;31m  ✗\033[0m %s\n" "$*"; }
+
+remove_items() {
+  local -n arr=$1
+  shift
+  local skip=("$@")
+  local result=()
+  for item in "${arr[@]}"; do
+    local found=false
+    for s in "${skip[@]}"; do
+      if [[ "$item" == "$s" ]]; then
+        found=true
+        break
+      fi
+    done
+    $found || result+=("$item")
+  done
+  arr=("${result[@]}")
+}
 
 install_pacman() {
   sudo pacman -S --needed --noconfirm "$@"
@@ -217,7 +271,7 @@ fi
 # ──────────────────────────────────────────────
 # 7. Build quickshell helpers
 # ──────────────────────────────────────────────
-if [[ -f "$DOTFILES/primo/Makefile" ]]; then
+if ! $WSL_MODE && [[ -f "$DOTFILES/primo/Makefile" ]]; then
   info "Building quickshell Rust helpers ..."
   make -C "$DOTFILES/primo" all || warn "quickshell helpers build failed"
   ok "quickshell helpers built"
@@ -226,35 +280,39 @@ fi
 # ──────────────────────────────────────────────
 # 8. Deploy system-wide configs (etc/)
 # ──────────────────────────────────────────────
-info "Deploying system configs from etc/ ..."
-if [[ -d "$DOTFILES/etc" ]]; then
-  while IFS= read -r -d '' f; do
-    rel="${f#"$DOTFILES/etc/"}"
-    target="/etc/$rel"
-    target_dir="$(dirname "$target")"
-    sudo mkdir -p "$target_dir"
-    sudo cp "$f" "$target"
-    ok "$target"
-  done < <(find "$DOTFILES/etc" -type f -print0)
+if ! $WSL_MODE; then
+  info "Deploying system configs from etc/ ..."
+  if [[ -d "$DOTFILES/etc" ]]; then
+    while IFS= read -r -d '' f; do
+      rel="${f#"$DOTFILES/etc/"}"
+      target="/etc/$rel"
+      target_dir="$(dirname "$target")"
+      sudo mkdir -p "$target_dir"
+      sudo cp "$f" "$target"
+      ok "$target"
+    done < <(find "$DOTFILES/etc" -type f -print0)
+  fi
 fi
 
 # ──────────────────────────────────────────────
 # 9. Systemd services
 # ──────────────────────────────────────────────
-info "Enabling systemd services ..."
+if ! $WSL_MODE; then
+  info "Enabling systemd services ..."
 
-sudo systemctl enable --now NetworkManager.service 2>/dev/null && ok "NetworkManager" || warn "NetworkManager"
-sudo systemctl enable --now iwd.service 2>/dev/null && ok "iwd" || warn "iwd"
-sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
-sudo systemctl enable --now power-profiles-daemon 2>/dev/null && ok "power-profiles-daemon" || warn "power-profiles-daemon"
-sudo systemctl enable --now thermald 2>/dev/null && ok "thermald" || warn "thermald"
-sudo systemctl enable powertop.service 2>/dev/null && ok "powertop" || warn "powertop"
+  sudo systemctl enable --now NetworkManager.service 2>/dev/null && ok "NetworkManager" || warn "NetworkManager"
+  sudo systemctl enable --now iwd.service 2>/dev/null && ok "iwd" || warn "iwd"
+  sudo systemctl enable --now bluetooth.service 2>/dev/null && ok "bluetooth" || warn "bluetooth"
+  sudo systemctl enable --now power-profiles-daemon 2>/dev/null && ok "power-profiles-daemon" || warn "power-profiles-daemon"
+  sudo systemctl enable --now thermald 2>/dev/null && ok "thermald" || warn "thermald"
+  sudo systemctl enable powertop.service 2>/dev/null && ok "powertop" || warn "powertop"
 
-systemctl --user daemon-reload 2>/dev/null
-systemctl --user enable --now pipewire.service 2>/dev/null && ok "pipewire (user)" || warn "pipewire"
-systemctl --user enable --now pipewire-pulse.service 2>/dev/null && ok "pipewire-pulse (user)" || warn "pipewire-pulse"
-systemctl --user enable --now wireplumber.service 2>/dev/null && ok "wireplumber (user)" || warn "wireplumber"
-systemctl --user enable --now gnome-keyring-daemon.service 2>/dev/null && ok "gnome-keyring (user)" || warn "gnome-keyring"
+  systemctl --user daemon-reload 2>/dev/null
+  systemctl --user enable --now pipewire.service 2>/dev/null && ok "pipewire (user)" || warn "pipewire"
+  systemctl --user enable --now pipewire-pulse.service 2>/dev/null && ok "pipewire-pulse (user)" || warn "pipewire-pulse"
+  systemctl --user enable --now wireplumber.service 2>/dev/null && ok "wireplumber (user)" || warn "wireplumber"
+  systemctl --user enable --now gnome-keyring-daemon.service 2>/dev/null && ok "gnome-keyring (user)" || warn "gnome-keyring"
+fi
 
 # ──────────────────────────────────────────────
 # 10. Clean up pacman cache
@@ -278,14 +336,24 @@ fi
 # Done
 # ──────────────────────────────────────────────
 echo ""
-echo "────────────────────────────────────────"
-echo "  All set!"
-echo ""
-echo "  Log out and back in (or restart) to:"
-echo "    - Start a Hyprland session via uwsm"
-echo "    - Use zsh as your default shell"
-echo ""
-echo "  After logging in:"
-echo "    matugen image ~/wallpaper.jpg"
-echo "    quickshell --reload"
-echo "────────────────────────────────────────"
+
+if $WSL_MODE; then
+  echo "────────────────────────────────────────"
+  echo "  All set!"
+  echo ""
+  echo "  Restart your terminal or run:"
+  echo "    zsh"
+  echo "────────────────────────────────────────"
+else
+  echo "────────────────────────────────────────"
+  echo "  All set!"
+  echo ""
+  echo "  Log out and back in (or restart) to:"
+  echo "    - Start a Hyprland session via uwsm"
+  echo "    - Use zsh as your default shell"
+  echo ""
+  echo "  After logging in:"
+  echo "    matugen image ~/wallpaper.jpg"
+  echo "    quickshell --reload"
+  echo "────────────────────────────────────────"
+fi
