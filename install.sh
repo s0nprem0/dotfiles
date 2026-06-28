@@ -31,7 +31,7 @@ if ! command -v sudo &>/dev/null; then
 fi
 
 # Quick network check
-if ! ping -c 1 -W 2 archlinux.org &>/dev/null; then
+if ! curl -s --max-time 5 https://archlinux.org &>/dev/null; then
   echo "No network connectivity. Check your connection and try again."
   exit 1
 fi
@@ -188,21 +188,26 @@ ok "AUR packages installed"
 # 5. Rust toolchain
 # ──────────────────────────────────────────────
 if ! command -v cargo &>/dev/null; then
+  if ! command -v rustup &>/dev/null; then
+    info "Installing rustup ..."
+    sudo pacman -S --needed --noconfirm rustup
+  fi
   info "Installing Rust toolchain ..."
-  rustup default stable 2>/dev/null || {
-    # rustup installed but no toolchain set
-    rustup install stable
-    rustup default stable
-  }
+  rustup install stable
+  rustup default stable
 fi
 ok "Rust toolchain ready"
 
 # ──────────────────────────────────────────────
 # 6. Deploy dotfiles (symlinks)
 # ──────────────────────────────────────────────
-info "Deploying dotfiles ..."
-"$DOTFILES/deploy.sh"
-ok "Dotfiles deployed"
+if [[ -f "$DOTFILES/deploy.sh" ]]; then
+  info "Deploying dotfiles ..."
+  "$DOTFILES/deploy.sh"
+  ok "Dotfiles deployed"
+else
+  warn "deploy.sh not found; skipping dotfile deployment"
+fi
 
 # ── Set ZDOTDIR now that zsh config exists ──
 if [[ -d "$XDG_CONFIG_HOME/zsh" ]]; then
