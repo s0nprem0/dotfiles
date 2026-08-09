@@ -11,6 +11,11 @@ export XDG_STATE_HOME="$HOME/.local/state"
 # ---------- Route Zsh ----------
 export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"
 
+# ---------- WSL detection ----------
+is_wsl() {
+  [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/version 2>/dev/null
+}
+
 # ---------- Pager ----------
 if command -v bat >/dev/null 2>&1; then
   export MANPAGER="bat -l man -p"
@@ -33,9 +38,17 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 export GNUPGHOME="$XDG_DATA_HOME/gnupg"
 
 # XDG_RUNTIME_DIR may be unset on WSL without systemd; provide a fallback
-[[ -n "$XDG_RUNTIME_DIR" ]] || export XDG_RUNTIME_DIR="/run/user/$(id -u)"
-
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+if [[ -z "$XDG_RUNTIME_DIR" ]]; then
+  if [[ -d "/run/user/$(id -u)" ]]; then
+    export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+  else
+    export XDG_RUNTIME_DIR="/tmp/xdg-runtime-$(id -u)"
+  fi
+fi
+if [[ ! -d "$XDG_RUNTIME_DIR" ]]; then
+  mkdir -p "$XDG_RUNTIME_DIR"
+  chmod 700 "$XDG_RUNTIME_DIR"
+fi
 
 # Only set SUDO_ASKPASS if seahorse is actually installed
 if [[ -f "/usr/lib/seahorse/ssh-askpass" ]]; then
@@ -48,3 +61,9 @@ export PATH="$HOME/.nub/bin:$PATH"
 
 # GITHUB_TOKEN for git repo fetching in apps popup
 export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+
+# Strip Windows /mnt/* paths so Windows exes never shadow Linux tools.
+# Windows interop still works via explicit .exe invocations.
+if is_wsl; then
+  path=("${path[@]:#/mnt/*}")
+fi

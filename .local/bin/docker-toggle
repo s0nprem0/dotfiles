@@ -1,5 +1,15 @@
 #!/bin/bash
-status=$(systemctl is-active docker)
+
+systemd_running() { systemctl is-system-running >/dev/null 2>&1; }
+
+# Determine Docker status: systemd service vs Docker Desktop (no systemd WSL)
+if systemd_running; then
+  status=$(systemctl is-active docker)
+elif docker context show 2>/dev/null | grep -q desktop-linux; then
+  status=$(docker info >/dev/null 2>&1 && echo active || echo inactive)
+else
+  status=unknown
+fi
 
 if [ "$1" = "status" ]; then
   echo "Docker: $status"
@@ -8,9 +18,24 @@ fi
 
 case "$status" in
   active)
-    sudo systemctl stop docker.socket docker
-    notify-send -a docker-toggle -t 1500 -i dialog-warning "Docker" "Stopped" ;;
+    if systemd_running; then
+      sudo systemctl stop docker.socket docker
+    else
+      echo "Docker Desktop is managed from the Windows tray icon"
+      exit 0
+    fi
+    notify-send -a docker-toggle -t 1500 -i dialog-warning "Docker" "Stopped"
+    ;;
   inactive)
-    sudo systemctl start docker
-    notify-send -a docker-toggle -t 1500 -i dialog-information "Docker" "Started" ;;
+    if systemd_running; then
+      sudo systemctl start docker
+    else
+      cmd.exe /c 'start "" "docker-desktop:"' 2>/dev/null
+    fi
+    notify-send -a docker-toggle -t 1500 -i dialog-information "Docker" "Started"
+    ;;
+  unknown)
+    echo "No Docker found (neither systemd service nor Docker Desktop context)."
+    exit 1
+    ;;
 esac

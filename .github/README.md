@@ -28,3 +28,36 @@ Personal dotfiles managed with a custom deploy script.
 # Deploy specific configs (run from repo root)
 ./deploy.sh  # Symlinks .config/* to ~/.config/
 ```
+
+## WSL
+
+The dotfiles include first-class WSL support (tested on Arch WSL2).
+
+```sh
+./install.sh --wsl
+```
+
+The `--wsl` flag:
+
+- Skips all Hyprland/compositor, audio, Bluetooth, and hardware packages.
+- Adds `wslu` for Windows interop (`wslview`, `wslpath`).
+- Passes `--wsl` to `deploy.sh`, which skips Wayland-only configs
+  (`hypr/`, `quickshell/`, `waybar/`, `wlogout/`, `uwsm/`, ...).
+- Writes `/etc/wsl.conf` with `systemd=true` and `metadata` automount
+  (fixes executable bits on `/mnt/c`), and offers to create a
+  Windows-side `.wslconfig` (mirrored networking + DNS tunneling).
+
+Shell behaviour under WSL:
+
+- Windows `/mnt/*` entries are stripped from `PATH` so Windows executables
+  never shadow Linux tools (interop still works via explicit `.exe` paths).
+- `pbcopy`/`pbpaste`/tmux yank/nvim clipboard route through `clip.exe`.
+- Interop aliases: `explorer`, `start`, `winpath`, `cdwin`, `open`.
+
+After changing `/etc/wsl.conf` or `.wslconfig`, restart WSL from PowerShell:
+
+```powershell
+wsl --shutdown
+```
+
+systemd is required for `systemctl`, `docker-toggle`, and the SSH agent.
