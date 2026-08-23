@@ -11,6 +11,8 @@ setopt no_beep              # never beep on errors
 
 WORDCHARS=${WORDCHARS//\/}
 
-PROMPT_EOL_MARK=""
+# Show a visible mark when a program's output is missing its trailing
+# newline (empty string used to hide it, merging output into the prompt)
+PROMPT_EOL_MARK='%{%F{yellow}%}⏎%{%f%}'
 
 export KEYTIMEOUT=1
