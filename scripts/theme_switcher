@@ -14,7 +14,7 @@ usage() {
     echo "  --validate    Check WCAG contrast ratios"
     echo "  --verbose     Show detailed output"
     echo "  --dry-run     Preview changes without writing"
-    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,waybar,gtk3,gtk4,supremo,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
+    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,gtk3,gtk4,supremo,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
     echo "  --reload      Reload quickshell after generation"
     exit 1
 }
@@ -152,12 +152,6 @@ if should_generate "kitty"; then
     [[ -d "$HOME/.config/kitty" ]] && \
     generate_template "$HOME/.config/matugen/templates/apps/kitty.conf.template" > "$HOME/.config/kitty/colors.conf" && \
     echo "Updated kitty theme"
-fi
-
-if should_generate "waybar"; then
-    [[ -d "$HOME/.config/waybar" ]] && \
-    generate_template "$HOME/.config/matugen/templates/apps/waybar.css.template" > "$HOME/.config/waybar/style.css" && \
-    echo "Updated waybar theme"
 fi
 
 if should_generate "gtk3"; then

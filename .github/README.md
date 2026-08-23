@@ -7,9 +7,7 @@ Personal dotfiles managed with a custom deploy script.
 | Directory       | Description                         |
 |-----------------|-------------------------------------|
 | `hypr/`         | Hyprland Lua config + scripts       |
-| `quickshell/`   | Quickshell bar, popups, daemons (replaces waybar) |
-| `rofi/`         | Rofi config (legacy, replaced by quickshell) |
-| `waybar/`       | Waybar config (legacy, kept for reference) |
+| `quickshell/`   | Quickshell bar, popups, daemons     |
 | `wlogout/`      | Power menu layout and styling       |
 | `nvim/`         | Neovim (LazyVim-based)              |
 | `kitty/`        | Kitty terminal emulator             |
@@ -44,7 +42,7 @@ The `--wsl` flag:
 - Skips all Hyprland/compositor, audio, Bluetooth, and hardware packages.
 - Adds `wslu` for Windows interop (`wslview`, `wslpath`).
 - Passes `--wsl` to `deploy.sh`, which skips Wayland-only configs
-  (`hypr/`, `quickshell/`, `waybar/`, `wlogout/`, `uwsm/`, ...).
+  (`hypr/`, `quickshell/`, `wlogout/`, `uwsm/`, ...).
 - Writes `/etc/wsl.conf` with `systemd=true` and `metadata` automount
   (fixes executable bits on `/mnt/c`), and offers to create a
   Windows-side `.wslconfig` (mirrored networking + DNS tunneling).

@@ -4,7 +4,7 @@ set -e
 DOTFILES="${DOTFILES:-$HOME/dotfiles}"
 
 # Wayland-only config dirs that make no sense under WSL
-WSL_SKIP_DIRS="hypr quickshell waybar wlogout uwsm hyprland-preview-share-picker"
+WSL_SKIP_DIRS="hypr quickshell wlogout uwsm hyprland-preview-share-picker"
 
 # ──────────────────────────────────────────────
 # SAFE deploy — only creates symlinks for dirs
