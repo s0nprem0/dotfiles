@@ -1,0 +1,7 @@
+# Native Arch host overrides — copied to host.gitconfig by install.sh,
+# which appends the GPG signing config once a key exists.
+
+[credential]
+	# git-credential-libsecret ships with the git package; stores
+	# HTTPS credentials in gnome-keyring via libsecret.
+	helper = libsecret

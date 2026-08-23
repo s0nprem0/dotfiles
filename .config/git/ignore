@@ -1,0 +1,17 @@
+# Global git excludes — applied to every repository.
+# Keep conservative: OS junk, editor swap files, local secrets only.
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / vim swap files
+*.swp
+*.swo
+*~
+
+# Local env / secrets (never commit these anywhere)
+.env
+.env.*
+!.env.example

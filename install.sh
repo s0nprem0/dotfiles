@@ -81,6 +81,8 @@ PACMAN_PKGS=(
   gvfs gvfs-mtp
   # Utilities
   fzf fd bat zoxide eza keychain jq socat powertop wlogout libnotify xdg-desktop-portal-hyprland
+  # Git tooling + shell history
+  git-delta atuin
   # Development
   base-devel git rustup
   # Qt / GTK theming
@@ -380,6 +382,56 @@ EOF
     else
       ok "Skipped .wslconfig"
     fi
+  fi
+fi
+
+# ──────────────────────────────────────────────
+# 13. Git + Atuin setup
+# ──────────────────────────────────────────────
+if [[ -d "$XDG_CONFIG_HOME/git" ]]; then
+  info "Configuring git host settings ..."
+
+  # Match the GNUPGHOME used by zsh so keys land in one place
+  export GNUPGHOME="${GNUPGHOME:-$HOME/.local/share/gnupg}"
+  mkdir -p "$GNUPGHOME"
+  chmod 700 "$GNUPGHOME"
+
+  # Pick the host variant (WSL vs native Arch)
+  GIT_HOST_CONF="$XDG_CONFIG_HOME/git/host.gitconfig"
+  if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/version 2>/dev/null; then
+    GIT_HOST_SRC="$DOTFILES/.config/git/hosts/wsl.gitconfig"
+  else
+    GIT_HOST_SRC="$DOTFILES/.config/git/hosts/arch.gitconfig"
+  fi
+  cp "$GIT_HOST_SRC" "$GIT_HOST_CONF"
+  ok "host.gitconfig ← $(basename "$GIT_HOST_SRC")"
+
+  # GPG signing: generate a key if none exists, then wire it up
+  if ! gpg --list-secret-keys --with-colons 2>/dev/null | grep -q '^sec:'; then
+    warn "No GPG secret key found."
+    read -r -p "Generate a signing key now? [Y/n] " gen_ans
+    if [[ "${gen_ans:-y}" == [Yy]* ]]; then
+      gpg --batch --pinentry-mode loopback --passphrase '' \
+        --quick-generate-key "s0nprem0 <s0nprem0@proton.me>" rsa3072 sign 0 \
+        && ok "GPG key generated (no passphrase; add later with: gpg --change-passphrase)"
+    fi
+  fi
+
+  if gpg --list-secret-keys --with-colons 2>/dev/null | grep -q '^sec:'; then
+    KEY_ID="$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')"
+    {
+      printf '\n[user]\n\tsigningkey = %s\n' "$KEY_ID"
+      printf '\n[commit]\n\tgpgsign = true\n'
+    } >> "$GIT_HOST_CONF"
+    ok "Commit signing enabled ($KEY_ID)"
+  else
+    warn "Skipping signing config (no key)"
+  fi
+
+  # Import existing shell history into atuin (idempotent)
+  if command -v atuin &>/dev/null && [[ -s "$HOME/.local/state/zsh/history" ]]; then
+    HISTFILE="$HOME/.local/state/zsh/history" atuin import auto 2>/dev/null \
+      && ok "atuin history imported" || warn "atuin import skipped"
   fi
 fi
 

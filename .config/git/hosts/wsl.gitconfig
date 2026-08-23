@@ -1,0 +1,7 @@
+# WSL host overrides — copied to host.gitconfig by install.sh,
+# which appends the GPG signing config once a key exists.
+
+[credential]
+	# Resolved via PATH to ~/.local/bin/git-credential-gcm, which
+	# bridges to the Windows Git Credential Manager.
+	helper = gcm

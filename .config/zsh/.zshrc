@@ -35,20 +35,26 @@ zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-# History configurations
+# History configuration.
+# When atuin is installed it owns interactive history (search, recording);
+# these settings remain as the on-disk source for `atuin import auto`
+# and as a fallback on machines without atuin.
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 HISTSIZE=10000
 SAVEHIST=20000
-setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
-setopt hist_ignore_dups       # ignore duplicated commands history list
-setopt hist_ignore_space      # ignore commands that start with space
-setopt hist_verify            # show command with history expansion to user before running it
-setopt extended_history       # Save timestamps and command durations to the history file
-setopt inc_append_history     # Write commands to the history file *immediately*, not just when the shell exits
-#setopt share_history         # share command history data - uncomment if needed
 
-# force zsh to show the complete history
-alias history="history 0"
+if (( !$+commands[atuin] )); then
+  setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+  setopt hist_ignore_dups       # ignore duplicated commands history list
+  setopt hist_ignore_space      # ignore commands that start with space
+  setopt hist_verify            # show command with history expansion to user before running it
+  setopt extended_history       # Save timestamps and command durations to the history file
+  setopt inc_append_history     # Write commands to the history file *immediately*, not just when the shell exits
+  #setopt share_history         # share command history data - uncomment if needed
+
+  # force zsh to show the complete history
+  alias history="history 0"
+fi
 
 # configure `time` format
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
@@ -61,4 +67,14 @@ if (( $+commands[zoxide] )); then
         zoxide init zsh > "$ZOXIDE_CACHE"
     fi
     source "$ZOXIDE_CACHE"
+fi
+
+if (( $+commands[atuin] )); then
+    # Atuin: fuzzy searchable history, bound to Up and Ctrl-R.
+    # Cached the same way as zoxide for fast startup.
+    ATUIN_CACHE="$XDG_CACHE_HOME/zsh/atuin.zsh"
+    if [[ ! -s "$ATUIN_CACHE" ]]; then
+        atuin init zsh > "$ATUIN_CACHE"
+    fi
+    source "$ATUIN_CACHE"
 fi
