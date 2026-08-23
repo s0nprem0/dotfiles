@@ -171,3 +171,4 @@ tmp/
 .config/gtk-4.0/gtk.css
 .config/kitty/themes/matugen.conf
 .config/hyprland-preview-share-picker/style.css
+.config/opencode/themes/matugen.json
