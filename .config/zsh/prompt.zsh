@@ -48,7 +48,16 @@ toggle_oneline_prompt() {
 zle -N toggle_oneline_prompt
 bindkey '^[p' toggle_oneline_prompt
 
-add-zsh-hook precmd vcs_info
+# Run vcs_info, except on slow filesystems: git status on WSL /mnt/* mounts
+# (Windows drives) can take seconds, so skip the segment entirely there.
+_prompt_vcs_info() {
+    if [[ "$PWD" == /mnt/* ]]; then
+        vcs_info_msg_0_=''
+        return
+    fi
+    vcs_info
+}
+add-zsh-hook precmd _prompt_vcs_info
 
 configure_prompt
 

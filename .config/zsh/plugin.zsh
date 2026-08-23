@@ -102,7 +102,7 @@ zplugin-remove() {
 
 # plugins
 zplugin-load zsh-users zsh-autosuggestions
-zplugin-load zsh-users zsh-history-substring-search
+# zsh-history-substring-search removed: atuin owns Up/Ctrl-R, making it redundant
 zplugin-load zsh-users zsh-completions
 # zsh-completions' own .plugin.zsh assumes oh-my-zsh paths; add src/ manually
 fpath+=("${ZPLUGINDIR}/zsh-completions/src")

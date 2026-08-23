@@ -28,9 +28,15 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 
 # ---------- GPG ----------
-export GPG_TTY="${TTY:-$(tty)}"
+# Only meaningful in interactive sessions; avoids "not a tty" noise in scripts
+if [[ -o interactive && -n "$TTY" ]]; then
+  export GPG_TTY="$TTY"
+fi
 
 # ---------- PATH ----------
+# typeset -U makes path/PATH arrays unique — prevents duplicate entries
+# from accumulating across nested shells
+typeset -U path
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 
 export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"

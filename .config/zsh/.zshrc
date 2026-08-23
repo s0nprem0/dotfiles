@@ -16,9 +16,28 @@ if [[ -s "$XDG_CACHE_HOME/zsh/zcompdump" && (! -s "${XDG_CACHE_HOME}/zsh/zcompdu
 fi
 
 
-# Reuse a shared ssh-agent across all WSL sessions
-if command -v keychain >/dev/null 2>&1; then
+# Reuse a shared ssh-agent across all WSL sessions.
+# Skip keychain entirely when SSH_AUTH_SOCK was already exported by a parent
+# (login shell / tmux inherit it) and that agent is still alive — saves a
+# process spawn on every nested shell.
+_ssh_agent_alive() {
+    [[ -n "$SSH_AUTH_SOCK" && -S "$SSH_AUTH_SOCK" ]] || return 1
+    ssh-add -l &>/dev/null
+    # ssh-add exits 0 (has keys) or 1 (no keys) on a live agent, 2 if it can't reach one
+    (( $? != 2 ))
+}
+if ! _ssh_agent_alive && command -v keychain >/dev/null 2>&1; then
     eval "$(keychain --eval --quiet ~/.ssh/id_ed25519)"
+fi
+
+# Colors for tab-completion listings: cache `dircolors -b` output once
+# (LS_COLORS is otherwise unset on Arch, leaving the list-colors zstyle empty)
+LSCOLORS_CACHE="$XDG_CACHE_HOME/zsh/dircolors.zsh"
+if (( $+commands[dircolors] )); then
+    if [[ ! -s "$LSCOLORS_CACHE" ]]; then
+        dircolors -b > "$LSCOLORS_CACHE"
+    fi
+    source "$LSCOLORS_CACHE"
 fi
 
 zstyle ':completion:*:*:*:*:*' menu select
@@ -48,6 +67,7 @@ if (( !$+commands[atuin] )); then
   setopt hist_ignore_dups       # ignore duplicated commands history list
   setopt hist_ignore_space      # ignore commands that start with space
   setopt hist_verify            # show command with history expansion to user before running it
+  setopt hist_reduce_blanks     # strip extra blanks before recording history
   setopt extended_history       # Save timestamps and command durations to the history file
   setopt inc_append_history     # Write commands to the history file *immediately*, not just when the shell exits
   #setopt share_history         # share command history data - uncomment if needed
@@ -61,9 +81,10 @@ TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 
 if (( $+commands[zoxide] )); then
-    # Cache the init script to speed up shell startup
+    # Cache the init script to speed up shell startup; regenerate when the
+    # binary is newer than the cache (i.e. after an upgrade)
     ZOXIDE_CACHE="$XDG_CACHE_HOME/zsh/zoxide.zsh"
-    if [[ ! -f "$ZOXIDE_CACHE" ]]; then
+    if [[ ! -s "$ZOXIDE_CACHE" || "$commands[zoxide]" -nt "$ZOXIDE_CACHE" ]]; then
         zoxide init zsh > "$ZOXIDE_CACHE"
     fi
     source "$ZOXIDE_CACHE"
@@ -71,9 +92,9 @@ fi
 
 if (( $+commands[atuin] )); then
     # Atuin: fuzzy searchable history, bound to Up and Ctrl-R.
-    # Cached the same way as zoxide for fast startup.
+    # Cached like zoxide; regenerated after binary upgrades.
     ATUIN_CACHE="$XDG_CACHE_HOME/zsh/atuin.zsh"
-    if [[ ! -s "$ATUIN_CACHE" ]]; then
+    if [[ ! -s "$ATUIN_CACHE" || "$commands[atuin]" -nt "$ATUIN_CACHE" ]]; then
         atuin init zsh > "$ATUIN_CACHE"
     fi
     source "$ATUIN_CACHE"
