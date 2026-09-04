@@ -5,15 +5,6 @@ if (( $+commands[eza] )); then
   alias la='eza -lah --icons --git'     # Detailed Listing including hidden files
   alias tree='eza --tree --icons'       # Tree view
 
-  # Reuse ls completions for eza (avoids defining a separate completion function)
-  if (( $+functions[compdef] )); then
-    compdef eza=ls
-  fi
-fi
-
-# Zoxide helper (you can just type 'z', but 'cd' muscle memory is strong)
-if (( $+commands[zoxide] )); then
-  alias cd='z'
 fi
 
 # WSL-specific clipboard aliases & Windows interop
@@ -38,5 +29,5 @@ if is_wsl; then
   fi
 fi
 
-alias git_personal='git config --global user.email "s0nprem0@proton.me" && git config --global user.name "s0nprem0"'
-alias git_academic='git config --global user.email "jaysonbulugagao@gmail.com" && git config --global user.name "202302986"'
+alias git_personal='git config user.email "s0nprem0@proton.me" && git config user.name "s0nprem0"'
+alias git_academic='git config user.email "jaysonbulugagao@gmail.com" && git config user.name "202302986"'

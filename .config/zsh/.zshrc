@@ -16,20 +16,6 @@ if [[ -s "$XDG_CACHE_HOME/zsh/zcompdump" && (! -s "${XDG_CACHE_HOME}/zsh/zcompdu
 fi
 
 
-# Reuse a shared ssh-agent across all WSL sessions.
-# Skip keychain entirely when SSH_AUTH_SOCK was already exported by a parent
-# (login shell / tmux inherit it) and that agent is still alive — saves a
-# process spawn on every nested shell.
-_ssh_agent_alive() {
-    [[ -n "$SSH_AUTH_SOCK" && -S "$SSH_AUTH_SOCK" ]] || return 1
-    ssh-add -l &>/dev/null
-    # ssh-add exits 0 (has keys) or 1 (no keys) on a live agent, 2 if it can't reach one
-    (( $? != 2 ))
-}
-if ! _ssh_agent_alive && command -v keychain >/dev/null 2>&1; then
-    eval "$(keychain --eval --quiet ~/.ssh/id_ed25519)"
-fi
-
 # Colors for tab-completion listings: cache `dircolors -b` output once
 # (LS_COLORS is otherwise unset on Arch, leaving the list-colors zstyle empty)
 LSCOLORS_CACHE="$XDG_CACHE_HOME/zsh/dircolors.zsh"
