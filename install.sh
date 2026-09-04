@@ -287,6 +287,15 @@ if ! $WSL_MODE && [[ -f "$DOTFILES/primo/Makefile" ]]; then
   ok "quickshell helpers built"
 fi
 
+if [[ -f "$DOTFILES/.config/opencode/package.json" ]]; then
+  if command -v npm &>/dev/null; then
+    info "Installing opencode dependencies ..."
+    (cd "$DOTFILES/.config/opencode" && npm ci --silent) && ok "opencode dependencies installed" || warn "opencode npm ci failed"
+  else
+    warn "npm not found; skipping opencode dependencies (install nodejs to enable)"
+  fi
+fi
+
 # ──────────────────────────────────────────────
 # 8. Deploy system-wide configs (etc/)
 # ──────────────────────────────────────────────

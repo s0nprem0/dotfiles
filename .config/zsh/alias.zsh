@@ -37,3 +37,6 @@ if is_wsl; then
     alias open='wslview'
   fi
 fi
+
+alias git_personal='git config --global user.email "s0nprem0@proton.me" && git config --global user.name "s0nprem0"'
+alias git_academic='git config --global user.email "jaysonbulugagao@gmail.com" && git config --global user.name "202302986"'
