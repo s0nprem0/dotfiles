@@ -40,6 +40,11 @@ zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
+# fzf-tab: replace menu select with fzf (must be after compinit)
+if (( $+functions[zplugin-load] )); then
+  zplugin-load Aloxaf fzf-tab
+fi
+
 # History configuration.
 # When atuin is installed it owns interactive history (search, recording);
 # these settings remain as the on-disk source for `atuin import auto`
