@@ -2,6 +2,7 @@
 # which appends the GPG signing config once a key exists.
 
 [credential]
-	# Resolved via PATH to ~/.local/bin/git-credential-gcm, which
-	# bridges to the Windows Git Credential Manager.
-	helper = gcm
+	# GCM if installed (bridges to Windows Credential Manager on WSL),
+	# fallback is libsecret via gnome-keyring
+	helper = manager
+	helper = libsecret

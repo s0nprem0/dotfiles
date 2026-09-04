@@ -44,6 +44,12 @@
 [github]
 	user = s0nprem0
 
+[commit]
+	verbose = true
+
+[help]
+	autocorrect = 10
+
 [alias]
 	st      = status -sb
 	co      = checkout
@@ -58,6 +64,9 @@
 	wip     = commit -am WIP
 	last    = log -1 HEAD --stat
 	lg      = log --graph --date=relative --pretty=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ad)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all
+	sync    = "!git pull --rebase && git push"
+	amend   = commit --amend --no-edit
+	publish = push -u origin HEAD
 
 [delta]
 	navigate          = true
