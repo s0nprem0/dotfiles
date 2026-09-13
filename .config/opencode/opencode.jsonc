@@ -11,6 +11,7 @@
     }
   },
   "plugin": [
-    "@dietrichgebert/ponytail"
+    "@dietrichgebert/ponytail",
+    "/home/jllyn/.config/opencode/vendor/i-have-adhd/.opencode/plugins/i-have-adhd.mjs"
   ]
 }
