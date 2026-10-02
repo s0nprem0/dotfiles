@@ -170,3 +170,8 @@ tmp/
 .config/kitty/themes/matugen.conf
 .config/hyprland-preview-share-picker/style.css
 .config/opencode/themes/matugen.json
+# opencode runtime state (service.json contains the server password)
+.config/opencode/service.json
+.config/opencode/cli.json
+.config/opencode/.ponytail-active
+.config/opencode/node_modules
