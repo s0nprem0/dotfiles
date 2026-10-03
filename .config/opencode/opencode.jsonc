@@ -9,6 +9,17 @@
         "headers": {
           "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
         }
+      },
+      "playwright": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@playwright/mcp@0.0.83",
+          "--browser",
+          "chromium",
+          "--headless"
+        ]
       }
     }
   },

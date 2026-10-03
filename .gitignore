@@ -175,3 +175,5 @@ tmp/
 .config/opencode/cli.json
 .config/opencode/.ponytail-active
 .config/opencode/node_modules
+# Playwright MCP writes snapshots/screenshots to the workspace root
+.playwright-mcp/
