@@ -1,0 +1,34 @@
+# mako — lightweight notification daemon for Wayland
+#
+# Optional component. Nothing else in this repo depends on mako; install it
+# with `./install.sh --gui` and start it with `./scripts/session.sh --start`.
+# Without it, notify-send calls simply have no receiver.
+
+[daemon]
+default-timeout = 5000
+max-visible = 5
+
+[anchor]
+position = top-right
+
+[text]
+wrap = yes
+width = 340
+height = 110
+
+[style]
+background = #1e1e2e
+text-color = #cdd6f4
+border-color = #45475a
+border-size = 2
+border-radius = 12
+padding = 12
+margin = 12
+icon-padding = 12
+offset = 12
+
+[urgency]
+low = #a6adc8
+normal = #89b4fa
+high = #f9e2af
+critical = #f38ba8

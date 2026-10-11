@@ -1,0 +1,69 @@
+// Waybar configuration.
+//
+// Optional component: nothing here is required for a session to start, and
+// waybar exiting does not affect the compositor. Launch it with:
+//
+//     ./scripts/session.sh --start
+//
+// The default module set is compositor-agnostic (it works on WSLg's Weston as
+// well as on wlroots/sway compositors). Waybar logs a warning for a module its
+// backend cannot support and keeps running, so an unsupported entry degrades
+// the bar rather than breaking it.
+{
+  "layer": "top",
+  "position": "top",
+  "height": 28,
+  "spacing": 4,
+
+  // On a Hyprland session, replace "clock" in modules-center with
+  // "hyprland/workspaces", "hyprland/window" and enable "hyprland/submap".
+  "modules-left": [],
+  "modules-center": ["clock"],
+  "modules-right": ["pulseaudio", "network", "cpu", "memory", "battery", "tray"],
+
+  "clock": {
+    "interval": 30,
+    "format": "  {:%H:%M}",
+    "tooltip-format": "<big>{:%Y-%m-%d}</big>"
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "CPU {usage}%"
+  },
+
+  "memory": {
+    "interval": 10,
+    "format": "MEM {percentage}%"
+  },
+
+  "network": {
+    "interval": 10,
+    "format-wifi": "  {signalStrength}%",
+    "format-ethernet": "󰈢 {ipaddr}",
+    "format-disconnected": "󰤫 offline",
+    "tooltip-format": "{ifname}: {ipaddr}/{cidr}"
+  },
+
+  "pulseaudio": {
+    "format": " {volume}%",
+    "format-muted": "󰖁 mute"
+  },
+
+  "battery": {
+    "format": " {percentage}%",
+    "format-charging": " {percentage}%",
+    "format-full": " full",
+    "states": {
+      "warning": 30,
+      "critical": 15
+    }
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  },
+
+  "style": "~/.config/waybar/style.css"
+}
