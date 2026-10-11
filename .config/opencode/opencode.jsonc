@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+        "oauth": false,
+        "headers": {
+          "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+        }
+      },
+      "playwright": {
+        "type": "local",
+        "command": [
+          "/home/jllyn/.config/opencode/node_modules/.bin/playwright-mcp",
+          "--browser",
+          "chromium",
+          "--headless",
+          "--idle-timeout",
+          "300000"
+        ]
+      }
+    }
+  },
+  "plugins": [
+    "/home/jllyn/.config/opencode/vendor/ponytail/plugin.js",
+    "/home/jllyn/.config/opencode/vendor/i-have-adhd/.opencode/plugins/i-have-adhd.mjs"
+  ],
+  "skills": ["/home/jllyn/.config/opencode/vendor/ponytail/skills"]
+}
