@@ -1,0 +1,17 @@
+[Unit]
+Description=PowerTOP auto-tune — apply power-saving tunings at boot
+Documentation=man:powertop(8)
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/powertop --auto-tune
+ExecStart=/usr/bin/bash -c 'for iface in /sys/bus/usb/devices/*:*/bInterfaceClass; do if [ "$(cat "$iface" 2>/dev/null)" = "03" ]; then dev="${iface%%:*}"; echo on > "$dev/power/control" 2>/dev/null || true; fi; done'
+
+# Quiet: no logs on success, only on failure
+StandardOutput=null
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

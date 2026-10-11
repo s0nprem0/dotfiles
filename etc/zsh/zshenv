@@ -1,0 +1,14 @@
+# /etc/zsh/zshenv — system-wide zsh environment.
+#
+# Deployed by install.sh from etc/. Point ZDOTDIR at the XDG config directory
+# so ~/.config/zsh/.zshenv is found without a ~/.zshenv shim. Guarded on the
+# directory existing, so accounts without a zsh config are unaffected.
+if [[ -z "$XDG_CONFIG_HOME" ]]
+then
+    export XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+if [[ -d "$XDG_CONFIG_HOME/zsh" ]]
+then
+    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+fi
