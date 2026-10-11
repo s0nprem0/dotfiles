@@ -1,0 +1,23 @@
+# Atuin — searchable shell history (local-only, no sync account).
+# Docs: https://docs.atuin.sh/configuration/config/
+
+# Local-only mode: no account, no network sync
+auto_sync = false
+update_check = false
+
+# Search UI
+search_mode = "fuzzy"
+style = "compact"
+inline_height = 25
+show_preview = true
+enter_accept = true
+
+# Up-arrow searches history scoped to the current directory;
+# Ctrl-R still searches everything.
+filter_mode_shell_up_key_binding = "directory"
+
+# Match the shell's emacs-style key bindings (bindkey -e)
+keymap_mode = "emacs"
+
+# Never record commands that look like secrets
+secrets_filter = true
