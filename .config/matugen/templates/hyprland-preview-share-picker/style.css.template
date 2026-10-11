@@ -1,0 +1,107 @@
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  color: {{colors.on_surface.default.hex}};
+  font-weight: bold;
+  font-size: 9pt;
+}
+
+.window {
+  border-radius: 0px;
+  background-color: {{colors.background.default.hex}};
+  border: solid 2px {{colors.surface_container_high.default.hex}};
+  margin: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+tabs {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid {{colors.surface_container_high.default.hex}};
+}
+
+tabs > tab {
+  margin-right: 0.8rem;
+  padding: 2px 4px;
+}
+
+.tab-label {
+  color: {{colors.on_surface_variant.default.hex}};
+  transition: all 0.15s ease-in-out;
+}
+
+tabs > tab:checked > .tab-label,
+tabs > tab:active > .tab-label {
+  color: {{colors.primary.default.hex}};
+  border-bottom: 2px solid {{colors.primary.default.hex}};
+}
+
+tabs > tab:hover > .tab-label {
+  color: {{colors.on_surface.default.hex}};
+}
+
+.page {
+  padding: 0.6rem;
+}
+
+.image-label {
+  font-size: 8pt;
+  padding: 0.2rem 0.1rem 0.1rem 0.1rem;
+  color: {{colors.on_surface.default.hex}};
+  font-weight: 500;
+}
+
+flowboxchild > .card,
+button > .card {
+  transition: all 0.15s ease-in-out;
+  border: solid 1px transparent;
+  border-color: {{colors.surface_container.default.hex}};
+  border-radius: 0px;
+  background-color: {{colors.surface_container.default.hex}};
+  padding: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+flowboxchild:hover > .card,
+button:hover > .card {
+  background-color: {{colors.surface_container_high.default.hex}};
+  border-color: {{colors.surface_container_high.default.hex}};
+}
+
+flowboxchild:active > .card,
+flowboxchild:selected > .card,
+button:active > .card,
+button:selected > .card,
+button:focus > .card {
+  border: solid 1px {{colors.primary.default.hex}};
+  background-color: {{colors.surface_container_high.default.hex}};
+}
+
+.image {
+  border-radius: 0px;
+}
+
+.region-button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 0px;
+  background-color: {{colors.primary.default.hex}};
+  color: {{colors.on_primary.default.hex}};
+  font-weight: bold;
+  transition: all 0.15s ease-in-out;
+}
+
+.region-button:not(:disabled):hover,
+.region-button:not(:disabled):focus {
+  background-color: {{colors.secondary.default.hex}};
+  color: {{colors.on_secondary.default.hex}};
+}
+
+.region-button:disabled {
+  background-color: {{colors.surface_container_high.default.hex}};
+  color: {{colors.on_surface_variant.default.hex}};
+  opacity: 0.6;
+}
+
+.restore-button {
+  padding: 0.3rem;
+  color: {{colors.on_surface_variant.default.hex}};
+}

@@ -1,0 +1,26 @@
+# matugen templates that are actually deployed by deploy.sh.
+#
+# Each block pairs a template with its output. Keep it in sync with the
+# directories under .config/: a block pointing at a template or output that
+# no longer exists fails at generation time.
+# Add a [templates.<name>] block here whenever you introduce a new generated
+# file.
+
+[config]
+
+[templates.gtk3]
+input_path = "~/.config/matugen/templates/gtk/gtk3.css"
+output_path = "~/.config/gtk-3.0/gtk.css"
+
+[templates.gtk4]
+input_path = "~/.config/matugen/templates/gtk/gtk4.css"
+output_path = "~/.config/gtk-4.0/gtk.css"
+
+[templates.kitty]
+input_path = "~/.config/matugen/templates/kitty/colors.conf"
+output_path = "~/.config/kitty/themes/matugen.conf"
+
+# Consumed by scripts/theme_switcher via jq.
+[templates.json]
+input_path = "~/.config/matugen/templates/json/colors.json"
+output_path = "~/.cache/matugen/theme.json"

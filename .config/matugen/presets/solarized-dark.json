@@ -1,0 +1,16 @@
+{
+  "name": "Solarized Dark",
+  "variant": "dark",
+  "shell": {
+    "bg": "#002b36",
+    "fg": "#839496",
+    "surface": "#073642",
+    "surfaceLighter": "#586e75",
+    "primary": "#268bd2",
+    "muted": "#66839496",
+    "error": "#dc322f",
+    "warning": "#b58900",
+    "green": "#859900",
+    "blue": "#268bd2"
+  }
+}

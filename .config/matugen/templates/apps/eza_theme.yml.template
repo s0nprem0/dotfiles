@@ -1,0 +1,55 @@
+colourful: true
+
+filekinds:
+  normal: "{{fg_hex}}"
+  directory: "{{accent_hex}}"
+  symlink: "{{blue_hex}}"
+  pipe: "{{muted_hex}}"
+  block_device: "{{warning_hex}}"
+  char_device: "{{warning_hex}}"
+  socket: "{{green_hex}}"
+  special: "{{error_hex}}"
+  executable: "{{green_hex}}"
+  mount_point: "{{accent_hex}}"
+
+perms:
+  user_read: "{{fg_hex}}"
+  user_write: "{{warning_hex}}"
+  user_exec: "{{green_hex}}"
+  group_read: "{{muted_hex}}"
+  group_write: "{{muted_hex}}"
+  group_exec: "{{muted_hex}}"
+  other_read: "{{muted_hex}}"
+  other_write: "{{muted_hex}}"
+  other_exec: "{{muted_hex}}"
+
+size:
+  major: "{{fg_hex}}"
+  minor: "{{muted_hex}}"
+  number_byte: "{{fg_hex}}"
+  number_kilo: "{{fg_hex}}"
+  number_mega: "{{accent_hex}}"
+  number_giga: "{{accent_hex}}"
+
+users:
+  user: "{{accent_hex}}"
+  group: "{{muted_hex}}"
+
+git:
+  new: "{{green_hex}}"
+  modified: "{{warning_hex}}"
+  deleted: "{{error_hex}}"
+  renamed: "{{blue_hex}}"
+  typechange: "{{blue_hex}}"
+  ignored: "{{muted_hex}}"
+  conflicted: "{{error_hex}}"
+
+git_repo:
+  branch_symbol: " "
+  branch: "{{accent_hex}}"
+
+date:
+  today: "{{green_hex}}"
+  yesterday: "{{blue_hex}}"
+  week: "{{fg_hex}}"
+  older: "{{muted_hex}}"

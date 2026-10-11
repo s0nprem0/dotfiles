@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+WALLPAPER=""
+VALIDATE=false
+VERBOSE=false
+DRY_RUN=false
+RELOAD=false
+APPS=""
+
+usage() {
+    echo "Usage: $0 [OPTIONS] [WALLPAPER]"
+    echo "Options:"
+    echo "  --validate    Check WCAG contrast ratios"
+    echo "  --verbose     Show detailed output"
+    echo "  --dry-run     Preview changes without writing"
+    echo "  --apps LIST   Generate only specified apps (vesktop,equibop,equicord,kitty,gtk3,gtk4,supremo,opencode,thunar,spicetify,zathura,bat,btop,eza,fastfetch)"
+    echo "  --reload      Reload colours in running kitty instances"
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --validate) VALIDATE=true; shift ;;
+        --verbose) VERBOSE=true; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
+        --reload) RELOAD=true; shift ;;
+        --apps) APPS="$2"; shift 2 ;;
+        -*) usage ;;
+        *) WALLPAPER="$1"; shift ;;
+    esac
+done
+
+[[ -z "$WALLPAPER" ]] && { [[ -f "$HOME/.cache/matugen/current_wallpaper" ]] && WALLPAPER=$(cat "$HOME/.cache/matugen/current_wallpaper"); }
+[[ -z "$WALLPAPER" ]] && { echo "Error: No wallpaper specified" >&2; exit 1; }
+[[ ! -f "$WALLPAPER" ]] && { echo "Error: $WALLPAPER not found" >&2; exit 1; }
+
+log() { [[ "$VERBOSE" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*"; }
+
+log "Generating theme from: $WALLPAPER"
+[[ "$DRY_RUN" == "true" ]] && log "Dry run mode"
+
+matugen image "$WALLPAPER" --prefer darkness --quiet || { echo "Error: matugen failed" >&2; exit 1; }
+
+MATUGEN_COLORS="$HOME/.cache/matugen/theme.json"
+[[ ! -f "$MATUGEN_COLORS" ]] && { echo "Error: colors.json not found" >&2; exit 1; }
+
+get_color() { jq -r ".${1} // empty" "$MATUGEN_COLORS"; }
+get_hex() { printf '%s' "${1#\#}"; }
+get_rgb() { local h="${1#\#}"; printf '%d,%d,%d' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
+
+blend_toward() {
+    local c1="${1#\#}" c2="${2#\#}" weight="$3"
+    local r1=$((0x${c1:0:2})) g1=$((0x${c1:2:2})) b1=$((0x${c1:4:2}))
+    local r2=$((0x${c2:0:2})) g2=$((0x${c2:2:2})) b2=$((0x${c2:4:2}))
+    local w=$weight n=$((100 - weight))
+    printf '%02x%02x%02x' $(( (r1 * n + r2 * w) / 100 )) $(( (g1 * n + g2 * w) / 100 ))
+}
+
+darken() {
+    local hex="${1#\#}" factor="$2"
+    local r=$((0x${hex:0:2})) g=$((0x${hex:2:2})) b=$((0x${hex:4:2}))
+    local f=$((100 - factor))
+    printf '%02x%02x%02x' $((r * f / 100)) $((g * f / 100)) $((b * f / 100))
+}
+
+lighten() {
+    local hex="${1#\#}" factor="$2"
+    local r=$((0x${hex:0:2})) g=$((0x${hex:2:2})) b=$((0x${hex:4:2}))
+    printf '%02x%02x%02x' $((r + (255 - r) * factor / 100)) $((g + (255 - g) * factor / 100)) $((b + (255 - b) * factor / 100))
+}
+
+# Get colors
+BG=$(get_color "bg")
+FG=$(get_color "fg")
+PRIMARY=$(get_color "primary")
+ERROR=$(get_color "error")
+SURFACE=$(get_color "surface")
+SURFACE_LIGHTER=$(get_color "surfaceLighter")
+GREEN=$(get_color "green" 2>/dev/null || echo "$PRIMARY")
+WARNING=$(get_color "warning" 2>/dev/null || echo "$PRIMARY")
+BLUE=$(get_color "blue" 2>/dev/null || echo "$PRIMARY")
+
+# Hex values
+BG_HEX=$(get_hex "$BG")
+FG_HEX=$(get_hex "$FG")
+PRIMARY_HEX=$(get_hex "$PRIMARY")
+ERROR_HEX=$(get_hex "$ERROR")
+SURFACE_HEX=$(get_hex "$SURFACE")
+SURFACE_LIGHTER_HEX=$(get_hex "$SURFACE_LIGHTER")
+GREEN_HEX=$(get_hex "$GREEN")
+WARNING_HEX=$(get_hex "$WARNING")
+BLUE_HEX=$(get_hex "$BLUE")
+
+# RGB values
+BG_RGB=$(get_rgb "$BG")
+FG_RGB=$(get_rgb "$FG")
+PRIMARY_RGB=$(get_rgb "$PRIMARY")
+SURFACE_RGB=$(get_rgb "$SURFACE")
+SURFACE_LIGHTER_RGB=$(get_rgb "$SURFACE_LIGHTER")
+GREEN_RGB=$(get_rgb "$GREEN")
+WARNING_RGB=$(get_rgb "$WARNING")
+BLUE_RGB=$(get_rgb "$BLUE")
+
+# Derived values
+SECONDARY=$(lighten "$PRIMARY" 25); SECONDARY_HEX=$(get_hex "$SECONDARY"); SECONDARY_RGB=$(get_rgb "$SECONDARY")
+BG_DARK=$(darken "$SURFACE" 15); BG_DARK_HEX=$(get_hex "$BG_DARK"); BG_DARK_RGB=$(get_rgb "$BG_DARK")
+BG_LIGHT=$(lighten "$SURFACE_LIGHTER" 25); BG_LIGHT_HEX=$(get_hex "$BG_LIGHT"); BG_LIGHT_RGB=$(get_rgb "$BG_LIGHT")
+FG_LIGHT=$(blend_toward "$FG" "$BG" 20); FG_LIGHT_HEX=$(get_hex "$FG_LIGHT"); FG_LIGHT_RGB=$(get_rgb "$FG_LIGHT")
+MUTED=$(blend_toward "$FG" "$BG" 40); MUTED_HEX=$(get_hex "$MUTED"); MUTED_RGB=$(get_rgb "$MUTED")
+
+should_generate() { [[ -z "$APPS" ]] || echo "$APPS" | grep -q "$1"; }
+
+generate_template() {
+    sed -e "s|{{accent_hex}}|$PRIMARY_HEX|g" \
+        -e "s|{{accent_rgb}}|$PRIMARY_RGB|g" \
+        -e "s|{{secondary_hex}}|$SECONDARY_HEX|g" \
+        -e "s|{{secondary_rgb}}|$SECONDARY_RGB|g" \
+        -e "s|{{fg_hex}}|$FG_HEX|g" \
+        -e "s|{{fg_rgb}}|$FG_RGB|g" \
+        -e "s|{{fg_light_hex}}|$FG_LIGHT_HEX|g" \
+        -e "s|{{fg_light_rgb}}|$FG_LIGHT_RGB|g" \
+        -e "s|{{bg_hex}}|$BG_HEX|g" \
+        -e "s|{{bg_rgb}}|$BG_RGB|g" \
+        -e "s|{{bg_dark_hex}}|$BG_DARK_HEX|g" \
+        -e "s|{{bg_dark_rgb}}|$BG_DARK_RGB|g" \
+        -e "s|{{bg_light_hex}}|$BG_LIGHT_HEX|g" \
+        -e "s|{{bg_light_rgb}}|$BG_LIGHT_RGB|g" \
+        -e "s|{{error_hex}}|$ERROR_HEX|g" \
+        -e "s|{{green_hex}}|$GREEN_HEX|g" \
+        -e "s|{{warning_hex}}|$WARNING_HEX|g" \
+        -e "s|{{blue_hex}}|$BLUE_HEX|g" \
+        -e "s|{{surface_hex}}|$SURFACE_HEX|g" \
+        -e "s|{{surface_lighter_hex}}|$SURFACE_LIGHTER_HEX|g" \
+        -e "s|{{primary_hex}}|$PRIMARY_HEX|g" \
+        -e "s|{{muted_hex}}|$MUTED_HEX|g" \
+        -e "s|{{muted_rgb}}|$MUTED_RGB|g" \
+        "$1"
+}
+
+[[ "$DRY_RUN" == "true" ]] && generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template"
+
+if should_generate "vesktop"; then
+    for d in vesktop equibop Equicord; do
+        [[ -d "$HOME/.config/$d/settings" ]] && \
+        generate_template "$HOME/.config/matugen/templates/apps/vesktop.css.template" > "$HOME/.config/$d/settings/quickCss.css" && \
+        echo "Updated $d theme"
+    done
+fi
+
+if should_generate "kitty"; then
+    [[ -d "$HOME/.config/kitty" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/kitty.conf.template" > "$HOME/.config/kitty/colors.conf" && \
+    echo "Updated kitty theme"
+fi
+
+if should_generate "gtk3"; then
+    [[ -d "$HOME/.config/gtk-3.0" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/gtk3-colors.css.template" > "$HOME/.config/gtk-3.0/colors.css" && \
+    echo "Updated gtk3 theme"
+fi
+
+if should_generate "gtk4"; then
+    [[ -d "$HOME/.config/gtk-4.0" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/gtk4-colors.css.template" > "$HOME/.config/gtk-4.0/colors.css" && \
+    echo "Updated gtk4 theme"
+fi
+
+if should_generate "opencode"; then
+    mkdir -p "$HOME/.config/opencode/themes"
+    cat > "$HOME/.config/opencode/themes/matugen.json" << EOF
+{
+  "\$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "matugen_bg": "$BG",
+    "matugen_bg_dark": "$SURFACE",
+    "matugen_bg_light": "$SURFACE_LIGHTER",
+    "matugen_fg": "$FG",
+    "matugen_fg_light": "$FG_LIGHT",
+    "matugen_accent": "$PRIMARY",
+    "matugen_secondary": "$SECONDARY",
+    "matugen_tertiary": "$SURFACE",
+    "matugen_error": "$ERROR"
+  },
+  "theme": {
+    "primary":              { "dark": "matugen_accent",     "light": "matugen_accent" },
+    "secondary":            { "dark": "matugen_secondary",   "light": "matugen_secondary" },
+    "accent":               { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
+    "error":                { "dark": "matugen_error",       "light": "matugen_error" },
+    "text":                 { "dark": "matugen_fg",          "light": "matugen_fg" },
+    "background":           { "dark": "matugen_bg",          "light": "matugen_bg" }
+  }
+}
+EOF
+    echo "Updated opencode theme"
+fi
+
+if should_generate "thunar"; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "Would run: rebuild_thunar.sh"
+    else
+        ~/.local/bin/rebuild_thunar.sh 2>/dev/null || "$HOME/.local/share/bin/rebuild_thunar.sh" 2>/dev/null || \
+        bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
+        echo "Warning: rebuild_thunar.sh not found"
+    fi
+fi
+
+if should_generate "supremo"; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "Would run: rebuild_thunar.sh (Supremo)"
+    else
+        ~/.local/bin/rebuild_thunar.sh 2>/dev/null || "$HOME/.local/share/bin/rebuild_thunar.sh" 2>/dev/null || \
+        bash "$HOME/dotfiles/scripts/rebuild_thunar.sh" 2>/dev/null || \
+        echo "Warning: rebuild_thunar.sh not found"
+    fi
+fi
+
+if should_generate "spicetify"; then
+    SPICE_DIR="$HOME/.config/spicetify/Themes/wabi"
+    if [[ -d "$SPICE_DIR" ]]; then
+        generate_template "$HOME/.config/matugen/templates/apps/spicetify.ini.template" > "$SPICE_DIR/color.ini" && \
+        echo "Updated spicetify theme"
+    fi
+fi
+
+if should_generate "zathura"; then
+    [[ -d "$HOME/.config/zathura" ]] && \
+    generate_template "$HOME/.config/matugen/templates/apps/zathurarc.template" > "$HOME/.config/zathura/zathurarc" && \
+    echo "Updated zathura theme"
+fi
+
+if should_generate "bat"; then
+    BAT_DIR="$HOME/.config/bat/themes"
+    mkdir -p "$BAT_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/bat.tmTheme.template" > "$BAT_DIR/matugen.tmTheme" && \
+    echo "Updated bat theme"
+fi
+
+if should_generate "btop"; then
+    BTOP_DIR="$HOME/.config/btop/themes"
+    mkdir -p "$BTOP_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/btop.theme.template" > "$BTOP_DIR/matugen.theme" && \
+    echo "Updated btop theme"
+fi
+
+if should_generate "eza"; then
+    EZA_DIR="$HOME/.config/eza"
+    mkdir -p "$EZA_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/eza_theme.yml.template" > "$EZA_DIR/theme.yml" && \
+    echo "Updated eza theme"
+fi
+
+if should_generate "fastfetch"; then
+    FF_DIR="$HOME/.config/fastfetch"
+    mkdir -p "$FF_DIR"
+    generate_template "$HOME/.config/matugen/templates/apps/fastfetch.jsonc.template" > "$FF_DIR/config.jsonc" && \
+    echo "Updated fastfetch theme"
+fi
+
+# Remember the wallpaper so a bare `./theme_switcher` keeps working.
+if [[ "$DRY_RUN" != "true" ]]; then
+    mkdir -p "$HOME/.cache/matugen"
+    realpath "$WALLPAPER" > "$HOME/.cache/matugen/current_wallpaper"
+fi
+
+if [[ "$RELOAD" == "true" ]] && [[ "$DRY_RUN" != "true" ]]; then
+    # kitty pulls its palette from themes/matugen.conf at startup, so push the
+    # new colours into any running instance instead of asking the user to
+    # restart their terminals.
+    if pgrep -x kitty >/dev/null 2>&1; then
+        log "Reloading kitty colours..."
+        for pid in $(pgrep -x kitty); do
+            kill -USR1 "$pid" 2>/dev/null || true
+        done
+    else
+        log "No running kitty instance; new colours apply on next launch."
+    fi
+fi
+
+log "Theme generation complete!"
