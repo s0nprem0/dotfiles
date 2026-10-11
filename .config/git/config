@@ -1,0 +1,79 @@
+# ~/.config/git/config — shared base settings.
+# Machine-specific overrides (credentials, signing key) live in
+# host.gitconfig, generated from hosts/ by install.sh.
+
+[user]
+	name  = s0nprem0
+	email = s0nprem0@proton.me
+
+[include]
+	path = host.gitconfig
+
+[core]
+	editor       = nvim
+	excludesfile = ~/.config/git/ignore
+	autocrlf     = input
+	pager        = delta
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+
+[rerere]
+	enabled = true
+
+[diff]
+	algorithm      = histogram
+	mnemonicPrefix = true
+	renames        = copies
+
+[merge]
+	conflictstyle = zdiff3
+
+[column]
+	ui = auto
+
+[github]
+	user = s0nprem0
+
+[commit]
+	verbose = true
+
+[help]
+	autocorrect = 10
+
+[alias]
+	st      = status -sb
+	co      = checkout
+	sw      = switch
+	br      = branch -vv
+	ci      = commit
+	cm      = commit -m
+	ca      = commit --amend
+	cane    = commit --amend --no-edit
+	unstage = restore --staged
+	undo    = reset --soft HEAD~1
+	wip     = commit -am WIP
+	last    = log -1 HEAD --stat
+	lg      = log --graph --date=relative --pretty=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ad)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all
+	sync    = "!git pull --rebase && git push"
+	amend   = commit --amend --no-edit
+	publish = push -u origin HEAD
+
+[delta]
+	navigate          = true
+	line-numbers      = true
+	hyperlinks        = true
+	side-by-side      = false
+	max-line-distance = 0.6
+
+[interactive]
+	diffFilter = delta --color-only
