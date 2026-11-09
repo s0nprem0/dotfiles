@@ -120,7 +120,8 @@ Tested on Arch WSL2 (`Arch Linux` + WSLg).
 
 `./install.sh --wsl` skips audio, Bluetooth, and hardware packages that have no
 useful WSL2 backing, adds `wslu` for Windows interop, and writes `/etc/wsl.conf`
-with `systemd=true` and `metadata` automount.
+with `systemd=true`, `metadata` automount, and `interop.appendWindowsPath=false`
+(Windows PATH is also stripped in zsh as a fallback).
 
 After changing `/etc/wsl.conf` or `.wslconfig`, restart from PowerShell:
 

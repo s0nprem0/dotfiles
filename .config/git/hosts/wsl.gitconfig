@@ -1,5 +1,13 @@
 # WSL host overrides — copied to host.gitconfig by install.sh,
 # which appends the GPG signing config once a key exists.
-
-[credential]
-	helper = manager
+#
+# Credential helper: install.sh auto-detects Windows Git Credential Manager
+# and configures it when found (credentials stay in Windows). Without GCM,
+# it falls back to a short in-memory cache. To force a choice, uncomment one:
+#
+#   # Windows GCM (adjust path to your Git for Windows install)
+#   # helper = /mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
+#   # Linux secret store (install git-credential-libsecret / gnome-keyring)
+#   # helper = libsecret
+#   # In-memory only (no persistent storage)
+#   # helper = cache --timeout=3600

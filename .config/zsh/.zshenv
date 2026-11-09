@@ -69,9 +69,14 @@ export PATH="$HOME/.nub/bin:$PATH"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 
 # Strip Windows /mnt/* paths so Windows exes never shadow Linux tools.
-# Windows interop still works via explicit .exe invocations.
+# Windows interop still works via explicit .exe invocations. install.sh
+# --wsl also sets [interop].appendWindowsPath=false in /etc/wsl.conf (applies
+# after wsl --shutdown); this is the per-shell fallback.
 if is_wsl; then
   path=("${path[@]:#/mnt/*}")
+  if command -v wslview >/dev/null 2>&1; then
+    export BROWSER=wslview
+  fi
 fi
 
 # Cache/state dirs used by .zshrc (compinit, dircolors, zoxide, atuin, fzf).

@@ -673,6 +673,10 @@ if $WSL_MODE; then
     printf '\n[automount]\noptions="metadata"\n' | sudo tee -a "$WSL_CONF" >/dev/null
     ok "/etc/wsl.conf: metadata automount (exec bits on /mnt/c)"
   fi
+  if ! wsl_conf_has 'appendWindowsPath' 'false'; then
+    printf '\n[interop]\nappendWindowsPath=false\n' | sudo tee -a "$WSL_CONF" >/dev/null
+    ok "/etc/wsl.conf: appendWindowsPath=false (Windows PATH not injected; dotfiles strip /mnt/* as fallback)"
+  fi
 
   # Optional Windows-side .wslconfig (global, applies to all distros)
   WSL_CONFIG=""
@@ -718,6 +722,34 @@ if [[ -d "$XDG_CONFIG_HOME/git" ]]; then
     GIT_HOST_SRC="$DOTFILES/.config/git/hosts/arch.gitconfig"
   fi
   cp "$GIT_HOST_SRC" "$GIT_HOST_CONF"
+
+  # WSL credential helper: prefer Windows Git Credential Manager when present
+  # (credentials stay in Windows). Fall back to an in-memory cache so HTTPS
+  # remotes do not fail silently in non-interactive flows. SSH remotes are
+  # unaffected.
+  if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/version 2>/dev/null; then
+    GCM_EXE=""
+    for candidate in \
+      "/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe" \
+      "/mnt/c/Program Files/Git/mingw64/libexec/git-core/git-credential-manager.exe" \
+      "/mnt/c/Program Files/Git/cmd/git-credential-manager.exe" \
+      "/mnt/c/Program Files (x86)/Git/mingw32/bin/git-credential-manager.exe"; do
+      if [[ -f "$candidate" ]]; then GCM_EXE="$candidate"; break; fi
+    done
+    if [[ -z "$GCM_EXE" ]]; then
+      GCM_EXE="$(timeout 15 bash -c 'find /mnt/c -maxdepth 5 -iname "git-credential-manager*.exe" -not -path "*/Temp/*" 2>/dev/null | head -1' 2>/dev/null || true)"
+    fi
+    if [[ -n "$GCM_EXE" && -f "$GCM_EXE" ]]; then
+      # git config needs backslashes in the Windows-ish path escaped for the
+      # config parser; store the literal path with spaces quoted by git.
+      git config --file "$GIT_HOST_CONF" credential.helper "$GCM_EXE"
+      ok "Git credential helper → Windows GCM ($GCM_EXE)"
+    else
+      git config --file "$GIT_HOST_CONF" credential.helper 'cache --timeout=3600'
+      ok "Git credential helper → cache (install Git for Windows / set GCM path in host.gitconfig for persistent credentials)"
+    fi
+  fi
+
   ok "host.gitconfig ← $(basename "$GIT_HOST_SRC")"
 
   # GPG signing: generate a key if none exists, then wire it up.
