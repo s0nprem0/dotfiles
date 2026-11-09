@@ -111,7 +111,7 @@ code. Report what you verified and what you skipped.
 
 ## Per-command reference
 
-`/home/jllyn/.config/opencode/instructions/shell-strategy.md` — exact
+`~/.config/opencode/instructions/shell-strategy.md` — exact
 non-interactive flags for pacman, paru, git, npm, cargo, docker, ssh, curl, and
 the other tools on this box. Read it with the **Read** tool when you need the
 specific flag for a specific command; skip it for routine work.

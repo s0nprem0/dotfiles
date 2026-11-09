@@ -13,7 +13,7 @@
       "playwright": {
         "type": "local",
         "command": [
-          "/home/jllyn/.config/opencode/node_modules/.bin/playwright-mcp",
+          "{env:HOME}/.config/opencode/node_modules/.bin/playwright-mcp",
           "--browser",
           "chromium",
           "--headless",
@@ -23,9 +23,13 @@
       }
     }
   },
+  // {env:HOME} keeps these portable across machines; the vendor payload is
+  // gitignored, so a fresh clone has no plugin or skills there until installed.
+  // V2 documents that a configured local plugin path should be a directory — if
+  // either file entry is skipped, repackage the vendor plugin as one.
   "plugins": [
-    "/home/jllyn/.config/opencode/vendor/ponytail/plugin.js",
-    "/home/jllyn/.config/opencode/vendor/i-have-adhd/.opencode/plugins/i-have-adhd.mjs"
+    "{env:HOME}/.config/opencode/vendor/ponytail/plugin.js",
+    "{env:HOME}/.config/opencode/vendor/i-have-adhd/.opencode/plugins/i-have-adhd.mjs"
   ],
-  "skills": ["/home/jllyn/.config/opencode/vendor/ponytail/skills"]
+  "skills": ["{env:HOME}/.config/opencode/vendor/ponytail/skills"]
 }

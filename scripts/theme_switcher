@@ -168,31 +168,22 @@ fi
 
 if should_generate "opencode"; then
     mkdir -p "$HOME/.config/opencode/themes"
-    cat > "$HOME/.config/opencode/themes/matugen.json" << EOF
-{
-  "\$schema": "https://opencode.ai/theme.json",
-  "defs": {
-    "matugen_bg": "$BG",
-    "matugen_bg_dark": "$SURFACE",
-    "matugen_bg_light": "$SURFACE_LIGHTER",
-    "matugen_fg": "$FG",
-    "matugen_fg_light": "$FG_LIGHT",
-    "matugen_accent": "$PRIMARY",
-    "matugen_secondary": "$SECONDARY",
-    "matugen_tertiary": "$SURFACE",
-    "matugen_error": "$ERROR"
-  },
-  "theme": {
-    "primary":              { "dark": "matugen_accent",     "light": "matugen_accent" },
-    "secondary":            { "dark": "matugen_secondary",   "light": "matugen_secondary" },
-    "accent":               { "dark": "matugen_tertiary",    "light": "matugen_tertiary" },
-    "error":                { "dark": "matugen_error",       "light": "matugen_error" },
-    "text":                 { "dark": "matugen_fg",          "light": "matugen_fg" },
-    "background":           { "dark": "matugen_bg",          "light": "matugen_bg" }
-  }
-}
-EOF
-    echo "Updated opencode theme"
+    generate_template "$HOME/.config/matugen/templates/apps/opencode-theme.json.template" > "$HOME/.config/opencode/themes/matugen.json"
+
+    # OpenCode's theme converter reads these tokens unconditionally; a missing
+    # one surfaces as "undefined is not an object (evaluating 'e.toInts')" when
+    # the theme is selected. Fail loudly here instead of at selection time.
+    opencode_theme="$HOME/.config/opencode/themes/matugen.json"
+    if ! jq -e . "$opencode_theme" >/dev/null 2>&1; then
+        echo "Error: generated opencode theme is not valid JSON" >&2
+    else
+        missing=""
+        for key in syntaxNumber syntaxType syntaxOperator syntaxPunctuation selectedListItemText; do
+            [[ -z "$(jq -r --arg k "$key" '.theme[$k] // empty' "$opencode_theme")" ]] && missing="$missing $key"
+        done
+        [[ -n "$missing" ]] && echo "Warning: opencode theme is missing:$missing" >&2
+        echo "Updated opencode theme"
+    fi
 fi
 
 if should_generate "thunar"; then
