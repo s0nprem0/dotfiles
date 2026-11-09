@@ -35,7 +35,7 @@ done
 [[ -z "$WALLPAPER" ]] && { echo "Error: No wallpaper specified" >&2; exit 1; }
 [[ ! -f "$WALLPAPER" ]] && { echo "Error: $WALLPAPER not found" >&2; exit 1; }
 
-log() { [[ "$VERBOSE" == "true" ]] && echo "[$(date '+%H:%M:%S')] $*"; }
+log() { if [[ "$VERBOSE" == "true" ]]; then echo "[$(date '+%H:%M:%S')] $*"; fi; }
 
 log "Generating theme from: $WALLPAPER"
 [[ "$DRY_RUN" == "true" ]] && log "Dry run mode"
