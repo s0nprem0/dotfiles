@@ -73,3 +73,9 @@ export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 if is_wsl; then
   path=("${path[@]:#/mnt/*}")
 fi
+
+# Cache/state dirs used by .zshrc (compinit, dircolors, zoxide, atuin, fzf).
+mkdir -p "$XDG_CACHE_HOME/zsh" "$XDG_STATE_HOME/zsh"
+
+# nub shims
+export PATH="$HOME/.nub/shims:$PATH"
