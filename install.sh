@@ -267,6 +267,8 @@ PACMAN_PKGS=(
   git-delta atuin
   # Development
   base-devel git rustup
+  # Containers (Docker Desktop + WSL integration uses the Linux CLI here)
+  docker docker-compose docker-buildx
   # Qt / GTK theming
   gtk3 gtk4 qt5ct qt6ct
   # Fonts
@@ -701,6 +703,22 @@ EOF
       ok "Skipped .wslconfig"
     fi
   fi
+fi
+
+# ──────────────────────────────────────────────
+# 12b. Docker (Desktop + WSL integration)
+# ──────────────────────────────────────────────
+if command -v docker &>/dev/null || getent group docker &>/dev/null; then
+  info "Docker client present (configured for Docker Desktop + WSL integration) ..."
+  if getent group docker &>/dev/null && ! id -nG "$(id -un)" | grep -qw docker; then
+    if sudo usermod -aG docker "$(id -un)" 2>/dev/null; then
+      ok "Added $(id -un) to docker group (log out/in or run: newgrp docker)"
+    else
+      warn "Could not add $(id -un) to docker group; run: sudo usermod -aG docker $(id -un)"
+    fi
+  fi
+  warn "Do not enable docker.service/dockerd on WSL when using Docker Desktop integration."
+  warn "Enable WSL integration for this distro in Docker Desktop, then verify: docker version"
 fi
 
 # ──────────────────────────────────────────────
