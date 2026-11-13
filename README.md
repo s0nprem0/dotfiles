@@ -95,6 +95,7 @@ already exists — newer user edits win.
 
 ```sh
 scripts/check.sh
+scripts/doctor.sh
 ```
 
 Checks shell syntax, ShellCheck (if installed), `git diff --check`, untracked
