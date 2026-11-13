@@ -64,8 +64,8 @@ if vim.fn.has("wsl") == 1 then
       ["*"] = "/mnt/c/Windows/System32/clip.exe",
     },
     paste = {
-      ["+"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r",""))',
-      ["*"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r",""))',
+      ["+"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c "$c=Get-Clipboard -Raw; if($null -ne $c){[Console]::Out.Write($c.ToString().Replace("`r",""))}"',
+      ["*"] = '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c "$c=Get-Clipboard -Raw; if($null -ne $c){[Console]::Out.Write($c.ToString().Replace("`r",""))}"',
     },
     cache_enabled = 0,
   }

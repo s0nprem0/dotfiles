@@ -10,16 +10,26 @@ fi
 # WSL-specific clipboard aliases & Windows interop
 if is_wsl; then
   alias pbcopy='/mnt/c/Windows/System32/clip.exe'
-  alias pbpaste='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c "[Console]::Out.Write(\$(Get-Clipboard -Raw).ToString().Replace(\"\`r\", \"\"))"'
+  # Paste from the Windows clipboard. A function (not an alias) keeps the
+  # quoting sane: the PowerShell script is single-quoted so embedded double
+  # quotes survive intact.
+  pbpaste() {
+    /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo -NoProfile -c \
+      '$c=Get-Clipboard -Raw; if($null -ne $c){[Console]::Out.Write($c.ToString().Replace("`r",""))}'
+  }
 
-  # Windows interop helpers
-  alias explorer='explorer.exe .'   # open current dir in Windows Explorer
-  alias start='cmd.exe /c start'    # open files/URLs with the default Windows app
+  # Windows interop helpers. appendWindowsPath=false (and the /mnt/* PATH
+  # stripping above) means bare `explorer.exe`/`cmd.exe` are NOT on PATH, so
+  # invoke them by absolute path. USERPROFILE is not propagated into WSL by
+  # default either, so resolve it through cmd.exe.
+  alias explorer='/mnt/c/Windows/explorer.exe .'   # open current dir in Windows Explorer
+  alias start='/mnt/c/Windows/System32/cmd.exe /c start'  # open files/URLs with the default Windows app
   alias winpath='wslpath -w'        # Linux path -> Windows path
 
   # Jump to the Windows user profile (e.g. C:\Users\name)
   cdwin() {
-    local win="${USERPROFILE:-}"
+    local win
+    win="$(/mnt/c/Windows/System32/cmd.exe /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')"
     [[ -n "$win" ]] && cd -- "$(wslpath "$win")"
   }
 
