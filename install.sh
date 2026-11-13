@@ -705,7 +705,6 @@ if $WSL_MODE; then
 # resolution through Windows when on a VPN.
 dnsTunneling=true
 networkingMode=mirrored
-localhostForwarding=true
 guiApplications=true
 
 # Memory / CPU: cap WSL so it cannot eat the whole machine. Adjust to taste.
