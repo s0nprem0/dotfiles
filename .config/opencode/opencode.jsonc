@@ -9,27 +9,7 @@
         "headers": {
           "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
         }
-      },
-      "playwright": {
-        "type": "local",
-        "command": [
-          "{env:HOME}/.config/opencode/node_modules/.bin/playwright-mcp",
-          "--browser",
-          "chromium",
-          "--headless",
-          "--idle-timeout",
-          "300000"
-        ]
       }
     }
-  },
-  // {env:HOME} keeps these portable across machines; the vendor payload is
-  // gitignored, so a fresh clone has no plugin or skills there until installed.
-  // V2 documents that a configured local plugin path should be a directory — if
-  // either file entry is skipped, repackage the vendor plugin as one.
-  "plugins": [
-    "{env:HOME}/.config/opencode/vendor/ponytail/plugin.js",
-    "{env:HOME}/.config/opencode/vendor/i-have-adhd/.opencode/plugins/i-have-adhd.mjs"
-  ],
-  "skills": ["{env:HOME}/.config/opencode/vendor/ponytail/skills"]
+  }
 }
