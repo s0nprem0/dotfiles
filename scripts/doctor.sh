@@ -81,7 +81,10 @@ fi
 
 # ── Systemd (user) services, when available ──
 section "Services"
-if command -v systemctl &>/dev/null && systemctl --user is-system-running &>/dev/null; then
+is_wsl() { [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qi microsoft /proc/version 2>/dev/null; }
+if is_wsl; then
+  ok "WSL host — audio services (pipewire/wireplumber) not expected"
+elif command -v systemctl &>/dev/null && systemctl --user is-system-running &>/dev/null; then
   for svc in pipewire.service wireplumber.service; do
     if systemctl --user is-active --quiet "$svc" 2>/dev/null; then
       ok "$svc active"
