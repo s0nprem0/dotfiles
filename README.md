@@ -117,7 +117,7 @@ Stage explicit paths. `git add -A` will happily stage unrelated work.
 
 ## WSL
 
-Tested on Arch WSL2 (`Arch Linux` + WSLg).
+Tested on Arch WSL2 (`Arch Linux` + WSLg), WSL 3.0.5 (kernel 6.18.58.1).
 
 `./install.sh --wsl` skips audio, Bluetooth, and hardware packages that have no
 useful WSL2 backing, adds `wslu` for Windows interop, and writes `/etc/wsl.conf`

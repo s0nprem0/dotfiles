@@ -702,10 +702,14 @@ if $WSL_MODE; then
 [wsl2]
 # Networking: mirrored mode gives Windows<->Linux localhost sharing and
 # better VPN/DNS behaviour on Windows 11 22H2+. dnsTunneling fixes DNS
-# resolution through Windows when on a VPN.
+# resolution through Windows when on a VPN. guiApplications parsing was
+# fixed in WSL 3.0.5, so this is now honoured reliably.
 dnsTunneling=true
 networkingMode=mirrored
 guiApplications=true
+
+# HTTP proxy: follow Windows proxy settings automatically (WSL 2.0.0+).
+# autoProxy=true
 
 # Memory / CPU: cap WSL so it cannot eat the whole machine. Adjust to taste.
 # memory=6GB
@@ -716,6 +720,14 @@ guiApplications=true
 # Reclaim memory from the WSL2 VM and shrink the (sparse) virtual disk.
 autoMemoryReclaim=gradual
 sparseVhd=true
+
+# DNS: when dnsTunneling is on, extract the question and resolve via Windows,
+# ignoring unknown records. Helps on VPNs / corporate DNS (WSL 3.0.5+).
+# bestEffortDnsParsing=true
+
+# Mirrored mode only: let WSL and the host reach each other by the host's IP
+# (not just 127.0.0.1). Off by default.
+# hostAddressLoopback=true
 EOF
       ok "$WSL_CONFIG created"
       warn "Restart WSL from PowerShell to apply:  wsl --shutdown"

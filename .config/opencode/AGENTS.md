@@ -3,7 +3,7 @@
 Personal rules for every session on this machine. They are not suggestions — if a
 rule here conflicts with a task instruction, say so before proceeding.
 
-Environment: **Arch Linux on WSL2**, systemd enabled, shell is **zsh**, OpenCode 2.
+Environment: **Arch Linux on WSL 3.0.5** (kernel 6.18.58.1), systemd enabled, shell is **zsh**, OpenCode 2.
 
 ## Shell commands run non-interactively
 

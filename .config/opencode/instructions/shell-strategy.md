@@ -1,6 +1,6 @@
 # Shell strategy reference
 
-Lookup tables for non-interactive command forms on this machine (Arch on WSL2,
+Lookup tables for non-interactive command forms on this machine (Arch on WSL 3.0.5,
 zsh). Loaded on demand — the always-on rules live in `~/.config/opencode/AGENTS.md`.
 
 Use the exact flag from the right-hand column. When a command has no
