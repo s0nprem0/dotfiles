@@ -141,7 +141,8 @@ Shell behaviour under WSL:
 - Windows `/mnt/*` entries are stripped from `PATH`, so Windows executables
   never shadow Linux tools. Interop still works via explicit `.exe` paths.
 - `pbcopy`/`pbpaste`, tmux yank, and nvim clipboard route through `clip.exe`.
-- Interop aliases: `explorer`, `start`, `winpath`, `cdwin`, `open`.
+- Interop aliases: `explorer`, `start`, `winpath`, `cdwin`, `open` (opens via
+  `wsl-open`, a robust replacement for `wslview`).
 
 Start a session explicitly rather than from `.zprofile`; see
 `scripts/session.sh`.

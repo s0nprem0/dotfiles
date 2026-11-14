@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# wsl-open: open a URL or file in the default Windows application from WSL.
+#
+# Replacement for wslview that avoids its slow curl-based URL validation and
+# the "system cannot find the file specified" failures on schemeless inputs.
+# Uses PowerShell Start-Process directly.
+
+set -u
+
+arg="${1:-}"
+if [[ -z "$arg" ]]; then
+  echo "wsl-open: no target given" >&2
+  exit 2
+fi
+
+# Resolve the target to pass to Start-Process.
+if [[ "$arg" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*: ]]; then
+  # Already has a scheme (http:, https:, mailto:, file:, ...).
+  target="$arg"
+elif [[ "$arg" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$ ]]; then
+  # Schemeless host (e.g. "google.com", "example.com/path") -> assume https.
+  target="https://${arg}"
+else
+  # Treat as a (possibly Linux) file path.
+  target="$(wslpath -w "$arg" 2>/dev/null || printf '%s' "$arg")"
+fi
+
+# PowerShell single-quoted strings escape embedded single quotes by doubling.
+ps_target="${target//\'/\'\'}"
+
+PS_EXE=""
+for candidate in \
+  "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" \
+  "powershell.exe"; do
+  if [[ -x "$candidate" ]] || command -v "$candidate" &>/dev/null; then
+    PS_EXE="$candidate"; break
+  fi
+done
+
+if [[ -z "$PS_EXE" ]]; then
+  echo "wsl-open: powershell.exe not found" >&2
+  exit 127
+fi
+
+"$PS_EXE" -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+  -Command "Start-Process '${ps_target}'" >/dev/null 2>&1

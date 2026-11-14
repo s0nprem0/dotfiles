@@ -74,7 +74,9 @@ export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 # after wsl --shutdown); this is the per-shell fallback.
 if is_wsl; then
   path=("${path[@]:#/mnt/*}")
-  if command -v wslview >/dev/null 2>&1; then
+  if command -v wsl-open >/dev/null 2>&1; then
+    export BROWSER=wsl-open
+  elif command -v wslview >/dev/null 2>&1; then
     export BROWSER=wslview
   fi
 fi

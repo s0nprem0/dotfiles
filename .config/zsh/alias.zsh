@@ -33,8 +33,11 @@ if is_wsl; then
     [[ -n "$win" ]] && cd -- "$(wslpath "$win")"
   }
 
-  # Open files/URLs in the default Windows browser via wslu
-  if (( $+commands[wslview] )); then
+  # Open files/URLs in the default Windows app. Prefer wsl-open (robust,
+  # no curl validation) and fall back to wslview.
+  if (( $+commands[wsl-open] )); then
+    alias open='wsl-open'
+  elif (( $+commands[wslview] )); then
     alias open='wslview'
   fi
 fi

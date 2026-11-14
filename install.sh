@@ -741,6 +741,12 @@ EOF
       ok "Skipped .wslconfig"
     fi
   fi
+
+  # Install the wsl-open helper (reliable replacement for wslview).
+  mkdir -p "$HOME/.local/bin"
+  ln -sfn "$DOTFILES/scripts/wsl-open" "$HOME/.local/bin/wsl-open"
+  chmod +x "$DOTFILES/scripts/wsl-open"
+  ok "wsl-open helper linked (~/.local/bin/wsl-open)"
 fi
 
 # ──────────────────────────────────────────────
