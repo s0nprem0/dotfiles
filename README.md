@@ -130,6 +130,12 @@ After changing `/etc/wsl.conf` or `.wslconfig`, restart from PowerShell:
 wsl --shutdown
 ```
 
+Note: on recent Windows builds (26100.9711+) WSL prints
+`Failed to detect nested virtualization support, error: ERROR_INVALID_DATA`.
+The generated `.wslconfig` sets `nestedVirtualization=false` to skip that
+failing detection (nested VMs aren't usable there anyway). Re-enable it
+once a Windows update fixes the HCS query.
+
 Shell behaviour under WSL:
 
 - Windows `/mnt/*` entries are stripped from `PATH`, so Windows executables

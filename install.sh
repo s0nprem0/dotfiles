@@ -708,6 +708,12 @@ dnsTunneling=true
 networkingMode=mirrored
 guiApplications=true
 
+# Nested virtualization: detection fails on recent Windows builds (HCS
+# ProcessorCapabilities query returns ERROR_INVALID_DATA), which makes WSL
+# print "Failed to detect nested virtualization support". Set false to skip
+# detection and silence the warning; re-enable once Windows fixes HCS.
+nestedVirtualization=false
+
 # HTTP proxy: follow Windows proxy settings automatically (WSL 2.0.0+).
 # autoProxy=true
 
