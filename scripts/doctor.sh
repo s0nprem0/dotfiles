@@ -43,6 +43,12 @@ for dir in "$DOTFILES/.config"/*/; do
   name=$(basename "$dir")
   dir="${dir%/}"
   dst="$XDG_CONFIG_HOME/$name"
+  # opencode config is deployed as a real directory containing symlinks
+  # (not a top-level symlink) so inotify can watch it; accept that form.
+  if [[ "$name" == "opencode" ]] && [[ -d "$dst" ]] && [[ ! -L "$dst" ]]; then
+    ok "$name/ deployed (real dir with linked entries)"
+    continue
+  fi
   if [[ -L "$dst" ]] && [[ "$(readlink "$dst")" == "$dir" ]]; then
     ok "$name/ linked"
   elif [[ -e "$dst" ]]; then

@@ -61,6 +61,24 @@ for dir in "$CONFIG_SRC"/*/; do
   fi
   name=$(basename "$dir")
 
+  # opencode config must be a real directory (not a top-level symlink) so
+  # its file watcher can use inotify; symlink each entry instead.
+  if [ "$name" = "opencode" ]; then
+    src="${dir%/}"
+    dst="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+    if [ -L "$dst" ]; then
+      rm "$dst"
+    fi
+    mkdir -p "$dst"
+    for entry in "$src"/* "$src"/.[!.]*; do
+      [ -e "$entry" ] || continue
+      ename=$(basename "$entry")
+      ln -sfn "$entry" "$dst/$ename"
+    done
+    echo "  link    opencode/ (real dir, linked entries)"
+    continue
+  fi
+
   # The glob yields a trailing slash, but readlink reports the stored target
   # without one. Comparing the raw glob string against readlink would never
   # match, so every run would needlessly relink an already-correct symlink.

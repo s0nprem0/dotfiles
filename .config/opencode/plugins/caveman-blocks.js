@@ -18,20 +18,32 @@ import { join } from "node:path"
 
 const SHELL_TOOLS = new Set(["bash", "shell"])
 
+let _binaryCache
 function binary() {
+  if (_binaryCache !== undefined) return _binaryCache
   const candidates = [
     process.env.CAVEMAN_BLOCKS_BIN,
     join(homedir(), ".local/share/caveman-blocks/bin/caveman-blocks" + (process.platform === "win32" ? ".exe" : "")),
   ]
   for (const path of candidates) {
-    if (path && existsSync(path)) return path
+    if (path && existsSync(path)) { _binaryCache = path; return path }
   }
-  return "caveman-blocks" // PATH; a missing binary is swallowed by hook()
+  const name = "caveman-blocks" + (process.platform === "win32" ? ".exe" : "")
+  const pathEnv = process.env.PATH || ""
+  for (const dir of pathEnv.split(":")) {
+    if (!dir) continue
+    const full = join(dir, name)
+    if (existsSync(full)) { _binaryCache = full; return full }
+  }
+  _binaryCache = null
+  return null
 }
 
 function hook(request) {
+  const bin = binary()
+  if (!bin) return ""
   try {
-    const result = spawnSync(binary(), ["hook", "--harness", "generic"], {
+    const result = spawnSync(bin, ["hook", "--harness", "generic"], {
       input: JSON.stringify({ protocol: 1, harness: "opencode", ...request }),
       encoding: "utf8",
       timeout: 5000,
